@@ -6,6 +6,7 @@ Riskfolio-Lib
 
 .. image:: docs/source/images/MSV_Frontier.png
     :width: 45%
+
 .. image:: docs/source/images/Pie_Chart.png
     :width: 45%
 
