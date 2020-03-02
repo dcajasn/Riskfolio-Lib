@@ -1,0 +1,518 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Parameters Estimation &mdash; Riskfolio-Lib 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Constraints Functions" href="constraints.html" />
+    <link rel="prev" title="Portfolio Models" href="portfolio.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Riskfolio-Lib
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="portfolio.html">Portfolio Models</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Parameters Estimation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-ParamsEstimation">Module Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bibliography">Bibliography</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="constraints.html">Constraints Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="risk.html">Risk Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auxiliary.html">Auxiliary Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Riskfolio-Lib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Parameters Estimation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/parameters.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="parameters-estimation">
+<h1>Parameters Estimation<a class="headerlink" href="#parameters-estimation" title="Permalink to this headline">¶</a></h1>
+<p>This module containts functions that allows us to estimate the vector of means
+and covariance matrix using several methods:</p>
+<ul class="simple">
+<li><p>Historical estimates.</p></li>
+<li><p>Estimates using exponencial weighted moving averages (EWMA).</p></li>
+<li><p>Robust estimates of the covariance matrix like shrinkage or oracle method.</p></li>
+<li><p>The Black Litterman model.</p></li>
+<li><p>Factors models to estimate the vector of means and covariance matrix.</p></li>
+</ul>
+<div class="section" id="module-ParamsEstimation">
+<span id="module-functions"></span><h2>Module Functions<a class="headerlink" href="#module-ParamsEstimation" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ParamsEstimation.mean_vector">
+<code class="sig-prename descclassname">ParamsEstimation.</code><code class="sig-name descname">mean_vector</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">method='hist'</em>, <em class="sig-param">d=0.94</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ParamsEstimation.html#mean_vector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ParamsEstimation.mean_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the expected returns vector using the selected method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>DataFrame of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Features matrix, where n_samples is the number of samples and
+n_features is the number of features.</p></li>
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>can be {'hist'</em><em>, </em><em>'ewma1'</em><em> or </em><em>'ewma2'}</em>) – <p>The method used to estimate the expected returns.
+The default value is ‘hist’.</p>
+<ul>
+<li><p>’hist’: use historical estimates.</p></li>
+<li><p>’ewma1’’: use ewma with adjust=True, see <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows">EWM</a> for more details.</p></li>
+<li><p>’ewma2’: use ewma with adjust=False, see <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows">EWM</a> for more details.</p></li>
+</ul>
+</p></li>
+<li><p><strong>d</strong> (<em>scalar</em>) – The smoothing factor of ewma methods.
+The default is 0.94.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>mu</strong> – The estimation of expected returns.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>1d-array</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ParamsEstimation.covar_matrix">
+<code class="sig-prename descclassname">ParamsEstimation.</code><code class="sig-name descname">covar_matrix</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">method='hist'</em>, <em class="sig-param">d=0.94</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ParamsEstimation.html#covar_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ParamsEstimation.covar_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the covariance matrix using the selected method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>DataFrame of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Features matrix, where n_samples is the number of samples and
+n_features is the number of features.</p></li>
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>can be {'hist'</em><em>, </em><em>'ewma1'</em><em>, </em><em>'ewma2'</em><em>, </em><em>'ledoit'</em><em>, </em><em>'oas'</em><em> or </em><em>'shrunk'}</em>) – <p>The default is ‘hist’. The method used to estimate the covariance matrix:</p>
+<ul>
+<li><p>’hist’: use historical estimates.</p></li>
+<li><p>’ewma1’’: use ewma with adjust=True, see <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows">EWM</a> for more details.</p></li>
+<li><p>’ewma2’: use ewma with adjust=False, see <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows">EWM</a> for more details.</p></li>
+<li><p>’ledoit’: use the Ledoit and Wolf Shrinkage method.</p></li>
+<li><p>’oas’: use the Oracle Approximation Shrinkage method.</p></li>
+<li><p>’shrunk’: use the basic Shrunk Covariance method.</p></li>
+</ul>
+</p></li>
+<li><p><strong>d</strong> (<em>scalar</em>) – The smoothing factor of ewma methods.
+The default is 0.94.</p></li>
+<li><p><strong>**kwargs</strong> – Other variables related to covariance estimation. See
+<a class="reference external" href="https://scikit-learn.org/stable/modules/covariance.html">Scikit Learn</a>
+for more details.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>cov</strong> – The estimation of covariance matrix.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>nd-array</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ParamsEstimation.forward_regression">
+<code class="sig-prename descclassname">ParamsEstimation.</code><code class="sig-name descname">forward_regression</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">threshold=0.05</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ParamsEstimation.html#forward_regression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ParamsEstimation.forward_regression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select the variables that estimate the best model using stepwise
+forward regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>DataFrame of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Features matrix, where n_samples is the number of samples and
+n_features is the number of features.</p></li>
+<li><p><strong>y</strong> (<em>Series of shape</em><em> (</em><em>n_samples</em><em>, </em><em>1</em><em>)</em>) – Target vector, where n_samples in the number of samples.</p></li>
+<li><p><strong>thresholdt</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Is the maximum p-value for each variable that will be
+accepted in the model. The default is 0.05.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Enable verbose output. The default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>value</strong> – A list of the variables that produce the best model.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#list" title="(in Python v3.7)">list</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ParamsEstimation.backward_regression">
+<code class="sig-prename descclassname">ParamsEstimation.</code><code class="sig-name descname">backward_regression</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">y</em>, <em class="sig-param">threshold=0.05</em>, <em class="sig-param">verbose=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ParamsEstimation.html#backward_regression"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ParamsEstimation.backward_regression" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select the variables that estimate the best model using stepwise
+backward regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>DataFrame of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Features matrix, where n_samples is the number of samples and
+n_features is the number of features.</p></li>
+<li><p><strong>y</strong> (<em>Series of shape</em><em> (</em><em>n_samples</em><em>, </em><em>1</em><em>)</em>) – Target vector, where n_samples in the number of samples.</p></li>
+<li><p><strong>threshold</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Is the maximum p-value for each variable that will be
+accepted in the model. The default is 0.05.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Enable verbose output. The default is False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>value</strong> – A list of the variables that produce the best model.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#list" title="(in Python v3.7)">list</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ParamsEstimation.loadings_matrix">
+<code class="sig-prename descclassname">ParamsEstimation.</code><code class="sig-name descname">loadings_matrix</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">Y</em>, <em class="sig-param">threshold=0.05</em>, <em class="sig-param">verbose=False</em>, <em class="sig-param">stepwise='Forward'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ParamsEstimation.html#loadings_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ParamsEstimation.loadings_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the loadings matrix using stepwise regression.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>DataFrame of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Features matrix, where n_samples is the number of samples and
+n_features is the number of features.</p></li>
+<li><p><strong>Y</strong> (<em>DataFrame of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_assets</em><em>)</em>) – Target matrix, where n_samples in the number of samples and
+n_assets is the number of assets.</p></li>
+<li><p><strong>thresholdt</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Is the maximum p-value for each variable that will be
+accepted in the model. The default is 0.05.</p></li>
+<li><p><strong>verbose</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Enable verbose output. The default is False.</p></li>
+<li><p><strong>steepwise</strong> (<em>str 'Forward'</em><em> or </em><em>'Backward'</em><em>, </em><em>optional</em>) – Indicate the method used for stepwise regression.
+The default is ‘Forward’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>loadings</strong> – A DataFrame with the loadings matrix.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ParamsEstimation.risk_factors">
+<code class="sig-prename descclassname">ParamsEstimation.</code><code class="sig-name descname">risk_factors</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">Y</em>, <em class="sig-param">B=None</em>, <em class="sig-param">method_mu='hist'</em>, <em class="sig-param">method_cov='hist'</em>, <em class="sig-param">threshold=0.05</em>, <em class="sig-param">stepwise='Forward'</em>, <em class="sig-param">error=True</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ParamsEstimation.html#risk_factors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ParamsEstimation.risk_factors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the expected returns vector and covariance matrix based on risk
+factors models <a class="bibtex reference internal" href="#b-ross" id="id4">[B1]</a> <a class="bibtex reference internal" href="#b-fan" id="id5">[B2]</a>.</p>
+<div class="math notranslate nohighlight">
+\[R = \alpha + B F + \epsilon\]</div>
+<div class="math notranslate nohighlight">
+\[\mu_{f} = \alpha +BE(F)\]</div>
+<div class="math notranslate nohighlight">
+\[\Sigma_{f} = B \Sigma_{F} B^{T} + \Sigma_{\epsilon}\]</div>
+<p>where:</p>
+<p><span class="math notranslate nohighlight">\(R\)</span> is the series returns.</p>
+<p><span class="math notranslate nohighlight">\(\alpha\)</span> is the intercept.</p>
+<p><span class="math notranslate nohighlight">\(B\)</span> is the loadings matrix.</p>
+<p><span class="math notranslate nohighlight">\(F\)</span> is the expected returns vector of the risk factors.</p>
+<p><span class="math notranslate nohighlight">\(\Sigma_{F}\)</span> is the covariance matrix of the risk factors.</p>
+<p><span class="math notranslate nohighlight">\(\Sigma_{\epsilon}\)</span> is the covariance matrix of error terms.</p>
+<p><span class="math notranslate nohighlight">\(\mu_{f}\)</span> is the expected returns vector obtained with the
+risk factor model.</p>
+<p><span class="math notranslate nohighlight">\(\Sigma_{f}\)</span> is the covariance matrix obtained with the risk
+factor model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>DataFrame of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Features matrix, where n_samples is the number of samples and
+n_features is the number of features.</p></li>
+<li><p><strong>Y</strong> (<em>DataFrame of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_assets</em><em>)</em>) – Target matrix, where n_samples in the number of samples and
+n_assets is the number of assets.</p></li>
+<li><p><strong>B</strong> (<em>DataFrame of shape</em><em> (</em><em>n_assets</em><em>, </em><em>n_features</em><em>)</em><em>, </em><em>optional</em>) – Loadings matrix. If is not specified, is estimated using
+stepwise regression. The default is None.</p></li>
+<li><p><strong>steepwise</strong> (<em>str 'Forward'</em><em> or </em><em>'Backward'</em>) – Indicate the method used for stepwise regression.
+The default is ‘Forward’.</p></li>
+<li><p><strong>error</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a>) – Indicate if diagonal covariance matrix of errors is included (only
+when B is estimated through a regression).</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – Other variables related to the expected returns and covariance estimation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>mu</strong> (<em>DataFrame</em>) – The mean vector of risk factors model.</p></li>
+<li><p><strong>cov</strong> (<em>DataFrame</em>) – The covariance matrix of risk factors model.</p></li>
+<li><p><strong>returns</strong> (<em>DataFrame</em>) – The returns based on a risk factor model.</p></li>
+<li><p><strong>nav</strong> (<em>DataFrame</em>) – The cumulated uncompound returns based on a risk factor model.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="ParamsEstimation.black_litterman">
+<code class="sig-prename descclassname">ParamsEstimation.</code><code class="sig-name descname">black_litterman</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">w</em>, <em class="sig-param">P</em>, <em class="sig-param">Q</em>, <em class="sig-param">delta=1</em>, <em class="sig-param">rf=0</em>, <em class="sig-param">eq=True</em>, <em class="sig-param">method_mu='hist'</em>, <em class="sig-param">method_cov='hist'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ParamsEstimation.html#black_litterman"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ParamsEstimation.black_litterman" title="Permalink to this definition">¶</a></dt>
+<dd><p>Estimate the expected returns vector and covariance matrix based
+on the black litterman model <a class="bibtex reference internal" href="#b-blacklitterman" id="id6">[B3]</a> <a class="bibtex reference internal" href="#b-black1" id="id7">[B4]</a>.</p>
+<div class="math notranslate nohighlight">
+\[\Pi = \delta \Sigma w\]</div>
+<div class="math notranslate nohighlight">
+\[\Pi_{bl} = \left[(\tau\Sigma)^{-1}+ P \Omega^{-1}P \right]^{-1}
+\left[(\tau\Sigma)^{-1} \Pi + P \Omega^{-1}Q \right]\]</div>
+<div class="math notranslate nohighlight">
+\[M = \left((\tau\Sigma)^{-1} + P'\Omega^{-1} P \right)^{-1}\]</div>
+<div class="math notranslate nohighlight">
+\[\mu_{bl} = \Pi_{bl} + rf\]</div>
+<div class="math notranslate nohighlight">
+\[\Sigma_{bl} = \Sigma + M\]</div>
+<p>where:</p>
+<p><span class="math notranslate nohighlight">\(rf\)</span> is the risk free rate.</p>
+<p><span class="math notranslate nohighlight">\(\delta\)</span> is the risk aversion factor.</p>
+<p><span class="math notranslate nohighlight">\(\Pi\)</span> is the equilibrium excess returns.</p>
+<p><span class="math notranslate nohighlight">\(\Sigma\)</span> is the covariance matrix.</p>
+<p><span class="math notranslate nohighlight">\(P\)</span> is the views matrix.</p>
+<p><span class="math notranslate nohighlight">\(Q\)</span> is the views returns matrix.</p>
+<p><span class="math notranslate nohighlight">\(\Omega\)</span> is covariance matrix of the error views.</p>
+<p><span class="math notranslate nohighlight">\(\mu_{bl}\)</span> is the mean vector obtained with the black
+litterman model.</p>
+<p><span class="math notranslate nohighlight">\(\Sigma_{bl}\)</span> is the covariance matrix obtained with the black
+litterman model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>DataFrame of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Assets matrix, where n_samples is the number of samples and
+n_features is the number of features.</p></li>
+<li><p><strong>w</strong> (<em>DataFrame of shape</em><em> (</em><em>n_assets</em><em>, </em><em>1</em><em>)</em>) – Weights matrix, where n_assets is the number of assets.</p></li>
+<li><p><strong>P</strong> (<em>DataFrame of shape</em><em> (</em><em>n_views</em><em>, </em><em>n_assets</em><em>)</em>) – Analyst’s views matrix, can be relative or absolute.</p></li>
+<li><p><strong>Q</strong> (<em>DataFrame of shape</em><em> (</em><em>n_views</em><em>, </em><em>1</em><em>)</em>) – Expected returns of analyst’s views.</p></li>
+<li><p><strong>delta</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Risk aversion factor. The default value is 1.</p></li>
+<li><p><strong>rf</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Risk free rate. The default is 0.</p></li>
+<li><p><strong>eq</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Indicate if use equilibrum or historical excess returns.
+The default is True.</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – Other variables related to the expected returns and covariance estimation.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>mu</strong> (<em>DataFrame</em>) – The mean vector of black litterman model.</p></li>
+<li><p><strong>cov</strong> (<em>DataFrame</em>) – The covariance matrix of black litterman model.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="bibliography">
+<h2>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this headline">¶</a></h2>
+<p id="bibtex-bibliography-parameters-0"><dl class="citation">
+<dt class="bibtex label" id="b-ross"><span class="brackets"><a class="fn-backref" href="#id4">B1</a></span></dt>
+<dd><p>Stephen A. Ross. The arbitrage theory of capital asset pricing. <em>Journal of Economic Theory</em>, 13(3):341–360, December 1976. URL: <a class="reference external" href="https://ideas.repec.org/a/eee/jetheo/v13y1976i3p341-360.html">https://ideas.repec.org/a/eee/jetheo/v13y1976i3p341-360.html</a>, <a class="reference external" href="https://doi.org/">doi:</a>.</p>
+</dd>
+<dt class="bibtex label" id="b-fan"><span class="brackets"><a class="fn-backref" href="#id5">B2</a></span></dt>
+<dd><p>Jianqing Fan, Yingying Fan, and Jinchi Lv. High dimensional covariance matrix estimation using a factor model. <em>Journal of Econometrics</em>, 147(1):186–197, November 2008. URL: <a class="reference external" href="https://ideas.repec.org/a/eee/econom/v147y2008i1p186-197.html">https://ideas.repec.org/a/eee/econom/v147y2008i1p186-197.html</a>, <a class="reference external" href="https://doi.org/">doi:</a>.</p>
+</dd>
+<dt class="bibtex label" id="b-blacklitterman"><span class="brackets"><a class="fn-backref" href="#id6">B3</a></span></dt>
+<dd><p>Fischer Black and Robert Litterman. Global portfolio optimization. <em>Financial Analysts Journal</em>, 48(5):28–43, 1992. URL: <a class="reference external" href="http://www.jstor.org/stable/4479577">http://www.jstor.org/stable/4479577</a>.</p>
+</dd>
+<dt class="bibtex label" id="b-black1"><span class="brackets"><a class="fn-backref" href="#id7">B4</a></span></dt>
+<dd><p>Jay Walters. The black-litterman model in detail. <em>SSRN Electronic Journal</em>, pages, 07 2011. <a class="reference external" href="https://doi.org/10.2139/ssrn.1314585">doi:10.2139/ssrn.1314585</a>.</p>
+</dd>
+</dl>
+</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="constraints.html" class="btn btn-neutral float-right" title="Constraints Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="portfolio.html" class="btn btn-neutral float-left" title="Portfolio Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Dany Cajas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,501 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Plot Functions &mdash; Riskfolio-Lib 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Auxiliary Functions" href="auxiliary.html" />
+    <link rel="prev" title="Risk Functions" href="risk.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Riskfolio-Lib
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="portfolio.html">Portfolio Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constraints.html">Constraints Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="risk.html">Risk Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Plot Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#example">Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-PlotFunctions">Module Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="auxiliary.html">Auxiliary Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Riskfolio-Lib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Plot Functions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/plot.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="plot-functions">
+<h1>Plot Functions<a class="headerlink" href="#plot-functions" title="Permalink to this headline">¶</a></h1>
+<p>This section containts some functions that allows us to create charts that
+helps us to analyze quickly the properties of our optimum portfolios.</p>
+<p>The following example construct the portfolios and the efficient frontier that
+will be plot using the functions of this module.</p>
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">yfinance</span> <span class="k">as</span> <span class="nn">yf</span>
+<span class="kn">import</span> <span class="nn">riskfolio.Portfolio</span> <span class="k">as</span> <span class="nn">pf</span>
+<span class="kn">import</span> <span class="nn">riskfolio.PlotFunctions</span> <span class="k">as</span> <span class="nn">plf</span>
+
+<span class="n">yf</span><span class="o">.</span><span class="n">pdr_override</span><span class="p">()</span>
+
+<span class="c1"># Date range</span>
+<span class="n">start</span> <span class="o">=</span> <span class="s1">&#39;2017-01-01&#39;</span>
+<span class="n">end</span> <span class="o">=</span> <span class="s1">&#39;2019-12-30&#39;</span>
+
+<span class="c1"># List of assets</span>
+<span class="n">tickers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;JCI&#39;</span><span class="p">,</span> <span class="s1">&#39;TGT&#39;</span><span class="p">,</span> <span class="s1">&#39;CMCSA&#39;</span><span class="p">,</span> <span class="s1">&#39;CPB&#39;</span><span class="p">,</span> <span class="s1">&#39;MO&#39;</span><span class="p">,</span> <span class="s1">&#39;NBL&#39;</span><span class="p">,</span> <span class="s1">&#39;APA&#39;</span><span class="p">,</span> <span class="s1">&#39;MMC&#39;</span><span class="p">,</span> <span class="s1">&#39;JPM&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;ZION&#39;</span><span class="p">,</span> <span class="s1">&#39;PSA&#39;</span><span class="p">,</span> <span class="s1">&#39;AGN&#39;</span><span class="p">,</span> <span class="s1">&#39;BAX&#39;</span><span class="p">,</span> <span class="s1">&#39;BMY&#39;</span><span class="p">,</span> <span class="s1">&#39;LUV&#39;</span><span class="p">,</span> <span class="s1">&#39;PCAR&#39;</span><span class="p">,</span> <span class="s1">&#39;TXT&#39;</span><span class="p">,</span> <span class="s1">&#39;DHR&#39;</span><span class="p">,</span>
+          <span class="s1">&#39;DE&#39;</span><span class="p">,</span> <span class="s1">&#39;MSFT&#39;</span><span class="p">,</span> <span class="s1">&#39;HPQ&#39;</span><span class="p">,</span> <span class="s1">&#39;SEE&#39;</span><span class="p">,</span> <span class="s1">&#39;VZ&#39;</span><span class="p">,</span> <span class="s1">&#39;CNP&#39;</span><span class="p">,</span> <span class="s1">&#39;NI&#39;</span><span class="p">]</span>
+<span class="n">tickers</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+<span class="c1"># Downloading the data</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">yf</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">tickers</span><span class="p">,</span> <span class="n">start</span> <span class="o">=</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">end</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,(</span><span class="s1">&#39;Adj Close&#39;</span><span class="p">,</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">))]</span>
+<span class="n">data</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">tickers</span>
+<span class="n">assets</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">pct_change</span><span class="p">()</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+
+<span class="n">Y</span> <span class="o">=</span> <span class="n">assets</span>
+
+<span class="c1"># Creating the Portfolio Object</span>
+<span class="n">port</span> <span class="o">=</span> <span class="n">pf</span><span class="o">.</span><span class="n">Portfolio</span><span class="p">(</span><span class="n">returns</span><span class="o">=</span><span class="n">Y</span><span class="p">)</span>
+
+<span class="c1"># To display dataframes values in percentage format</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">float_format</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:.4%}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span>
+
+<span class="c1"># Choose the risk measure</span>
+<span class="n">rm</span> <span class="o">=</span> <span class="s1">&#39;MSV&#39;</span>  <span class="c1"># Semi Standard Deviation</span>
+
+<span class="c1"># Estimate inputs of the model (historical estimates)</span>
+<span class="n">port</span><span class="o">.</span><span class="n">assets_stats</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s1">&#39;hist&#39;</span><span class="p">)</span>
+
+<span class="c1"># Estimate the portfolio that maximizes the risk adjusted return ratio</span>
+<span class="n">w1</span> <span class="o">=</span> <span class="n">port</span><span class="o">.</span><span class="n">optimization</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;Classic&#39;</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="n">rm</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="s1">&#39;Sharpe&#39;</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Estimate points in the efficient frontier mean - semi standard deviation</span>
+<span class="n">ws</span> <span class="o">=</span> <span class="n">port</span><span class="o">.</span><span class="n">efficient_frontier</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s1">&#39;Classic&#39;</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="n">rm</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="module-PlotFunctions">
+<span id="module-functions"></span><h2>Module Functions<a class="headerlink" href="#module-PlotFunctions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="PlotFunctions.plot_series">
+<code class="sig-prename descclassname">PlotFunctions.</code><code class="sig-name descname">plot_series</code><span class="sig-paren">(</span><em class="sig-param">returns</em>, <em class="sig-param">w</em>, <em class="sig-param">cmap='tab20'</em>, <em class="sig-param">height=6</em>, <em class="sig-param">width=10</em>, <em class="sig-param">ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotFunctions.html#plot_series"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotFunctions.plot_series" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a chart with the compound cumulated of the portfolios.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returns</strong> (<em>DataFrame</em>) – Assets returns.</p></li>
+<li><p><strong>w</strong> (<em>DataFrame</em>) – Portfolio weights.</p></li>
+<li><p><strong>cmap</strong> (<em>cmap</em><em>, </em><em>optional</em>) – Colorscale, represente the risk adjusted return ratio.
+The default is ‘tab20’.</p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Height of the image in inches. The default is 6.</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Width of the image in inches. The default is 10.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib axis</em><em>, </em><em>optional</em>) – If provided, plot on this axis. The default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>ax</strong> – Returns the Axes object with the plot for further tweaking.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib axis</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">plf</span><span class="o">.</span><span class="n">plot_series</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">ws</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;tab20&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/Port_Series.png" src="_images/Port_Series.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="PlotFunctions.plot_frontier">
+<code class="sig-prename descclassname">PlotFunctions.</code><code class="sig-name descname">plot_frontier</code><span class="sig-paren">(</span><em class="sig-param">w_frontier</em>, <em class="sig-param">mu</em>, <em class="sig-param">cov=None</em>, <em class="sig-param">returns=None</em>, <em class="sig-param">rm='MV'</em>, <em class="sig-param">rf=0</em>, <em class="sig-param">alpha=0.01</em>, <em class="sig-param">cmap='viridis'</em>, <em class="sig-param">w=None</em>, <em class="sig-param">label='Portfolio'</em>, <em class="sig-param">marker='*'</em>, <em class="sig-param">s=16</em>, <em class="sig-param">c='r'</em>, <em class="sig-param">height=6</em>, <em class="sig-param">width=10</em>, <em class="sig-param">ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotFunctions.html#plot_frontier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotFunctions.plot_frontier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a plot of the efficient frontier for a risk measure specified by
+the user.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>w_frontier</strong> (<em>DataFrame</em>) – Portfolio weights of some points in the efficient frontier.</p></li>
+<li><p><strong>mu</strong> (<em>DataFrame of shape</em><em> (</em><em>1</em><em>, </em><em>n_assets</em><em>)</em>) – Vector of expected returns, where n_assets is the number of assets.</p></li>
+<li><p><strong>cov</strong> (<em>DataFrame of shape</em><em> (</em><em>n_features</em><em>, </em><em>n_features</em><em>)</em>) – Covariance matrix, where n_features is the number of features.</p></li>
+<li><p><strong>returns</strong> (<em>DataFrame of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Features matrix, where n_samples is the number of samples and
+n_features is the number of features.</p></li>
+<li><p><strong>rm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – Risk measure used to create the frontier. The default is ‘MV’.</p></li>
+<li><p><strong>rf</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Risk free rate or minimum aceptable return. The default is 0.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Significante level of VaR, CVaR and CDaR. The default is 0.01.</p></li>
+<li><p><strong>cmap</strong> (<em>cmap</em><em>, </em><em>optional</em>) – Colorscale, represente the risk adjusted return ratio.
+The default is ‘viridis’.</p></li>
+<li><p><strong>w</strong> (<em>DataFrame</em><em>, </em><em>optional</em>) – A portfolio specified by the user. The default is None.</p></li>
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – Name of portfolio that appear on plot legend.
+The default is ‘Portfolio’.</p></li>
+<li><p><strong>marker</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – Marker of <a href="#id1"><span class="problematic" id="id2">w_</span></a>. The default is ‘*’.</p></li>
+<li><p><strong>s</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Size of marker. The default is 16.</p></li>
+<li><p><strong>c</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – Color of marker. The default is ‘r’.</p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Height of the image in inches. The default is 6.</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Width of the image in inches. The default is 10.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib axis</em><em>, </em><em>optional</em>) – If provided, plot on this axis. The default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>ax</strong> – Returns the Axes object with the plot for further tweaking.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib Axes</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;Max Risk Adjusted Return Portfolio&#39;</span>
+<span class="n">mu</span> <span class="o">=</span> <span class="n">port</span><span class="o">.</span><span class="n">mu</span>
+<span class="n">cov</span> <span class="o">=</span> <span class="n">port</span><span class="o">.</span><span class="n">cov</span>
+<span class="n">returns</span> <span class="o">=</span> <span class="n">port</span><span class="o">.</span><span class="n">returns</span>
+
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plf</span><span class="o">.</span><span class="n">plot_frontier</span><span class="p">(</span><span class="n">w_frontier</span><span class="o">=</span><span class="n">ws</span><span class="p">,</span> <span class="n">mu</span><span class="o">=</span><span class="n">mu</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="n">cov</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="n">returns</span><span class="p">,</span>
+                       <span class="n">rm</span><span class="o">=</span><span class="n">rm</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">w1</span><span class="p">,</span>
+                       <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Portfolio&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">s</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span>
+                       <span class="n">height</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/MSV_Frontier.png" src="_images/MSV_Frontier.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="PlotFunctions.plot_pie">
+<code class="sig-prename descclassname">PlotFunctions.</code><code class="sig-name descname">plot_pie</code><span class="sig-paren">(</span><em class="sig-param">w</em>, <em class="sig-param">title=''</em>, <em class="sig-param">others=0.05</em>, <em class="sig-param">nrow=25</em>, <em class="sig-param">cmap='tab20'</em>, <em class="sig-param">height=6</em>, <em class="sig-param">width=8</em>, <em class="sig-param">ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotFunctions.html#plot_pie"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotFunctions.plot_pie" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a pie chart with portfolio weights.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>w</strong> (<em>DataFrame</em>) – Weights of the portfolio.</p></li>
+<li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – Title of the chart. The default is ‘’.</p></li>
+<li><p><strong>others</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Percentage of others section. The default is 0.05.</p></li>
+<li><p><strong>nrow</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>, </em><em>optional</em>) – Number of rows of the legend. The default is 25.</p></li>
+<li><p><strong>cmap</strong> (<em>cmap</em><em>, </em><em>optional</em>) – Color scale, represente the risk adjusted return ratio.
+The default is ‘tab20’.</p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Height of the image in inches. The default is 10.</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Width of the image in inches. The default is 10.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib axis</em><em>, </em><em>optional</em>) – If provided, plot on this axis. The default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>ax</strong> – Returns the Axes object with the plot for further tweaking.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib axis.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">plf</span><span class="o">.</span><span class="n">plot_pie</span><span class="p">(</span><span class="n">w</span><span class="o">=</span><span class="n">w1</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Portafolio&#39;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;tab20&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/Pie_Chart.png" src="_images/Pie_Chart.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="PlotFunctions.plot_frontier_area">
+<code class="sig-prename descclassname">PlotFunctions.</code><code class="sig-name descname">plot_frontier_area</code><span class="sig-paren">(</span><em class="sig-param">w_frontier</em>, <em class="sig-param">nrow=25</em>, <em class="sig-param">cmap='tab20'</em>, <em class="sig-param">height=6</em>, <em class="sig-param">width=10</em>, <em class="sig-param">ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotFunctions.html#plot_frontier_area"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotFunctions.plot_frontier_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a chart with te asset structure of the efficient frontier.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>w_frontier</strong> (<em>DataFrame</em>) – Weights of portfolios in the efficient frontier.</p></li>
+<li><p><strong>nrow</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#int" title="(in Python v3.7)"><em>int</em></a><em>, </em><em>optional</em>) – Number of rows of the legend. The default is 25.</p></li>
+<li><p><strong>cmap</strong> (<em>cmap</em><em>, </em><em>optional</em>) – Color scale, represente the risk adjusted return ratio.
+The default is ‘tab20’.</p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Height of the image in inches. The default is 6.</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Width of the image in inches. The default is 10.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib axis</em><em>, </em><em>optional</em>) – If provided, plot on this axis. The default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>ax</strong> – Returns the Axes object with the plot for further tweaking.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib axis.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">plf</span><span class="o">.</span><span class="n">plot_frontier_area</span><span class="p">(</span><span class="n">w_frontier</span><span class="o">=</span><span class="n">ws</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;tab20&quot;</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/Area_Frontier.png" src="_images/Area_Frontier.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="PlotFunctions.plot_hist">
+<code class="sig-prename descclassname">PlotFunctions.</code><code class="sig-name descname">plot_hist</code><span class="sig-paren">(</span><em class="sig-param">returns</em>, <em class="sig-param">w</em>, <em class="sig-param">alpha=0.01</em>, <em class="sig-param">bins=50</em>, <em class="sig-param">height=6</em>, <em class="sig-param">width=10</em>, <em class="sig-param">ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotFunctions.html#plot_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotFunctions.plot_hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a histogram of portfolio returns with the risk measures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returns</strong> (<em>DataFrame</em>) – Assets returns.</p></li>
+<li><p><strong>w</strong> (<em>DataFrame</em><em>, </em><em>optional</em>) – A portfolio specified by the user to compare with the efficient
+frontier. The default is None.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Significante level of VaR, CVaR and CDaR. The default is 0.01.</p></li>
+<li><p><strong>bins</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Number of bins of the histogram. The default is 50.</p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Height of the image in inches. The default is 6.</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Width of the image in inches. The default is 10.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib axis</em><em>, </em><em>optional</em>) – If provided, plot on this axis. The default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>ax</strong> – Returns the Axes object with the plot for further tweaking.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib axis.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ax</span> <span class="o">=</span> <span class="n">plf</span><span class="o">.</span><span class="n">plot_hist</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">Y</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="n">w1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<img alt="_images/Histogram.png" src="_images/Histogram.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="PlotFunctions.plot_drawdown">
+<code class="sig-prename descclassname">PlotFunctions.</code><code class="sig-name descname">plot_drawdown</code><span class="sig-paren">(</span><em class="sig-param">nav</em>, <em class="sig-param">w</em>, <em class="sig-param">alpha=0.01</em>, <em class="sig-param">height=8</em>, <em class="sig-param">width=10</em>, <em class="sig-param">ax=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PlotFunctions.html#plot_drawdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PlotFunctions.plot_drawdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a chart with the evolution of portfolio prices and drawdown.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>nav</strong> (<em>DataFrame</em>) – Cumulative assets returns.</p></li>
+<li><p><strong>w</strong> (<em>DataFrame</em><em>, </em><em>optional</em>) – A portfolio specified by the user to compare with the efficient
+frontier. The default is None.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Significante level of VaR, CVaR and CDaR. The default is 0.01.</p></li>
+<li><p><strong>height</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Height of the image in inches. The default is 8.</p></li>
+<li><p><strong>width</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Width of the image in inches. The default is 10.</p></li>
+<li><p><strong>ax</strong> (<em>matplotlib axis</em><em>, </em><em>optional</em>) – If provided, plot on this axis. The default is None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>ax</strong> – Returns the Axes object with the plot for further tweaking.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>matplotlib axis.</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<dl>
+<dt>::</dt><dd><p>nav=port.nav</p>
+<p>ax = plf.plot_drawdown(nav=nav, w=w1, alpha=0.01, height=8, width=10, ax=None)</p>
+</dd>
+</dl>
+<img alt="_images/Drawdown.png" src="_images/Drawdown.png" />
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="auxiliary.html" class="btn btn-neutral float-right" title="Auxiliary Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="risk.html" class="btn btn-neutral float-left" title="Risk Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Dany Cajas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

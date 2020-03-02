@@ -1,0 +1,71 @@
+.. Riskfolio documentation master file, created by
+   sphinx-quickstart on Fri Feb  7 02:11:42 2020.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
+
+##############
+Plot Functions
+##############
+
+This section containts some functions that allows us to create charts that 
+helps us to analyze quickly the properties of our optimum portfolios.
+
+The following example construct the portfolios and the efficient frontier that
+will be plot using the functions of this module.
+
+Example
+=======
+
+::
+    
+    import numpy as np
+    import pandas as pd
+    import yfinance as yf
+    import riskfolio.Portfolio as pf
+    import riskfolio.PlotFunctions as plf 
+    
+    yf.pdr_override()
+    
+    # Date range
+    start = '2017-01-01'
+    end = '2019-12-30'
+    
+    # List of assets
+    tickers = ['JCI', 'TGT', 'CMCSA', 'CPB', 'MO', 'NBL', 'APA', 'MMC', 'JPM',
+              'ZION', 'PSA', 'AGN', 'BAX', 'BMY', 'LUV', 'PCAR', 'TXT', 'DHR',
+              'DE', 'MSFT', 'HPQ', 'SEE', 'VZ', 'CNP', 'NI']
+    tickers.sort()
+    
+    # Downloading the data
+    data = yf.download(tickers, start = start, end = end)
+    data = data.loc[:,('Adj Close', slice(None))]
+    data.columns = tickers
+    assets = data.pct_change().dropna()
+
+    Y = assets
+    
+    # Creating the Portfolio Object
+    port = pf.Portfolio(returns=Y)
+    
+    # To display dataframes values in percentage format
+    pd.options.display.float_format = '{:.4%}'.format
+    
+    # Choose the risk measure
+    rm = 'MSV'  # Semi Standard Deviation
+    
+    # Estimate inputs of the model (historical estimates)
+    port.assets_stats(method='hist')
+    
+    # Estimate the portfolio that maximizes the risk adjusted return ratio
+    w1 = port.optimization(model='Classic', rm=rm, obj='Sharpe', rf=0.0, l=0, hist=True)
+
+    # Estimate points in the efficient frontier mean - semi standard deviation
+    ws = port.efficient_frontier(model='Classic', rm=rm, points=20, rf=0, hist=True)
+
+
+Module Functions
+================
+
+.. automodule:: PlotFunctions
+   :members:
+   :private-members:

@@ -1,0 +1,717 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>ConstraintsFunctions &mdash; Riskfolio-Lib 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Riskfolio-Lib
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../portfolio.html">Portfolio Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parameters.html">Parameters Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../constraints.html">Constraints Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../risk.html">Risk Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../auxiliary.html">Auxiliary Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Riskfolio-Lib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>ConstraintsFunctions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for ConstraintsFunctions</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+
+<div class="viewcode-block" id="assets_constraints"><a class="viewcode-back" href="../constraints.html#ConstraintsFunctions.assets_constraints">[docs]</a><span class="k">def</span> <span class="nf">assets_constraints</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">asset_classes</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create the linear constraints matrixes A and B of the constraint</span>
+<span class="sd">    :math:`Aw \geq B`.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    constraints : DataFrame of shape (n_constraints, n_fields)</span>
+<span class="sd">        Constraints matrix, where n_constraints is the number of constraints</span>
+<span class="sd">        and n_fields is the number of fields of constraints matrix, the fields</span>
+<span class="sd">        are:</span>
+<span class="sd">            </span>
+<span class="sd">        - Disabled: (bool) indicates if the constraint is enable.</span>
+<span class="sd">        - Type: (str) can be: &#39;Assets&#39;, &#39;Classes&#39;, &#39;All Assets&#39; and &#39;Each asset in a class&#39;.</span>
+<span class="sd">        - Set: (str) if Type is &#39;Classes&#39; or &#39;Each asset in a class&#39; specified the name of the asset&#39;s classes set.</span>
+<span class="sd">        - Position: (str) the name of the asset or asset class of the constraint.</span>
+<span class="sd">        - Sign: (str) can be &#39;&gt;=&#39; or &#39;&lt;=&#39;.</span>
+<span class="sd">        - Weight: (scalar) is the maximum or minimum weight of the absolute constraint.</span>
+<span class="sd">        - Type Relative: (str) can be: &#39;Assets&#39; or &#39;Classes&#39;.</span>
+<span class="sd">        - Relative Set: (str) if Type Relative is &#39;Classes&#39; specified the name of the set of asset classes.</span>
+<span class="sd">        - Relative: (str) the name of the asset or asset class of the relative constraint.</span>
+<span class="sd">        - Factor: (scalar) is the factor of the relative constraint.</span>
+<span class="sd">            </span>
+<span class="sd">    asset_classes : DataFrame of shape (n_assets, n_cols)</span>
+<span class="sd">        Asset&#39;s classes matrix, where n_assets is the number of assets and </span>
+<span class="sd">        n_cols is the number of columns of the matrix where the first column</span>
+<span class="sd">        is the asset list and the next columns are the different asset&#39;s</span>
+<span class="sd">        classes sets.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A : nd-matrix    </span>
+<span class="sd">        The matrix A of :math:`Aw \geq B`.</span>
+<span class="sd">        </span>
+<span class="sd">    B : nd-matrix</span>
+<span class="sd">        The matrix B of :math:`Aw \geq B`.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">        ValueError when the value cannot be calculated.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        import riskfolio.ConstraintsFunctions as cf</span>
+<span class="sd">        </span>
+<span class="sd">        asset_classes = {&#39;Assets&#39;: [&#39;FB&#39;, &#39;GOOGL&#39;, &#39;NTFX&#39;, &#39;BAC&#39;, &#39;WFC&#39;, &#39;TLT&#39;, &#39;SHV&#39;],</span>
+<span class="sd">                         &#39;Class 1&#39;: [&#39;Equity&#39;, &#39;Equity&#39;, &#39;Equity&#39;, &#39;Equity&#39;, &#39;Equity&#39;,</span>
+<span class="sd">                                     &#39;Fixed Income&#39;, &#39;Fixed Income&#39;],</span>
+<span class="sd">                         &#39;Class 2&#39;: [&#39;Technology&#39;, &#39;Technology&#39;, &#39;Technology&#39;,</span>
+<span class="sd">                                     &#39;Financial&#39;, &#39;Financial&#39;, &#39;Treasury&#39;, &#39;Treasury&#39;],}</span>
+<span class="sd">        </span>
+<span class="sd">        asset_classes = pd.DataFrame(asset_classes)</span>
+<span class="sd">        </span>
+<span class="sd">        constraints = {&#39;Disabled&#39;: [False, False, False, False, False, False, False],</span>
+<span class="sd">                       &#39;Type&#39;: [&#39;Classes&#39;, &#39;Classes&#39;, &#39;Assets&#39;, &#39;Assets&#39;, &#39;Classes&#39;,</span>
+<span class="sd">                                &#39;All Assets&#39;, &#39;Each asset in a class&#39;],</span>
+<span class="sd">                       &#39;Set&#39;: [&#39;Class 1&#39;, &#39;Class 1&#39;, &#39;&#39;, &#39;&#39;, &#39;Class 2&#39;, &#39;&#39;, &#39;Class 1&#39;],</span>
+<span class="sd">                       &#39;Position&#39;: [&#39;Equity&#39;, &#39;Fixed Income&#39;, &#39;BAC&#39;, &#39;WFC&#39;, &#39;Financial&#39;,</span>
+<span class="sd">                                    &#39;&#39;, &#39;Equity&#39;],</span>
+<span class="sd">                       &#39;Sign&#39;: [&#39;&lt;=&#39;, &#39;&lt;=&#39;, &#39;&lt;=&#39;, &#39;&lt;=&#39;, &#39;&gt;=&#39;, &#39;&gt;=&#39;, &#39;&gt;=&#39;],</span>
+<span class="sd">                       &#39;Weight&#39;: [0.6, 0.5, 0.1, &#39;&#39;, &#39;&#39;, 0.02, &#39;&#39;],</span>
+<span class="sd">                       &#39;Type Relative&#39;: [&#39;&#39;, &#39;&#39;, &#39;&#39;, &#39;Assets&#39;, &#39;Classes&#39;, &#39;&#39;, &#39;Assets&#39;],</span>
+<span class="sd">                       &#39;Relative Set&#39;: [&#39;&#39;, &#39;&#39;, &#39;&#39;, &#39;&#39;, &#39;Class 1&#39;, &#39;&#39;, &#39;&#39;],</span>
+<span class="sd">                       &#39;Relative&#39;: [&#39;&#39;, &#39;&#39;, &#39;&#39;, &#39;FB&#39;, &#39;Fixed Income&#39;, &#39;&#39;, &#39;TLT&#39;],</span>
+<span class="sd">                       &#39;Factor&#39;: [&#39;&#39;, &#39;&#39;, &#39;&#39;, 1.2, 0.5, &#39;&#39;, 0.4]}</span>
+<span class="sd">                </span>
+<span class="sd">        constraints = pd.DataFrame(constraints)</span>
+
+
+<span class="sd">    The constraint looks like this:</span>
+<span class="sd">        </span>
+<span class="sd">    .. image:: images/Constraints.png</span>
+
+<span class="sd">    It is easier to construct the constraints in excel and then upload to a</span>
+<span class="sd">    dataframe.</span>
+<span class="sd">    </span>
+<span class="sd">    To create the matrixes A and B we use the following command:</span>
+<span class="sd">    </span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        A, B = cf.assets_constraints(constraints, asset_classes)</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">    The matrixes A and B looks like this (all constraints were converted to a linear</span>
+<span class="sd">    constraint):</span>
+
+<span class="sd">    .. image:: images/AxB.png</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">asset_classes</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;constraints and asset_classes must be DataFrames&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">constraints</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;constraints must have ten columns&quot;</span><span class="p">)</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">asset_classes</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">constraints</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">assetslist</span> <span class="o">=</span> <span class="n">asset_classes</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Assets&quot;</span><span class="p">:</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">assetslist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                    <span class="n">A1</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="n">d</span>
+                    <span class="n">A</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">A1</span><span class="p">)</span>
+                    <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">*</span> <span class="n">d</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                    <span class="n">A1</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Assets&quot;</span><span class="p">:</span>
+                        <span class="n">item2</span> <span class="o">=</span> <span class="n">assetslist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">])</span>
+                        <span class="n">A2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                        <span class="n">A2</span><span class="p">[</span><span class="n">item2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Classes&quot;</span><span class="p">:</span>
+                        <span class="n">A2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                            <span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+                        <span class="p">)</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A2</span><span class="p">)</span> <span class="o">*</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">9</span><span class="p">]</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="n">A</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">A1</span><span class="p">)</span>
+                    <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;All Assets&quot;</span><span class="p">:</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">assetslist</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">item</span><span class="p">)</span> <span class="o">*</span> <span class="n">d</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="n">A1</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="n">B1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">item</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">d</span> <span class="o">*</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+                        <span class="n">A</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">A1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                        <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">B1</span><span class="o">.</span><span class="n">tolist</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Assets&quot;</span><span class="p">:</span>
+                        <span class="n">item2</span> <span class="o">=</span> <span class="n">assetslist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">])</span>
+                        <span class="n">A2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">item</span><span class="p">,</span> <span class="n">item</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+                        <span class="n">A2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">A2</span><span class="p">,</span> <span class="n">item2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Classes&quot;</span><span class="p">:</span>
+                        <span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                        <span class="n">A2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                            <span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+                        <span class="p">)</span>
+                        <span class="n">A2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">item</span><span class="p">,</span> <span class="n">item</span><span class="p">))</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A2</span><span class="p">)</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A2</span><span class="p">)</span> <span class="o">*</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">9</span><span class="p">])</span> <span class="o">*</span> <span class="n">d</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+                        <span class="n">A</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">A1</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                        <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Classes&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A1</span><span class="p">)</span> <span class="o">*</span> <span class="n">d</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="n">A1</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="n">A</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">A1</span><span class="p">)</span>
+                    <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">*</span> <span class="n">d</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Assets&quot;</span><span class="p">:</span>
+                        <span class="n">item2</span> <span class="o">=</span> <span class="n">assetslist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">])</span>
+                        <span class="n">A2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                        <span class="n">A2</span><span class="p">[</span><span class="n">item2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Classes&quot;</span><span class="p">:</span>
+                        <span class="n">A2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                            <span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+                        <span class="p">)</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A1</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A2</span><span class="p">)</span> <span class="o">*</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">9</span><span class="p">])</span> <span class="o">*</span> <span class="n">d</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                    <span class="n">A</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">A1</span><span class="p">)</span>
+                    <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Each asset in a class&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">A1</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">A3</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                            <span class="n">A3</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">d</span>
+                            <span class="n">A</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">A3</span><span class="p">)</span>
+                            <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">*</span> <span class="n">d</span><span class="p">])</span>
+                        <span class="n">l</span> <span class="o">=</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">A1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">A1</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">A3</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                            <span class="n">A3</span><span class="p">[</span><span class="n">l</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Assets&quot;</span><span class="p">:</span>
+                                <span class="n">item2</span> <span class="o">=</span> <span class="n">assetslist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">])</span>
+                                <span class="n">A2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                                <span class="n">A2</span><span class="p">[</span><span class="n">item2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                            <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Classes&quot;</span><span class="p">:</span>
+                                <span class="n">A2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                                    <span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+                                <span class="p">)</span>
+                            <span class="n">A3</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A3</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">A2</span><span class="p">)</span> <span class="o">*</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">9</span><span class="p">])</span> <span class="o">*</span> <span class="n">d</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span>
+                            <span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                            <span class="n">A</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">A3</span><span class="p">)</span>
+                            <span class="n">B</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="n">l</span> <span class="o">=</span> <span class="n">l</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">B</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">B</span></div>
+
+
+<div class="viewcode-block" id="factors_constraints"><a class="viewcode-back" href="../constraints.html#ConstraintsFunctions.factors_constraints">[docs]</a><span class="k">def</span> <span class="nf">factors_constraints</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">loadings</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create the factors constraints matrixes C and D of the constraint</span>
+<span class="sd">    :math:`Cw \geq D`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    constraints : DataFrame of shape (n_constraints, n_fields)</span>
+<span class="sd">        Constraints matrix, where n_constraints is the number of constraints</span>
+<span class="sd">        and n_fields is the number of fields of constraints matrix, the fields</span>
+<span class="sd">        are:</span>
+
+<span class="sd">        - Disabled: (bool) indicates if the constraint is enable.</span>
+<span class="sd">        - Factor: (str) the name of the factor of the constraint.</span>
+<span class="sd">        - Sign: (str) can be &#39;&gt;=&#39; or &#39;&lt;=&#39;.</span>
+<span class="sd">        - Value: (scalar) is the maximum or minimum value of the factor.</span>
+<span class="sd">            </span>
+<span class="sd">    loadings : DataFrame of shape (n_assets, n_features)</span>
+<span class="sd">        The loadings matrix.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    C : nd-matrix    </span>
+<span class="sd">        The matrix C of :math:`Cw \geq D`.</span>
+
+<span class="sd">    D : nd-matrix</span>
+<span class="sd">        The matrix D of :math:`Cw \geq D`.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">        ValueError when the value cannot be calculated.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        loadings = {&#39;const&#39;: [0.0004, 0.0002, 0.0000, 0.0006, 0.0001, 0.0003, -0.0003],</span>
+<span class="sd">                    &#39;MTUM&#39;: [0.1916, 1.0061, 0.8695, 1.9996, 0.0000, 0.0000, 0.0000],</span>
+<span class="sd">                    &#39;QUAL&#39;: [0.0000, 2.0129, 1.4301, 0.0000, 0.0000, 0.0000, 0.0000],</span>
+<span class="sd">                    &#39;SIZE&#39;: [0.0000, 0.0000, 0.0000, 0.4717, 0.0000, -0.1857, 0.0000],</span>
+<span class="sd">                    &#39;USMV&#39;: [-0.7838, -1.6439, -1.0176, -1.4407, 0.0055, 0.5781, 0.0000],</span>
+<span class="sd">                    &#39;VLUE&#39;: [1.4772, -0.7590, -0.4090, 0.0000, -0.0054, -0.4844, 0.9435]}</span>
+<span class="sd">        </span>
+<span class="sd">        loadings = pd.DataFrame(loadings)</span>
+<span class="sd">        </span>
+<span class="sd">        constraints = {&#39;Disabled&#39;: [False, False, False],</span>
+<span class="sd">                       &#39;Factor&#39;: [&#39;MTUM&#39;, &#39;USMV&#39;, &#39;VLUE&#39;],</span>
+<span class="sd">                       &#39;Sign&#39;: [&#39;&lt;=&#39;, &#39;&lt;=&#39;, &#39;&gt;=&#39;],</span>
+<span class="sd">                       &#39;Value&#39;: [0.9, -1.2, 0.3],}</span>
+<span class="sd">                </span>
+<span class="sd">        constraints = pd.DataFrame(constraints)</span>
+
+
+<span class="sd">    The constraint looks like this:</span>
+<span class="sd">        </span>
+<span class="sd">    .. image:: images/Constraints2.png</span>
+
+<span class="sd">    It is easier to construct the constraints in excel and then upload to a</span>
+<span class="sd">    dataframe.</span>
+
+<span class="sd">    To create the matrixes C and D we use the following command:</span>
+<span class="sd">        </span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        C, D = cf.factors_constraints(constraints, loadings)</span>
+
+
+<span class="sd">    The matrixes C and D looks like this (all constraints were converted to a linear</span>
+<span class="sd">    constraint):</span>
+
+<span class="sd">    .. image:: images/CxD.png</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">loadings</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;constraints and loadings must be DataFrames&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">constraints</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;constraints must have four columns&quot;</span><span class="p">)</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">constraints</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">C</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">:</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">C1</span> <span class="o">=</span> <span class="n">loadings</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">C1</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
+            <span class="n">D</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">d</span><span class="p">])</span>
+
+    <span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">C</span><span class="p">)</span>
+    <span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">D</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span></div>
+
+
+<div class="viewcode-block" id="assets_views"><a class="viewcode-back" href="../constraints.html#ConstraintsFunctions.assets_views">[docs]</a><span class="k">def</span> <span class="nf">assets_views</span><span class="p">(</span><span class="n">views</span><span class="p">,</span> <span class="n">asset_classes</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create the assets views matrixes P and Q of the views :math:`Pw = Q`.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    views : DataFrame of shape (n_views, n_fields)</span>
+<span class="sd">        Constraints matrix, where n_views is the number of views</span>
+<span class="sd">        and n_fields is the number of fields of views matrix, the fields</span>
+<span class="sd">        are:</span>
+<span class="sd">            </span>
+<span class="sd">        - Disabled: (bool) indicates if the constraint is enable.</span>
+<span class="sd">        - Type: (str) can be: &#39;Assets&#39; or &#39;Classes&#39;.</span>
+<span class="sd">        - Set: (str) if Type is &#39;Classes&#39; specified the name of the set of asset classes.</span>
+<span class="sd">        - Position: (str) the name of the asset or asset class of the view.</span>
+<span class="sd">        - Sign: (str) can be &#39;&gt;=&#39; or &#39;&lt;=&#39;.</span>
+<span class="sd">        - Return: (scalar) is the return of the view.</span>
+<span class="sd">        - Type Relative: (str) can be: &#39;Assets&#39; or &#39;Classes&#39;.</span>
+<span class="sd">        - Relative Set: (str) if Type Relative is &#39;Classes&#39; specified the name of the set of asset classes.</span>
+<span class="sd">        - Relative: (str) the name of the asset or asset class of the relative view.</span>
+<span class="sd">            </span>
+<span class="sd">    asset_classes : DataFrame of shape (n_assets, n_cols)</span>
+<span class="sd">        Asset&#39;s classes matrix, where n_assets is the number of assets and </span>
+<span class="sd">        n_cols is the number of columns of the matrix where the first column</span>
+<span class="sd">        is the asset list and the next columns are the different asset&#39;s</span>
+<span class="sd">        classes sets.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    P : nd-matrix    </span>
+<span class="sd">        The matrix P that shows the relation among assets in each view.</span>
+
+<span class="sd">    Q : nd-matrix</span>
+<span class="sd">        The matrix Q that shows the expected return of each view.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">        ValueError when the value cannot be calculated.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        asset_classes = {&#39;Assets&#39;: [&#39;FB&#39;, &#39;GOOGL&#39;, &#39;NTFX&#39;, &#39;BAC&#39;, &#39;WFC&#39;, &#39;TLT&#39;, &#39;SHV&#39;],</span>
+<span class="sd">                         &#39;Class 1&#39;: [&#39;Equity&#39;, &#39;Equity&#39;, &#39;Equity&#39;, &#39;Equity&#39;, &#39;Equity&#39;,</span>
+<span class="sd">                                      &#39;Fixed Income&#39;, &#39;Fixed Income&#39;],</span>
+<span class="sd">                         &#39;Class 2&#39;: [&#39;Technology&#39;, &#39;Technology&#39;, &#39;Technology&#39;,</span>
+<span class="sd">                                      &#39;Financial&#39;, &#39;Financial&#39;, &#39;Treasury&#39;, &#39;Treasury&#39;],}</span>
+<span class="sd">        </span>
+<span class="sd">        asset_classes = pd.DataFrame(asset_classes)</span>
+<span class="sd">        </span>
+<span class="sd">        </span>
+<span class="sd">        views = {&#39;Disabled&#39;: [False, False, False, False],</span>
+<span class="sd">                 &#39;Type&#39;: [&#39;Assets&#39;, &#39;Classes&#39;, &#39;Classes&#39;, &#39;Assets&#39;],</span>
+<span class="sd">                 &#39;Set&#39;: [&#39;&#39;, &#39;Class 2&#39;,&#39;Class 1&#39;, &#39;&#39;],</span>
+<span class="sd">                 &#39;Position&#39;: [&#39;WFC&#39;, &#39;Financial&#39;, &#39;Equity&#39;, &#39;FB&#39;],</span>
+<span class="sd">                 &#39;Sign&#39;: [&#39;&lt;=&#39;, &#39;&gt;=&#39;, &#39;&gt;=&#39;, &#39;&gt;=&#39;],</span>
+<span class="sd">                 &#39;Return&#39;: [ 0.3, 0.1, 0.05, 0.03 ],</span>
+<span class="sd">                 &#39;Type Relative&#39;: [ &#39;Assets&#39;, &#39;Classes&#39;, &#39;Assets&#39;, &#39;&#39;],</span>
+<span class="sd">                 &#39;Relative Set&#39;: [ &#39;&#39;, &#39;Class 1&#39;, &#39;&#39;, &#39;&#39;],</span>
+<span class="sd">                 &#39;Relative&#39;: [&#39;FB&#39;, &#39;Fixed Income&#39;, &#39;TLT&#39;, &#39;&#39;]}</span>
+<span class="sd">        </span>
+<span class="sd">        views = pd.DataFrame(views)</span>
+
+
+<span class="sd">    The constraint looks like this:</span>
+<span class="sd">        </span>
+<span class="sd">    .. image:: images/Views.png</span>
+
+<span class="sd">    It is easier to construct the constraints in excel and then upload to a</span>
+<span class="sd">    dataframe.</span>
+
+<span class="sd">    To create the matrixes P and Q we use the following command:</span>
+<span class="sd">        </span>
+<span class="sd">    ::</span>
+<span class="sd">        </span>
+<span class="sd">        P, Q = cf.assets_views(views, asset_classes)</span>
+
+
+<span class="sd">    The matrixes P and Q looks like this:</span>
+
+<span class="sd">    .. image:: images/PxQ.png</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">views</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">asset_classes</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span>
+    <span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;constraints and asset_classes must be DataFrames&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">views</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">9</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;constraints must have nine columns&quot;</span><span class="p">)</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">views</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">asset_classes</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">views</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+    <span class="n">assetslist</span> <span class="o">=</span> <span class="n">asset_classes</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+    <span class="n">P</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">valid</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Assets&quot;</span><span class="p">:</span>
+                <span class="n">item</span> <span class="o">=</span> <span class="n">assetslist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">P1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                    <span class="n">P1</span><span class="p">[</span><span class="n">item</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Assets&quot;</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">item2</span> <span class="o">=</span> <span class="n">assetslist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">])</span>
+                        <span class="n">P2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                        <span class="n">P2</span><span class="p">[</span><span class="n">item2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">elif</span> <span class="p">(</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Classes&quot;</span>
+                        <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
+                        <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="p">):</span>
+                        <span class="n">P2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                            <span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+                        <span class="p">)</span>
+                        <span class="n">P2</span> <span class="o">=</span> <span class="n">P2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">P2</span><span class="p">)</span>
+                        <span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">P2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                        <span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">if</span> <span class="n">valid</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="n">P1</span> <span class="o">=</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">P1</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">P2</span><span class="p">))</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                        <span class="n">P</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">P1</span><span class="p">)</span>
+                        <span class="n">Q</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">*</span> <span class="n">d</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Classes&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="n">P1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">3</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+                    <span class="n">P1</span> <span class="o">=</span> <span class="n">P1</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">P1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Assets&quot;</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">item2</span> <span class="o">=</span> <span class="n">assetslist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">])</span>
+                        <span class="n">P2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                        <span class="n">P2</span><span class="p">[</span><span class="n">item2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">elif</span> <span class="p">(</span>
+                        <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Classes&quot;</span>
+                        <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
+                        <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span>
+                    <span class="p">):</span>
+                        <span class="n">P2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span>
+                            <span class="n">asset_classes</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span> <span class="o">==</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+                        <span class="p">)</span>
+                        <span class="n">P2</span> <span class="o">=</span> <span class="n">P2</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">P2</span><span class="p">)</span>
+                        <span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">elif</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">6</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">7</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">8</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                        <span class="n">P2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">m</span>
+                        <span class="n">valid</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">if</span> <span class="n">valid</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                        <span class="n">P1</span> <span class="o">=</span> <span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">P1</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">P2</span><span class="p">))</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+                        <span class="n">P</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">P1</span><span class="p">)</span>
+                        <span class="n">Q</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span> <span class="o">*</span> <span class="n">d</span><span class="p">])</span>
+
+    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+    <span class="n">Q</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Q</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">P</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="n">Q</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">P</span><span class="p">,</span> <span class="n">Q</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Dany Cajas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

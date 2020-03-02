@@ -1,0 +1,692 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Risk Functions &mdash; Riskfolio-Lib 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Plot Functions" href="plot.html" />
+    <link rel="prev" title="Constraints Functions" href="constraints.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Riskfolio-Lib
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="portfolio.html">Portfolio Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constraints.html">Constraints Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Risk Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-RiskFunctions">Module Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auxiliary.html">Auxiliary Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Riskfolio-Lib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Risk Functions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/risk.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="risk-functions">
+<h1>Risk Functions<a class="headerlink" href="#risk-functions" title="Permalink to this headline">¶</a></h1>
+<p>This module contains functions that calculates several risk measures that are
+widely used by the asset management industry and academics.</p>
+<div class="section" id="module-RiskFunctions">
+<span id="module-functions"></span><h2>Module Functions<a class="headerlink" href="#module-RiskFunctions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="RiskFunctions.MAD">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">MAD</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#MAD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.MAD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Mean Absolute Deviation (MAD) of a returns series.</p>
+<div class="math notranslate nohighlight">
+\[\text{MAD}(X) = \frac{1}{T}\sum_{t=1}^{T}
+| X_{t} - \mathbb{E}(X_{t}) |\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>1d-array</em>) – a returns series, must have Tx1 size.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>value</strong> – MAD of a returns series.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Examples should be written in doctest format, and should illustrate how
+to use the function.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">example_generator</span><span class="p">(</span><span class="mi">4</span><span class="p">)])</span>
+<span class="go">[0, 1, 2, 3]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.SemiDeviation">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">SemiDeviation</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#SemiDeviation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.SemiDeviation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Semi Deviation of a returns series.</p>
+<div class="math notranslate nohighlight">
+\[\text{SemiDev}(X) = \left [ \frac{1}{T-1}\sum_{t=1}^{T}
+(X_{t} - \mathbb{E}(X_{t}))^2 \right ]^{1/2}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – Semi Deviation of a returns series.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.VaR_Hist">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">VaR_Hist</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">alpha=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#VaR_Hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.VaR_Hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Value at Risk (VaR) of a returns series.</p>
+<div class="math notranslate nohighlight">
+\[\text{VaR}_{\alpha}(X) = -\inf_{t \in (0,T)} \left \{ X_{t} \in
+\mathbb{R}: F_{X}(X_{t})&gt;\alpha \right \}\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Significance level of VaR. The default is 0.01.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – VaR of a returns series.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.CVaR_Hist">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">CVaR_Hist</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">alpha=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#CVaR_Hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.CVaR_Hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Conditional Value at Risk (CVaR) of a returns series.</p>
+<div class="math notranslate nohighlight">
+\[\text{CVaR}_{\alpha}(X) = \text{VaR}_{\alpha}(X) +
+\frac{1}{\alpha T} \sum_{t=1}^{T} \max(-X_{t} -
+\text{VaR}_{\alpha}(X), 0)\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Significance level of CVaR. The default is 0.01.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – CVaR of a returns series.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.WR">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">WR</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#WR"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.WR" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Worst Realization (WR) or Worst Scenario of a returns series.</p>
+<div class="math notranslate nohighlight">
+\[\text{WR}(X) = \max(-X)\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – WR of a returns series.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.LPM">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">LPM</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">MAR=0</em>, <em class="sig-param">p=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#LPM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.LPM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the p-th Lower Partial Moment of a returns series.</p>
+<div class="math notranslate nohighlight">
+\[\text{LPM}(X, \text{MAR}, p) = \left [ \frac{1}{T}\sum_{t=1}^{T}
+\max(\text{MAR} - X_{t}, 0) \right ]^{\frac{1}{p}}\]</div>
+<p>Where:</p>
+<p><span class="math notranslate nohighlight">\(\text{MAR}\)</span> is the minimum acceptable return.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p></li>
+<li><p><strong>MAR</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Minimum acceptable return. The default is 0.</p></li>
+<li><p><strong>p</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – order of the <span class="math notranslate nohighlight">\(\text{LPM}\)</span>. The default is 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – p-th Lower Partial Moment of a returns series.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.Entropic_RM">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">Entropic_RM</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">theta=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#Entropic_RM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.Entropic_RM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Entropic Risk Measure (ERM) of a returns series.</p>
+<div class="math notranslate nohighlight">
+\[\text{ERM}(X) = \theta \log\left(\mathbb{E}
+[e^{-\frac{1}{\theta} X}]\right)\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p></li>
+<li><p><strong>theta</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Risk aversion parameter, must be greater than zero. The default is 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – ERM of a returns series.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.EVaR_Hist">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">EVaR_Hist</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">alpha=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#EVaR_Hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.EVaR_Hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Entropic Value at Risk (EVaR) of a returns series.</p>
+<div class="math notranslate nohighlight">
+\[\text{EVaR}_{\alpha}(X) = \inf_{z&gt;0} \left \{ z^{-1}
+\ln \left (\frac{M_X(z)}{\alpha} \right ) \right \}\]</div>
+<p>Where:</p>
+<p><span class="math notranslate nohighlight">\(M_X(z)\)</span> is the moment generating function of X.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Significance level of EVaR. The default is 0.01.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – EVaR of a returns series.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.MaxAbsDD">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">MaxAbsDD</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#MaxAbsDD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.MaxAbsDD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Maximum Drawdown (MDD) of a returns series
+using uncumpound cumulated returns.</p>
+<div class="math notranslate nohighlight">
+\[\text{MDD}(X) = \max_{j \in (0,T)} \left [\max_{t \in (0,T)}
+\left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right ) \right ]\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – MDD of a uncumpound cumulated returns.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.AvgAbsDD">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">AvgAbsDD</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#AvgAbsDD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.AvgAbsDD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Average Drawdown (ADD) of a returns series
+using uncumpound cumulated returns.</p>
+<div class="math notranslate nohighlight">
+\[\text{ADD}(X) = \frac{1}{T}\sum_{i=0}^{T}\max_{t \in (0,T)}
+\left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right )\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – ADD of a uncumpound cumulated returns.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.ConAbsDD">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">ConAbsDD</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">alpha=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#ConAbsDD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.ConAbsDD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Conditional Drawdown at Risk (CDaR) of a returns series
+using uncumpound cumulated returns.</p>
+<div class="math notranslate nohighlight">
+\[\text{CDaR}_{\alpha}(X) = \text{DaR}_{\alpha}(X) + \frac{1}{\alpha T}
+\sum_{i=0}^{T} \max \left [ \max_{t \in (0,T)}
+\left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right )
+- \text{DaR}_{\alpha}(X), 0 \right ]\]</div>
+<p>Where:</p>
+<p><span class="math notranslate nohighlight">\(\text{DaR}_{\alpha}\)</span> is the Drawdown at Risk of an uncumpound
+cumulated return series <span class="math notranslate nohighlight">\(X\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size..</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Significance level of CDaR. The default is 0.01.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – CDaR of a uncumpound cumulated returns series.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.MaxRelDD">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">MaxRelDD</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#MaxRelDD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.MaxRelDD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Maximum Drawdown (MDD) of a returns series
+using cumpound cumulated returns.</p>
+<div class="math notranslate nohighlight">
+\[\text{MDD}(X) = \max_{j \in (0,T)}\left[\max_{t \in (0,T)}
+\left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right ) \right]\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – MDD of a cumpound cumulated returns.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.AvgRelDD">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">AvgRelDD</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#AvgRelDD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.AvgRelDD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Average Drawdown (ADD) of a returns series
+using cumpound acumulated returns.</p>
+<div class="math notranslate nohighlight">
+\[\text{ADD}(X) = \frac{1}{T}\sum_{i=0}^{T}\max_{t \in (0,T)}
+\left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right )\]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size.</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – ADD of a cumpound acumulated returns.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.ConRelDD">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">ConRelDD</code><span class="sig-paren">(</span><em class="sig-param">X</em>, <em class="sig-param">alpha=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#ConRelDD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.ConRelDD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates the Conditional Drawdown at Risk (CDaR) of a returns series
+using cumpound cumulated returns.</p>
+<div class="math notranslate nohighlight">
+\[\text{CDaR}_{\alpha}(X) = \text{DaR}_{\alpha}(X) + \frac{1}{\alpha T}
+\sum_{i=0}^{T} \max \left [ \max_{t \in (0,T)}
+\left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right )
+- \text{DaR}_{\alpha}(X), 0 \right ]\]</div>
+<p>Where:</p>
+<p><span class="math notranslate nohighlight">\(\text{DaR}_{\alpha}\)</span> is the Drawdown at Risk of a cumpound
+acumulated return series <span class="math notranslate nohighlight">\(X\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>X</strong> (<em>1d-array</em>) – Returns series, must have Tx1 size..</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Significance level of CDaR. The default is 0.01.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – CDaR of a cumpound cumulated returns series.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.Sharpe_Risk">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">Sharpe_Risk</code><span class="sig-paren">(</span><em class="sig-param">w</em>, <em class="sig-param">cov=None</em>, <em class="sig-param">returns=None</em>, <em class="sig-param">rm='MV'</em>, <em class="sig-param">rf=0</em>, <em class="sig-param">alpha=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#Sharpe_Risk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.Sharpe_Risk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the risk measure available on the Sharpe function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>w</strong> (<em>DataFrame</em><em> or </em><em>1d-array of shape</em><em> (</em><em>n_assets</em><em>, </em><em>1</em><em>)</em>) – Weights matrix, where n_assets is the number of assets.</p></li>
+<li><p><strong>cov</strong> (<em>DataFrame</em><em> or </em><em>nd-array of shape</em><em> (</em><em>n_features</em><em>, </em><em>n_features</em><em>)</em>) – Covariance matrix, where n_features is the number of features.</p></li>
+<li><p><strong>returns</strong> (<em>DataFrame</em><em> or </em><em>nd-array of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Features matrix, where n_samples is the number of samples and
+n_features is the number of features.</p></li>
+<li><p><strong>rm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Risk measure used in the denominator of the ratio. The default is
+‘MV’. Posible values are:</p>
+<ul>
+<li><p>’MV’: Standard Deviation.</p></li>
+<li><p>’MAD’: Mean Absolute Deviation.</p></li>
+<li><p>’MSV’: Semi Standard Deviation.</p></li>
+<li><p>’FLPM’: First Lower Partial Moment (Omega Ratio).</p></li>
+<li><p>’SLPM’: Second Lower Partial Moment (Sortino Ratio).</p></li>
+<li><p>’VaR’: Value at Risk.</p></li>
+<li><p>’CVaR’: Conditional Value at Risk.</p></li>
+<li><p>’WR’: Worst Realization (Minimax)</p></li>
+<li><p>’MDD’: Maximum Drawdown of uncompounded returns (Calmar Ratio).</p></li>
+<li><p>’ADD’: Average Drawdown of uncompounded returns.</p></li>
+<li><p>’CDaR’: Conditional Drawdown at Risk of uncompounded returns.</p></li>
+</ul>
+</p></li>
+<li><p><strong>rf</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Risk free rate. The default is 0.</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – Other arguments that depends on the risk measure.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – Risk measure of the portfolio.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="RiskFunctions.Sharpe">
+<code class="sig-prename descclassname">RiskFunctions.</code><code class="sig-name descname">Sharpe</code><span class="sig-paren">(</span><em class="sig-param">w</em>, <em class="sig-param">mu</em>, <em class="sig-param">cov=None</em>, <em class="sig-param">returns=None</em>, <em class="sig-param">rm='MV'</em>, <em class="sig-param">rf=0</em>, <em class="sig-param">alpha=0.01</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/RiskFunctions.html#Sharpe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#RiskFunctions.Sharpe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the Risk Adjusted Return Ratio from a portfolio returns series.</p>
+<div class="math notranslate nohighlight">
+\[\text{Sharpe}(X) =  \frac{\mathbb{E}(X) -
+r_{f}}{\phi(X)}\]</div>
+<p>Where:</p>
+<p><span class="math notranslate nohighlight">\(X\)</span> is the vector of portfolio returns.</p>
+<p><span class="math notranslate nohighlight">\(r_{f}\)</span> is the risk free rate, when the risk measure is</p>
+<p><span class="math notranslate nohighlight">\(\text{LPM}\)</span> uses instead of <span class="math notranslate nohighlight">\(r_{f}\)</span> the <span class="math notranslate nohighlight">\(\text{MAR}\)</span>.</p>
+<p><span class="math notranslate nohighlight">\(\phi(X)\)</span> is a convex risk measure. The risk measures availabe are:</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>w</strong> (<em>DataFrame</em><em> or </em><em>1d-array of shape</em><em> (</em><em>n_assets</em><em>, </em><em>1</em><em>)</em>) – Weights matrix, where n_assets is the number of assets.</p></li>
+<li><p><strong>mu</strong> (<em>DataFrame</em><em> or </em><em>nd-array of shape</em><em> (</em><em>1</em><em>, </em><em>n_assets</em><em>)</em>) – Vector of expected returns, where n_assets is the number of assets.</p></li>
+<li><p><strong>cov</strong> (<em>DataFrame</em><em> or </em><em>nd-array of shape</em><em> (</em><em>n_features</em><em>, </em><em>n_features</em><em>)</em>) – Covariance matrix, where n_features is the number of features.</p></li>
+<li><p><strong>returns</strong> (<em>DataFrame</em><em> or </em><em>nd-array of shape</em><em> (</em><em>n_samples</em><em>, </em><em>n_features</em><em>)</em>) – Features matrix, where n_samples is the number of samples and
+n_features is the number of features.</p></li>
+<li><p><strong>rm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Risk measure used in the denominator of the ratio. The default is
+‘MV’. Posible values are:</p>
+<ul>
+<li><p>’MV’: Standard Deviation.</p></li>
+<li><p>’MAD’: Mean Absolute Deviation.</p></li>
+<li><p>’MSV’: Semi Standard Deviation.</p></li>
+<li><p>’FLPM’: First Lower Partial Moment (Omega Ratio).</p></li>
+<li><p>’SLPM’: Second Lower Partial Moment (Sortino Ratio).</p></li>
+<li><p>’VaR’: Value at Risk.</p></li>
+<li><p>’CVaR’: Conditional Value at Risk.</p></li>
+<li><p>’WR’: Worst Realization (Minimax)</p></li>
+<li><p>’MDD’: Maximum Drawdown of uncompounded returns (Calmar Ratio).</p></li>
+<li><p>’ADD’: Average Drawdown of uncompounded returns.</p></li>
+<li><p>’CDaR’: Conditional Drawdown at Risk of uncompounded returns.</p></li>
+</ul>
+</p></li>
+<li><p><strong>rf</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Risk free rate. The default is 0.</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – Other arguments that depends on the risk measure.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/exceptions.html#ValueError" title="(in Python v3.7)"><strong>ValueError</strong></a> – When the value cannot be calculated.</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>value</strong> – Risk adjusted return ratio of <span class="math notranslate nohighlight">\(X\)</span>.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="plot.html" class="btn btn-neutral float-right" title="Plot Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="constraints.html" class="btn btn-neutral float-left" title="Constraints Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Dany Cajas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

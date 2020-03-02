@@ -1,0 +1,1331 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Portfolio &mdash; Riskfolio-Lib 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Riskfolio-Lib
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../portfolio.html">Portfolio Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parameters.html">Parameters Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../constraints.html">Constraints Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../risk.html">Risk Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../auxiliary.html">Auxiliary Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Riskfolio-Lib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>Portfolio</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for Portfolio</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">cvxpy</span> <span class="k">as</span> <span class="nn">cv</span>
+<span class="kn">import</span> <span class="nn">riskfolio.RiskFunctions</span> <span class="k">as</span> <span class="nn">rk</span>
+<span class="kn">import</span> <span class="nn">riskfolio.ParamsEstimation</span> <span class="k">as</span> <span class="nn">pe</span>
+<span class="kn">import</span> <span class="nn">riskfolio.AuxFunctions</span> <span class="k">as</span> <span class="nn">af</span>
+
+
+<div class="viewcode-block" id="Portfolio"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio">[docs]</a><span class="k">class</span> <span class="nc">Portfolio</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class that creates a portfolio object with all properties needed to </span>
+<span class="sd">    calculate optimum portfolios.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    returns : DataFrame, optional</span>
+<span class="sd">        A dataframe that containts the returns of the assets.</span>
+<span class="sd">        The default is None.</span>
+<span class="sd">    sht : bool, optional</span>
+<span class="sd">        Indicate if the portfolio consider short positions (negative weights).</span>
+<span class="sd">        The default is False.</span>
+<span class="sd">    uppersht : float, optional</span>
+<span class="sd">        Indicate the maximum value of the sum of short positions.</span>
+<span class="sd">        The default is 0.2.</span>
+<span class="sd">    upperlng : float, optional</span>
+<span class="sd">        Indicate the maximum value of the sum of long positions (positive</span>
+<span class="sd">        weights). The default is 1.</span>
+<span class="sd">    factors : DataFrame, optional</span>
+<span class="sd">        A dataframe that containts the returns of the factors.</span>
+<span class="sd">        The default is None.</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        Significance level of CVaR and CDaR. The default is 0.01.</span>
+<span class="sd">    kindbench : bool, optional</span>
+<span class="sd">        True if the benchmark is a portfolio with detailed weights and False if</span>
+<span class="sd">        the benchmark is an index. The default is True.</span>
+<span class="sd">    allowTO : bool, optional</span>
+<span class="sd">        Indicate if there is turnover constraints. The default is False.</span>
+<span class="sd">    turnover : float, optional</span>
+<span class="sd">        The maximum limit of turnover deviatons. The default is 0.05.</span>
+<span class="sd">    allowTE : bool, optional</span>
+<span class="sd">        Indicate if there is tracking error constraints.. The default is False.</span>
+<span class="sd">    TE : float, optional</span>
+<span class="sd">        The maximum limit of tracking error deviatons. The default is 0.05.</span>
+<span class="sd">    benchindex : DataFrame, optional</span>
+<span class="sd">        A dataframe that containts the returns of an index. If kindbench is</span>
+<span class="sd">        the tracking error constraints are calculated respect to this index.</span>
+<span class="sd">        The default is None.</span>
+<span class="sd">    benchweights : DataFrame, optional</span>
+<span class="sd">        A dataframe that containts the weights of an index. The default is the</span>
+<span class="sd">        equally weighted portfolio 1/N.</span>
+<span class="sd">    ainequality : nd-array, optional</span>
+<span class="sd">        The matrix :math:`A` of the linear constraint :math:`A \geq B`.</span>
+<span class="sd">        The default is None.</span>
+<span class="sd">    binequality : 1d-array, optional</span>
+<span class="sd">        The matrix :math:`B` of the linear constraint :math:`A \geq B`.</span>
+<span class="sd">        The default is None.</span>
+<span class="sd">    upperdev : float, optional</span>
+<span class="sd">        Constraint on max level of standard deviation. The default is None.</span>
+<span class="sd">    uppermad : float, optional</span>
+<span class="sd">        Constraint on max level of MAD. The default is None.</span>
+<span class="sd">    uppersdev : float, optional</span>
+<span class="sd">        Constraint on max level of semi standard deviation. The default is None.</span>
+<span class="sd">    upperflpm : float, optional</span>
+<span class="sd">        Constraint on max level of first lower partial moment.</span>
+<span class="sd">        The default is None.</span>
+<span class="sd">    upperslpm : float, optional</span>
+<span class="sd">        Constraint on max level of second lower partial moment.</span>
+<span class="sd">        The default is None.</span>
+<span class="sd">    upperCVaR : float, optional</span>
+<span class="sd">        Constraint on max level of CVaR. The default is None.</span>
+<span class="sd">    upperwr : float, optional</span>
+<span class="sd">        Constraint on max level of worst realization. The default is None.</span>
+<span class="sd">    uppermdd : float, optional</span>
+<span class="sd">        Constraint on max level of maximum drawdown of uncompounded cumulated</span>
+<span class="sd">        returns. The default is None.</span>
+<span class="sd">    upperadd : float, optional</span>
+<span class="sd">        Constraint on max level of average drawdown of uncompounded cumulated</span>
+<span class="sd">        returns. The default is None.</span>
+<span class="sd">    upperCDaR : float, optional</span>
+<span class="sd">        Constraint on max level of conditional drawdown at risk of</span>
+<span class="sd">        uncompounded cumulated returns. The default is None.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">returns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">sht</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">uppersht</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span>
+        <span class="n">upperlng</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">factors</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+        <span class="n">kindbench</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">allowTO</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">turnover</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">allowTE</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">TE</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+        <span class="n">benchindex</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">benchweights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ainequality</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">binequality</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">upperdev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">uppermad</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">uppersdev</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">upperflpm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">upperslpm</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">upperCVaR</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">upperwr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">uppermdd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">upperadd</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">upperCDaR</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_returns</span> <span class="o">=</span> <span class="n">returns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sht</span> <span class="o">=</span> <span class="n">sht</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uppersht</span> <span class="o">=</span> <span class="n">uppersht</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperlng</span> <span class="o">=</span> <span class="n">upperlng</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_factors</span> <span class="o">=</span> <span class="n">factors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kindbench</span> <span class="o">=</span> <span class="n">kindbench</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">benchindex</span> <span class="o">=</span> <span class="n">benchindex</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_benchweights</span> <span class="o">=</span> <span class="n">benchweights</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ainequality</span> <span class="o">=</span> <span class="n">ainequality</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_binequality</span> <span class="o">=</span> <span class="n">binequality</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperdev</span> <span class="o">=</span> <span class="n">upperdev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uppermad</span> <span class="o">=</span> <span class="n">uppermad</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uppersdev</span> <span class="o">=</span> <span class="n">uppersdev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperCVaR</span> <span class="o">=</span> <span class="n">upperCVaR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperwr</span> <span class="o">=</span> <span class="n">upperwr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uppermdd</span> <span class="o">=</span> <span class="n">uppermdd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperadd</span> <span class="o">=</span> <span class="n">uppermdd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperCDaR</span> <span class="o">=</span> <span class="n">upperCDaR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperflpm</span> <span class="o">=</span> <span class="n">upperflpm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperslpm</span> <span class="o">=</span> <span class="n">upperslpm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowTO</span> <span class="o">=</span> <span class="n">allowTO</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">turnover</span> <span class="o">=</span> <span class="n">turnover</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowTE</span> <span class="o">=</span> <span class="n">allowTE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TE</span> <span class="o">=</span> <span class="n">TE</span>
+
+        <span class="c1"># Inputs of Optimization Models</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu_fm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov_fm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu_bl</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov_bl</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu_bl_fm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov_bl_fm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">returns_fm</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nav_fm</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">returns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returns</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assetslist</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nav</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numassets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assetslist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;returns must be a DataFrame&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span>
+
+    <span class="nd">@returns</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">returns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_returns</span> <span class="o">=</span> <span class="n">a</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assetslist</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nav</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">numassets</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">assetslist</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;returns must be a DataFrame&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">factors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factors</span>
+
+    <span class="nd">@factors</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">factors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">equals</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">index</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_factors</span> <span class="o">=</span> <span class="n">a</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;factors must be a DataFrame&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">benchweights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numassets</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_benchweights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_benchweights</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_benchweights</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_benchweights</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;Weights must have a size of shape (n_assets,1)&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span>
+
+    <span class="nd">@benchweights</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">benchweights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">numassets</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">n</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;Weights must have a size of shape (n_assets,1)&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">([</span><span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">n</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_benchweights</span> <span class="o">=</span> <span class="n">a</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ainequality</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ainequality</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">numassets</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
+                    <span class="s2">&quot;The matrix ainequality must have the same number of columns that assets&#39; number&quot;</span>
+                <span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span>
+
+    <span class="nd">@ainequality</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">ainequality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">numassets</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span>
+                    <span class="s2">&quot;The matrix ainequality must have the same number of columns that assets&#39; number&quot;</span>
+                <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ainequality</span> <span class="o">=</span> <span class="n">a</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">binequality</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_binequality</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;The matrix binequality must have one column&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">a</span>
+
+    <span class="nd">@binequality</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">binequality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">if</span> <span class="n">a</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">a</span> <span class="o">=</span> <span class="n">a</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NameError</span><span class="p">(</span><span class="s2">&quot;The matrix binequality must have one column&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_binequality</span> <span class="o">=</span> <span class="n">a</span>
+
+<div class="viewcode-block" id="Portfolio.assets_stats"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio.assets_stats">[docs]</a>    <span class="k">def</span> <span class="nf">assets_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_mu</span><span class="o">=</span><span class="s2">&quot;hist&quot;</span><span class="p">,</span> <span class="n">method_cov</span><span class="o">=</span><span class="s2">&quot;hist&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the inputs that will be use by the optimization method when </span>
+<span class="sd">        we select the input model=&#39;Classic&#39;.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            All aditional parameters of mean_vector and covar_matrix functions.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        riskfolio.ParamsEstimation.mean_vector</span>
+<span class="sd">        riskfolio.ParamsEstimation.covar_matrix</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">mean_vector</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method_mu</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">covar_matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method_cov</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">af</span><span class="o">.</span><span class="n">is_pos_def</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;You must convert self.cov to a positive definite matrix&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Portfolio.blacklitterman_stats"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio.blacklitterman_stats">[docs]</a>    <span class="k">def</span> <span class="nf">blacklitterman_stats</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">P</span><span class="p">,</span>
+        <span class="n">Q</span><span class="p">,</span>
+        <span class="n">rf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">w</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">delta</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">eq</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">method_mu</span><span class="o">=</span><span class="s2">&quot;hist&quot;</span><span class="p">,</span>
+        <span class="n">method_cov</span><span class="o">=</span><span class="s2">&quot;hist&quot;</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the inputs that will be use by the optimization method when </span>
+<span class="sd">        we select the input model=&#39;BL&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        P : DataFrame of shape (n_views, n_assets)</span>
+<span class="sd">            Analyst&#39;s views matrix, can be relative or absolute.</span>
+<span class="sd">        Q: DataFrame of shape (n_views, 1)</span>
+<span class="sd">            Expected returns of analyst&#39;s views.    </span>
+<span class="sd">        delta: float</span>
+<span class="sd">            Risk aversion factor. The default value is 1.      </span>
+<span class="sd">        rf: scalar, optional</span>
+<span class="sd">            Risk free rate. The default is 0.</span>
+<span class="sd">        w : DataFrame of shape (n_assets, 1)</span>
+<span class="sd">            Weights matrix, where n_assets is the number of assets.</span>
+<span class="sd">            The default is None.</span>
+<span class="sd">        eq: bool, optional</span>
+<span class="sd">            Indicates if use equilibrum or historical excess returns. </span>
+<span class="sd">            The default is True.</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            Other variables related to the mean and covariance estimation.</span>
+<span class="sd">        </span>
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        riskfolio.ParamsEstimation.black_litterman</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">returns</span>
+        <span class="k">if</span> <span class="n">w</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">benchweights</span>
+
+        <span class="k">if</span> <span class="n">delta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">rf</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">w</span><span class="p">))</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">delta</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="n">mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">black_litterman</span><span class="p">(</span>
+            <span class="n">X</span><span class="o">=</span><span class="n">X</span><span class="p">,</span>
+            <span class="n">w</span><span class="o">=</span><span class="n">w</span><span class="p">,</span>
+            <span class="n">P</span><span class="o">=</span><span class="n">P</span><span class="p">,</span>
+            <span class="n">Q</span><span class="o">=</span><span class="n">Q</span><span class="p">,</span>
+            <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span>
+            <span class="n">rf</span><span class="o">=</span><span class="n">rf</span><span class="p">,</span>
+            <span class="n">eq</span><span class="o">=</span><span class="n">eq</span><span class="p">,</span>
+            <span class="n">method_mu</span><span class="o">=</span><span class="n">method_mu</span><span class="p">,</span>
+            <span class="n">method_cov</span><span class="o">=</span><span class="n">method_cov</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu_bl</span> <span class="o">=</span> <span class="n">mu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov_bl</span> <span class="o">=</span> <span class="n">cov</span>
+
+        <span class="n">value</span> <span class="o">=</span> <span class="n">af</span><span class="o">.</span><span class="n">is_pos_def</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_bl</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;You must convert self.cov_bl to a positive definite matrix&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Portfolio.factors_stats"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio.factors_stats">[docs]</a>    <span class="k">def</span> <span class="nf">factors_stats</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_mu</span><span class="o">=</span><span class="s2">&quot;hist&quot;</span><span class="p">,</span> <span class="n">method_cov</span><span class="o">=</span><span class="s2">&quot;hist&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the inputs that will be use by the optimization method when </span>
+<span class="sd">        we select the input model=&#39;FM&#39;.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        **kwargs : dict</span>
+<span class="sd">            All aditional parameters of risk_factors function.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        riskfolio.ParamsEstimation.forward_regression</span>
+<span class="sd">        riskfolio.ParamsEstimation.backward_regression</span>
+<span class="sd">        riskfolio.ParamsEstimation.loadings_matrix</span>
+<span class="sd">        riskfolio.ParamsEstimation.risk_factors</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factors</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">returns</span>
+        <span class="n">mu</span><span class="p">,</span> <span class="n">cov</span><span class="p">,</span> <span class="n">returns</span><span class="p">,</span> <span class="n">nav</span> <span class="o">=</span> <span class="n">pe</span><span class="o">.</span><span class="n">risk_factors</span><span class="p">(</span>
+            <span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">method_mu</span><span class="o">=</span><span class="n">method_mu</span><span class="p">,</span> <span class="n">method_cov</span><span class="o">=</span><span class="n">method_cov</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu_fm</span> <span class="o">=</span> <span class="n">mu</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cov_fm</span> <span class="o">=</span> <span class="n">cov</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">returns_fm</span> <span class="o">=</span> <span class="n">returns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nav_fm</span> <span class="o">=</span> <span class="n">nav</span>
+
+        <span class="n">value</span> <span class="o">=</span> <span class="n">af</span><span class="o">.</span><span class="n">is_pos_def</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_fm</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;You must convert self.cov_fm to a positive definite matrix&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Portfolio.optimization"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio.optimization">[docs]</a>    <span class="k">def</span> <span class="nf">optimization</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;Classic&quot;</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="s2">&quot;MV&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="s2">&quot;Sharpe&quot;</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="kc">True</span>
+    <span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This method that calculates the optimum portfolio according to the</span>
+<span class="sd">        optimization model selected by the user. The general problem that</span>
+<span class="sd">        solves is:</span>
+<span class="sd">        </span>
+<span class="sd">        .. math::</span>
+<span class="sd">            \begin{align}</span>
+<span class="sd">            &amp;\underset{x}{\text{optimize}} &amp; &amp; F(w)\\</span>
+<span class="sd">            &amp;\text{s. t.} &amp; &amp; Aw \geq B\\</span>
+<span class="sd">            &amp; &amp; &amp; \phi_{i}(w) \leq c_{i}\\</span>
+<span class="sd">            \end{align}</span>
+<span class="sd">        </span>
+<span class="sd">        Where:</span>
+<span class="sd">            </span>
+<span class="sd">        :math:`F(w)` is the objective function.</span>
+<span class="sd">    </span>
+<span class="sd">        :math:`Aw \geq B` is a set of linear constraints.</span>
+<span class="sd">    </span>
+<span class="sd">        :math:`\phi_{i}(w) \leq c_{i}` are constraints on maximum values of</span>
+<span class="sd">        several risk measures.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : str can be &#39;Classic&#39;, &#39;BL&#39; or &#39;FM&#39;</span>
+<span class="sd">            The model used for optimize the portfolio.</span>
+<span class="sd">            The default is &#39;Classic&#39;. Posible values are:</span>
+
+<span class="sd">            - &#39;Classic&#39;: use estimates of expected return vector and covariance matrix that depends on historical data.</span>
+<span class="sd">            - &#39;BL&#39;: use estimates of expected return vector and covariance matrix based on the Black Litterman model.</span>
+<span class="sd">            - &#39;FM&#39;: use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.</span>
+<span class="sd">            </span>
+<span class="sd">        rm : str, optional</span>
+<span class="sd">            The risk measure used to optimze the portfolio.</span>
+<span class="sd">            The default is &#39;MV&#39;. Posible values are:</span>
+<span class="sd">            </span>
+<span class="sd">            - &#39;MV&#39;: Standard Deviation.</span>
+<span class="sd">            - &#39;MAD&#39;: Mean Absolute Deviation.</span>
+<span class="sd">            - &#39;MSV&#39;: Semi Standard Deviation.</span>
+<span class="sd">            - &#39;FLPM&#39;: First Lower Partial Moment (Omega Ratio).</span>
+<span class="sd">            - &#39;SLPM&#39;: Second Lower Partial Moment (Sortino Ratio).</span>
+<span class="sd">            - &#39;CVaR&#39;: Conditional Value at Risk.</span>
+<span class="sd">            - &#39;WR&#39;: Worst Realization (Minimax)</span>
+<span class="sd">            - &#39;MDD&#39;: Maximum Drawdown of uncompounded returns (Calmar Ratio).</span>
+<span class="sd">            - &#39;ADD&#39;: Average Drawdown of uncompounded returns.</span>
+<span class="sd">            - &#39;CDaR&#39;: Conditional Drawdown at Risk of uncompounded returns.</span>
+<span class="sd">            </span>
+<span class="sd">        obj : str can be {&#39;MinRisk&#39;, &#39;Utility&#39;, &#39;Sharpe&#39; or &#39;MaxRet&#39;.</span>
+<span class="sd">            Objective function of the optimization model.</span>
+<span class="sd">            The default is &#39;Sharpe&#39;. Posible values are:</span>
+
+<span class="sd">            - &#39;MinRisk&#39;: Minimize the selected risk measure.</span>
+<span class="sd">            - &#39;Utility&#39;: Maximize the Utility function :math:`mu w - l \phi_{i}(w)`.</span>
+<span class="sd">            - &#39;Sharpe&#39;: Maximize the risk adjusted return ratio based on the selected risk measure.</span>
+<span class="sd">            - &#39;MaxRet&#39;: Maximize the expected return of the portfolio.</span>
+<span class="sd">                </span>
+<span class="sd">        rf : float, optional</span>
+<span class="sd">            Risk free rate, must be in the same period of assets returns.</span>
+<span class="sd">            The default is 0.</span>
+<span class="sd">        l : scalar, optional</span>
+<span class="sd">            Risk aversion factor of the &#39;Utility&#39; objective function.</span>
+<span class="sd">            The default is 2.</span>
+<span class="sd">        hist : bool, optional</span>
+<span class="sd">            Indicate if uses historical or factor estimation of returns to </span>
+<span class="sd">            calculate risk measures that depends on scenarios (All except</span>
+<span class="sd">            &#39;MV&#39; risk measure). The default is True.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        w : DataFrame</span>
+<span class="sd">            The weights of optimum portfolio.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># General model Variables</span>
+
+        <span class="n">mu</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">returns</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;Classic&quot;</span><span class="p">:</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+            <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
+            <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;FM&quot;</span><span class="p">:</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_fm</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_fm</span><span class="p">)</span>
+                <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns_fm</span><span class="p">)</span>
+                <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav_fm</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+                <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
+                <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;BL&quot;</span><span class="p">:</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_bl</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_bl</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+            <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
+            <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;BL_FM&quot;</span><span class="p">:</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_bl_fm</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_bl_fm</span><span class="p">)</span>
+                <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns_fm</span><span class="p">)</span>
+                <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav_fm</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+                <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
+                <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav</span><span class="p">)</span>
+
+        <span class="c1"># General Model Variables</span>
+
+        <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="n">mu</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">rf0</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">nonneg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">rf0</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">rf</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">nonneg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">n</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">returns</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">w</span>
+
+        <span class="c1"># MV Model Variables</span>
+
+        <span class="n">risk1</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">quad_form</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+        <span class="n">returns_1</span> <span class="o">=</span> <span class="n">af</span><span class="o">.</span><span class="n">cov_returns</span><span class="p">(</span><span class="n">sigma</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
+        <span class="n">n1</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">nonneg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">n1</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">returns_1</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">risk1_1</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">returns_1</span> <span class="o">*</span> <span class="n">w</span><span class="p">,</span> <span class="s2">&quot;fro&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">cv</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n1</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># MAD Model Variables</span>
+
+        <span class="n">madmodel</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">Y</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="n">returns</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">returns</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span> <span class="o">*</span> <span class="n">mu</span><span class="p">)</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">returns</span> <span class="o">-</span> <span class="n">u</span>
+        <span class="n">risk2</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+        <span class="c1"># madconstraints=[a*w &gt;= -Y, a*w &lt;= Y, Y &gt;= 0]</span>
+        <span class="n">madconstraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="o">*</span> <span class="n">w</span> <span class="o">&lt;=</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Y</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Semi Variance Model Variables</span>
+
+        <span class="n">risk3</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="s2">&quot;fro&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">cv</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># CVaR Model Variables</span>
+
+        <span class="n">alpha1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+        <span class="n">VaR</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">alpha</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">nonneg</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">alpha</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">alpha1</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">returns</span> <span class="o">*</span> <span class="n">w</span>
+        <span class="n">Z</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="n">returns</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">risk4</span> <span class="o">=</span> <span class="n">VaR</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">cv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+        <span class="n">cvarconstraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">Z</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">Z</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">X</span> <span class="o">-</span> <span class="n">VaR</span><span class="p">]</span>
+
+        <span class="c1"># Worst Realization (Minimax) Model Variables</span>
+
+        <span class="n">M</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">risk5</span> <span class="o">=</span> <span class="n">M</span>
+        <span class="n">wrconstraints</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="n">X</span> <span class="o">&lt;=</span> <span class="n">M</span><span class="p">]</span>
+
+        <span class="c1"># Lower Partial Moment Variables</span>
+
+        <span class="n">lpmmodel</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">lpm</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="n">returns</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">lpmconstraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">lpm</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+            <span class="n">lpmconstraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">lpm</span> <span class="o">&gt;=</span> <span class="n">rf0</span> <span class="o">*</span> <span class="n">k</span> <span class="o">-</span> <span class="n">X</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lpmconstraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">lpm</span> <span class="o">&gt;=</span> <span class="n">rf0</span> <span class="o">-</span> <span class="n">X</span><span class="p">]</span>
+
+        <span class="c1"># First Lower Partial Moment (Omega) Model Variables</span>
+
+        <span class="n">risk6</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">lpm</span><span class="p">)</span> <span class="o">/</span> <span class="n">n</span>
+
+        <span class="c1"># Second Lower Partial Moment (Sortino) Model Variables</span>
+
+        <span class="n">risk7</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">lpm</span><span class="p">,</span> <span class="s2">&quot;fro&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">cv</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Drawdown Model Variables</span>
+
+        <span class="n">drawdown</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+            <span class="n">X1</span> <span class="o">=</span> <span class="n">k</span> <span class="o">+</span> <span class="n">nav</span> <span class="o">*</span> <span class="n">w</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X1</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">nav</span> <span class="o">*</span> <span class="n">w</span>
+
+        <span class="n">U</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="n">nav</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">ddconstraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">&gt;=</span> <span class="n">X1</span><span class="p">,</span> <span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">&gt;=</span> <span class="n">U</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+            <span class="n">ddconstraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">&gt;=</span> <span class="n">k</span><span class="p">,</span> <span class="n">U</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">k</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ddconstraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">U</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Maximum Drawdown Model Variables</span>
+
+        <span class="n">MDD</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">risk8</span> <span class="o">=</span> <span class="n">MDD</span>
+        <span class="n">mddconstraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">MDD</span> <span class="o">&gt;=</span> <span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">X1</span><span class="p">]</span>
+
+        <span class="c1"># Average Drawdown Model Variables</span>
+
+        <span class="n">risk9</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">n</span> <span class="o">*</span> <span class="n">cv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">X1</span><span class="p">)</span>
+
+        <span class="c1"># Conditional Drawdown Model Variables</span>
+
+        <span class="n">CDaR</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">Zd</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Variable</span><span class="p">((</span><span class="n">nav</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">risk10</span> <span class="o">=</span> <span class="n">CDaR</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="n">n</span><span class="p">)</span> <span class="o">*</span> <span class="n">cv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Zd</span><span class="p">)</span>
+        <span class="n">cdarconstraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">Zd</span> <span class="o">&gt;=</span> <span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">X1</span> <span class="o">-</span> <span class="n">CDaR</span><span class="p">,</span> <span class="n">Zd</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Tracking Error Model Variables</span>
+
+        <span class="n">c</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">benchweights</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">kindbench</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">bench</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span> <span class="o">*</span> <span class="n">c</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bench</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">benchindex</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+            <span class="n">TE</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="n">bench</span> <span class="o">*</span> <span class="n">k</span><span class="p">,</span> <span class="s2">&quot;fro&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">cv</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">TE</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="n">bench</span><span class="p">,</span> <span class="s2">&quot;fro&quot;</span><span class="p">)</span> <span class="o">/</span> <span class="n">cv</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="c1"># Problem aditional linear constraints</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">cv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperlng</span> <span class="o">*</span> <span class="n">k</span><span class="p">,</span>
+                <span class="n">k</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="n">mu</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="n">rf0</span> <span class="o">*</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sht</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">w</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperlng</span> <span class="o">*</span> <span class="n">k</span><span class="p">,</span> <span class="n">w</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sht</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span>
+                    <span class="n">w</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperlng</span> <span class="o">*</span> <span class="n">k</span><span class="p">,</span>
+                    <span class="n">w</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">uppersht</span> <span class="o">*</span> <span class="n">k</span><span class="p">,</span>
+                    <span class="n">cv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">neg</span><span class="p">(</span><span class="n">w</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppersht</span> <span class="o">*</span> <span class="n">k</span><span class="p">,</span>
+                <span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">constraints</span> <span class="o">=</span> <span class="p">[</span><span class="n">cv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperlng</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sht</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">w</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperlng</span><span class="p">,</span> <span class="n">w</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">sht</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span>
+                    <span class="n">w</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperlng</span><span class="p">,</span>
+                    <span class="n">w</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">uppersht</span><span class="p">,</span>
+                    <span class="n">cv</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">cv</span><span class="o">.</span><span class="n">neg</span><span class="p">(</span><span class="n">w</span><span class="p">))</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppersht</span><span class="p">,</span>
+                <span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ainequality</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">binequality</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ainequality</span><span class="p">)</span>
+            <span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">binequality</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">A</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="n">B</span> <span class="o">*</span> <span class="n">k</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">A</span> <span class="o">*</span> <span class="n">w</span> <span class="o">-</span> <span class="n">B</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Turnover Constraints</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowTO</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">cv</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">c</span> <span class="o">*</span> <span class="n">k</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turnover</span> <span class="o">*</span> <span class="n">k</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowTO</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">cv</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">turnover</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">]</span>
+
+        <span class="c1"># Tracking error Constraints</span>
+
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowTE</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">TE</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TE</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">allowTE</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">TE</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">TE</span><span class="p">]</span>
+
+        <span class="c1"># Problem risk Constraints</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperdev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk1_1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperdev</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperdev</span> <span class="o">**</span> <span class="mi">2</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppermad</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk2</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppermad</span> <span class="o">*</span> <span class="n">k</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk2</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppermad</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]</span>
+            <span class="n">madmodel</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppersdev</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk3</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppersdev</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk3</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppersdev</span><span class="p">]</span>
+            <span class="n">madmodel</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperCVaR</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk4</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperCVaR</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk4</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperCVaR</span><span class="p">]</span>
+            <span class="n">constraints</span> <span class="o">+=</span> <span class="n">cvarconstraints</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperwr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="o">-</span><span class="n">X</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperwr</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="o">-</span><span class="n">X</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperwr</span><span class="p">]</span>
+            <span class="n">constraints</span> <span class="o">+=</span> <span class="n">wrconstraints</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperflpm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk6</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperflpm</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk6</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperflpm</span><span class="p">]</span>
+            <span class="n">lpmmodel</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperslpm</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk7</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperslpm</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk7</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperslpm</span><span class="p">]</span>
+            <span class="n">lpmmodel</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppermdd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">X1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppermdd</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">U</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">X1</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppermdd</span><span class="p">]</span>
+            <span class="n">constraints</span> <span class="o">+=</span> <span class="n">mddconstraints</span>
+            <span class="n">drawdown</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperadd</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk9</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperadd</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk9</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperadd</span><span class="p">]</span>
+            <span class="n">drawdown</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperCDaR</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk10</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperCDaR</span> <span class="o">*</span> <span class="n">k</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="p">[</span><span class="n">risk10</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperCDaR</span><span class="p">]</span>
+            <span class="n">constraints</span> <span class="o">+=</span> <span class="n">cdarconstraints</span>
+            <span class="n">drawdown</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># Defining risk function</span>
+
+        <span class="k">if</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MV&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">model</span> <span class="o">!=</span> <span class="s2">&quot;Classic&quot;</span><span class="p">:</span>
+                <span class="n">risk</span> <span class="o">=</span> <span class="n">risk1_1</span>
+            <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;Classic&quot;</span><span class="p">:</span>
+                <span class="n">risk</span> <span class="o">=</span> <span class="n">risk1</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MAD&quot;</span><span class="p">:</span>
+            <span class="n">risk</span> <span class="o">=</span> <span class="n">risk2</span>
+            <span class="n">madmodel</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MSV&quot;</span><span class="p">:</span>
+            <span class="n">risk</span> <span class="o">=</span> <span class="n">risk3</span>
+            <span class="n">madmodel</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;CVaR&quot;</span><span class="p">:</span>
+            <span class="n">risk</span> <span class="o">=</span> <span class="n">risk4</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperCVaR</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="n">cvarconstraints</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;WR&quot;</span><span class="p">:</span>
+            <span class="n">risk</span> <span class="o">=</span> <span class="n">risk5</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperwr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="n">wrconstraints</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;FLPM&quot;</span><span class="p">:</span>
+            <span class="n">risk</span> <span class="o">=</span> <span class="n">risk6</span>
+            <span class="n">lpmmodel</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;SLPM&quot;</span><span class="p">:</span>
+            <span class="n">risk</span> <span class="o">=</span> <span class="n">risk7</span>
+            <span class="n">lpmmodel</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MDD&quot;</span><span class="p">:</span>
+            <span class="n">risk</span> <span class="o">=</span> <span class="n">risk8</span>
+            <span class="n">drawdown</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uppermdd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="n">mddconstraints</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;ADD&quot;</span><span class="p">:</span>
+            <span class="n">risk</span> <span class="o">=</span> <span class="n">risk9</span>
+            <span class="n">drawdown</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;CDaR&quot;</span><span class="p">:</span>
+            <span class="n">risk</span> <span class="o">=</span> <span class="n">risk10</span>
+            <span class="n">drawdown</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upperCDaR</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">constraints</span> <span class="o">+=</span> <span class="n">cdarconstraints</span>
+
+        <span class="k">if</span> <span class="n">madmodel</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">constraints</span> <span class="o">+=</span> <span class="n">madconstraints</span>
+        <span class="k">if</span> <span class="n">lpmmodel</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">constraints</span> <span class="o">+=</span> <span class="n">lpmconstraints</span>
+        <span class="k">if</span> <span class="n">drawdown</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">constraints</span> <span class="o">+=</span> <span class="n">ddconstraints</span>
+
+        <span class="c1"># Frontier Variables</span>
+
+        <span class="n">portafolio</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">assetslist</span><span class="p">:</span>
+            <span class="n">portafolio</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">i</span><span class="p">:</span> <span class="p">[]})</span>
+
+        <span class="c1"># Optimization Process</span>
+
+        <span class="c1"># Defining solvers</span>
+        <span class="n">solvers</span> <span class="o">=</span> <span class="p">[</span><span class="n">cv</span><span class="o">.</span><span class="n">ECOS</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">SCS</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">OSQP</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">CVXOPT</span><span class="p">,</span> <span class="n">cv</span><span class="o">.</span><span class="n">GLPK</span><span class="p">]</span>
+
+        <span class="c1"># Defining objective function</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">rm</span> <span class="o">!=</span> <span class="s2">&quot;Classic&quot;</span><span class="p">:</span>
+                <span class="n">objective</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Minimize</span><span class="p">(</span><span class="n">risk</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;Classic&quot;</span><span class="p">:</span>
+                <span class="n">objective</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Minimize</span><span class="p">(</span><span class="n">risk</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;MinRisk&quot;</span><span class="p">:</span>
+            <span class="n">objective</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Minimize</span><span class="p">(</span><span class="n">risk</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Utility&quot;</span><span class="p">:</span>
+            <span class="n">objective</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Maximize</span><span class="p">(</span><span class="n">ret</span> <span class="o">-</span> <span class="n">l</span> <span class="o">*</span> <span class="n">risk</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;MaxRet&quot;</span><span class="p">:</span>
+            <span class="n">objective</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Maximize</span><span class="p">(</span><span class="n">ret</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">Problem</span><span class="p">(</span><span class="n">objective</span><span class="p">,</span> <span class="n">constraints</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">solver</span> <span class="ow">in</span> <span class="n">solvers</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">prob</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span>
+                        <span class="n">solver</span><span class="o">=</span><span class="n">solver</span><span class="p">,</span> <span class="n">parallel</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">max_iters</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">abstol</span><span class="o">=</span><span class="mf">1e-10</span>
+                    <span class="p">)</span>
+                <span class="k">except</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="k">if</span> <span class="n">w</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">break</span>
+
+            <span class="k">if</span> <span class="n">obj</span> <span class="o">==</span> <span class="s2">&quot;Sharpe&quot;</span><span class="p">:</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">value</span> <span class="o">/</span> <span class="n">k</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sht</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">weights</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">assetslist</span><span class="p">:</span>
+                <span class="n">portafolio</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">weights</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">assetslist</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">j</span><span class="p">)])</span>
+
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="n">optimum</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">portafolio</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;weights&quot;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="k">return</span> <span class="n">optimum</span></div>
+
+<div class="viewcode-block" id="Portfolio.frontier_limits"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio.frontier_limits">[docs]</a>    <span class="k">def</span> <span class="nf">frontier_limits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;Classic&quot;</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="s2">&quot;MV&quot;</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that calculates the minimum risk and maximum return portfolios </span>
+<span class="sd">        available with current assets and constraints.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : str, optional</span>
+<span class="sd">            Methodology used to estimate input parameters.</span>
+<span class="sd">            The default is &#39;Classic&#39;.</span>
+<span class="sd">        rm : str, optional</span>
+<span class="sd">            Risk measure used by the optimization model. The default is &#39;MV&#39;.</span>
+<span class="sd">        rf : scalar, optional</span>
+<span class="sd">            Risk free rate. The default is 0.</span>
+<span class="sd">        hist : bool, optional</span>
+<span class="sd">            Indicate if uses historical or factor estimation of returns to </span>
+<span class="sd">            calculate risk measures that depends on scenarios (All except</span>
+<span class="sd">            &#39;MV&#39; risk measure). The default is True.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        limits : DataFrame</span>
+<span class="sd">            A dataframe that containts the weights of the portfolios.</span>
+<span class="sd">            </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        This method is preferable (faster) to use instead of efficient_frontier</span>
+<span class="sd">        method to know the range of expected return and expected risk.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">w_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="n">rm</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="s2">&quot;MinRisk&quot;</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="n">rf</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="n">hist</span>
+        <span class="p">)</span>
+        <span class="n">w_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="n">rm</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="s2">&quot;MaxRet&quot;</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="n">rf</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="n">hist</span>
+        <span class="p">)</span>
+
+        <span class="n">limits</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">w_min</span><span class="p">,</span> <span class="n">w_max</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">limits</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;w_min&quot;</span><span class="p">,</span> <span class="s2">&quot;w_max&quot;</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">limits</span></div>
+
+<div class="viewcode-block" id="Portfolio.efficient_frontier"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio.efficient_frontier">[docs]</a>    <span class="k">def</span> <span class="nf">efficient_frontier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&quot;Classic&quot;</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="s2">&quot;MV&quot;</span><span class="p">,</span> <span class="n">points</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Method that calculates several portfolios in the efficient frontier</span>
+<span class="sd">        of the selected risk measure, available with current assets and</span>
+<span class="sd">        constraints.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        model : str, optional</span>
+<span class="sd">            Methodology used to estimate input parameters.</span>
+<span class="sd">            The default is &#39;Classic&#39;.</span>
+<span class="sd">        rm : str, optional</span>
+<span class="sd">            Risk measure used by the optimization model. The default is &#39;MV&#39;.</span>
+<span class="sd">        points : scalar, optional</span>
+<span class="sd">            Number of point calculated from the efficient frontier.</span>
+<span class="sd">            The default is 50.</span>
+<span class="sd">        rf : scalar, optional</span>
+<span class="sd">            Risk free rate. The default is 0.</span>
+<span class="sd">        hist : bool, optional</span>
+<span class="sd">            Indicate if uses historical or factor estimation of returns to </span>
+<span class="sd">            calculate risk measures that depends on scenarios (All except</span>
+<span class="sd">            &#39;MV&#39; risk measure). The default is True.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        frontier : DataFrame</span>
+<span class="sd">            A dataframe that containts the weights of the portfolios.</span>
+<span class="sd">            </span>
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        It&#39;s recommendable that don&#39;t use this method when there are too many </span>
+<span class="sd">        assets (more than 100) and you are using a scenario based risk measure</span>
+<span class="sd">        (all except standard deviation). It&#39;s preferable to use frontier_limits </span>
+<span class="sd">        method (faster) to know the range of expected return and expected risk.</span>
+<span class="sd">        </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mu</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">sigma</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">returns</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;Classic&quot;</span><span class="p">:</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="p">)</span>
+            <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+            <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
+            <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;FM&quot;</span><span class="p">:</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_fm</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_fm</span><span class="p">)</span>
+                <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns_fm</span><span class="p">)</span>
+                <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav_fm</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+                <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
+                <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;BL&quot;</span><span class="p">:</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_bl</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_bl</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+            <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
+            <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&quot;BL_FM&quot;</span><span class="p">:</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mu_bl_fm_2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov_bl_fm_2</span><span class="p">)</span>
+                <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns_fm</span><span class="p">)</span>
+                <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav_fm</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">hist</span> <span class="o">==</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">sigma</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cov</span><span class="p">)</span>
+                <span class="n">returns</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">returns</span><span class="p">)</span>
+                <span class="n">nav</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">nav</span><span class="p">)</span>
+
+        <span class="n">alpha1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span>
+
+        <span class="n">limits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">frontier_limits</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="s2">&quot;Classic&quot;</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="n">rm</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="n">rf</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="n">hist</span><span class="p">)</span>
+
+        <span class="n">w_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">limits</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+        <span class="n">w_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">limits</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+        <span class="n">ret_min</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="n">ret_max</span> <span class="o">=</span> <span class="p">(</span><span class="n">mu</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MV&quot;</span><span class="p">:</span>
+            <span class="n">risk_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w_min</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+            <span class="n">risk_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">w_max</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MAD&quot;</span><span class="p">:</span>
+            <span class="n">risk_min</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">MAD</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">)</span>
+            <span class="n">risk_max</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">MAD</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MSV&quot;</span><span class="p">:</span>
+            <span class="n">risk_min</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">SemiDeviation</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">)</span>
+            <span class="n">risk_max</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">SemiDeviation</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;CVaR&quot;</span><span class="p">:</span>
+            <span class="n">risk_min</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">CVaR_Hist</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">,</span> <span class="n">alpha1</span><span class="p">)</span>
+            <span class="n">risk_max</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">CVaR_Hist</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">,</span> <span class="n">alpha1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;WR&quot;</span><span class="p">:</span>
+            <span class="n">risk_min</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">WR</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">)</span>
+            <span class="n">risk_max</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">WR</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;FLPM&quot;</span><span class="p">:</span>
+            <span class="n">risk_min</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">LPM</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">risk_max</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">LPM</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;SLPM&quot;</span><span class="p">:</span>
+            <span class="n">risk_min</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">LPM</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">risk_max</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">LPM</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">,</span> <span class="n">rf</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MDD&quot;</span><span class="p">:</span>
+            <span class="n">risk_min</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">MaxAbsDD</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">)</span>
+            <span class="n">risk_max</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">MaxAbsDD</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;ADD&quot;</span><span class="p">:</span>
+            <span class="n">risk_min</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">AvgAbsDD</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">)</span>
+            <span class="n">risk_max</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">AvgAbsDD</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;CDaR&quot;</span><span class="p">:</span>
+            <span class="n">risk_min</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">ConAbsDD</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_min</span><span class="p">,</span> <span class="n">alpha1</span><span class="p">)</span>
+            <span class="n">risk_max</span> <span class="o">=</span> <span class="n">rk</span><span class="o">.</span><span class="n">ConAbsDD</span><span class="p">(</span><span class="n">returns</span> <span class="o">*</span> <span class="n">w_max</span><span class="p">,</span> <span class="n">alpha1</span><span class="p">)</span>
+
+        <span class="n">mus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">ret_min</span><span class="p">,</span> <span class="n">ret_max</span> <span class="o">+</span> <span class="p">(</span><span class="n">ret_max</span> <span class="o">-</span> <span class="n">ret_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">points</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">risks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span>
+            <span class="n">risk_min</span><span class="p">,</span> <span class="n">risk_max</span> <span class="o">+</span> <span class="p">(</span><span class="n">risk_max</span> <span class="o">-</span> <span class="n">risk_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">points</span><span class="p">),</span> <span class="n">points</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">)</span>
+
+        <span class="n">risk_lims</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;upperdev&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uppermad&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uppersdev&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperCVaR&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperwr&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperflpm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperslpm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uppermdd&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperadd&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperCDaR&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="n">risk_names</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;MV&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;MAD&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;MSV&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;CVaR&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;WR&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;FLPM&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;SLPM&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;MDD&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ADD&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;CDaR&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="n">item</span> <span class="o">=</span> <span class="n">risk_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">rm</span><span class="p">)</span>
+
+        <span class="n">frontier</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">risks</span><span class="p">)):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="p">(</span>
+                        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="n">rm</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="s2">&quot;MinRisk&quot;</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="n">rf</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="n">hist</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">risk_lims</span><span class="p">[</span><span class="n">item</span><span class="p">],</span> <span class="n">risks</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+                    <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimization</span><span class="p">(</span>
+                        <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="n">rm</span><span class="p">,</span> <span class="n">obj</span><span class="o">=</span><span class="s2">&quot;MaxRet&quot;</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="n">rf</span><span class="p">,</span> <span class="n">l</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">hist</span><span class="o">=</span><span class="n">hist</span>
+                    <span class="p">)</span>
+                <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">frontier</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">pass</span>
+
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">risk_lims</span><span class="p">[</span><span class="n">item</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">frontier</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span><span class="n">frontier</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">frontier</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">risks</span><span class="p">)))</span>
+
+        <span class="k">return</span> <span class="n">frontier</span></div>
+
+<div class="viewcode-block" id="Portfolio.reset_risk_constraints"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio.reset_risk_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">reset_risk_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset all risk constraints.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cons</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;upperdev&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uppermad&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uppersdev&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperCVaR&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperwr&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperflpm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperslpm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uppermdd&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperadd&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upperCDaR&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cons</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Portfolio.reset_linear_constraints"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio.reset_linear_constraints">[docs]</a>    <span class="k">def</span> <span class="nf">reset_linear_constraints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset all linear constraints.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ainequality</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binequality</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Portfolio.reset_inputs"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio.reset_inputs">[docs]</a>    <span class="k">def</span> <span class="nf">reset_inputs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset all inputs parameters of optimization models.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cons</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;mu&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cov&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mu_fm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cov_fm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mu_bl&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cov_bl&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mu_bl_fm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;cov_bl_fm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;returns_fm&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;nav_fm&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">cons</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Portfolio.reset_all"><a class="viewcode-back" href="../portfolio.html#Portfolio.Portfolio.reset_all">[docs]</a>    <span class="k">def</span> <span class="nf">reset_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset portfolio object to defatult values.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sht</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uppersht</span> <span class="o">=</span> <span class="mf">0.2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upperlng</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_factors</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha</span> <span class="o">=</span> <span class="mf">0.01</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kindbench</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">benchindex</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_benchweights</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowTO</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">turnover</span> <span class="o">=</span> <span class="mf">0.05</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">allowTE</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">TE</span> <span class="o">=</span> <span class="mf">0.05</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_risk_constraints</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_linear_constraints</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset_inputs</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Dany Cajas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

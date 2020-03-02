@@ -1,0 +1,586 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Portfolio Models &mdash; Riskfolio-Lib 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Parameters Estimation" href="parameters.html" />
+    <link rel="prev" title="Install" href="install.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Riskfolio-Lib
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Portfolio Models</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#some-theory">Some Theory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-Portfolio">Module Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#bibliography">Bibliography</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constraints.html">Constraints Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="risk.html">Risk Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auxiliary.html">Auxiliary Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Riskfolio-Lib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Portfolio Models</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/portfolio.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="portfolio-models">
+<h1>Portfolio Models<a class="headerlink" href="#portfolio-models" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="some-theory">
+<h2>Some Theory<a class="headerlink" href="#some-theory" title="Permalink to this headline">¶</a></h2>
+<p>Riskfolio-Lib allows to calculate optimum portfolios that result from optimize
+one of the following 4 objective functions:</p>
+<ul class="simple">
+<li><p><strong>Maximum Return Portfolio:</strong></p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+&amp;\underset{w}{\max} &amp; &amp; \mu w\\
+&amp;\text{s.t.} &amp; &amp; Aw \geq B\\
+&amp; &amp; &amp;\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+\end{align}\end{split}\]</div>
+<ul class="simple">
+<li><p><strong>Minimum Risk Portfolio:</strong></p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+&amp;\underset{w}{\max} &amp; &amp; \phi_{k}(w)\\
+&amp;\text{s.t.} &amp; &amp; Aw \geq B\\
+&amp; &amp; &amp;\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+\end{align}\end{split}\]</div>
+<ul class="simple">
+<li><p><strong>Maximum Risk Adjusted Return Ratio Portfolio:</strong></p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+&amp;\underset{w}{\max} &amp; &amp; \frac{\mu w - r_{f}}{\phi_{k}(w)}\\
+&amp;\text{s.t.} &amp; &amp; Aw \geq B\\
+&amp; &amp; &amp;\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+\end{align}\end{split}\]</div>
+<ul class="simple">
+<li><p><strong>Maximum Utility Portfolio:</strong></p></li>
+</ul>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+&amp;\underset{w}{\max} &amp; &amp; \mu w - \lambda \phi_{k}(w)\\
+&amp;\text{s.t.} &amp; &amp; Aw \geq B\\
+&amp; &amp; &amp;\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+\end{align}\end{split}\]</div>
+<p>Where:</p>
+<p><span class="math notranslate nohighlight">\(\mu\)</span>: is the vector of expected returns.</p>
+<p><span class="math notranslate nohighlight">\(w\)</span>: is the vector of weights of the optimum portfolio.</p>
+<p><span class="math notranslate nohighlight">\(Aw \geq B\)</span>: is a set of linear constraints.</p>
+<p><span class="math notranslate nohighlight">\(\phi_{i}(w)\)</span>: are 10 available risk measures. The available risk
+measures are:</p>
+<ul class="simple">
+<li><p>Standard Deviation <a class="bibtex reference internal" href="#a-markowitz" id="id1">[A1]</a>.</p></li>
+<li><p>Mean Absolute Deviation <a class="bibtex reference internal" href="#a-konno" id="id2">[A2]</a>.</p></li>
+<li><p>Semi Standard Deviation <a class="bibtex reference internal" href="#a-mansini3" id="id3">[A3]</a>.</p></li>
+<li><p>First Lower Partial Moment (Omega Ratio) <a class="bibtex reference internal" href="#a-mansini1" id="id4">[A4]</a>.</p></li>
+<li><p>Second Lower Partial Moment (Sortino Ratio) <a class="bibtex reference internal" href="#a-mansini1" id="id5">[A4]</a>.</p></li>
+<li><p>Conditional Value at Risk <a class="bibtex reference internal" href="#a-rockafellar" id="id6">[A5]</a>.</p></li>
+<li><p>Worst Realization (Minimax) <a class="bibtex reference internal" href="#a-mansini2" id="id7">[A6]</a></p></li>
+<li><p>Maximum Drawdown of uncompounded returns (Calmar Ratio) <a class="bibtex reference internal" href="#a-uryasev1" id="id8">[A7]</a>.</p></li>
+<li><p>Average Drawdown of uncompounded returns <a class="bibtex reference internal" href="#a-uryasev1" id="id9">[A7]</a>.</p></li>
+<li><p>Conditional Drawdown at Risk of uncompounded returns <a class="bibtex reference internal" href="#a-uryasev1" id="id10">[A7]</a>.</p></li>
+</ul>
+<p><span class="math notranslate nohighlight">\(c_{i}\)</span>: are maximum values on each risk measure.</p>
+<p><span class="math notranslate nohighlight">\(r_{f}\)</span>: is the risk free rate. When the risk measure is the first or
+second lower partial moment, <span class="math notranslate nohighlight">\(r_{f}\)</span> is the minimum acceptable return
+<span class="math notranslate nohighlight">\(\text{MAR}\)</span>.</p>
+<p><span class="math notranslate nohighlight">\(\lambda\)</span>: is the risk aversion coefficient of the investor.</p>
+</div>
+<div class="section" id="module-Portfolio">
+<span id="module-methods"></span><h2>Module Methods<a class="headerlink" href="#module-Portfolio" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="Portfolio.Portfolio">
+<em class="property">class </em><code class="sig-prename descclassname">Portfolio.</code><code class="sig-name descname">Portfolio</code><span class="sig-paren">(</span><em class="sig-param">returns=None</em>, <em class="sig-param">sht=False</em>, <em class="sig-param">uppersht=0.2</em>, <em class="sig-param">upperlng=1</em>, <em class="sig-param">factors=None</em>, <em class="sig-param">alpha=0.01</em>, <em class="sig-param">kindbench=True</em>, <em class="sig-param">allowTO=False</em>, <em class="sig-param">turnover=0.05</em>, <em class="sig-param">allowTE=False</em>, <em class="sig-param">TE=0.05</em>, <em class="sig-param">benchindex=None</em>, <em class="sig-param">benchweights=None</em>, <em class="sig-param">ainequality=None</em>, <em class="sig-param">binequality=None</em>, <em class="sig-param">upperdev=None</em>, <em class="sig-param">uppermad=None</em>, <em class="sig-param">uppersdev=None</em>, <em class="sig-param">upperflpm=None</em>, <em class="sig-param">upperslpm=None</em>, <em class="sig-param">upperCVaR=None</em>, <em class="sig-param">upperwr=None</em>, <em class="sig-param">uppermdd=None</em>, <em class="sig-param">upperadd=None</em>, <em class="sig-param">upperCDaR=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Class that creates a portfolio object with all properties needed to
+calculate optimum portfolios.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>returns</strong> (<em>DataFrame</em><em>, </em><em>optional</em>) – A dataframe that containts the returns of the assets.
+The default is None.</p></li>
+<li><p><strong>sht</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Indicate if the portfolio consider short positions (negative weights).
+The default is False.</p></li>
+<li><p><strong>uppersht</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Indicate the maximum value of the sum of short positions.
+The default is 0.2.</p></li>
+<li><p><strong>upperlng</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Indicate the maximum value of the sum of long positions (positive
+weights). The default is 1.</p></li>
+<li><p><strong>factors</strong> (<em>DataFrame</em><em>, </em><em>optional</em>) – A dataframe that containts the returns of the factors.
+The default is None.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Significance level of CVaR and CDaR. The default is 0.01.</p></li>
+<li><p><strong>kindbench</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – True if the benchmark is a portfolio with detailed weights and False if
+the benchmark is an index. The default is True.</p></li>
+<li><p><strong>allowTO</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Indicate if there is turnover constraints. The default is False.</p></li>
+<li><p><strong>turnover</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – The maximum limit of turnover deviatons. The default is 0.05.</p></li>
+<li><p><strong>allowTE</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Indicate if there is tracking error constraints.. The default is False.</p></li>
+<li><p><strong>TE</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – The maximum limit of tracking error deviatons. The default is 0.05.</p></li>
+<li><p><strong>benchindex</strong> (<em>DataFrame</em><em>, </em><em>optional</em>) – A dataframe that containts the returns of an index. If kindbench is
+the tracking error constraints are calculated respect to this index.
+The default is None.</p></li>
+<li><p><strong>benchweights</strong> (<em>DataFrame</em><em>, </em><em>optional</em>) – A dataframe that containts the weights of an index. The default is the
+equally weighted portfolio 1/N.</p></li>
+<li><p><strong>ainequality</strong> (<em>nd-array</em><em>, </em><em>optional</em>) – The matrix <span class="math notranslate nohighlight">\(A\)</span> of the linear constraint <span class="math notranslate nohighlight">\(A \geq B\)</span>.
+The default is None.</p></li>
+<li><p><strong>binequality</strong> (<em>1d-array</em><em>, </em><em>optional</em>) – The matrix <span class="math notranslate nohighlight">\(B\)</span> of the linear constraint <span class="math notranslate nohighlight">\(A \geq B\)</span>.
+The default is None.</p></li>
+<li><p><strong>upperdev</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Constraint on max level of standard deviation. The default is None.</p></li>
+<li><p><strong>uppermad</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Constraint on max level of MAD. The default is None.</p></li>
+<li><p><strong>uppersdev</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Constraint on max level of semi standard deviation. The default is None.</p></li>
+<li><p><strong>upperflpm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Constraint on max level of first lower partial moment.
+The default is None.</p></li>
+<li><p><strong>upperslpm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Constraint on max level of second lower partial moment.
+The default is None.</p></li>
+<li><p><strong>upperCVaR</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Constraint on max level of CVaR. The default is None.</p></li>
+<li><p><strong>upperwr</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Constraint on max level of worst realization. The default is None.</p></li>
+<li><p><strong>uppermdd</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Constraint on max level of maximum drawdown of uncompounded cumulated
+returns. The default is None.</p></li>
+<li><p><strong>upperadd</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Constraint on max level of average drawdown of uncompounded cumulated
+returns. The default is None.</p></li>
+<li><p><strong>upperCDaR</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Constraint on max level of conditional drawdown at risk of
+uncompounded cumulated returns. The default is None.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="method">
+<dt id="Portfolio.Portfolio.assets_stats">
+<code class="sig-name descname">assets_stats</code><span class="sig-paren">(</span><em class="sig-param">method_mu='hist'</em>, <em class="sig-param">method_cov='hist'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio.assets_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio.assets_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the inputs that will be use by the optimization method when
+we select the input model=’Classic’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – All aditional parameters of mean_vector and covar_matrix functions.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-meth docutils literal notranslate"><span class="pre">riskfolio.ParamsEstimation.mean_vector()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">riskfolio.ParamsEstimation.covar_matrix()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Portfolio.Portfolio.blacklitterman_stats">
+<code class="sig-name descname">blacklitterman_stats</code><span class="sig-paren">(</span><em class="sig-param">P</em>, <em class="sig-param">Q</em>, <em class="sig-param">rf=0</em>, <em class="sig-param">w=None</em>, <em class="sig-param">delta=None</em>, <em class="sig-param">eq=True</em>, <em class="sig-param">method_mu='hist'</em>, <em class="sig-param">method_cov='hist'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio.blacklitterman_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio.blacklitterman_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the inputs that will be use by the optimization method when
+we select the input model=’BL’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>P</strong> (<em>DataFrame of shape</em><em> (</em><em>n_views</em><em>, </em><em>n_assets</em><em>)</em>) – Analyst’s views matrix, can be relative or absolute.</p></li>
+<li><p><strong>Q</strong> (<em>DataFrame of shape</em><em> (</em><em>n_views</em><em>, </em><em>1</em><em>)</em>) – Expected returns of analyst’s views.</p></li>
+<li><p><strong>delta</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a>) – Risk aversion factor. The default value is 1.</p></li>
+<li><p><strong>rf</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Risk free rate. The default is 0.</p></li>
+<li><p><strong>w</strong> (<em>DataFrame of shape</em><em> (</em><em>n_assets</em><em>, </em><em>1</em><em>)</em>) – Weights matrix, where n_assets is the number of assets.
+The default is None.</p></li>
+<li><p><strong>eq</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Indicates if use equilibrum or historical excess returns.
+The default is True.</p></li>
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – Other variables related to the mean and covariance estimation.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-meth docutils literal notranslate"><span class="pre">riskfolio.ParamsEstimation.black_litterman()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Portfolio.Portfolio.factors_stats">
+<code class="sig-name descname">factors_stats</code><span class="sig-paren">(</span><em class="sig-param">method_mu='hist'</em>, <em class="sig-param">method_cov='hist'</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio.factors_stats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio.factors_stats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the inputs that will be use by the optimization method when
+we select the input model=’FM’.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#dict" title="(in Python v3.7)"><em>dict</em></a>) – All aditional parameters of risk_factors function.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><code class="xref py py-meth docutils literal notranslate"><span class="pre">riskfolio.ParamsEstimation.forward_regression()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">riskfolio.ParamsEstimation.backward_regression()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">riskfolio.ParamsEstimation.loadings_matrix()</span></code>, <code class="xref py py-meth docutils literal notranslate"><span class="pre">riskfolio.ParamsEstimation.risk_factors()</span></code></p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="Portfolio.Portfolio.optimization">
+<code class="sig-name descname">optimization</code><span class="sig-paren">(</span><em class="sig-param">model='Classic'</em>, <em class="sig-param">rm='MV'</em>, <em class="sig-param">obj='Sharpe'</em>, <em class="sig-param">rf=0</em>, <em class="sig-param">l=2</em>, <em class="sig-param">hist=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio.optimization"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio.optimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method that calculates the optimum portfolio according to the
+optimization model selected by the user. The general problem that
+solves is:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align}
+&amp;\underset{x}{\text{optimize}} &amp; &amp; F(w)\\
+&amp;\text{s. t.} &amp; &amp; Aw \geq B\\
+&amp; &amp; &amp; \phi_{i}(w) \leq c_{i}\\
+\end{align}\end{split}\]</div>
+<p>Where:</p>
+<p><span class="math notranslate nohighlight">\(F(w)\)</span> is the objective function.</p>
+<p><span class="math notranslate nohighlight">\(Aw \geq B\)</span> is a set of linear constraints.</p>
+<p><span class="math notranslate nohighlight">\(\phi_{i}(w) \leq c_{i}\)</span> are constraints on maximum values of
+several risk measures.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>str can be 'Classic'</em><em>, </em><em>'BL'</em><em> or </em><em>'FM'</em>) – <p>The model used for optimize the portfolio.
+The default is ‘Classic’. Posible values are:</p>
+<ul>
+<li><p>’Classic’: use estimates of expected return vector and covariance matrix that depends on historical data.</p></li>
+<li><p>’BL’: use estimates of expected return vector and covariance matrix based on the Black Litterman model.</p></li>
+<li><p>’FM’: use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.</p></li>
+</ul>
+</p></li>
+<li><p><strong>rm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – <p>The risk measure used to optimze the portfolio.
+The default is ‘MV’. Posible values are:</p>
+<ul>
+<li><p>’MV’: Standard Deviation.</p></li>
+<li><p>’MAD’: Mean Absolute Deviation.</p></li>
+<li><p>’MSV’: Semi Standard Deviation.</p></li>
+<li><p>’FLPM’: First Lower Partial Moment (Omega Ratio).</p></li>
+<li><p>’SLPM’: Second Lower Partial Moment (Sortino Ratio).</p></li>
+<li><p>’CVaR’: Conditional Value at Risk.</p></li>
+<li><p>’WR’: Worst Realization (Minimax)</p></li>
+<li><p>’MDD’: Maximum Drawdown of uncompounded returns (Calmar Ratio).</p></li>
+<li><p>’ADD’: Average Drawdown of uncompounded returns.</p></li>
+<li><p>’CDaR’: Conditional Drawdown at Risk of uncompounded returns.</p></li>
+</ul>
+</p></li>
+<li><p><strong>obj</strong> (<em>str can be {'MinRisk'</em><em>, </em><em>'Utility'</em><em>, </em><em>'Sharpe'</em><em> or </em><em>'MaxRet'.</em>) – <p>Objective function of the optimization model.
+The default is ‘Sharpe’. Posible values are:</p>
+<ul>
+<li><p>’MinRisk’: Minimize the selected risk measure.</p></li>
+<li><p>’Utility’: Maximize the Utility function <span class="math notranslate nohighlight">\(mu w - l \phi_{i}(w)\)</span>.</p></li>
+<li><p>’Sharpe’: Maximize the risk adjusted return ratio based on the selected risk measure.</p></li>
+<li><p>’MaxRet’: Maximize the expected return of the portfolio.</p></li>
+</ul>
+</p></li>
+<li><p><strong>rf</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#float" title="(in Python v3.7)"><em>float</em></a><em>, </em><em>optional</em>) – Risk free rate, must be in the same period of assets returns.
+The default is 0.</p></li>
+<li><p><strong>l</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Risk aversion factor of the ‘Utility’ objective function.
+The default is 2.</p></li>
+<li><p><strong>hist</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Indicate if uses historical or factor estimation of returns to
+calculate risk measures that depends on scenarios (All except
+‘MV’ risk measure). The default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>w</strong> – The weights of optimum portfolio.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="Portfolio.Portfolio.frontier_limits">
+<code class="sig-name descname">frontier_limits</code><span class="sig-paren">(</span><em class="sig-param">model='Classic'</em>, <em class="sig-param">rm='MV'</em>, <em class="sig-param">rf=0</em>, <em class="sig-param">hist=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio.frontier_limits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio.frontier_limits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates the minimum risk and maximum return portfolios
+available with current assets and constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – Methodology used to estimate input parameters.
+The default is ‘Classic’.</p></li>
+<li><p><strong>rm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – Risk measure used by the optimization model. The default is ‘MV’.</p></li>
+<li><p><strong>rf</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Risk free rate. The default is 0.</p></li>
+<li><p><strong>hist</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Indicate if uses historical or factor estimation of returns to
+calculate risk measures that depends on scenarios (All except
+‘MV’ risk measure). The default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>limits</strong> – A dataframe that containts the weights of the portfolios.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This method is preferable (faster) to use instead of efficient_frontier
+method to know the range of expected return and expected risk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Portfolio.Portfolio.efficient_frontier">
+<code class="sig-name descname">efficient_frontier</code><span class="sig-paren">(</span><em class="sig-param">model='Classic'</em>, <em class="sig-param">rm='MV'</em>, <em class="sig-param">points=20</em>, <em class="sig-param">rf=0</em>, <em class="sig-param">hist=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio.efficient_frontier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio.efficient_frontier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Method that calculates several portfolios in the efficient frontier
+of the selected risk measure, available with current assets and
+constraints.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – Methodology used to estimate input parameters.
+The default is ‘Classic’.</p></li>
+<li><p><strong>rm</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/stdtypes.html#str" title="(in Python v3.7)"><em>str</em></a><em>, </em><em>optional</em>) – Risk measure used by the optimization model. The default is ‘MV’.</p></li>
+<li><p><strong>points</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Number of point calculated from the efficient frontier.
+The default is 50.</p></li>
+<li><p><strong>rf</strong> (<em>scalar</em><em>, </em><em>optional</em>) – Risk free rate. The default is 0.</p></li>
+<li><p><strong>hist</strong> (<a class="reference external" href="https://docs.python.org/3.7/library/functions.html#bool" title="(in Python v3.7)"><em>bool</em></a><em>, </em><em>optional</em>) – Indicate if uses historical or factor estimation of returns to
+calculate risk measures that depends on scenarios (All except
+‘MV’ risk measure). The default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>frontier</strong> – A dataframe that containts the weights of the portfolios.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>DataFrame</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>It’s recommendable that don’t use this method when there are too many
+assets (more than 100) and you are using a scenario based risk measure
+(all except standard deviation). It’s preferable to use frontier_limits
+method (faster) to know the range of expected return and expected risk.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Portfolio.Portfolio.reset_risk_constraints">
+<code class="sig-name descname">reset_risk_constraints</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio.reset_risk_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio.reset_risk_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset all risk constraints.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Portfolio.Portfolio.reset_linear_constraints">
+<code class="sig-name descname">reset_linear_constraints</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio.reset_linear_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio.reset_linear_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset all linear constraints.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Portfolio.Portfolio.reset_inputs">
+<code class="sig-name descname">reset_inputs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio.reset_inputs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio.reset_inputs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset all inputs parameters of optimization models.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="Portfolio.Portfolio.reset_all">
+<code class="sig-name descname">reset_all</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/Portfolio.html#Portfolio.reset_all"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#Portfolio.Portfolio.reset_all" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset portfolio object to defatult values.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="bibliography">
+<h2>Bibliography<a class="headerlink" href="#bibliography" title="Permalink to this headline">¶</a></h2>
+<p id="bibtex-bibliography-portfolio-0"><dl class="citation">
+<dt class="bibtex label" id="a-markowitz"><span class="brackets"><a class="fn-backref" href="#id1">A1</a></span></dt>
+<dd><p>Harry Markowitz. Portfolio selection. <em>The Journal of Finance</em>, 7(1):77–91, 1952. URL: <a class="reference external" href="http://www.jstor.org/stable/2975974">http://www.jstor.org/stable/2975974</a>.</p>
+</dd>
+<dt class="bibtex label" id="a-konno"><span class="brackets"><a class="fn-backref" href="#id2">A2</a></span></dt>
+<dd><p>Hiroshi Konno and Hiroaki Yamazaki. Mean-absolute deviation portfolio optimization model and its applications to tokyo stock market. <em>Management Science</em>, 37(5):519–531, 1991. URL: <a class="reference external" href="https://EconPapers.repec.org/RePEc:inm:ormnsc:v:37:y:1991:i:5:p:519-531">https://EconPapers.repec.org/RePEc:inm:ormnsc:v:37:y:1991:i:5:p:519-531</a>.</p>
+</dd>
+<dt class="bibtex label" id="a-mansini3"><span class="brackets"><a class="fn-backref" href="#id3">A3</a></span></dt>
+<dd><p>Renata Mansini, W. Ogryczak, and M.Grazia Speranza. Twenty years of linear programming based portfolio optimization. <em>European Journal of Operational Research</em>, 234:518–535, 04 2014. <a class="reference external" href="https://doi.org/10.1016/j.ejor.2013.08.035">doi:10.1016/j.ejor.2013.08.035</a>.</p>
+</dd>
+<dt class="bibtex label" id="a-mansini1"><span class="brackets">A4</span><span class="fn-backref">(<a href="#id4">1</a>,<a href="#id5">2</a>)</span></dt>
+<dd><p>Renata Mansini, W. Ogryczak, and M.Grazia Speranza. <em>Linear Models for Portfolio Optimization</em>, pages 19–45. Springer, 01 2015. <a class="reference external" href="https://doi.org/10.1007/978-3-319-18482-1_2">doi:10.1007/978-3-319-18482-1_2</a>.</p>
+</dd>
+<dt class="bibtex label" id="a-rockafellar"><span class="brackets"><a class="fn-backref" href="#id6">A5</a></span></dt>
+<dd><p>R. Tyrrell Rockafellar and Stanislav Uryasev. Optimization of conditional value-at-risk. <em>Journal of Risk</em>, 2:21–41, 2000.</p>
+</dd>
+<dt class="bibtex label" id="a-mansini2"><span class="brackets"><a class="fn-backref" href="#id7">A6</a></span></dt>
+<dd><p>Renata Mansini, W. Ogryczak, and M.Grazia Speranza. On lp solvable models for portfolio selection. <em>Informatica</em>, 14:37–62, 01 2003.</p>
+</dd>
+<dt class="bibtex label" id="a-uryasev1"><span class="brackets">A7</span><span class="fn-backref">(<a href="#id8">1</a>,<a href="#id9">2</a>,<a href="#id10">3</a>)</span></dt>
+<dd><p>A. Chekhlov, S. Uryasev, and M. Zabarankin. Portfolio Optimization With Drawdown Constraints. In Panos M Pardalos, Athanasios Migdalas, and George Baourakis, editors, <em>Supply Chain And Finance</em>, volume of World Scientific Book Chapters, chapter 13, pages 209–228. World Scientific Publishing Co. Pte. Ltd., edition, November 2004. URL: <a class="reference external" href="https://ideas.repec.org/h/wsi/wschap/9789812562586_0013.html">https://ideas.repec.org/h/wsi/wschap/9789812562586_0013.html</a>, <a class="reference external" href="https://doi.org/">doi:</a>.</p>
+</dd>
+</dl>
+</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="parameters.html" class="btn btn-neutral float-right" title="Parameters Estimation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="install.html" class="btn btn-neutral float-left" title="Install" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Dany Cajas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

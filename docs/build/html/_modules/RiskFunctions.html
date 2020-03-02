@@ -1,0 +1,1084 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>RiskFunctions &mdash; Riskfolio-Lib 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Riskfolio-Lib
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../portfolio.html">Portfolio Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../parameters.html">Parameters Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../constraints.html">Constraints Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../risk.html">Risk Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../plot.html">Plot Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../auxiliary.html">Auxiliary Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Riskfolio-Lib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>RiskFunctions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for RiskFunctions</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">minimize</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">Bounds</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;MAD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SemiDeviation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;VaR_Hist&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;CVaR_Hist&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;WR&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LPM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Entropic_RM&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;EVaR_Hist&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MaxAbsDD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AvgAbsDD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ConAbsDD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MaxRelDD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;AvgRelDD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ConRelDD&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Sharpe_Risk&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;Sharpe&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="MAD"><a class="viewcode-back" href="../risk.html#RiskFunctions.MAD">[docs]</a><span class="k">def</span> <span class="nf">MAD</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Mean Absolute Deviation (MAD) of a returns series.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{MAD}(X) = \frac{1}{T}\sum_{t=1}^{T}</span>
+<span class="sd">        | X_{t} - \mathbb{E}(X_{t}) |</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array </span>
+<span class="sd">        a returns series, must have Tx1 size.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float    </span>
+<span class="sd">        MAD of a returns series.</span>
+<span class="sd">        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+<span class="sd">        </span>
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    Examples should be written in doctest format, and should illustrate how</span>
+<span class="sd">    to use the function.</span>
+
+<span class="sd">    &gt;&gt;&gt; print([i for i in example_generator(4)])</span>
+<span class="sd">    [0, 1, 2, 3]</span>
+<span class="sd">      </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="SemiDeviation"><a class="viewcode-back" href="../risk.html#RiskFunctions.SemiDeviation">[docs]</a><span class="k">def</span> <span class="nf">SemiDeviation</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Semi Deviation of a returns series.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{SemiDev}(X) = \left [ \frac{1}{T-1}\sum_{t=1}^{T}</span>
+<span class="sd">        (X_{t} - \mathbb{E}(X_{t}))^2 \right ]^{1/2}    </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array </span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">                        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        Semi Deviation of a returns series.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">mu</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">mu</span> <span class="o">-</span> <span class="n">a</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="n">mu</span><span class="p">)],</span> <span class="mi">2</span><span class="p">))</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="VaR_Hist"><a class="viewcode-back" href="../risk.html#RiskFunctions.VaR_Hist">[docs]</a><span class="k">def</span> <span class="nf">VaR_Hist</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Value at Risk (VaR) of a returns series.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{VaR}_{\alpha}(X) = -\inf_{t \in (0,T)} \left \{ X_{t} \in</span>
+<span class="sd">        \mathbb{R}: F_{X}(X_{t})&gt;\alpha \right \}</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array </span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        Significance level of VaR. The default is 0.01.</span>
+<span class="sd">                        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        VaR of a returns series.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">sorted_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_a</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="n">sorted_a</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="CVaR_Hist"><a class="viewcode-back" href="../risk.html#RiskFunctions.CVaR_Hist">[docs]</a><span class="k">def</span> <span class="nf">CVaR_Hist</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Conditional Value at Risk (CVaR) of a returns series.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{CVaR}_{\alpha}(X) = \text{VaR}_{\alpha}(X) +</span>
+<span class="sd">        \frac{1}{\alpha T} \sum_{t=1}^{T} \max(-X_{t} -</span>
+<span class="sd">        \text{VaR}_{\alpha}(X), 0)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array </span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        Significance level of CVaR. The default is 0.01.</span>
+<span class="sd">                        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        CVaR of a returns series.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">sorted_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_a</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">sum_var</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">sum_var</span> <span class="o">=</span> <span class="n">sum_var</span> <span class="o">+</span> <span class="n">sorted_a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">sorted_a</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="n">sorted_a</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">-</span> <span class="n">sum_var</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_a</span><span class="p">))</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="WR"><a class="viewcode-back" href="../risk.html#RiskFunctions.WR">[docs]</a><span class="k">def</span> <span class="nf">WR</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Worst Realization (WR) or Worst Scenario of a returns series.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{WR}(X) = \max(-X)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array </span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">                        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        WR of a returns series.</span>
+<span class="sd">        </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">sorted_a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="n">sorted_a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="LPM"><a class="viewcode-back" href="../risk.html#RiskFunctions.LPM">[docs]</a><span class="k">def</span> <span class="nf">LPM</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">MAR</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the p-th Lower Partial Moment of a returns series.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{LPM}(X, \text{MAR}, p) = \left [ \frac{1}{T}\sum_{t=1}^{T}</span>
+<span class="sd">        \max(\text{MAR} - X_{t}, 0) \right ]^{\frac{1}{p}}    </span>
+
+<span class="sd">    Where:</span>
+<span class="sd">    </span>
+<span class="sd">    :math:`\text{MAR}` is the minimum acceptable return.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array </span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">    MAR : float, optional</span>
+<span class="sd">        Minimum acceptable return. The default is 0.</span>
+<span class="sd">    p : float, optional</span>
+<span class="sd">        order of the :math:`\text{LPM}`. The default is 1.</span>
+<span class="sd">                        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        p-th Lower Partial Moment of a returns series.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">MAR</span> <span class="o">-</span> <span class="n">a</span>
+
+    <span class="k">if</span> <span class="n">p</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)],</span> <span class="n">p</span><span class="p">))</span> <span class="o">/</span> <span class="n">n</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="Entropic_RM"><a class="viewcode-back" href="../risk.html#RiskFunctions.Entropic_RM">[docs]</a><span class="k">def</span> <span class="nf">Entropic_RM</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Entropic Risk Measure (ERM) of a returns series.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{ERM}(X) = \theta \log\left(\mathbb{E}</span>
+<span class="sd">        [e^{-\frac{1}{\theta} X}]\right)        </span>
+<span class="sd">        </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array </span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">    theta : float, optional</span>
+<span class="sd">        Risk aversion parameter, must be greater than zero. The default is 1.</span>
+<span class="sd">                        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        ERM of a returns series.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<span class="k">def</span> <span class="nf">_Entropic_RM</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">theta</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">theta</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">alpha</span><span class="p">))</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<div class="viewcode-block" id="EVaR_Hist"><a class="viewcode-back" href="../risk.html#RiskFunctions.EVaR_Hist">[docs]</a><span class="k">def</span> <span class="nf">EVaR_Hist</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Entropic Value at Risk (EVaR) of a returns series.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{EVaR}_{\alpha}(X) = \inf_{z&gt;0} \left \{ z^{-1}</span>
+<span class="sd">        \ln \left (\frac{M_X(z)}{\alpha} \right ) \right \}</span>
+<span class="sd">    </span>
+<span class="sd">    Where:</span>
+<span class="sd">    </span>
+<span class="sd">    :math:`M_X(z)` is the moment generating function of X.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array </span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        Significance level of EVaR. The default is 0.01.</span>
+<span class="sd">                        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        EVaR of a returns series.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">bnd</span> <span class="o">=</span> <span class="n">Bounds</span><span class="p">([</span><span class="mf">0.00000000001</span><span class="p">],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">])</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">_Entropic_RM</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.01</span><span class="p">],</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">alpha</span><span class="p">),</span> <span class="n">bounds</span><span class="o">=</span><span class="n">bnd</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">x</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">_Entropic_RM</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="MaxAbsDD"><a class="viewcode-back" href="../risk.html#RiskFunctions.MaxAbsDD">[docs]</a><span class="k">def</span> <span class="nf">MaxAbsDD</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Maximum Drawdown (MDD) of a returns series</span>
+<span class="sd">    using uncumpound cumulated returns.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{MDD}(X) = \max_{j \in (0,T)} \left [\max_{t \in (0,T)}</span>
+<span class="sd">        \left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right ) \right ]</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array </span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">                        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        MDD of a uncumpound cumulated returns.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">prices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">NAV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">prices</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">peak</span> <span class="o">=</span> <span class="o">-</span><span class="mi">99999</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">NAV</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">peak</span><span class="p">:</span>
+            <span class="n">peak</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">DD</span> <span class="o">=</span> <span class="n">peak</span> <span class="o">-</span> <span class="n">i</span>
+        <span class="k">if</span> <span class="n">DD</span> <span class="o">&gt;</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">DD</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="AvgAbsDD"><a class="viewcode-back" href="../risk.html#RiskFunctions.AvgAbsDD">[docs]</a><span class="k">def</span> <span class="nf">AvgAbsDD</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Average Drawdown (ADD) of a returns series</span>
+<span class="sd">    using uncumpound cumulated returns.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{ADD}(X) = \frac{1}{T}\sum_{i=0}^{T}\max_{t \in (0,T)}</span>
+<span class="sd">        \left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right ) </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array</span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">                                </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        ADD of a uncumpound cumulated returns.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">prices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">NAV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">prices</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">peak</span> <span class="o">=</span> <span class="o">-</span><span class="mi">99999</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">NAV</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">peak</span><span class="p">:</span>
+            <span class="n">peak</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">DD</span> <span class="o">=</span> <span class="n">peak</span> <span class="o">-</span> <span class="n">i</span>
+        <span class="k">if</span> <span class="n">DD</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">+=</span> <span class="n">DD</span>
+        <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">/</span> <span class="n">n</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="ConAbsDD"><a class="viewcode-back" href="../risk.html#RiskFunctions.ConAbsDD">[docs]</a><span class="k">def</span> <span class="nf">ConAbsDD</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Conditional Drawdown at Risk (CDaR) of a returns series</span>
+<span class="sd">    using uncumpound cumulated returns.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{CDaR}_{\alpha}(X) = \text{DaR}_{\alpha}(X) + \frac{1}{\alpha T}</span>
+<span class="sd">        \sum_{i=0}^{T} \max \left [ \max_{t \in (0,T)}</span>
+<span class="sd">        \left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right )</span>
+<span class="sd">        - \text{DaR}_{\alpha}(X), 0 \right ]</span>
+<span class="sd">    </span>
+<span class="sd">    Where:</span>
+
+<span class="sd">    :math:`\text{DaR}_{\alpha}` is the Drawdown at Risk of an uncumpound</span>
+<span class="sd">    cumulated return series :math:`X`.  </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array</span>
+<span class="sd">        Returns series, must have Tx1 size..</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        Significance level of CDaR. The default is 0.01.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        CDaR of a uncumpound cumulated returns series.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">prices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">NAV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">prices</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">DD</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">peak</span> <span class="o">=</span> <span class="o">-</span><span class="mi">99999</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">NAV</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">peak</span><span class="p">:</span>
+            <span class="n">peak</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">DD</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">peak</span> <span class="o">-</span> <span class="n">i</span><span class="p">))</span>
+    <span class="k">del</span> <span class="n">DD</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sorted_DD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">DD</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_DD</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">sum_var</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">sum_var</span> <span class="o">=</span> <span class="n">sum_var</span> <span class="o">+</span> <span class="n">sorted_DD</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">sorted_DD</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="n">sorted_DD</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">-</span> <span class="n">sum_var</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_DD</span><span class="p">))</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="MaxRelDD"><a class="viewcode-back" href="../risk.html#RiskFunctions.MaxRelDD">[docs]</a><span class="k">def</span> <span class="nf">MaxRelDD</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Maximum Drawdown (MDD) of a returns series</span>
+<span class="sd">    using cumpound cumulated returns.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{MDD}(X) = \max_{j \in (0,T)}\left[\max_{t \in (0,T)}</span>
+<span class="sd">        \left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right ) \right]</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array </span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">                        </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        MDD of a cumpound cumulated returns.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">prices</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">NAV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumprod</span><span class="p">(</span><span class="n">prices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">peak</span> <span class="o">=</span> <span class="o">-</span><span class="mi">99999</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">NAV</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">peak</span><span class="p">:</span>
+            <span class="n">peak</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">DD</span> <span class="o">=</span> <span class="p">(</span><span class="n">peak</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="o">/</span> <span class="n">peak</span>
+        <span class="k">if</span> <span class="n">DD</span> <span class="o">&gt;</span> <span class="n">value</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">DD</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="AvgRelDD"><a class="viewcode-back" href="../risk.html#RiskFunctions.AvgRelDD">[docs]</a><span class="k">def</span> <span class="nf">AvgRelDD</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Average Drawdown (ADD) of a returns series</span>
+<span class="sd">    using cumpound acumulated returns.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{ADD}(X) = \frac{1}{T}\sum_{i=0}^{T}\max_{t \in (0,T)}</span>
+<span class="sd">        \left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right ) </span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array</span>
+<span class="sd">        Returns series, must have Tx1 size.</span>
+<span class="sd">                                </span>
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        ADD of a cumpound acumulated returns.</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;returns must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">prices</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">NAV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumprod</span><span class="p">(</span><span class="n">prices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">peak</span> <span class="o">=</span> <span class="o">-</span><span class="mi">99999</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">NAV</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">peak</span><span class="p">:</span>
+            <span class="n">peak</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">DD</span> <span class="o">=</span> <span class="p">(</span><span class="n">peak</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="o">/</span> <span class="n">peak</span>
+        <span class="k">if</span> <span class="n">DD</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">+=</span> <span class="n">DD</span>
+        <span class="n">n</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">value</span> <span class="o">/</span> <span class="n">n</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="ConRelDD"><a class="viewcode-back" href="../risk.html#RiskFunctions.ConRelDD">[docs]</a><span class="k">def</span> <span class="nf">ConRelDD</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates the Conditional Drawdown at Risk (CDaR) of a returns series</span>
+<span class="sd">    using cumpound cumulated returns.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{CDaR}_{\alpha}(X) = \text{DaR}_{\alpha}(X) + \frac{1}{\alpha T}</span>
+<span class="sd">        \sum_{i=0}^{T} \max \left [ \max_{t \in (0,T)}</span>
+<span class="sd">        \left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right )</span>
+<span class="sd">        - \text{DaR}_{\alpha}(X), 0 \right ]</span>
+<span class="sd">    </span>
+<span class="sd">    Where:</span>
+
+<span class="sd">    :math:`\text{DaR}_{\alpha}` is the Drawdown at Risk of a cumpound</span>
+<span class="sd">    acumulated return series :math:`X`.       </span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : 1d-array</span>
+<span class="sd">        Returns series, must have Tx1 size..</span>
+<span class="sd">    alpha : float, optional</span>
+<span class="sd">        Significance level of CDaR. The default is 0.01.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        CDaR of a cumpound cumulated returns series.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span>
+    <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;X must have Tx1 size&quot;</span><span class="p">)</span>
+
+    <span class="n">prices</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">NAV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumprod</span><span class="p">(</span><span class="n">prices</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">DD</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">peak</span> <span class="o">=</span> <span class="o">-</span><span class="mi">99999</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">NAV</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="n">peak</span><span class="p">:</span>
+            <span class="n">peak</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="n">DD</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">peak</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="o">/</span> <span class="n">peak</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">DD</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sorted_DD</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">DD</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_DD</span><span class="p">))</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">sum_var</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">sum_var</span> <span class="o">=</span> <span class="n">sum_var</span> <span class="o">+</span> <span class="n">sorted_DD</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">sorted_DD</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="o">-</span><span class="n">sorted_DD</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">-</span> <span class="n">sum_var</span> <span class="o">/</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_DD</span><span class="p">))</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<span class="c1">###############################################################################</span>
+<span class="c1"># Risk Adjusted Return Ratios</span>
+<span class="c1">###############################################################################</span>
+
+
+<div class="viewcode-block" id="Sharpe_Risk"><a class="viewcode-back" href="../risk.html#RiskFunctions.Sharpe_Risk">[docs]</a><span class="k">def</span> <span class="nf">Sharpe_Risk</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="s2">&quot;MV&quot;</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the risk measure available on the Sharpe function.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    w : DataFrame or 1d-array of shape (n_assets, 1)</span>
+<span class="sd">        Weights matrix, where n_assets is the number of assets.</span>
+<span class="sd">    cov : DataFrame or nd-array of shape (n_features, n_features)</span>
+<span class="sd">        Covariance matrix, where n_features is the number of features.</span>
+<span class="sd">    returns : DataFrame or nd-array of shape (n_samples, n_features)</span>
+<span class="sd">        Features matrix, where n_samples is the number of samples and </span>
+<span class="sd">        n_features is the number of features.</span>
+<span class="sd">    rm : str, optional</span>
+<span class="sd">        Risk measure used in the denominator of the ratio. The default is</span>
+<span class="sd">        &#39;MV&#39;. Posible values are:</span>
+<span class="sd">            </span>
+<span class="sd">        - &#39;MV&#39;: Standard Deviation.</span>
+<span class="sd">        - &#39;MAD&#39;: Mean Absolute Deviation.</span>
+<span class="sd">        - &#39;MSV&#39;: Semi Standard Deviation.</span>
+<span class="sd">        - &#39;FLPM&#39;: First Lower Partial Moment (Omega Ratio).</span>
+<span class="sd">        - &#39;SLPM&#39;: Second Lower Partial Moment (Sortino Ratio).</span>
+<span class="sd">        - &#39;VaR&#39;: Value at Risk.</span>
+<span class="sd">        - &#39;CVaR&#39;: Conditional Value at Risk.</span>
+<span class="sd">        - &#39;WR&#39;: Worst Realization (Minimax)</span>
+<span class="sd">        - &#39;MDD&#39;: Maximum Drawdown of uncompounded returns (Calmar Ratio).</span>
+<span class="sd">        - &#39;ADD&#39;: Average Drawdown of uncompounded returns.</span>
+<span class="sd">        - &#39;CDaR&#39;: Conditional Drawdown at Risk of uncompounded returns.</span>
+<span class="sd">        </span>
+<span class="sd">    rf : float, optional</span>
+<span class="sd">        Risk free rate. The default is 0.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Other arguments that depends on the risk measure.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        Risk measure of the portfolio.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">w_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cov_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">returns</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">returns_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
+
+    <span class="n">a</span> <span class="o">=</span> <span class="n">returns_</span> <span class="o">*</span> <span class="n">w_</span>
+    <span class="k">if</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MV&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">w_</span><span class="o">.</span><span class="n">T</span> <span class="o">*</span> <span class="n">cov_</span> <span class="o">*</span> <span class="n">w_</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">risk</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MAD&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">MAD</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MSV&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">SemiDeviation</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;FLPM&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">LPM</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">MAR</span><span class="o">=</span><span class="n">rf</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;SLPM&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">LPM</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">MAR</span><span class="o">=</span><span class="n">rf</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;VaR&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">VaR_Hist</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;CVaR&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">CVaR_Hist</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;WR&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">WR</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MDD&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">MaxAbsDD</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;ADD&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">AvgAbsDD</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;CDaR&quot;</span><span class="p">:</span>
+        <span class="n">risk</span> <span class="o">=</span> <span class="n">ConAbsDD</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="n">risk</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+
+
+<div class="viewcode-block" id="Sharpe"><a class="viewcode-back" href="../risk.html#RiskFunctions.Sharpe">[docs]</a><span class="k">def</span> <span class="nf">Sharpe</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">mu</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="s2">&quot;MV&quot;</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the Risk Adjusted Return Ratio from a portfolio returns series.</span>
+
+<span class="sd">    .. math::</span>
+<span class="sd">        \text{Sharpe}(X) =  \frac{\mathbb{E}(X) -</span>
+<span class="sd">        r_{f}}{\phi(X)}</span>
+<span class="sd">    </span>
+<span class="sd">    Where:</span>
+<span class="sd">    </span>
+<span class="sd">    :math:`X` is the vector of portfolio returns.</span>
+<span class="sd">    </span>
+<span class="sd">    :math:`r_{f}` is the risk free rate, when the risk measure is</span>
+<span class="sd">    </span>
+<span class="sd">    :math:`\text{LPM}` uses instead of :math:`r_{f}` the :math:`\text{MAR}`.</span>
+<span class="sd">    </span>
+<span class="sd">    :math:`\phi(X)` is a convex risk measure. The risk measures availabe are:</span>
+<span class="sd">        </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    </span>
+<span class="sd">    w : DataFrame or 1d-array of shape (n_assets, 1)</span>
+<span class="sd">        Weights matrix, where n_assets is the number of assets.</span>
+<span class="sd">    mu : DataFrame or nd-array of shape (1, n_assets)</span>
+<span class="sd">        Vector of expected returns, where n_assets is the number of assets.</span>
+<span class="sd">    cov : DataFrame or nd-array of shape (n_features, n_features)</span>
+<span class="sd">        Covariance matrix, where n_features is the number of features.</span>
+<span class="sd">    returns : DataFrame or nd-array of shape (n_samples, n_features)</span>
+<span class="sd">        Features matrix, where n_samples is the number of samples and </span>
+<span class="sd">        n_features is the number of features.</span>
+<span class="sd">    rm : str, optional</span>
+<span class="sd">        Risk measure used in the denominator of the ratio. The default is</span>
+<span class="sd">        &#39;MV&#39;. Posible values are:</span>
+<span class="sd">            </span>
+<span class="sd">        - &#39;MV&#39;: Standard Deviation.</span>
+<span class="sd">        - &#39;MAD&#39;: Mean Absolute Deviation.</span>
+<span class="sd">        - &#39;MSV&#39;: Semi Standard Deviation.</span>
+<span class="sd">        - &#39;FLPM&#39;: First Lower Partial Moment (Omega Ratio).</span>
+<span class="sd">        - &#39;SLPM&#39;: Second Lower Partial Moment (Sortino Ratio).</span>
+<span class="sd">        - &#39;VaR&#39;: Value at Risk.</span>
+<span class="sd">        - &#39;CVaR&#39;: Conditional Value at Risk.</span>
+<span class="sd">        - &#39;WR&#39;: Worst Realization (Minimax)</span>
+<span class="sd">        - &#39;MDD&#39;: Maximum Drawdown of uncompounded returns (Calmar Ratio).</span>
+<span class="sd">        - &#39;ADD&#39;: Average Drawdown of uncompounded returns.</span>
+<span class="sd">        - &#39;CDaR&#39;: Conditional Drawdown at Risk of uncompounded returns.</span>
+<span class="sd">        </span>
+<span class="sd">    rf : float, optional</span>
+<span class="sd">        Risk free rate. The default is 0.</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Other arguments that depends on the risk measure.</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    ValueError</span>
+<span class="sd">        When the value cannot be calculated.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    value : float</span>
+<span class="sd">        Risk adjusted return ratio of :math:`X`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="n">cov</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rm</span> <span class="o">==</span> <span class="s2">&quot;MV&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;covariance matrix is necessary to calculate the sharpe ratio&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">returns</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">rm</span> <span class="o">!=</span> <span class="s2">&quot;MV&quot;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="s2">&quot;returns scenarios are necessary to calculate the sharpe ratio&quot;</span>
+        <span class="p">)</span>
+
+    <span class="n">w_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+    <span class="n">mu_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cov</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">cov_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">cov</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">returns</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">returns_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span><span class="n">returns</span><span class="p">)</span>
+
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">mu_</span> <span class="o">*</span> <span class="n">w_</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">ret</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="n">risk</span> <span class="o">=</span> <span class="n">Sharpe_Risk</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">cov</span><span class="o">=</span><span class="n">cov_</span><span class="p">,</span> <span class="n">returns</span><span class="o">=</span><span class="n">returns_</span><span class="p">,</span> <span class="n">rm</span><span class="o">=</span><span class="n">rm</span><span class="p">,</span> <span class="n">rf</span><span class="o">=</span><span class="n">rf</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">)</span>
+
+    <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="n">ret</span> <span class="o">-</span> <span class="n">rf</span><span class="p">)</span> <span class="o">/</span> <span class="n">risk</span>
+
+    <span class="k">return</span> <span class="n">value</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Dany Cajas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

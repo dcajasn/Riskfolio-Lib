@@ -1,0 +1,446 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Constraints Functions &mdash; Riskfolio-Lib 0.1 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+        <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Risk Functions" href="risk.html" />
+    <link rel="prev" title="Parameters Estimation" href="parameters.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Riskfolio-Lib
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                latest
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="portfolio.html">Portfolio Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters Estimation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Constraints Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-ConstraintsFunctions">Module Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="risk.html">Risk Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plot.html">Plot Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="auxiliary.html">Auxiliary Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Authors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Riskfolio-Lib</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>Constraints Functions</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/constraints.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="constraints-functions">
+<h1>Constraints Functions<a class="headerlink" href="#constraints-functions" title="Permalink to this headline">¶</a></h1>
+<p>This module have functions that help us to create any kind of linear constraint
+related to the assets or assets class weights or related to the value of the sensitivity
+of the portfolio to a specific risk factor. These functions transform all
+constraint to the form <span class="math notranslate nohighlight">\(Aw \geq B\)</span>.</p>
+<p>Also this module have a function that help us to create relative and absolute views for the Black Litterman model. This views can consider relationships among assets and asset classes. This function transform all views to the form <span class="math notranslate nohighlight">\(Pw = Q\)</span>.</p>
+<div class="section" id="module-ConstraintsFunctions">
+<span id="module-functions"></span><h2>Module Functions<a class="headerlink" href="#module-ConstraintsFunctions" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ConstraintsFunctions.assets_constraints">
+<code class="sig-prename descclassname">ConstraintsFunctions.</code><code class="sig-name descname">assets_constraints</code><span class="sig-paren">(</span><em class="sig-param">constraints</em>, <em class="sig-param">asset_classes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConstraintsFunctions.html#assets_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConstraintsFunctions.assets_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the linear constraints matrixes A and B of the constraint
+<span class="math notranslate nohighlight">\(Aw \geq B\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>constraints</strong> (<em>DataFrame of shape</em><em> (</em><em>n_constraints</em><em>, </em><em>n_fields</em><em>)</em>) – <p>Constraints matrix, where n_constraints is the number of constraints
+and n_fields is the number of fields of constraints matrix, the fields
+are:</p>
+<ul>
+<li><p>Disabled: (bool) indicates if the constraint is enable.</p></li>
+<li><p>Type: (str) can be: ‘Assets’, ‘Classes’, ‘All Assets’ and ‘Each asset in a class’.</p></li>
+<li><p>Set: (str) if Type is ‘Classes’ or ‘Each asset in a class’ specified the name of the asset’s classes set.</p></li>
+<li><p>Position: (str) the name of the asset or asset class of the constraint.</p></li>
+<li><p>Sign: (str) can be ‘&gt;=’ or ‘&lt;=’.</p></li>
+<li><p>Weight: (scalar) is the maximum or minimum weight of the absolute constraint.</p></li>
+<li><p>Type Relative: (str) can be: ‘Assets’ or ‘Classes’.</p></li>
+<li><p>Relative Set: (str) if Type Relative is ‘Classes’ specified the name of the set of asset classes.</p></li>
+<li><p>Relative: (str) the name of the asset or asset class of the relative constraint.</p></li>
+<li><p>Factor: (scalar) is the factor of the relative constraint.</p></li>
+</ul>
+</p></li>
+<li><p><strong>asset_classes</strong> (<em>DataFrame of shape</em><em> (</em><em>n_assets</em><em>, </em><em>n_cols</em><em>)</em>) – Asset’s classes matrix, where n_assets is the number of assets and
+n_cols is the number of columns of the matrix where the first column
+is the asset list and the next columns are the different asset’s
+classes sets.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>A</strong> (<em>nd-matrix</em>) – The matrix A of <span class="math notranslate nohighlight">\(Aw \geq B\)</span>.</p></li>
+<li><p><strong>B</strong> (<em>nd-matrix</em>) – The matrix B of <span class="math notranslate nohighlight">\(Aw \geq B\)</span>.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError when the value cannot be calculated.</strong> – </p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">riskfolio.ConstraintsFunctions</span> <span class="k">as</span> <span class="nn">cf</span>
+
+<span class="n">asset_classes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Assets&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;FB&#39;</span><span class="p">,</span> <span class="s1">&#39;GOOGL&#39;</span><span class="p">,</span> <span class="s1">&#39;NTFX&#39;</span><span class="p">,</span> <span class="s1">&#39;BAC&#39;</span><span class="p">,</span> <span class="s1">&#39;WFC&#39;</span><span class="p">,</span> <span class="s1">&#39;TLT&#39;</span><span class="p">,</span> <span class="s1">&#39;SHV&#39;</span><span class="p">],</span>
+                 <span class="s1">&#39;Class 1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Equity&#39;</span><span class="p">,</span> <span class="s1">&#39;Equity&#39;</span><span class="p">,</span> <span class="s1">&#39;Equity&#39;</span><span class="p">,</span> <span class="s1">&#39;Equity&#39;</span><span class="p">,</span> <span class="s1">&#39;Equity&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;Fixed Income&#39;</span><span class="p">,</span> <span class="s1">&#39;Fixed Income&#39;</span><span class="p">],</span>
+                 <span class="s1">&#39;Class 2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Technology&#39;</span><span class="p">,</span> <span class="s1">&#39;Technology&#39;</span><span class="p">,</span> <span class="s1">&#39;Technology&#39;</span><span class="p">,</span>
+                             <span class="s1">&#39;Financial&#39;</span><span class="p">,</span> <span class="s1">&#39;Financial&#39;</span><span class="p">,</span> <span class="s1">&#39;Treasury&#39;</span><span class="p">,</span> <span class="s1">&#39;Treasury&#39;</span><span class="p">],}</span>
+
+<span class="n">asset_classes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">asset_classes</span><span class="p">)</span>
+
+<span class="n">constraints</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Disabled&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span>
+               <span class="s1">&#39;Type&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Classes&#39;</span><span class="p">,</span> <span class="s1">&#39;Classes&#39;</span><span class="p">,</span> <span class="s1">&#39;Assets&#39;</span><span class="p">,</span> <span class="s1">&#39;Assets&#39;</span><span class="p">,</span> <span class="s1">&#39;Classes&#39;</span><span class="p">,</span>
+                        <span class="s1">&#39;All Assets&#39;</span><span class="p">,</span> <span class="s1">&#39;Each asset in a class&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;Set&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Class 1&#39;</span><span class="p">,</span> <span class="s1">&#39;Class 1&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Class 2&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Class 1&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;Position&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Equity&#39;</span><span class="p">,</span> <span class="s1">&#39;Fixed Income&#39;</span><span class="p">,</span> <span class="s1">&#39;BAC&#39;</span><span class="p">,</span> <span class="s1">&#39;WFC&#39;</span><span class="p">,</span> <span class="s1">&#39;Financial&#39;</span><span class="p">,</span>
+                            <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Equity&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;Sign&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;=&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;Weight&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mf">0.02</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;Type Relative&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Assets&#39;</span><span class="p">,</span> <span class="s1">&#39;Classes&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Assets&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;Relative Set&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Class 1&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;Relative&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;FB&#39;</span><span class="p">,</span> <span class="s1">&#39;Fixed Income&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;TLT&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;Factor&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">]}</span>
+
+<span class="n">constraints</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The constraint looks like this:</p>
+<img alt="_images/Constraints.png" src="_images/Constraints.png" />
+<p>It is easier to construct the constraints in excel and then upload to a
+dataframe.</p>
+<p>To create the matrixes A and B we use the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">A</span><span class="p">,</span> <span class="n">B</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">assets_constraints</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">asset_classes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The matrixes A and B looks like this (all constraints were converted to a linear
+constraint):</p>
+<img alt="_images/AxB.png" src="_images/AxB.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="ConstraintsFunctions.factors_constraints">
+<code class="sig-prename descclassname">ConstraintsFunctions.</code><code class="sig-name descname">factors_constraints</code><span class="sig-paren">(</span><em class="sig-param">constraints</em>, <em class="sig-param">loadings</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConstraintsFunctions.html#factors_constraints"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConstraintsFunctions.factors_constraints" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the factors constraints matrixes C and D of the constraint
+<span class="math notranslate nohighlight">\(Cw \geq D\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>constraints</strong> (<em>DataFrame of shape</em><em> (</em><em>n_constraints</em><em>, </em><em>n_fields</em><em>)</em>) – <p>Constraints matrix, where n_constraints is the number of constraints
+and n_fields is the number of fields of constraints matrix, the fields
+are:</p>
+<ul>
+<li><p>Disabled: (bool) indicates if the constraint is enable.</p></li>
+<li><p>Factor: (str) the name of the factor of the constraint.</p></li>
+<li><p>Sign: (str) can be ‘&gt;=’ or ‘&lt;=’.</p></li>
+<li><p>Value: (scalar) is the maximum or minimum value of the factor.</p></li>
+</ul>
+</p></li>
+<li><p><strong>loadings</strong> (<em>DataFrame of shape</em><em> (</em><em>n_assets</em><em>, </em><em>n_features</em><em>)</em>) – The loadings matrix.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>C</strong> (<em>nd-matrix</em>) – The matrix C of <span class="math notranslate nohighlight">\(Cw \geq D\)</span>.</p></li>
+<li><p><strong>D</strong> (<em>nd-matrix</em>) – The matrix D of <span class="math notranslate nohighlight">\(Cw \geq D\)</span>.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError when the value cannot be calculated.</strong> – </p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loadings</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;const&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0004</span><span class="p">,</span> <span class="mf">0.0002</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0006</span><span class="p">,</span> <span class="mf">0.0001</span><span class="p">,</span> <span class="mf">0.0003</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0003</span><span class="p">],</span>
+            <span class="s1">&#39;MTUM&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.1916</span><span class="p">,</span> <span class="mf">1.0061</span><span class="p">,</span> <span class="mf">0.8695</span><span class="p">,</span> <span class="mf">1.9996</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">],</span>
+            <span class="s1">&#39;QUAL&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0000</span><span class="p">,</span> <span class="mf">2.0129</span><span class="p">,</span> <span class="mf">1.4301</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">],</span>
+            <span class="s1">&#39;SIZE&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="mf">0.4717</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1857</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">],</span>
+            <span class="s1">&#39;USMV&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.7838</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.6439</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0176</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.4407</span><span class="p">,</span> <span class="mf">0.0055</span><span class="p">,</span> <span class="mf">0.5781</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">],</span>
+            <span class="s1">&#39;VLUE&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.4772</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.7590</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4090</span><span class="p">,</span> <span class="mf">0.0000</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.0054</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.4844</span><span class="p">,</span> <span class="mf">0.9435</span><span class="p">]}</span>
+
+<span class="n">loadings</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">loadings</span><span class="p">)</span>
+
+<span class="n">constraints</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Disabled&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span>
+               <span class="s1">&#39;Factor&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;MTUM&#39;</span><span class="p">,</span> <span class="s1">&#39;USMV&#39;</span><span class="p">,</span> <span class="s1">&#39;VLUE&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;Sign&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;=&#39;</span><span class="p">],</span>
+               <span class="s1">&#39;Value&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.9</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],}</span>
+
+<span class="n">constraints</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">constraints</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The constraint looks like this:</p>
+<img alt="_images/Constraints2.png" src="_images/Constraints2.png" />
+<p>It is easier to construct the constraints in excel and then upload to a
+dataframe.</p>
+<p>To create the matrixes C and D we use the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">C</span><span class="p">,</span> <span class="n">D</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">factors_constraints</span><span class="p">(</span><span class="n">constraints</span><span class="p">,</span> <span class="n">loadings</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The matrixes C and D looks like this (all constraints were converted to a linear
+constraint):</p>
+<img alt="_images/CxD.png" src="_images/CxD.png" />
+</dd></dl>
+
+<dl class="function">
+<dt id="ConstraintsFunctions.assets_views">
+<code class="sig-prename descclassname">ConstraintsFunctions.</code><code class="sig-name descname">assets_views</code><span class="sig-paren">(</span><em class="sig-param">views</em>, <em class="sig-param">asset_classes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ConstraintsFunctions.html#assets_views"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#ConstraintsFunctions.assets_views" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create the assets views matrixes P and Q of the views <span class="math notranslate nohighlight">\(Pw = Q\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>views</strong> (<em>DataFrame of shape</em><em> (</em><em>n_views</em><em>, </em><em>n_fields</em><em>)</em>) – <p>Constraints matrix, where n_views is the number of views
+and n_fields is the number of fields of views matrix, the fields
+are:</p>
+<ul>
+<li><p>Disabled: (bool) indicates if the constraint is enable.</p></li>
+<li><p>Type: (str) can be: ‘Assets’ or ‘Classes’.</p></li>
+<li><p>Set: (str) if Type is ‘Classes’ specified the name of the set of asset classes.</p></li>
+<li><p>Position: (str) the name of the asset or asset class of the view.</p></li>
+<li><p>Sign: (str) can be ‘&gt;=’ or ‘&lt;=’.</p></li>
+<li><p>Return: (scalar) is the return of the view.</p></li>
+<li><p>Type Relative: (str) can be: ‘Assets’ or ‘Classes’.</p></li>
+<li><p>Relative Set: (str) if Type Relative is ‘Classes’ specified the name of the set of asset classes.</p></li>
+<li><p>Relative: (str) the name of the asset or asset class of the relative view.</p></li>
+</ul>
+</p></li>
+<li><p><strong>asset_classes</strong> (<em>DataFrame of shape</em><em> (</em><em>n_assets</em><em>, </em><em>n_cols</em><em>)</em>) – Asset’s classes matrix, where n_assets is the number of assets and
+n_cols is the number of columns of the matrix where the first column
+is the asset list and the next columns are the different asset’s
+classes sets.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>P</strong> (<em>nd-matrix</em>) – The matrix P that shows the relation among assets in each view.</p></li>
+<li><p><strong>Q</strong> (<em>nd-matrix</em>) – The matrix Q that shows the expected return of each view.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises</dt>
+<dd class="field-odd"><p><strong>ValueError when the value cannot be calculated.</strong> – </p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">asset_classes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Assets&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;FB&#39;</span><span class="p">,</span> <span class="s1">&#39;GOOGL&#39;</span><span class="p">,</span> <span class="s1">&#39;NTFX&#39;</span><span class="p">,</span> <span class="s1">&#39;BAC&#39;</span><span class="p">,</span> <span class="s1">&#39;WFC&#39;</span><span class="p">,</span> <span class="s1">&#39;TLT&#39;</span><span class="p">,</span> <span class="s1">&#39;SHV&#39;</span><span class="p">],</span>
+                 <span class="s1">&#39;Class 1&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Equity&#39;</span><span class="p">,</span> <span class="s1">&#39;Equity&#39;</span><span class="p">,</span> <span class="s1">&#39;Equity&#39;</span><span class="p">,</span> <span class="s1">&#39;Equity&#39;</span><span class="p">,</span> <span class="s1">&#39;Equity&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;Fixed Income&#39;</span><span class="p">,</span> <span class="s1">&#39;Fixed Income&#39;</span><span class="p">],</span>
+                 <span class="s1">&#39;Class 2&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Technology&#39;</span><span class="p">,</span> <span class="s1">&#39;Technology&#39;</span><span class="p">,</span> <span class="s1">&#39;Technology&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;Financial&#39;</span><span class="p">,</span> <span class="s1">&#39;Financial&#39;</span><span class="p">,</span> <span class="s1">&#39;Treasury&#39;</span><span class="p">,</span> <span class="s1">&#39;Treasury&#39;</span><span class="p">],}</span>
+
+<span class="n">asset_classes</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">asset_classes</span><span class="p">)</span>
+
+<span class="n">views</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Disabled&#39;</span><span class="p">:</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">],</span>
+         <span class="s1">&#39;Type&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Assets&#39;</span><span class="p">,</span> <span class="s1">&#39;Classes&#39;</span><span class="p">,</span> <span class="s1">&#39;Classes&#39;</span><span class="p">,</span> <span class="s1">&#39;Assets&#39;</span><span class="p">],</span>
+         <span class="s1">&#39;Set&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Class 2&#39;</span><span class="p">,</span><span class="s1">&#39;Class 1&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">],</span>
+         <span class="s1">&#39;Position&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;WFC&#39;</span><span class="p">,</span> <span class="s1">&#39;Financial&#39;</span><span class="p">,</span> <span class="s1">&#39;Equity&#39;</span><span class="p">,</span> <span class="s1">&#39;FB&#39;</span><span class="p">],</span>
+         <span class="s1">&#39;Sign&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;=&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;=&#39;</span><span class="p">],</span>
+         <span class="s1">&#39;Return&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.03</span> <span class="p">],</span>
+         <span class="s1">&#39;Type Relative&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;Assets&#39;</span><span class="p">,</span> <span class="s1">&#39;Classes&#39;</span><span class="p">,</span> <span class="s1">&#39;Assets&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">],</span>
+         <span class="s1">&#39;Relative Set&#39;</span><span class="p">:</span> <span class="p">[</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;Class 1&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">],</span>
+         <span class="s1">&#39;Relative&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;FB&#39;</span><span class="p">,</span> <span class="s1">&#39;Fixed Income&#39;</span><span class="p">,</span> <span class="s1">&#39;TLT&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">]}</span>
+
+<span class="n">views</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">views</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The constraint looks like this:</p>
+<img alt="_images/Views.png" src="_images/Views.png" />
+<p>It is easier to construct the constraints in excel and then upload to a
+dataframe.</p>
+<p>To create the matrixes P and Q we use the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">P</span><span class="p">,</span> <span class="n">Q</span> <span class="o">=</span> <span class="n">cf</span><span class="o">.</span><span class="n">assets_views</span><span class="p">(</span><span class="n">views</span><span class="p">,</span> <span class="n">asset_classes</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The matrixes P and Q looks like this:</p>
+<img alt="_images/PxQ.png" src="_images/PxQ.png" />
+</dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="risk.html" class="btn btn-neutral float-right" title="Risk Functions" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="parameters.html" class="btn btn-neutral float-left" title="Parameters Estimation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Dany Cajas
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
