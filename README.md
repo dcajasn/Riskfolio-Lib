@@ -3,9 +3,13 @@
 **Quantitative Strategic Asset Allocation, easy for you.**
 
 <div class="row">
-<img src="docs/source/images/MSV_Frontier.png" height="250">
-<img src="docs/source/images/Pie_Chart.png height="250">
 <div>
+<img src="docs/source/images/MSV_Frontier.png" height="250">
+</div>
+<div>
+<img src="docs/source/images/Pie_Chart.png height="250">
+</div>
+</div>
 
 
 ## Description
