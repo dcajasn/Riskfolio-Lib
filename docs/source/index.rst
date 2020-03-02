@@ -8,6 +8,10 @@ Riskfolio-Lib
     
 .. image:: images/Pie_Chart.png
     :width: 45%
+    
+
+Description
+===========
 
 Riskfolio-Lib is a library for making quantitative strategic asset allocation
 or portfolio optimization in Python. It is built on top of
