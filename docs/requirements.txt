@@ -1,4 +1,4 @@
 numpydoc
 sphinx-rtd-theme
 sphinxcontrib-bibtex
-pip install RinohType
+RinohType
