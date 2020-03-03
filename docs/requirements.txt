@@ -1,4 +1,5 @@
 numpydoc
+sphinxcontrib-napoleon
 sphinx-rtd-theme
 sphinxcontrib-bibtex
 RinohType
