@@ -32,10 +32,10 @@ Some of key functionality that Riskfolio-Lib offers:
 
 ## Documentation
 
-Online documentation is available at [Documentation](https://www.google.com).
+Online documentation is available at [Documentation](https://riskfolio-lib.readthedocs.io/en/latest/).
 
-The docs include a [tutorial](https://www.google.com) with
-examples that shows the capacities of Riskfolio-Lib.
+The docs include a [tutorial](https://riskfolio-lib.readthedocs.io/en/latest/examples.html)
+with examples that shows the capacities of Riskfolio-Lib.
 
 
 ## Dependencies
@@ -60,4 +60,4 @@ The latest stable release (and older versions) can be installed from PyPI:
  
 ## Development
 
-Riskfolio-Lib development takes place on Github: https://www.google.com
+Riskfolio-Lib development takes place on Github: https://github.com/dcajasn/Riskfolio-Lib
