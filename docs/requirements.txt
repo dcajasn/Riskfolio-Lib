@@ -1,3 +1,4 @@
+sphinx
 numpydoc
 sphinxcontrib-napoleon
 sphinx-rtd-theme
