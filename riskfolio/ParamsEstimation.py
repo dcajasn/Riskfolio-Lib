@@ -401,13 +401,15 @@ def risk_factors(
 
     if B is None:
         B = loadings_matrix(X, Y, threshold=threshold, verbose=False, stepwise=stepwise)
+        X1 = sm.add_constant(X)
     elif not isinstance(B, pd.DataFrame):
         raise ValueError("B must be a DataFrame")
+    elif isinstance(B, pd.DataFrame):
+        X1 = X.copy()
 
     assets = Y.columns.tolist()
     dates = X.index.tolist()
 
-    X1 = sm.add_constant(X)
     mu_f = np.matrix(mean_vector(X1, method=method_mu, **kwargs))
     S_f = np.matrix(covar_matrix(X1, method=method_cov, **kwargs))
     B = np.matrix(B)
