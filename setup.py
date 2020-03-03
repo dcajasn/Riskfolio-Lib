@@ -11,7 +11,7 @@ MAINTAINER_EMAIL = 'dany.cajas.n@uni.pe'
 URL = ''
 LICENSE = 'BSD (3-clause)'
 DOWNLOAD_URL = ''
-VERSION = '0.0.1'
+VERSION = '0.0.1.dev1'
 PYTHON_REQUIRES = ">=3.6"
 
 INSTALL_REQUIRES = [

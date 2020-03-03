@@ -3,8 +3,8 @@
 **Quantitative Strategic Asset Allocation, easy for you.**
 
 <div class="row">
-<img src="docs/source/images/MSV_Frontier.png" height="250">
-<img src="docs/source/images/Pie_Chart.png" height="250">
+<img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/master/docs/source/images/Pie_Chart.png?token=AOVNKFARZS5TKIVGR7DYC6C6LWOIS" height="250">
+<img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/master/docs/source/images/MSV_Frontier.png?token=AOVNKFD6NNT3OT5TG5PPLWS6LWOPS" height="250">
 </div>
 
 
