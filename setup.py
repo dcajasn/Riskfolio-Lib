@@ -8,10 +8,10 @@ with open("README.md", "r") as fh:
 DISTNAME = 'Riskfolio-Lib'
 MAINTAINER = 'Dany Cajas'
 MAINTAINER_EMAIL = 'dany.cajas.n@uni.pe'
-URL = ''
+URL = 'https://riskfolio-lib.readthedocs.io/en/latest/'
 LICENSE = 'BSD (3-clause)'
-DOWNLOAD_URL = ''
-VERSION = '0.0.1.dev1'
+DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
+VERSION = '0.0.1.dev2'
 PYTHON_REQUIRES = ">=3.6"
 
 INSTALL_REQUIRES = [
