@@ -23,7 +23,7 @@ one of the following 4 objective functions:
 .. math::
 
     \begin{align}
-    &\underset{w}{\max} & & \phi_{k}(w)\\
+    &\underset{w}{\min} & & \phi_{k}(w)\\
     &\text{s.t.} & & Aw \geq B\\
     & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
     \end{align}
