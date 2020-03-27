@@ -111,6 +111,8 @@ class Portfolio(object):
         upperCDaR=None,
     ):
 
+        # Optimization Models Options
+
         self._returns = returns
         self.sht = sht
         self.uppersht = uppersht
@@ -150,10 +152,18 @@ class Portfolio(object):
         self.returns_fm = None
         self.nav_fm = None
 
+        # Input Variables
+
+        self.returns
+        self.factors
+        self.benchweights
+        self.ainequality
+        self.binequality
+
     @property
     def returns(self):
         a = self._returns
-        if isinstance(a, pd.DataFrame):
+        if a is not None and isinstance(a, pd.DataFrame):
             self.assetslist = a.columns.tolist()
             self.nav = a.cumsum()
             self.numassets = len(self.assetslist)

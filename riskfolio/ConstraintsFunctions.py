@@ -15,8 +15,8 @@ def assets_constraints(constraints, asset_classes):
         are:
             
         - Disabled: (bool) indicates if the constraint is enable.
-        - Type: (str) can be: 'Assets', 'Classes', 'All Assets' and 'Each asset in a class'.
-        - Set: (str) if Type is 'Classes' or 'Each asset in a class' specified the name of the asset's classes set.
+        - Type: (str) can be: 'Assets', 'Classes', 'All Assets', 'Each asset in a class' and 'All Classes'.
+        - Set: (str) if Type is 'Classes', 'Each asset in a class' or 'All Classes'specified the name of the asset's classes set.
         - Position: (str) the name of the asset or asset class of the constraint.
         - Sign: (str) can be '>=' or '<='.
         - Weight: (scalar) is the maximum or minimum weight of the absolute constraint.
@@ -162,7 +162,7 @@ def assets_constraints(constraints, asset_classes):
                             asset_classes[data[i][7]].values == data[i][8], 1, 0
                         )
                         A2 = np.ones((item, item)) * np.array(A2)
-                    A1 = ((np.array(A1) + np.array(A2) * data[i][9]) * d * -1).tolist()
+                    A1 = ((np.array(A1) + np.array(A2) * data[i][9] * -1) * d).tolist()
                     for i in range(0, item):
                         A.append(A1[i])
                         B.append([0])
@@ -187,7 +187,7 @@ def assets_constraints(constraints, asset_classes):
                         A2 = np.where(
                             asset_classes[data[i][7]].values == data[i][8], 1, 0
                         )
-                    A1 = ((np.array(A1) + np.array(A2) * data[i][9]) * d * -1).tolist()
+                    A1 = ((np.array(A1) + np.array(A2) * data[i][9] * -1) * d).tolist()
                     A.append(A1)
                     B.append([0])
             elif data[i][1] == "Each asset in a class":
@@ -221,11 +221,38 @@ def assets_constraints(constraints, asset_classes):
                                     asset_classes[data[i][7]].values == data[i][8], 1, 0
                                 )
                             A3 = (
-                                (np.array(A3) + np.array(A2) * data[i][9]) * d * -1
+                                (np.array(A3) + np.array(A2) * data[i][9] * -1) * d
                             ).tolist()
                             A.append(A3)
                             B.append([0])
                         l = l + 1
+            elif data[i][1] == "All Classes":
+                if data[i][4] == ">=":
+                    d = 1
+                elif data[i][4] == "<=":
+                    d = -1
+                if data[i][5] != "":
+                    for k in np.unique(asset_classes[data[i][2]].values):
+                        A1 = np.where(asset_classes[data[i][2]].values == k, 1, 0) * d
+                        A1 = A1.tolist()
+                        A.append(A1)
+                        B.append([data[i][5] * d])
+                else:
+                    for k in np.unique(asset_classes[data[i][2]].values):
+                        A1 = np.where(asset_classes[data[i][2]].values == k, 1, 0)
+                        if data[i][6] == "Assets":
+                            item2 = assetslist.index(data[i][8])
+                            A2 = [0] * m
+                            A2[item2] = 1
+                        elif data[i][6] == "Classes":
+                            A2 = np.where(
+                                asset_classes[data[i][7]].values == data[i][8], 1, 0
+                            )
+                        A3 = (
+                            (np.array(A1) + np.array(A2) * data[i][9] * -1) * d
+                        ).tolist()
+                        A.append(A3)
+                        B.append([0])
 
     A = np.matrix(A)
     B = np.matrix(B)
