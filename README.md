@@ -66,7 +66,7 @@ Riskfolio-Lib development takes place on Github: https://github.com/dcajasn/Risk
 
 ## Module Plans
 
-The plan for this modules is to add more functions that will be very useful
+The plan for this module is to add more functions that will be very useful
 to asset managers.
 
 * Mean Risk Worst Case Optimization (Min Max):
