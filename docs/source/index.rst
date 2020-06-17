@@ -59,3 +59,19 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+
+Module Plans
+==================
+
+The plan for this modules is to add more functions that will be very useful
+to asset managers.
+
+* Mean Risk Worst Case Optimization (Min Max):
+
+    - Box and elipsoidal constraints for mean and covariance matrix.
+    - Worst covariance and mean estimation using bootstrapping.
+    - Worst covariance and mean estimation using percentage change.
+* Mean Entropic Risk Optimization Portfolios.
+* Add functions to estimate Durantion, Convexity, Key Rate Durations and Convexities of bonds without embedded options (for loadings matrix estimation).
+* Add more functions based on suggestion of users.

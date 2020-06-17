@@ -56,7 +56,7 @@ def MAD(X):
       
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -92,7 +92,7 @@ def SemiDeviation(X):
         Semi Deviation of a returns series.
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -133,7 +133,7 @@ def VaR_Hist(X, alpha=0.01):
         VaR of a returns series.
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -174,7 +174,7 @@ def CVaR_Hist(X, alpha=0.01):
         CVaR of a returns series.
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -216,7 +216,7 @@ def WR(X):
         
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -262,7 +262,7 @@ def LPM(X, MAR=0, p=1):
 
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -308,7 +308,7 @@ def Entropic_RM(X, theta=1):
     
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -322,7 +322,7 @@ def Entropic_RM(X, theta=1):
 
 
 def _Entropic_RM(X, theta=1, alpha=0.01):
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -366,7 +366,7 @@ def EVaR_Hist(X, alpha=0.01):
     
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -406,7 +406,7 @@ def MaxAbsDD(X):
     
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -454,7 +454,7 @@ def AvgAbsDD(X):
     
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -517,7 +517,7 @@ def ConAbsDD(X, alpha=0.01):
 
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -569,7 +569,7 @@ def MaxRelDD(X):
 
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -617,7 +617,7 @@ def AvgRelDD(X):
     
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -680,7 +680,7 @@ def ConRelDD(X, alpha=0.01):
 
     """
 
-    a = np.matrix(X)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -757,15 +757,15 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
 
     """
 
-    w_ = np.matrix(w)
+    w_ = np.array(w, ndmin=2)
     if cov is not None:
-        cov_ = np.matrix(cov)
+        cov_ = np.array(cov, ndmin=2)
     if returns is not None:
-        returns_ = np.matrix(returns)
+        returns_ = np.array(returns, ndmin=2)
 
-    a = returns_ * w_
+    a = returns_ @ w_
     if rm == "MV":
-        risk = w_.T * cov_ * w_
+        risk = w_.T @ cov_ @ w_
         risk = np.sqrt(risk.item())
     elif rm == "MAD":
         risk = MAD(a)
@@ -863,15 +863,15 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
             "returns scenarios are necessary to calculate the sharpe ratio"
         )
 
-    w_ = np.matrix(w)
-    mu_ = np.matrix(mu)
+    w_ = np.array(w, ndmin=2)
+    mu_ = np.array(mu, ndmin=2)
 
     if cov is not None:
-        cov_ = np.matrix(cov)
+        cov_ = np.array(cov, ndmin=2)
     if returns is not None:
-        returns_ = np.matrix(returns)
+        returns_ = np.array(returns, ndmin=2)
 
-    ret = mu_ * w_
+    ret = mu_ @ w_
     ret = ret.item()
 
     risk = Sharpe_Risk(w, cov=cov_, returns=returns_, rm=rm, rf=rf, alpha=alpha)

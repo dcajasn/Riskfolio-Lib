@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import sklearn.covariance as skcov
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from numpy.linalg import inv
 
 
 def mean_vector(X, method="hist", d=0.94):
@@ -42,13 +45,13 @@ def mean_vector(X, method="hist", d=0.94):
     assets = X.columns.tolist()
 
     if method == "hist":
-        mu = np.matrix(X.mean())
+        mu = np.array(X.mean(), ndmin=2)
     elif method == "ewma1":
-        mu = X.ewm(alpha=1 - d).mean().iloc[-1, :]
+        mu = np.array(X.ewm(alpha=1 - d).mean().iloc[-1, :], ndmin=2)
     elif method == "ewma2":
-        mu = X.ewm(alpha=1 - d, adjust=False).mean().iloc[-1, :]
+        mu = np.array(X.ewm(alpha=1 - d, adjust=False).mean().iloc[-1, :], ndmin=2)
 
-    mu = pd.DataFrame(np.matrix(mu), columns=assets)
+    mu = pd.DataFrame(np.array(mu, ndmin=2), columns=assets)
 
     return mu
 
@@ -119,12 +122,12 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         sc.fit(X)
         cov = sc.covariance_
 
-    cov = pd.DataFrame(np.matrix(cov), columns=assets, index=assets)
+    cov = pd.DataFrame(np.array(cov, ndmin=2), columns=assets, index=assets)
 
     return cov
 
 
-def forward_regression(X, y, threshold=0.05, verbose=False):
+def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
     r"""
     Select the variables that estimate the best model using stepwise
     forward regression.
@@ -136,6 +139,14 @@ def forward_regression(X, y, threshold=0.05, verbose=False):
         n_features is the number of features.
     y : Series of shape (n_samples, 1)
         Target vector, where n_samples in the number of samples.
+    criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
+        The default is 'pvalue'. The criterion used to select the best features:
+        
+        - 'pvalue': select the features based on p-values.
+        - 'AIC': select the features based on lowest Akaike Information Criterion.
+        - 'SIC': select the features based on lowest Schwarz Information Criterion.
+        - 'R2': select the features based on highest R Squared.
+        - 'R2_A': select the features based on highest Adjusted R Squared.
     thresholdt : scalar, optional
         Is the maximum p-value for each variable that will be 
         accepted in the model. The default is 0.05.
@@ -164,38 +175,101 @@ def forward_regression(X, y, threshold=0.05, verbose=False):
             raise ValueError("y must be a column DataFrame")
 
     included = []
-    value = 0
+    aic = 1e10
+    sic = 1e10
+    r2 = -1e10
+    r2_a = -1e10
 
-    while value <= threshold:
-        excluded = list(set(X.columns) - set(included))
-        best_pvalue = 999999
-        new_feature = None
-        for i in excluded:
-            factors = included + [i]
-            X1 = X[factors]
-            X1 = sm.add_constant(X1)
-            results = sm.OLS(y, X1).fit()
-            new_pvalues = results.pvalues
-            cond_1 = new_pvalues[new_pvalues.index != "const"].max()
-            if best_pvalue > new_pvalues[i] and cond_1 <= threshold:
-                best_pvalue = results.pvalues[i]
-                new_feature = i
-                pvalues = new_pvalues.copy()
+    if criterion == "pvalue":
+        value = 0
+        while value <= threshold:
+            excluded = list(set(X.columns) - set(included))
+            best_pvalue = 999999
+            new_feature = None
+            for i in excluded:
+                factors = included + [i]
+                X1 = X[factors]
+                X1 = sm.add_constant(X1)
+                results = sm.OLS(y, X1).fit()
+                new_pvalues = results.pvalues
+                cond_1 = new_pvalues[new_pvalues.index != "const"].max()
+                if best_pvalue > new_pvalues[i] and cond_1 <= threshold:
+                    best_pvalue = results.pvalues[i]
+                    new_feature = i
+                    pvalues = new_pvalues.copy()
 
-        value = pvalues[pvalues.index != "const"].max()
+            value = pvalues[pvalues.index != "const"].max()
 
-        if new_feature is None:
-            break
+            if new_feature is None:
+                break
 
-        included.append(new_feature)
+            included.append(new_feature)
 
-        if verbose:
-            print("Add {} with p-value {:.6}".format(new_feature, best_pvalue))
+            if verbose:
+                print("Add {} with p-value {:.6}".format(new_feature, best_pvalue))
+
+    else:
+        excluded = X.columns.tolist()
+        for i in range(X.shape[1]):
+            j = 0
+            value = None
+            for i in excluded:
+                factors = included.copy()
+                factors.append(i)
+                X1 = X[factors]
+                X1 = sm.add_constant(X1)
+                results = sm.OLS(y, X1).fit()
+
+                if criterion == "AIC":
+                    if results.aic < aic:
+                        value = i
+                        aic = results.aic
+                if criterion == "SIC":
+                    if results.bic < sic:
+                        value = i
+                        sic = results.bic
+                if criterion == "R2":
+                    if results.rsquared > r2:
+                        value = i
+                        r2 = results.rsquared
+                if criterion == "R2_A":
+                    if results.rsquared_adj > r2_a:
+                        value = i
+                        r2_a = results.rsquared_adj
+
+                j += 1
+                if j == len(excluded):
+                    if value is None:
+                        break
+                    else:
+                        excluded.remove(value)
+                        included.append(value)
+                        if verbose:
+                            if criterion == "AIC":
+                                print(
+                                    "Add {} with AIC {:.6}".format(value, results.aic)
+                                )
+                            elif criterion == "SIC":
+                                print(
+                                    "Add {} with SIC {:.6}".format(value, results.bic)
+                                )
+                            elif criterion == "R2":
+                                print(
+                                    "Add {} with R2 {:.6}".format(
+                                        value, results.rsquared
+                                    )
+                                )
+                            elif criterion == "R2_A":
+                                print(
+                                    "Add {} with Adjusted R2 {:.6}".format(
+                                        value, results.rsquared_adj
+                                    )
+                                )
 
     return included
 
 
-def backward_regression(X, y, threshold=0.05, verbose=False):
+def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
     r"""
     Select the variables that estimate the best model using stepwise 
     backward regression.        
@@ -207,6 +281,14 @@ def backward_regression(X, y, threshold=0.05, verbose=False):
         n_features is the number of features.
     y : Series of shape (n_samples, 1)
         Target vector, where n_samples in the number of samples.
+    criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
+        The default is 'pvalue'. The criterion used to select the best features:
+        
+        - 'pvalue': select the features based on p-values.
+        - 'AIC': select the features based on lowest Akaike Information Criterion.
+        - 'SIC': select the features based on lowest Schwarz Information Criterion.
+        - 'R2': select the features based on highest R Squared.
+        - 'R2_A': select the features based on highest Adjusted R Squared.
     threshold : scalar, optional
         Is the maximum p-value for each variable that will be 
         accepted in the model. The default is 0.05.
@@ -238,26 +320,166 @@ def backward_regression(X, y, threshold=0.05, verbose=False):
     X1 = sm.add_constant(X)
     results = sm.OLS(y, X1).fit()
     pvalues = results.pvalues
-    excluded = ["const"]
-
-    while pvalues[pvalues.index != "const"].max() > threshold:
-        # factors = pvalues[pvalues.index != 'const' ][pvalues != pvalues.max()].index.tolist()
-        factors = pvalues[~pvalues.index.isin(excluded)].index.tolist()
-        X1 = X[factors]
-        X1 = sm.add_constant(X1)
-        results = sm.OLS(y, X1).fit()
-        pvalues = results.pvalues
-        excluded = ["const", pvalues.idxmax()]
-        if verbose and pvalues.max() > threshold:
-            print("Drop {} with p-value {:.6}".format(pvalues.idxmax(), pvalues.max()))
+    aic = results.aic
+    sic = results.bic
+    r2 = results.rsquared
+    r2_a = results.rsquared_adj
 
     included = pvalues.index.tolist()
-    included = included[1:]
+    excluded = ["const"]
+
+    if criterion == "pvalue":
+        while pvalues[pvalues.index != "const"].max() > threshold:
+            # factors = pvalues[pvalues.index != 'const' ][pvalues != pvalues.max()].index.tolist()
+            factors = pvalues[~pvalues.index.isin(excluded)].index.tolist()
+            X1 = X[factors]
+            X1 = sm.add_constant(X1)
+            results = sm.OLS(y, X1).fit()
+            pvalues = results.pvalues
+            excluded = ["const", pvalues.idxmax()]
+            if verbose and pvalues.max() > threshold:
+                print(
+                    "Drop {} with p-value {:.6}".format(pvalues.idxmax(), pvalues.max())
+                )
+
+        included = pvalues.index.tolist()
+        included = included[1:]
+
+    else:
+        included.remove("const")
+        for i in range(X.shape[1]):
+            j = 0
+            value = None
+            for i in included:
+                factors = included.copy()
+                factors.remove(i)
+                X1 = X[factors]
+                X1 = sm.add_constant(X1)
+                results = sm.OLS(y, X1).fit()
+
+                if criterion == "AIC":
+                    if results.aic < aic:
+                        value = i
+                        aic = results.aic
+                elif criterion == "SIC":
+                    if results.bic < sic:
+                        value = i
+                        sic = results.bic
+                elif criterion == "R2":
+                    if results.rsquared > r2:
+                        value = i
+                        r2 = results.rsquared
+                elif criterion == "R2_A":
+                    if results.rsquared_adj > r2_a:
+                        value = i
+                        r2_a = results.rsquared_adj
+
+                j += 1
+                if j == len(included):
+                    if value is None:
+                        break
+                    else:
+                        included.remove(value)
+                        if verbose:
+                            if criterion == "AIC":
+                                print(
+                                    "Drop {} with AIC {:.6}".format(value, results.aic)
+                                )
+                            elif criterion == "SIC":
+                                print(
+                                    "Drop {} with SIC {:.6}".format(value, results.bic)
+                                )
+                            elif criterion == "R2":
+                                print(
+                                    "Drop {} with R2 {:.6}".format(
+                                        value, results.rsquared
+                                    )
+                                )
+                            elif criterion == "R2_A":
+                                print(
+                                    "Drop {} with Adjusted R2 {:.6}".format(
+                                        value, results.rsquared_adj
+                                    )
+                                )
 
     return included
 
 
-def loadings_matrix(X, Y, threshold=0.05, verbose=False, stepwise="Forward"):
+def PCR(X, y, n_components=0.95):
+    r"""
+    Estimate the coeficients using Principal Components Regression (PCR).        
+
+    Parameters
+    ----------
+    X : DataFrame of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and 
+        n_features is the number of features.
+    y : Series of shape (n_samples, 1)
+        Target vector, where n_samples in the number of samples.
+    n_components : int, float, None or str, optional
+        if 1 < n_components (int), it represents the number of components that
+        will be keep. if 0 < n_components < 1 (float), it represents the
+        percentage of variance that the is explained by the components keeped. 
+        See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
+        for more details. The default is 0.95.
+
+    Returns
+    -------
+    value : nd-array    
+        An array with the coefficients of the model calculated using PCR.
+        
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+        
+    """
+
+    if not isinstance(X, pd.DataFrame):
+        raise ValueError("X must be a DataFrame")
+
+    if not isinstance(y, pd.DataFrame) and not isinstance(y, pd.Series):
+        raise ValueError("y must be a column DataFrame")
+
+    if isinstance(y, pd.DataFrame):
+        if y.shape[0] > 1 and y.shape[1] > 1:
+            raise ValueError("y must be a column DataFrame")
+
+    scaler = StandardScaler()
+    scaler.fit(X)
+    X_std = scaler.transform(X)
+
+    pca = PCA(n_components=n_components)
+    pca.fit(X_std)
+    Z_p = pca.transform(X_std)
+    V_p = pca.components_.T
+
+    results = sm.OLS(y, sm.add_constant(Z_p)).fit()
+    beta_pc = results.params[1:]
+    beta_pc = np.array(beta_pc, ndmin=2)
+
+    std = np.array(np.std(X, axis=0, ddof=1), ndmin=2)
+    mean = np.array(np.mean(X, axis=0), ndmin=2)
+    beta = V_p @ beta_pc.T / std.T
+
+    beta_0 = np.array(y.mean(), ndmin=2) - np.sum(beta * mean.T)
+
+    beta = np.insert(beta, 0, beta_0)
+    beta = np.array(beta, ndmin=2)
+
+    return beta
+
+
+def loadings_matrix(
+    X,
+    Y,
+    feature_selection="stepwise",
+    stepwise="Forward",
+    criterion="pvalue",
+    threshold=0.05,
+    n_components=0.95,
+    verbose=False,
+):
     r"""
     Estimate the loadings matrix using stepwise regression.        
 
@@ -269,15 +491,32 @@ def loadings_matrix(X, Y, threshold=0.05, verbose=False, stepwise="Forward"):
     Y : DataFrame of shape (n_samples, n_assets)
         Target matrix, where n_samples in the number of samples and 
         n_assets is the number of assets.
-    thresholdt : scalar, optional
-        Is the maximum p-value for each variable that will be 
-        accepted in the model. The default is 0.05.
-    verbose : bool, optional
-        Enable verbose output. The default is False.
-    steepwise: str 'Forward' or 'Backward', optional
+    feature_selection: str 'stepwise' or 'PCR', optional
+        Indicate the method used to estimate the loadings matrix.
+        The default is 'stepwise'.
+    stepwise: str 'Forward' or 'Backward', optional
         Indicate the method used for stepwise regression.
         The default is 'Forward'.
-
+    criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
+        The default is 'pvalue'. The criterion used to select the best features:
+        
+        - 'pvalue': select the features based on p-values.
+        - 'AIC': select the features based on lowest Akaike Information Criterion.
+        - 'SIC': select the features based on lowest Schwarz Information Criterion.
+        - 'R2': select the features based on highest R Squared.
+        - 'R2_A': select the features based on highest Adjusted R Squared.
+    threshold : scalar, optional
+        Is the maximum p-value for each variable that will be 
+        accepted in the model. The default is 0.05.
+    n_components : int, float, None or str, optional
+        if 1 < n_components (int), it represents the number of components that
+        will be keep. if 0 < n_components < 1 (float), it represents the
+        percentage of variance that the is explained by the components keeped. 
+        See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
+        for more details. The default is 0.95.
+    verbose : bool, optional
+        Enable verbose output. The default is False.
+        
     Returns
     -------
     loadings : DataFrame    
@@ -302,15 +541,24 @@ def loadings_matrix(X, Y, threshold=0.05, verbose=False, stepwise="Forward"):
     loadings = pd.DataFrame(loadings, index=rows, columns=cols)
 
     for i in rows:
-        if stepwise == "Forward":
-            included = forward_regression(X, Y[i], threshold, verbose)
-        elif stepwise == "Backward":
-            included = backward_regression(X, Y[i], threshold, verbose)
-        else:
-            raise ValueError("Choose and adecuate stepwise method")
-        results = sm.OLS(Y[i], sm.add_constant(X[included])).fit()
-        params = results.params
-        loadings.loc[i, params.index.tolist()] = params.T
+        if feature_selection == "stepwise":
+            if stepwise == "Forward":
+                included = forward_regression(
+                    X, Y[i], criterion=criterion, threshold=threshold, verbose=verbose
+                )
+            elif stepwise == "Backward":
+                included = backward_regression(
+                    X, Y[i], criterion=criterion, threshold=threshold, verbose=verbose
+                )
+            else:
+                raise ValueError("Choose and adecuate stepwise method")
+            results = sm.OLS(Y[i], sm.add_constant(X[included])).fit()
+            params = results.params
+            loadings.loc[i, params.index.tolist()] = params.T
+        elif feature_selection == "PCR":
+            beta = PCR(X, Y[i], n_components=n_components)
+            beta = pd.Series(np.ravel(beta), index=cols)
+            loadings.loc[i, cols] = beta.T
 
     return loadings
 
@@ -321,8 +569,11 @@ def risk_factors(
     B=None,
     method_mu="hist",
     method_cov="hist",
-    threshold=0.05,
+    feature_selection="stepwise",
     stepwise="Forward",
+    criterion="pvalue",
+    threshold=0.05,
+    n_components=0.95,
     error=True,
     **kwargs
 ):
@@ -370,9 +621,29 @@ def risk_factors(
     B : DataFrame of shape (n_assets, n_features), optional
         Loadings matrix. If is not specified, is estimated using
         stepwise regression. The default is None.
-    steepwise: str 'Forward' or 'Backward'
+    method: str 'stepwise' or 'PCR', optional
+        Indicate the method used to estimate the loadings matrix.
+        The default is 'stepwise'.
+    stepwise: str 'Forward' or 'Backward'
         Indicate the method used for stepwise regression. 
         The default is 'Forward'.
+    criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
+        The default is 'pvalue'. The criterion used to select the best features:
+        
+        - 'pvalue': select the features based on p-values.
+        - 'AIC': select the features based on lowest Akaike Information Criterion.
+        - 'SIC': select the features based on lowest Schwarz Information Criterion.
+        - 'R2': select the features based on highest R Squared.
+        - 'R2_A': select the features based on highest Adjusted R Squared.
+    threshold : scalar, optional
+        Is the maximum p-value for each variable that will be 
+        accepted in the model. The default is 0.05.
+    n_components : int, float, None or str, optional
+        if 1 < n_components (int), it represents the number of components that
+        will be keep. if 0 < n_components < 1 (float), it represents the
+        percentage of variance that the is explained by the components keeped. 
+        See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
+        for more details. The default is 0.95.
     error : bool
         Indicate if diagonal covariance matrix of errors is included (only 
         when B is estimated through a regression).
@@ -400,7 +671,16 @@ def risk_factors(
         raise ValueError("X and Y must be DataFrames")
 
     if B is None:
-        B = loadings_matrix(X, Y, threshold=threshold, verbose=False, stepwise=stepwise)
+        B = loadings_matrix(
+            X,
+            Y,
+            feature_selection=feature_selection,
+            stepwise=stepwise,
+            criterion=criterion,
+            threshold=threshold,
+            n_components=n_components,
+            verbose=False,
+        )
         X1 = sm.add_constant(X)
     elif not isinstance(B, pd.DataFrame):
         raise ValueError("B must be a DataFrame")
@@ -410,19 +690,19 @@ def risk_factors(
     assets = Y.columns.tolist()
     dates = X.index.tolist()
 
-    mu_f = np.matrix(mean_vector(X1, method=method_mu, **kwargs))
-    S_f = np.matrix(covar_matrix(X1, method=method_cov, **kwargs))
-    B = np.matrix(B)
+    mu_f = np.array(mean_vector(X1, method=method_mu, **kwargs), ndmin=2)
+    S_f = np.array(covar_matrix(X1, method=method_cov, **kwargs), ndmin=2)
+    B = np.array(B, ndmin=2)
 
-    returns = np.matrix(X1) * B.T
-    mu = B * mu_f.T
+    returns = np.array(X1, ndmin=2) @ B.T
+    mu = B @ mu_f.T
 
     if error == True:
-        e = np.matrix(Y) - returns
+        e = np.array(Y, ndmin=2) - returns
         S_e = np.diag(np.var(np.array(e), ddof=1, axis=0))
-        S = B * S_f * B.T + S_e
-    else:
-        S = B * S_f * B.T
+        S = B @ S_f @ B.T + S_e
+    elif error == False:
+        S = B @ S_f @ B.T
 
     mu = pd.DataFrame(mu.T, columns=assets)
     cov = pd.DataFrame(S, index=assets, columns=assets)
@@ -519,31 +799,33 @@ def black_litterman(
 
     assets = X.columns.tolist()
 
-    w = np.matrix(w)
+    w = np.array(w, ndmin=2)
     if w.shape[0] == 1:
         w = w.T
 
-    mu = np.matrix(mean_vector(X, method=method_mu, **kwargs))
-    S = np.matrix(covar_matrix(X, method=method_cov, **kwargs))
-    P = np.matrix(P)
-    Q = np.matrix(Q)
+    mu = np.array(mean_vector(X, method=method_mu, **kwargs), ndmin=2)
+    S = np.array(covar_matrix(X, method=method_cov, **kwargs), ndmin=2)
+    P = np.array(P, ndmin=2)
+    Q = np.array(Q, ndmin=2)
     tau = 1 / X.shape[0]
-    Omega = np.matrix(np.diag(np.diag(P * (tau * S) * P.T)))
+    Omega = np.array(np.diag(np.diag(P @ (tau * S) @ P.T)), ndmin=2)
 
     if eq == True:
-        PI = delta * S * w
+        PI = delta * (S @ w)
     elif eq == False:
         PI = mu.T - rf
 
-    PI_ = ((tau * S).I + P.T * Omega.I * P).I * ((tau * S).I * PI + P.T * Omega.I * Q)
-    M = ((tau * S).I + P.T * Omega.I * P).I
-    # PI_1 = PI + (tau * S* P.T) * (P * tau * S * P.T + Omega).I * (Q - P * PI)
-    # M = tau * S - (tau * S * P.T) * (P * tau * S * P.T + Omega).I * P * tau * S
+    PI_ = inv(inv(tau * S) + P.T @ inv(Omega) @ P) @ (
+        inv(tau * S) @ PI + P.T @ inv(Omega) @ Q
+    )
+    M = inv(inv(tau * S) + P.T @ inv(Omega) @ P)
+    # PI_1 = PI + (tau * S* P.T) * inv(P * tau * S * P.T + Omega) * (Q - P * PI)
+    # M = tau * S - (tau * S * P.T) * inv(P * tau * S * P.T + Omega) * P * tau * S
 
     mu = PI_ + rf
     mu = mu.T
     cov = S + M
-    w = (1 / (1 + tau)) * (delta * cov).I * PI_
+    w = (1 / (1 + tau)) * inv(delta * cov) @ PI_
 
     mu = pd.DataFrame(mu, columns=assets)
     cov = pd.DataFrame(cov, index=assets, columns=assets)

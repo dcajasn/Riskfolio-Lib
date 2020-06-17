@@ -27,7 +27,7 @@ def is_pos_def(cov, threshold=1e-8):
         ValueError when the value cannot be calculated.
 
     """
-    cov_ = np.matrix(cov)
+    cov_ = np.array(cov, ndmin=2)
     w, V = LA.eigh(cov_, lower=True, check_finite=True)
     value = np.all(w >= threshold)
 
@@ -58,8 +58,8 @@ def correl_matrix(cov):
         cols = cov.columns.tolist()
         flag = True
 
-    cov1 = np.matrix(cov)
-    corr = np.matrix(cov)
+    cov1 = np.array(cov, ndmin=2)
+    corr = np.array(cov, ndmin=2)
     m, n = cov.shape
     for i in range(0, m):
         for j in range(0, n):
@@ -99,9 +99,9 @@ def cov_fix(cov, method="clipped", **kwargs):
         cols = cov.columns.tolist()
         flag = True
 
-    cov_ = np.matrix(cov)
+    cov_ = np.array(cov, ndmin=2)
     cov_ = cov_nearest(cov_, method=method, **kwargs)
-    cov_ = np.matrix(cov_)
+    cov_ = np.array(cov_, ndmin=2)
 
     if flag:
         cov_ = pd.DataFrame(cov_, index=cols, columns=cols)
@@ -131,17 +131,17 @@ def cov_returns(cov, seed=0):
 
     rs = np.random.RandomState(seed)
     n = len(cov)
-    a = np.matrix(rs.randn(n + 10, n))
+    a = np.array(rs.randn(n + 10, n), ndmin=2)
 
     for i in range(0, 5):
         cov_ = np.cov(a.T)
-        L = np.matrix(np.linalg.cholesky(cov_))
-        a = a * (L.I).T
+        L = np.array(np.linalg.cholesky(cov_), ndmin=2)
+        a = a @ np.linalg.inv(L).T
         cov_ = np.cov(a.T)
-        desv_ = np.sqrt(np.matrix(np.diag(cov_)))
+        desv_ = np.sqrt(np.array(np.diag(cov_), ndmin=2))
         a = (np.array(a) - np.mean(a, axis=0)) / np.array(desv_)
 
-    L1 = np.matrix(np.linalg.cholesky(cov))
-    a = a * L1.T
+    L1 = np.array(np.linalg.cholesky(cov), ndmin=2)
+    a = a @ L1.T
 
     return a

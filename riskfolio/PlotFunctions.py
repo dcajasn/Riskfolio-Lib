@@ -118,7 +118,7 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     index = returns.index.tolist()
 
     for i in range(len(X)):
-        a = np.matrix(returns) * np.matrix(w[X[i]]).T
+        a = np.array(returns, ndmin=2) @ np.array(w[X[i]], ndmin=2).T
         prices = 1 + np.insert(a, 0, 0, axis=0)
         prices = np.cumprod(prices, axis=0)
         prices = np.ravel(prices).tolist()
@@ -259,7 +259,7 @@ def plot_frontier(
         fig.set_figwidth(width)
         fig.set_figheight(height)
 
-    mu_ = np.matrix(mu)
+    mu_ = np.array(mu, ndmin=2)
 
     ax.set_ylabel("Expected Return")
     item = rmeasures.index(rm)
@@ -274,11 +274,11 @@ def plot_frontier(
     Z1 = []
 
     for i in range(w_frontier.shape[1]):
-        weights = np.matrix(w_frontier.iloc[:, i]).T
+        weights = np.array(w_frontier.iloc[:, i], ndmin=2).T
         risk = rk.Sharpe_Risk(
             weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha
         )
-        ret = mu_ * weights
+        ret = mu_ @ weights
         ret = ret.item()
         ratio = (ret - rf) / risk
 
@@ -292,11 +292,11 @@ def plot_frontier(
         X2 = []
         Y2 = []
         for i in range(w.shape[1]):
-            weights = np.matrix(w.iloc[:, i]).T
+            weights = np.array(w.iloc[:, i], ndmin=2).T
             risk = rk.Sharpe_Risk(
                 weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha
             )
-            ret = mu_ * weights
+            ret = mu_ @ weights
             ret = ret.item()
             ratio = (ret - rf) / risk
 
@@ -390,28 +390,37 @@ def plot_pie(
         fig.set_figwidth(width)
         fig.set_figheight(height)
 
-    if title == "":
-        title = "Portfolio Composition"
-
-    ax.set_title(title)
-
     labels = w.index.tolist()
     sizes = w.iloc[:, 0].tolist()
-    sizes2 = pd.DataFrame([labels, sizes]).T
-    sizes2.columns = ["labels", "values"]
-    sizes2 = sizes2.sort_values(by=["values"], ascending=False)
+    abs_sizes = [np.absolute(s) for s in sizes]
+    sizes2 = pd.DataFrame([labels, abs_sizes, sizes]).T
+    sizes2.columns = ["labels", "abs_values", "values"]
+    sizes2 = sizes2.sort_values(by=["abs_values"], ascending=False)
     sizes2.index = [i for i in range(0, len(labels))]
     sizes3 = sizes2.cumsum()
-    l = sizes3[sizes3["values"] >= 1 - others].index.tolist()[0]
+    sizes3["abs_values"] = sizes3["abs_values"] / sizes3["abs_values"].max()
+    l = sizes3[sizes3["abs_values"] >= 1 - others].index.tolist()[0]
 
-    item = pd.DataFrame(["Others", 1 - sizes3.loc[l, "values"]]).T
-    item.columns = ["labels", "values"]
+    a1 = sizes2["abs_values"].sum() - sizes2[sizes2.index <= l]["abs_values"].sum()
+    a2 = sizes2["values"].sum() - sizes2[sizes2.index <= l]["values"].sum()
+    item = pd.DataFrame(["Others", a1, a2]).T
+    item.columns = ["labels", "abs_values", "values"]
     sizes2 = sizes2[sizes2.index <= l]
     sizes2 = sizes2.append(item)
 
+    abs_sizes = sizes2["abs_values"].tolist()
     sizes = sizes2["values"].tolist()
     labels = sizes2["labels"].tolist()
     sizes2 = ["{0:.1%}".format(i) for i in sizes]
+
+    if title == "":
+        title = "Portfolio Composition"
+
+    limit = np.round(np.min(sizes), 4)
+    if limit < 0:
+        title += " (Areas in Absolute Values)"
+
+    ax.set_title(title)
 
     colormap = cm.get_cmap(cmap)
     colormap = colormap(np.linspace(0, 1, 20))
@@ -427,7 +436,10 @@ def plot_pie(
     # set up style cycles
 
     wedges, texts = ax.pie(
-        sizes, radius=1, wedgeprops=dict(width=size, edgecolor="black"), startangle=-15
+        abs_sizes,
+        radius=1,
+        wedgeprops=dict(width=size, edgecolor="black"),
+        startangle=-15,
     )
 
     # Equal aspect ratio ensures that pie is drawn as a circle.
@@ -455,7 +467,7 @@ def plot_pie(
         horizontalalignment = {-1: "right", 1: "left"}[int(np.sign(x))]
         connectionstyle = "angle,angleA=0,angleB={}".format(ang)
         kw["arrowprops"].update({"connectionstyle": connectionstyle})
-        name = str(labels[i]) + " - " + str(sizes2[i])
+        name = str(labels[i]) + " " + str(sizes2[i])
         ax.annotate(
             name,
             xy=(x, y),
@@ -613,13 +625,13 @@ def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
         fig.set_figwidth(width)
         fig.set_figheight(height)
 
-    a = np.matrix(returns) * np.matrix(w)
+    a = np.array(returns, ndmin=2) @ np.array(w, ndmin=2)
     ax.set_title("Portfolio Returns Histogram")
     n, bins1, patches = ax.hist(
         a, bins, density=1, edgecolor="skyblue", color="skyblue", alpha=0.5
     )
     mu = np.mean(a)
-    sigma = np.asscalar(np.std(a, axis=0, ddof=1))
+    sigma = np.std(a, axis=0, ddof=1).item()
     risk = [
         mu,
         mu - sigma,
@@ -746,10 +758,10 @@ def plot_drawdown(nav, w, alpha=0.01, height=8, width=10, ax=None):
 
     index = nav.index.tolist()
 
-    a = np.matrix(nav)
+    a = np.array(nav, ndmin=2)
     a = np.insert(a, 0, 0, axis=0)
     a = np.diff(a, axis=0)
-    a = np.matrix(a) * np.matrix(w)
+    a = np.array(a, ndmin=2) @ np.array(w, ndmin=2)
     prices = 1 + np.insert(a, 0, 0, axis=0)
     prices = np.cumprod(prices, axis=0)
     prices = np.ravel(prices).tolist()

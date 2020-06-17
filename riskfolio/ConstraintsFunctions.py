@@ -33,10 +33,10 @@ def assets_constraints(constraints, asset_classes):
         
     Returns
     -------
-    A : nd-matrix    
+    A : nd-array    
         The matrix A of :math:`Aw \geq B`.
         
-    B : nd-matrix
+    B : nd-array
         The matrix B of :math:`Aw \geq B`.
         
     Raises
@@ -254,8 +254,8 @@ def assets_constraints(constraints, asset_classes):
                         A.append(A3)
                         B.append([0])
 
-    A = np.matrix(A)
-    B = np.matrix(B)
+    A = np.array(A, ndmin=2)
+    B = np.array(B, ndmin=2)
 
     return A, B
 
@@ -282,10 +282,10 @@ def factors_constraints(constraints, loadings):
 
     Returns
     -------
-    C : nd-matrix    
+    C : nd-array    
         The matrix C of :math:`Cw \geq D`.
 
-    D : nd-matrix
+    D : nd-array
         The matrix D of :math:`Cw \geq D`.
         
     Raises
@@ -358,8 +358,8 @@ def factors_constraints(constraints, loadings):
             C.append(C1 * d)
             D.append([data[i][3] * d])
 
-    C = np.matrix(C)
-    D = np.matrix(D)
+    C = np.array(C, ndmin=2)
+    D = np.array(D, ndmin=2)
 
     return C, D
 
@@ -393,10 +393,10 @@ def assets_views(views, asset_classes):
 
     Returns
     -------
-    P : nd-matrix    
+    P : nd-array    
         The matrix P that shows the relation among assets in each view.
 
-    Q : nd-matrix
+    Q : nd-array
         The matrix Q that shows the expected return of each view.
         
     Raises
@@ -530,8 +530,8 @@ def assets_views(views, asset_classes):
                         P.append(P1)
                         Q.append([data[i][5] * d])
 
-    P = np.matrix(P)
-    Q = np.matrix(Q)
+    P = np.array(P, ndmin=2)
+    Q = np.array(Q, ndmin=2)
 
     for i in range(len(Q)):
         if Q[i, 0] < 0:

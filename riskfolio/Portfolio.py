@@ -42,9 +42,9 @@ class Portfolio(object):
     TE : float, optional
         The maximum limit of tracking error deviatons. The default is 0.05.
     benchindex : DataFrame, optional
-        A dataframe that containts the returns of an index. If kindbench is
-        the tracking error constraints are calculated respect to this index.
-        The default is None.
+        A dataframe that containts the returns of an index. If kindbench is 
+        False the tracking error constraints are calculated respect to this
+        index. The default is None.
     benchweights : DataFrame, optional
         A dataframe that containts the weights of an index. The default is the
         equally weighted portfolio 1/N.
@@ -204,7 +204,7 @@ class Portfolio(object):
             else:
                 raise NameError("Weights must have a size of shape (n_assets,1)")
         else:
-            a = np.matrix(np.ones([n, 1]) / n)
+            a = np.array(np.ones([n, 1]) / n, ndmin=2)
         return a
 
     @benchweights.setter
@@ -217,7 +217,7 @@ class Portfolio(object):
             else:
                 raise NameError("Weights must have a size of shape (n_assets,1)")
         else:
-            a = np.matrix(np.ones([n, 1]) / n)
+            a = np.array(np.ones([n, 1]) / n, ndmin=2)
         self._benchweights = a
 
     @property
@@ -228,7 +228,7 @@ class Portfolio(object):
                 a = a
             else:
                 raise NameError(
-                    "The matrix ainequality must have the same number of columns that assets' number"
+                    "The array ainequality must have the same number of columns that assets' number"
                 )
         return a
 
@@ -329,11 +329,15 @@ class Portfolio(object):
         """
         X = self.returns
         if w is None:
-            w = self.benchweights
+            w = np.array(self.benchweights, ndmin=2)
 
         if delta is None:
-            a = np.matrix(self.mu) * np.matrix(w)
-            delta = (a - rf) / (np.matrix(w).T * np.matrix(self.cov) * np.matrix(w))
+            a = np.array(self.mu, ndmin=2) @ np.array(w, ndmin=2)
+            delta = (a - rf) / (
+                np.array(w, ndmin=2).T
+                @ np.array(self.cov, ndmin=2)
+                @ np.array(w, ndmin=2)
+            )
             delta = delta.item()
 
         mu, cov, w = pe.black_litterman(
@@ -470,67 +474,64 @@ class Portfolio(object):
         sigma = None
         returns = None
         if model == "Classic":
-            mu = np.matrix(self.mu)
-            sigma = np.matrix(self.cov)
-            returns = np.matrix(self.returns)
-            nav = np.matrix(self.nav)
+            mu = np.array(self.mu, ndmin=2)
+            sigma = np.array(self.cov, ndmin=2)
+            returns = np.array(self.returns, ndmin=2)
+            nav = np.array(self.nav, ndmin=2)
         elif model == "FM":
-            mu = np.matrix(self.mu_fm)
+            mu = np.array(self.mu_fm, ndmin=2)
             if hist == False:
-                sigma = np.matrix(self.cov_fm)
-                returns = np.matrix(self.returns_fm)
-                nav = np.matrix(self.nav_fm)
+                sigma = np.array(self.cov_fm, ndmin=2)
+                returns = np.array(self.returns_fm, ndmin=2)
+                nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
-                sigma = np.matrix(self.cov)
-                returns = np.matrix(self.returns)
-                nav = np.matrix(self.nav)
+                sigma = np.array(self.cov, ndmin=2)
+                returns = np.array(self.returns, ndmin=2)
+                nav = np.array(self.nav, ndmin=2)
         elif model == "BL":
-            mu = np.matrix(self.mu_bl)
+            mu = np.array(self.mu_bl, ndmin=2)
             if hist == False:
-                sigma = np.matrix(self.cov_bl)
+                sigma = np.array(self.cov_bl, ndmin=2)
             elif hist == True:
-                sigma = np.matrix(self.cov)
-            returns = np.matrix(self.returns)
-            nav = np.matrix(self.nav)
+                sigma = np.array(self.cov, ndmin=2)
+            returns = np.array(self.returns, ndmin=2)
+            nav = np.array(self.nav, ndmin=2)
         elif model == "BL_FM":
-            mu = np.matrix(self.mu_bl_fm)
+            mu = np.array(self.mu_bl_fm, ndmin=2)
             if hist == False:
-                sigma = np.matrix(self.cov_bl_fm)
-                returns = np.matrix(self.returns_fm)
-                nav = np.matrix(self.nav_fm)
+                sigma = np.array(self.cov_bl_fm, ndmin=2)
+                returns = np.array(self.returns_fm, ndmin=2)
+                nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
-                sigma = np.matrix(self.cov)
-                returns = np.matrix(self.returns)
-                nav = np.matrix(self.nav)
+                sigma = np.array(self.cov, ndmin=2)
+                returns = np.array(self.returns, ndmin=2)
+                nav = np.array(self.nav, ndmin=2)
 
         # General Model Variables
 
-        returns = np.matrix(returns)
+        returns = np.array(returns, ndmin=2)
         w = cv.Variable((mu.shape[1], 1))
         k = cv.Variable((1, 1))
-        rf0 = cv.Parameter(nonneg=True)
-        rf0.value = rf
-        n = cv.Parameter(nonneg=True)
-        n.value = returns.shape[0]
-        ret = mu * w
+        rf0 = rf
+        n = returns.shape[0]
+        ret = mu @ w
 
         # MV Model Variables
 
         risk1 = cv.quad_form(w, sigma)
         returns_1 = af.cov_returns(sigma) * 1000
-        n1 = cv.Parameter(nonneg=True)
-        n1.value = returns_1.shape[0]
-        risk1_1 = cv.norm(returns_1 * w, "fro") / cv.sqrt(n1 - 1)
+        n1 = returns_1.shape[0]
+        risk1_1 = cv.norm(returns_1 @ w, "fro") / cv.sqrt(n1 - 1)
 
         # MAD Model Variables
 
         madmodel = False
         Y = cv.Variable((returns.shape[0], 1))
-        u = np.matrix(np.ones((returns.shape[0], 1)) * mu)
+        u = np.ones((returns.shape[0], 1)) * mu
         a = returns - u
         risk2 = cv.sum(Y) / n
         # madconstraints=[a*w >= -Y, a*w <= Y, Y >= 0]
-        madconstraints = [a * w <= Y, Y >= 0]
+        madconstraints = [a @ w <= Y, Y >= 0]
 
         # Semi Variance Model Variables
 
@@ -539,17 +540,16 @@ class Portfolio(object):
         # CVaR Model Variables
 
         alpha1 = self.alpha
-        VaR = cv.Variable(1)
-        alpha = cv.Parameter(nonneg=True)
-        alpha.value = alpha1
-        X = returns * w
+        VaR = cv.Variable((1, 1))
+        alpha = alpha1
+        X = returns @ w
         Z = cv.Variable((returns.shape[0], 1))
         risk4 = VaR + 1 / (alpha * n) * cv.sum(Z)
         cvarconstraints = [Z >= 0, Z >= -X - VaR]
 
         # Worst Realization (Minimax) Model Variables
 
-        M = cv.Variable(1)
+        M = cv.Variable((1, 1))
         risk5 = M
         wrconstraints = [-X <= M]
 
@@ -576,9 +576,9 @@ class Portfolio(object):
 
         drawdown = False
         if obj == "Sharpe":
-            X1 = k + nav * w
+            X1 = k + nav @ w
         else:
-            X1 = 1 + nav * w
+            X1 = 1 + nav @ w
 
         U = cv.Variable((nav.shape[0] + 1, 1))
         ddconstraints = [U[1:] >= X1, U[1:] >= U[:-1]]
@@ -590,7 +590,7 @@ class Portfolio(object):
 
         # Maximum Drawdown Model Variables
 
-        MDD = cv.Variable(1)
+        MDD = cv.Variable((1, 1))
         risk8 = MDD
         mddconstraints = [MDD >= U[1:] - X1]
 
@@ -600,23 +600,18 @@ class Portfolio(object):
 
         # Conditional Drawdown Model Variables
 
-        CDaR = cv.Variable(1)
+        CDaR = cv.Variable((1, 1))
         Zd = cv.Variable((nav.shape[0], 1))
         risk10 = CDaR + 1 / (alpha * n) * cv.sum(Zd)
         cdarconstraints = [Zd >= U[1:] - X1 - CDaR, Zd >= 0]
 
         # Tracking Error Model Variables
 
-        c = self.benchweights
+        c = np.array(self.benchweights, ndmin=2)
         if self.kindbench == True:
-            bench = np.matrix(returns) * c
-        else:
-            bench = self.benchindex
-
-        if obj == "Sharpe":
-            TE = cv.norm(returns * w - bench * k, "fro") / cv.sqrt(n - 1)
-        else:
-            TE = cv.norm(returns * w - bench, "fro") / cv.sqrt(n - 1)
+            bench = returns @ c
+        elif self.kindbench == False:
+            bench = np.array(self.benchindex, ndmin=2)
 
         # Problem aditional linear constraints
 
@@ -624,7 +619,7 @@ class Portfolio(object):
             constraints = [
                 cv.sum(w) == self.upperlng * k,
                 k >= 0,
-                mu * w - rf0 * k == 1,
+                mu @ w - rf0 * k == 1,
             ]
             if self.sht == False:
                 constraints += [w <= self.upperlng * k, w * 1000 >= 0]
@@ -646,30 +641,34 @@ class Portfolio(object):
                 ]
 
         if self.ainequality is not None and self.binequality is not None:
-            A = np.matrix(self.ainequality)
-            B = np.matrix(self.binequality)
+            A = np.array(self.ainequality, ndmin=2)
+            B = np.array(self.binequality, ndmin=2)
             if obj == "Sharpe":
-                constraints += [A * w - B * k >= 0]
+                constraints += [A @ w - B @ k >= 0]
             else:
-                constraints += [A * w - B >= 0]
-
-        # Turnover Constraints
-
-        if obj == "Sharpe":
-            if self.allowTO == True:
-                constraints += [cv.abs(w - c * k) * 1000 <= self.turnover * k * 1000]
-        else:
-            if self.allowTO == True:
-                constraints += [cv.abs(w - c) * 1000 <= self.turnover * 1000]
+                constraints += [A @ w - B >= 0]
 
         # Tracking error Constraints
 
         if obj == "Sharpe":
             if self.allowTE == True:
-                constraints += [TE <= self.TE * k]
+                TE_1 = cv.norm(returns @ w - bench @ k, "fro") / cv.sqrt(n - 1)
+                constraints += [TE_1 <= self.TE * k]
         else:
             if self.allowTE == True:
-                constraints += [TE <= self.TE]
+                TE_1 = cv.norm(returns @ w - bench, "fro") / cv.sqrt(n - 1)
+                constraints += [TE_1 <= self.TE]
+
+        # Turnover Constraints
+
+        if obj == "Sharpe":
+            if self.allowTO == True:
+                TO_1 = cv.abs(w - c @ k) * 1000
+                constraints += [TO_1 <= self.turnover * k * 1000]
+        else:
+            if self.allowTO == True:
+                TO_1 = cv.abs(w - c) * 1000
+                constraints += [TO_1 <= self.turnover * 1000]
 
         # Problem risk Constraints
 
@@ -802,7 +801,13 @@ class Portfolio(object):
         # Optimization Process
 
         # Defining solvers
-        solvers = [cv.ECOS, cv.SCS, cv.OSQP, cv.CVXOPT, cv.GLPK]
+        solvers = [cv.ECOS, cv.SCS, cv.OSQP, cv.CVXOPT]
+        sol_params = {
+            cv.ECOS: {"max_iters": 2000, "abstol": 1e-10},
+            cv.SCS: {"max_iters": 2500, "eps": 1e-10},
+            cv.OSQP: {"max_iter": 10000, "eps_abs": 1e-10},
+            cv.CVXOPT: {"max_iters": 2000, "abstol": 1e-10},
+        }
 
         # Defining objective function
         if obj == "Sharpe":
@@ -821,18 +826,16 @@ class Portfolio(object):
             prob = cv.Problem(objective, constraints)
             for solver in solvers:
                 try:
-                    prob.solve(
-                        solver=solver, parallel=True, max_iters=2000, abstol=1e-10
-                    )
+                    prob.solve(solver=solver, **sol_params[solver])
                 except:
                     pass
                 if w.value is not None:
                     break
 
             if obj == "Sharpe":
-                weights = np.matrix(w.value / k.value).T
+                weights = np.array(w.value / k.value, ndmin=2).T
             else:
-                weights = np.matrix(w.value).T
+                weights = np.array(w.value, ndmin=2).T
 
             if self.sht == False:
                 weights = np.abs(weights) / np.sum(np.abs(weights))
@@ -930,79 +933,79 @@ class Portfolio(object):
         sigma = None
         returns = None
         if model == "Classic":
-            mu = np.matrix(self.mu)
-            sigma = np.matrix(self.cov)
-            returns = np.matrix(self.returns)
-            nav = np.matrix(self.nav)
+            mu = np.array(self.mu, ndmin=2)
+            sigma = np.array(self.cov, ndmin=2)
+            returns = np.array(self.returns, ndmin=2)
+            nav = np.array(self.nav, ndmin=2)
         elif model == "FM":
-            mu = np.matrix(self.mu_fm)
+            mu = np.array(self.mu_fm, ndmin=2)
             if hist == False:
-                sigma = np.matrix(self.cov_fm)
-                returns = np.matrix(self.returns_fm)
-                nav = np.matrix(self.nav_fm)
+                sigma = np.array(self.cov_fm, ndmin=2)
+                returns = np.array(self.returns_fm, ndmin=2)
+                nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
-                sigma = np.matrix(self.cov)
-                returns = np.matrix(self.returns)
-                nav = np.matrix(self.nav)
+                sigma = np.array(self.cov, ndmin=2)
+                returns = np.array(self.returns, ndmin=2)
+                nav = np.array(self.nav, ndmin=2)
         elif model == "BL":
-            mu = np.matrix(self.mu_bl)
+            mu = np.array(self.mu_bl, ndmin=2)
             if hist == False:
-                sigma = np.matrix(self.cov_bl)
+                sigma = np.array(self.cov_bl, ndmin=2)
             elif hist == True:
-                sigma = np.matrix(self.cov)
-            returns = np.matrix(self.returns)
-            nav = np.matrix(self.nav)
+                sigma = np.array(self.cov, ndmin=2)
+            returns = np.array(self.returns, ndmin=2)
+            nav = np.array(self.nav, ndmin=2)
         elif model == "BL_FM":
-            mu = np.matrix(self.mu_bl_fm_2)
+            mu = np.array(self.mu_bl_fm_2, ndmin=2)
             if hist == False:
-                sigma = np.matrix(self.cov_bl_fm_2)
-                returns = np.matrix(self.returns_fm)
-                nav = np.matrix(self.nav_fm)
+                sigma = np.array(self.cov_bl_fm_2, ndmin=2)
+                returns = np.array(self.returns_fm, ndmin=2)
+                nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
-                sigma = np.matrix(self.cov)
-                returns = np.matrix(self.returns)
-                nav = np.matrix(self.nav)
+                sigma = np.array(self.cov, ndmin=2)
+                returns = np.array(self.returns, ndmin=2)
+                nav = np.array(self.nav, ndmin=2)
 
         alpha1 = self.alpha
 
         limits = self.frontier_limits(model="Classic", rm=rm, rf=rf, hist=hist)
 
-        w_min = np.matrix(limits.iloc[:, 0]).T
-        w_max = np.matrix(limits.iloc[:, 1]).T
+        w_min = np.array(limits.iloc[:, 0], ndmin=2).T
+        w_max = np.array(limits.iloc[:, 1], ndmin=2).T
 
-        ret_min = (mu * w_min).item()
-        ret_max = (mu * w_max).item()
+        ret_min = (mu @ w_min).item()
+        ret_max = (mu @ w_max).item()
 
         if rm == "MV":
-            risk_min = np.sqrt(w_min.T * sigma * w_min).item()
-            risk_max = np.sqrt(w_max.T * sigma * w_max).item()
+            risk_min = np.sqrt(w_min.T @ sigma @ w_min).item()
+            risk_max = np.sqrt(w_max.T @ sigma @ w_max).item()
         elif rm == "MAD":
-            risk_min = rk.MAD(returns * w_min)
-            risk_max = rk.MAD(returns * w_max)
+            risk_min = rk.MAD(returns @ w_min)
+            risk_max = rk.MAD(returns @ w_max)
         elif rm == "MSV":
-            risk_min = rk.SemiDeviation(returns * w_min)
-            risk_max = rk.SemiDeviation(returns * w_max)
+            risk_min = rk.SemiDeviation(returns @ w_min)
+            risk_max = rk.SemiDeviation(returns @ w_max)
         elif rm == "CVaR":
-            risk_min = rk.CVaR_Hist(returns * w_min, alpha1)
-            risk_max = rk.CVaR_Hist(returns * w_max, alpha1)
+            risk_min = rk.CVaR_Hist(returns @ w_min, alpha1)
+            risk_max = rk.CVaR_Hist(returns @ w_max, alpha1)
         elif rm == "WR":
-            risk_min = rk.WR(returns * w_min)
-            risk_max = rk.WR(returns * w_max)
+            risk_min = rk.WR(returns @ w_min)
+            risk_max = rk.WR(returns @ w_max)
         elif rm == "FLPM":
-            risk_min = rk.LPM(returns * w_min, rf, 1)
-            risk_max = rk.LPM(returns * w_max, rf, 1)
+            risk_min = rk.LPM(returns @ w_min, rf, 1)
+            risk_max = rk.LPM(returns @ w_max, rf, 1)
         elif rm == "SLPM":
-            risk_min = rk.LPM(returns * w_min, rf, 2)
-            risk_max = rk.LPM(returns * w_max, rf, 2)
+            risk_min = rk.LPM(returns @ w_min, rf, 2)
+            risk_max = rk.LPM(returns @ w_max, rf, 2)
         elif rm == "MDD":
-            risk_min = rk.MaxAbsDD(returns * w_min)
-            risk_max = rk.MaxAbsDD(returns * w_max)
+            risk_min = rk.MaxAbsDD(returns @ w_min)
+            risk_max = rk.MaxAbsDD(returns @ w_max)
         elif rm == "ADD":
-            risk_min = rk.AvgAbsDD(returns * w_min)
-            risk_max = rk.AvgAbsDD(returns * w_max)
+            risk_min = rk.AvgAbsDD(returns @ w_min)
+            risk_max = rk.AvgAbsDD(returns @ w_max)
         elif rm == "CDaR":
-            risk_min = rk.ConAbsDD(returns * w_min, alpha1)
-            risk_max = rk.ConAbsDD(returns * w_max, alpha1)
+            risk_min = rk.ConAbsDD(returns @ w_min, alpha1)
+            risk_max = rk.ConAbsDD(returns @ w_max, alpha1)
 
         mus = np.linspace(ret_min, ret_max + (ret_max - ret_min) / (points), points + 1)
 
