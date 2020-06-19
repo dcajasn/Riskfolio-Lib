@@ -19,7 +19,7 @@ Do you have any questions?
 ==========================
 
 If you have any questions related to Riskfolio-Lib, please
-`raise an issue <https://github.com/robertmartin8/PyPortfolioOpt/issues>`_ and
+`raise an issue <https://github.com/dcajasn/Riskfolio-Lib/issues>`_ and
 I will tag it as a question.
 
 If you have questions *unrelated* to Riskfolio-Lib or want advisory, contact

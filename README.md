@@ -23,9 +23,9 @@ Some of key functionality that Riskfolio-Lib offers:
 * Portfolio optimization with Risk Factors model.
 * Portfolio optimization with constraints on tracking error and turnover.
 * Portfolio optimization with short positions and leveraged portfolios.
-* Tools for construct efficient frontier for 10 risk measures.
-* Tools for construct linear constraints on assets, asset classes and risk factors.
-* Tools for construct views on assets and asset classes.
+* Tools for build efficient frontier for 10 risk measures.
+* Tools for build linear constraints on assets, asset classes and risk factors.
+* Tools for build views on assets and asset classes.
 * Tools for calculate risk measures.
 * Tools for estimate loadings matrix (Stepwise Regression and Principal Components Regression).
 * Tools for visualizing portfolio properties and risk measures.
@@ -69,10 +69,11 @@ Riskfolio-Lib development takes place on Github: https://github.com/dcajasn/Risk
 The plan for this module is to add more functions that will be very useful
 to asset managers.
 
+* Mean Entropic Risk Optimization Portfolios.
 * Mean Risk Worst Case Optimization (Min Max):
     - Box and elipsoidal constraints for mean and covariance matrix.
     - Worst covariance and mean estimation using bootstrapping.
     - Worst covariance and mean estimation using percentage change.
-* Mean Entropic Risk Optimization Portfolios.
-* Add functions to estimate Durantion, Convexity, Key Rate Durations and Convexities of bonds without embedded options (for loadings matrix).
+* Risk Parity Optimization Portfolios.
+* Add functions to estimate Duration, Convexity, Key Rate Durations and Convexities of bonds without embedded options (for loadings matrix).
 * Add more functions based on suggestion of users.
