@@ -20,6 +20,7 @@ __all__ = [
     "ConRelDD",
     "Sharpe_Risk",
     "Sharpe",
+    "Risk_Contribution",
 ]
 
 
@@ -879,3 +880,117 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
     value = (ret - rf) / risk
 
     return value
+
+
+###############################################################################
+# Risk Contribution Vectors
+###############################################################################
+
+
+def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
+    r"""
+    Calculate the risk contribution for each asset based on the risk measure
+    selected.
+
+    Parameters
+    ----------
+    w : DataFrame or 1d-array of shape (n_assets, 1)
+        Weights matrix, where n_assets is the number of assets.
+    cov : DataFrame or nd-array of shape (n_features, n_features)
+        Covariance matrix, where n_features is the number of features.
+    returns : DataFrame or nd-array of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and 
+        n_features is the number of features.
+    rm : str, optional
+        Risk measure used in the denominator of the ratio. The default is
+        'MV'. Posible values are:
+            
+        - 'MV': Standard Deviation.
+        - 'MAD': Mean Absolute Deviation.
+        - 'MSV': Semi Standard Deviation.
+        - 'FLPM': First Lower Partial Moment (Omega Ratio).
+        - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
+        - 'VaR': Value at Risk.
+        - 'CVaR': Conditional Value at Risk.
+        - 'WR': Worst Realization (Minimax)
+        - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
+        
+    rf : float, optional
+        Risk free rate. The default is 0.
+    **kwargs : dict
+        Other arguments that depends on the risk measure.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Risk measure of the portfolio.
+
+    """
+
+    w_ = np.array(w, ndmin=2)
+    if cov is not None:
+        cov_ = np.array(cov, ndmin=2)
+    if returns is not None:
+        returns_ = np.array(returns, ndmin=2)
+
+    # risk = Sharpe_Risk(w, cov=cov_, returns=returns_, rm=rm, rf=rf, alpha=alpha)
+
+    RC = []
+    d_i = 0.0000001
+
+    for i in range(0, w_.shape[0]):
+        delta = np.zeros((w_.shape[0], 1))
+        delta[i, 0] = d_i
+        w_1 = w_ + delta
+        w_2 = w_ - delta
+        a_1 = returns_ @ w_1
+        a_2 = returns_ @ w_2
+        if rm == "MV":
+            risk_1 = w_1.T @ cov_ @ w_1
+            risk_1 = np.sqrt(risk_1.item())
+            risk_2 = w_2.T @ cov_ @ w_2
+            risk_2 = np.sqrt(risk_2.item())
+        elif rm == "MAD":
+            risk_1 = MAD(a_1)
+            risk_2 = MAD(a_2)
+        elif rm == "MSV":
+            risk_1 = SemiDeviation(a_1)
+            risk_2 = SemiDeviation(a_2)
+        elif rm == "FLPM":
+            risk_1 = LPM(a_1, MAR=rf, p=1)
+            risk_2 = LPM(a_2, MAR=rf, p=1)
+        elif rm == "SLPM":
+            risk_1 = LPM(a_1, MAR=rf, p=2)
+            risk_2 = LPM(a_2, MAR=rf, p=2)
+        elif rm == "VaR":
+            risk_1 = VaR_Hist(a_1, alpha=alpha)
+            risk_2 = VaR_Hist(a_2, alpha=alpha)
+        elif rm == "CVaR":
+            risk_1 = CVaR_Hist(a_1, alpha=alpha)
+            risk_2 = CVaR_Hist(a_2, alpha=alpha)
+        elif rm == "WR":
+            risk_1 = WR(a_1)
+            risk_2 = WR(a_2)
+        elif rm == "MDD":
+            risk_1 = MaxAbsDD(a_1)
+            risk_2 = MaxAbsDD(a_2)
+        elif rm == "ADD":
+            risk_1 = AvgAbsDD(a_1)
+            risk_2 = AvgAbsDD(a_2)
+        elif rm == "CDaR":
+            risk_1 = ConAbsDD(a_1, alpha=alpha)
+            risk_2 = ConAbsDD(a_2, alpha=alpha)
+
+        RC_i = (risk_1 - risk_2) / (2 * d_i) * w_[i, 0]
+        RC.append(RC_i)
+
+    RC = np.array(RC, ndmin=1)
+
+    return RC

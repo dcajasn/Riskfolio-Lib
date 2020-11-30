@@ -330,12 +330,12 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
 
     if criterion == "pvalue":
         while pvalues[pvalues.index != "const"].max() > threshold:
-            # factors = pvalues[pvalues.index != 'const' ][pvalues != pvalues.max()].index.tolist()
             factors = pvalues[~pvalues.index.isin(excluded)].index.tolist()
             X1 = X[factors]
             X1 = sm.add_constant(X1)
             results = sm.OLS(y, X1).fit()
             pvalues = results.pvalues
+            pvalues = pvalues[pvalues.index != "const"]
             excluded = ["const", pvalues.idxmax()]
             if verbose and pvalues.max() > threshold:
                 print(
@@ -343,7 +343,6 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
                 )
 
         included = pvalues.index.tolist()
-        included = included[1:]
 
     else:
         included.remove("const")

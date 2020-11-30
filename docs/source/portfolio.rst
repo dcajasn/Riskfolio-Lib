@@ -5,6 +5,9 @@ Portfolio Models
 Some Theory
 ===========
 
+Mean Risk Portfolios
+--------------------
+
 Riskfolio-Lib allows to calculate optimum portfolios that result from optimize
 one of the following 4 objective functions:
 
@@ -77,6 +80,41 @@ second lower partial moment, :math:`r_{f}` is the minimum acceptable return
 :math:`\text{MAR}`.
 
 :math:`\lambda`: is the risk aversion coefficient of the investor.
+
+
+Risk Parity Portfolios
+----------------------
+
+Riskfolio-Lib allows to calculate optimum portfolios that result from optimize
+the general risk parity model :cite:`a-Roncalli`:
+
+.. math::
+
+    \begin{align}
+    &\underset{w}{\min} & & \phi(w)\\
+    &\text{s.t.} & & b \log(w) \geq c\\
+    & & & w \geq 0 \\
+    \end{align}
+
+Where:
+    
+:math:`w`: is the vector of weights of the optimum portfolio.
+
+:math:`b`: is a vector of risk contribution constraints.
+
+:math:`\phi(w)`: are 7 available risk measures. The available risk
+measures are:
+
+- Standard Deviation :cite:`a-Markowitz`.
+- Mean Absolute Deviation :cite:`a-Konno`.
+- Semi Standard Deviation :cite:`a-Mansini3`.
+- First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
+- Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
+- Conditional Value at Risk :cite:`a-Rockafellar`.
+- Conditional Drawdown at Risk of uncompounded returns :cite:`a-Uryasev1`.
+
+:math:`c`: is an arbitrary constant.
+
 
 
 Module Methods

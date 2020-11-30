@@ -3,6 +3,12 @@ Changelog
 #########
 
 
+Version 0.0.5
+=============
+
+- Repair some bugs.
+- Implement Risk Parity Portfolio Optimization for 7 convex risk measures.
+
 Version 0.0.4
 =============
 

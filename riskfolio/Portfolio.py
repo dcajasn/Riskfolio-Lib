@@ -641,8 +641,8 @@ class Portfolio(object):
                 ]
 
         if self.ainequality is not None and self.binequality is not None:
-            A = np.array(self.ainequality, ndmin=2)
-            B = np.array(self.binequality, ndmin=2)
+            A = np.array(self.ainequality, ndmin=2) * 1000
+            B = np.array(self.binequality, ndmin=2) * 1000
             if obj == "Sharpe":
                 constraints += [A @ w - B @ k >= 0]
             else:
@@ -849,6 +849,237 @@ class Portfolio(object):
         optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
 
         return optimum
+
+    def rp_optimization(self, model="Classic", rm="MV", rf=0, b=None, hist=True):
+        r"""
+        This method that calculates the risk parity portfolio according to the
+        optimization model selected by the user. The general problem that
+        solves is:
+        
+        .. math::
+            \begin{align}
+            &\underset{w}{\min} & & R(w)\\
+            &\text{s.t.} & & b \log(w) \geq c\\
+            & & & w \geq 0 \\
+            \end{align}
+        
+        Where:
+            
+        :math:`R(w)` is the risk measure.
+    
+        :math:`b` is a vector of risk constraints.
+        
+        Parameters
+        ----------
+        model : str can be 'Classic' or 'FM'
+            The model used for optimize the portfolio.
+            The default is 'Classic'. Posible values are:
+
+            - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
+            - 'FM': use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.
+            
+        rm : str, optional
+            The risk measure used to optimze the portfolio.
+            The default is 'MV'. Posible values are:
+            
+            - 'MV': Standard Deviation.
+            - 'MAD': Mean Absolute Deviation.
+            - 'MSV': Semi Standard Deviation.
+            - 'FLPM': First Lower Partial Moment (Omega Ratio).
+            - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
+            - 'CVaR': Conditional Value at Risk.
+            - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
+
+        rf : float, optional
+            Risk free rate, must be in the same period of assets returns.
+            Used for 'FLPM' and 'SLPM'.
+            The default is 0.                
+        b : float, optional
+            The vector of risk constraints per asset.
+            The default is 1/n (number of assets).
+        hist : bool, optional
+            Indicate if uses historical or factor estimation of returns to 
+            calculate risk measures that depends on scenarios (All except
+            'MV' risk measure). The default is True.
+
+        Returns
+        -------
+        w : DataFrame
+            The weights of optimum portfolio.
+
+        """
+
+        # General model Variables
+
+        mu = None
+        sigma = None
+        returns = None
+        if model == "Classic":
+            mu = np.array(self.mu, ndmin=2)
+            sigma = np.array(self.cov, ndmin=2)
+            returns = np.array(self.returns, ndmin=2)
+            nav = np.array(self.nav, ndmin=2)
+        elif model == "FM":
+            mu = np.array(self.mu_fm, ndmin=2)
+            if hist == False:
+                sigma = np.array(self.cov_fm, ndmin=2)
+                returns = np.array(self.returns_fm, ndmin=2)
+                nav = np.array(self.nav_fm, ndmin=2)
+            elif hist == True:
+                sigma = np.array(self.cov, ndmin=2)
+                returns = np.array(self.returns, ndmin=2)
+                nav = np.array(self.nav, ndmin=2)
+
+        # General Model Variables
+
+        if b is None:
+            b = np.ones((1, mu.shape[1]))
+            b = b / mu.shape[1]
+
+        returns = np.array(returns, ndmin=2)
+        w = cv.Variable((mu.shape[1], 1))
+        rf0 = rf
+        n = returns.shape[0]
+
+        # MV Model Variables
+
+        risk1 = cv.quad_form(w, sigma)
+        returns_1 = af.cov_returns(sigma) * 1000
+        n1 = returns_1.shape[0]
+        risk1_1 = cv.norm(returns_1 @ w, "fro") / cv.sqrt(n1 - 1)
+
+        # MAD Model Variables
+
+        Y = cv.Variable((returns.shape[0], 1))
+        u = np.ones((returns.shape[0], 1)) * mu
+        a = returns - u
+        risk2 = cv.sum(Y) / n
+        # madconstraints=[a*w >= -Y, a*w <= Y, Y >= 0]
+        madconstraints = [a @ w <= Y, Y >= 0]
+
+        # Semi Variance Model Variables
+
+        risk3 = cv.norm(Y, "fro") / cv.sqrt(n - 1)
+
+        # CVaR Model Variables
+
+        alpha1 = self.alpha
+        VaR = cv.Variable((1, 1))
+        alpha = alpha1
+        X = returns @ w
+        Z = cv.Variable((returns.shape[0], 1))
+        risk4 = VaR + 1 / (alpha * n) * cv.sum(Z)
+        cvarconstraints = [Z >= 0, Z >= -X - VaR]
+
+        # Lower Partial Moment Variables
+
+        lpm = cv.Variable((returns.shape[0], 1))
+        lpmconstraints = [lpm >= 0, lpm >= rf0 - X]
+
+        # First Lower Partial Moment (Omega) Model Variables
+
+        risk6 = cv.sum(lpm) / n
+
+        # Second Lower Partial Moment (Sortino) Model Variables
+
+        risk7 = cv.norm(lpm, "fro") / cv.sqrt(n - 1)
+
+        # Drawdown Model Variables
+
+        X1 = 1 + nav @ w
+        U = cv.Variable((nav.shape[0] + 1, 1))
+        ddconstraints = [
+            U[1:] * 1000 >= X1 * 1000,
+            U[1:] * 1000 >= U[:-1] * 1000,
+            U[1:] * 1000 >= 1 * 1000,
+            U[0] * 1000 == 1 * 1000,
+        ]
+
+        # Conditional Drawdown Model Variables
+
+        CDaR = cv.Variable((1, 1))
+        Zd = cv.Variable((nav.shape[0], 1))
+        risk10 = CDaR + 1 / (alpha * n) * cv.sum(Zd)
+        cdarconstraints = [
+            Zd * 1000 >= U[1:] * 1000 - X1 * 1000 - CDaR * 1000,
+            Zd * 1000 >= 0,
+        ]
+
+        # Defining risk function
+
+        constraints = []
+
+        if rm == "MV":
+            if model != "Classic":
+                risk = risk1_1
+            elif model == "Classic":
+                risk = risk1
+        elif rm == "MAD":
+            risk = risk2
+            constraints += madconstraints
+        elif rm == "MSV":
+            risk = risk3
+            constraints += madconstraints
+        elif rm == "CVaR":
+            risk = risk4
+            constraints += cvarconstraints
+        elif rm == "FLPM":
+            risk = risk6
+            constraints += lpmconstraints
+        elif rm == "SLPM":
+            risk = risk7
+            constraints += lpmconstraints
+        elif rm == "CDaR":
+            risk = risk10
+            constraints += ddconstraints
+            constraints += cdarconstraints
+
+        # Frontier Variables
+
+        portafolio = {}
+
+        for i in self.assetslist:
+            portafolio.update({i: []})
+
+        # Optimization Process
+
+        # Defining solvers
+        solvers = [cv.ECOS, cv.SCS, cv.OSQP, cv.CVXOPT]
+        sol_params = {
+            cv.ECOS: {"max_iters": 2000, "abstol": 1e-10},
+            cv.SCS: {"max_iters": 2500, "eps": 1e-10},
+            cv.OSQP: {"max_iter": 10000, "eps_abs": 1e-10},
+            cv.CVXOPT: {"max_iters": 2000, "abstol": 1e-10},
+        }
+
+        # Defining objective function
+
+        objective = cv.Minimize(risk * 1000)
+
+        constraints += [b @ cv.log(w) * 1000 >= 1 * 1000, w * 1000 >= 0]
+
+        try:
+            prob = cv.Problem(objective, constraints)
+            for solver in solvers:
+                try:
+                    prob.solve(solver=solver, **sol_params[solver])
+                except:
+                    pass
+                if w.value is not None:
+                    break
+
+            weights = np.array(w.value, ndmin=2).T
+            weights = np.abs(weights) / np.sum(np.abs(weights))
+
+            for j in self.assetslist:
+                portafolio[j].append(weights[0, self.assetslist.index(j)])
+
+        except:
+            pass
+
+        rp_optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+
+        return rp_optimum
 
     def frontier_limits(self, model="Classic", rm="MV", rf=0, hist=True):
         r"""

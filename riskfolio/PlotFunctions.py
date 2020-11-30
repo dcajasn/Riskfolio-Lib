@@ -9,6 +9,7 @@ __all__ = [
     "plot_frontier",
     "plot_pie",
     "plot_frontier_area",
+    "plot_risk_con",
     "plot_hist",
     "plot_drawdown",
 ]
@@ -129,6 +130,7 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     ax.set_yticklabels(["{:3.2f}".format(x) for x in ax.get_yticks()])
     ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
+    fig = plt.gcf()
     fig.tight_layout()
 
     return ax
@@ -325,6 +327,7 @@ def plot_frontier(
     colorbar = ax.figure.colorbar(ax1)
     colorbar.set_label("Risk Adjusted Return Ratio")
 
+    fig = plt.gcf()
     fig.tight_layout()
 
     return ax
@@ -347,7 +350,7 @@ def plot_pie(
     nrow : int, optional
         Number of rows of the legend. The default is 25.
     cmap : cmap, optional
-        Color scale, represente the risk adjusted return ratio.
+        Color scale used to plot each asset weight.
         The default is 'tab20'.
     height : float, optional
         Height of the image in inches. The default is 10.
@@ -373,6 +376,7 @@ def plot_pie(
         ax = plf.plot_pie(w=w1, title='Portafolio', height=6, width=10, cmap="tab20", ax=None)
         
     .. image:: images/Pie_Chart.png
+    
     
     """
 
@@ -476,6 +480,7 @@ def plot_pie(
             **kw
         )
 
+    fig = plt.gcf()
     fig.tight_layout()
 
     return ax
@@ -483,7 +488,7 @@ def plot_pie(
 
 def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax=None):
     r"""
-    Create a chart with te asset structure of the efficient frontier.
+    Create a chart with the asset composition of the efficient frontier.
     
     Parameters
     ----------
@@ -492,7 +497,7 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
     nrow : int, optional
         Number of rows of the legend. The default is 25.
     cmap : cmap, optional
-        Color scale, represente the risk adjusted return ratio.
+        Color scale used to plot each asset weight.
         The default is 'tab20'.
     height : float, optional
         Height of the image in inches. The default is 6.
@@ -518,6 +523,7 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
         ax = plf.plot_frontier_area(w_frontier=ws, cmap="tab20", height=6, width=10, ax=None)
         
     .. image:: images/Area_Frontier.png
+    
     
     """
 
@@ -556,6 +562,100 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
 
     ax.legend(labels, loc="center left", bbox_to_anchor=(1, 0.5), ncol=n)
 
+    fig = plt.gcf()
+    fig.tight_layout()
+
+    return ax
+
+
+def plot_risk_con(
+    w,
+    cov=None,
+    returns=None,
+    rm="MV",
+    rf=0,
+    alpha=0.01,
+    color="tab:blue",
+    height=6,
+    width=10,
+    ax=None,
+):
+    r"""
+    Create a chart with the risk contribution per asset of the portfolio.
+    
+    Parameters
+    ----------
+    w : DataFrame
+        Weights of a portfolio.
+    cov : DataFrame of shape (n_features, n_features)
+        Covariance matrix, where n_features is the number of features.
+    returns : DataFrame of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and 
+        n_features is the number of features.        
+    rm : str, optional
+        Risk measure used to estimate risk contribution. The default is 'MV'.
+    rf : float, optional
+        Risk free rate or minimum aceptable return. The default is 0.
+    alpha : float, optional
+        Significante level of VaR, CVaR and CDaR. The default is 0.01.
+    color : str, optional
+        Color used to plot each asset risk contribution.
+        The default is 'tab:blue'.
+    height : float, optional
+        Height of the image in inches. The default is 6.
+    width : float, optional
+        Width of the image in inches. The default is 10.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+    
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+    
+    Returns
+    -------
+    ax :  matplotlib axis.
+        Returns the Axes object with the plot for further tweaking.
+    
+    Example
+    -------
+    ::
+
+        ax = plf.plot_risk_con(w=w2, cov=cov, returns=returns, rm='MSV', 
+                               rf=0, alpha=0.01, cmap="tab20", height=6,
+                               width=10, ax=None)
+        
+    .. image:: images/Risk_Con.png
+    
+    """
+
+    if not isinstance(w, pd.DataFrame):
+        raise ValueError("w must be a DataFrame")
+
+    if ax is None:
+        ax = plt.gca()
+        fig = plt.gcf()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+
+    item = rmeasures.index(rm)
+    title = "Risk (" + rm_names[item] + ") Contribution per Asset"
+    ax.set_title(title)
+
+    X = w.index.tolist()
+
+    RC = rk.Risk_Contribution(w, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha)
+
+    ax.bar(X, RC, alpha=0.7, color=color, edgecolor="black")
+
+    ax.set_xlim(-0.5, len(X) - 0.5)
+
+    ax.set_yticks(ax.get_yticks())
+    ax.set_yticklabels(["{:3.5%}".format(x) for x in ax.get_yticks()])
+    ax.grid(linestyle=":")
+
+    fig = plt.gcf()
     fig.tight_layout()
 
     return ax
@@ -687,6 +787,7 @@ def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
     ax.grid(linestyle=":")
     ax.set_ylabel("Probability Density")
 
+    fig = plt.gcf()
     fig.tight_layout()
 
     return ax
@@ -810,6 +911,7 @@ def plot_drawdown(nav, w, alpha=0.01, height=8, width=10, ax=None):
         i.grid(linestyle=":")
         j = j + 1
 
+    fig = plt.gcf()
     fig.tight_layout()
 
     return ax

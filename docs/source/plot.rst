@@ -62,6 +62,10 @@ Example
     # Estimate points in the efficient frontier mean - semi standard deviation
     ws = port.efficient_frontier(model='Classic', rm=rm, points=20, rf=0, hist=True)
 
+    # Estimate the risk parity portfolio for semi standard deviation
+    w2 = port.rp_optimization(model='Classic', rm=rm, rf=0, b=None, hist=True)
+
+
 
 Module Functions
 ================
