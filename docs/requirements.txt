@@ -9,7 +9,6 @@ numpy
 scipy
 pandas
 matplotlib
-scs==2.1.1
 cvxpy
 scikit-learn
 statsmodels
