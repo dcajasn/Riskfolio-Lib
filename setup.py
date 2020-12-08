@@ -1,6 +1,6 @@
 # Copyright (C) 2020 Dany Cajas
 
-DESCRIPTION = "Riskfolio-Lib: Quantitative Strategic Asset Allocation, easy for you"
+DESCRIPTION = "A Python Library for Portfolio Optimization and Strategic Asset Allocation"
 
 with open("README.md", "r") as fh:
     LONG_DESCRIPTION = fh.read()
