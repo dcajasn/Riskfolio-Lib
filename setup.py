@@ -10,6 +10,7 @@ MAINTAINER = 'Dany Cajas'
 MAINTAINER_EMAIL = 'dany.cajas.n@uni.pe'
 URL = 'https://riskfolio-lib.readthedocs.io/en/latest/'
 LICENSE = 'BSD (3-clause)'
+KEYWORDS = 'finance portfolio optimization quant asset allocation'
 DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
 VERSION = '0.0.5'
 PYTHON_REQUIRES = ">=3.6"
@@ -35,9 +36,11 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.6',
     'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
     'License :: OSI Approved :: BSD License',
     'Topic :: Office/Business :: Financial :: Investment',
     'Topic :: Office/Business :: Financial',
+    'Topic :: Scientific/Engineering :: Mathematics',
     'Operating System :: Microsoft',
     'Operating System :: Unix',
     'Operating System :: MacOS'
@@ -62,6 +65,7 @@ if __name__ == "__main__":
         long_description=LONG_DESCRIPTION,
         long_description_content_type="text/markdown",
         license=LICENSE,
+	keywords=KEYWORDS,
         url=URL,
         version=VERSION,
         download_url=DOWNLOAD_URL,

@@ -5,3 +5,4 @@ matplotlib>=3.0.0
 cvxpy>=1.0.25
 scikit-learn>=0.22.0
 statsmodels>=0.10.1
+scs==2.1.1
