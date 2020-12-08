@@ -5,7 +5,7 @@ Install
 Mac OS X, Windows, and Linux
 ============================
 
-Riskfolio-lib only supports Python 3.7+ on OS X, Windows, and Linux. I recommend
+Riskfolio-lib only supports Python 3.6+ on OS X, Windows, and Linux. I recommend
 using pip for installation.
 
 1. (Windows only) Download the Visual Studio build tools for Python 3
