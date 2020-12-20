@@ -4,6 +4,7 @@ sphinx-autopackagesummary
 sphinxcontrib-napoleon
 sphinx-rtd-theme
 sphinxcontrib-bibtex
+sphinxemoji
 RinohType
 numpy
 scipy
@@ -12,3 +13,4 @@ matplotlib
 cvxpy
 scikit-learn
 statsmodels
+arch

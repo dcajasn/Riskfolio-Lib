@@ -8,7 +8,7 @@ Some Theory
 Mean Risk Portfolios
 --------------------
 
-Riskfolio-Lib allows to calculate optimum portfolios that result from optimize
+Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
 one of the following 4 objective functions:
 
 - **Maximum Return Portfolio:**
@@ -85,7 +85,7 @@ second lower partial moment, :math:`r_{f}` is the minimum acceptable return
 Risk Parity Portfolios
 ----------------------
 
-Riskfolio-Lib allows to calculate optimum portfolios that result from optimize
+Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
 the general risk parity model :cite:`a-Roncalli`:
 
 .. math::
@@ -115,6 +115,82 @@ measures are:
 
 :math:`c`: is an arbitrary constant.
 
+Worst Case Mean Variance Portfolios
+-----------------------------------
+
+Riskfolio-Lib allows to calculate worst case mean variance optimum portfolios
+:cite:`a-Lobo` :cite:`a-fabozzi2007robust` :cite:`a-Tutuncu` :cite:`a-Palomar` 
+that results from optimize one of the following 4 objective functions:
+       
+
+- **Worst Case Maximum Return Portfolio:**
+
+.. math::
+
+    \begin{align}
+    &\underset{w}{\max} & & \underset{\mu \, \in \, U_{\mu}}{\min} \mu w\\
+    &\text{s.t.} & & Aw \geq B\\
+    \end{align}
+
+- **Worst Case Minimum Risk Portfolio:**
+
+.. math::
+
+    \begin{align}
+    &\underset{w}{\max} & & \underset{\Sigma \, \in \, U_{\Sigma}}{\max} w^{T} \Sigma w\\
+    &\text{s.t.} & & Aw \geq B\\
+    \end{align}
+            
+- **Worst Case Maximum Risk Adjusted Return Ratio Portfolio:**
+
+.. math::
+
+    \begin{align}
+    &\underset{w}{\max} & & \cfrac{\underset{\mu \, \in \, U_{\mu}}{\min} \mu w - r_{f}}
+    {\underset{\Sigma \, \in \, U_{\Sigma}}{\max} \sqrt{w^{T} \Sigma w}}\\
+    &\text{s.t.} & & Aw \geq B\\
+    \end{align}
+
+- **Worst Case Maximum Utility Portfolio:**
+
+.. math::
+
+    \begin{align}
+    &\underset{w}{\max} & & \underset{\mu \, \in \, U_{\mu}}{\min} \mu w
+    - \underset{\Sigma \, \in \, U_{\Sigma}}{\max}  \lambda w^{T} \Sigma w\\
+    &\text{s.t.} & & Aw \geq B\\
+    \end{align}
+
+Where:
+
+:math:`w` are the weights of the portfolio.
+
+:math:`\mu`: is the vector of expected returns.
+
+:math:`\Sigma` is the covariance matrix.
+
+:math:`U_{\mu}` is the uncertainty set of the mean vector. The uncertainty sets can be:
+
+.. math::
+
+    \begin{align}
+    U^{box}_{\mu} & = \{ \mu \, | \, | \mu - \hat{\mu} | \geq \delta \} \\
+    U^{ellip}_{\mu} & = \{ \mu \, | \mu = \hat{\mu} + \kappa \Sigma^{1/2}_{\mu} \} \\
+    \end{align}
+
+:math:`U_{\Sigma}` is the uncertainty set of the covariance matrix.
+
+.. math::
+
+    \begin{align}
+    U^{box}_{\Sigma} = \{ \Sigma \, | \, \Sigma_{lower} \geq \Sigma \geq \Sigma_{upper} \} \\
+    \end{align}
+
+:math:`Aw \geq B`: is a set of linear constraints.
+
+:math:`r_{f}`: is the risk free rate. 
+
+:math:`\lambda`: is the risk aversion coefficient of the investor.
 
 
 Module Methods

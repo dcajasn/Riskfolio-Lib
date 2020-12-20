@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 import cvxpy as cv
+import scipy.stats as st
+from scipy.linalg import sqrtm
 import riskfolio.RiskFunctions as rk
 import riskfolio.ParamsEstimation as pe
 import riskfolio.AuxFunctions as af
@@ -152,6 +154,13 @@ class Portfolio(object):
         self.returns_fm = None
         self.nav_fm = None
 
+        # Inputs of Worst Case Optimization Models
+
+        self.cov_l = None
+        self.cov_u = None
+        self.cov_mu = None
+        self.d_mu = None
+
         # Input Variables
 
         self.returns
@@ -159,6 +168,17 @@ class Portfolio(object):
         self.benchweights
         self.ainequality
         self.binequality
+        
+        # Solver params
+        
+        self.solvers = [cv.ECOS, cv.SCS, cv.OSQP, cv.CVXOPT]
+        self.sol_params = {
+                            # cv.ECOS: {"max_iters": 500, "abstol": 1e-8},
+                            # cv.SCS: {"max_iters": 2500, "eps": 1e-5},
+                            # cv.OSQP: {"max_iter": 10000, "eps_abs": 1e-8},
+                            # cv.CVXOPT: {"max_iters": 500, "abstol": 1e-8},
+                           }
+
 
     @property
     def returns(self):
@@ -271,6 +291,12 @@ class Portfolio(object):
 
         Parameters
         ----------
+        method_mu : string
+            Method used to estimate mean vector.
+            The default is 'hist'.
+        method_cov : string
+            Method used to estimate covariance matrix.
+            The default is 'hist'.
         **kwargs : dict
             All aditional parameters of mean_vector and covar_matrix functions.
 
@@ -366,6 +392,12 @@ class Portfolio(object):
         
         Parameters
         ----------
+        method_mu : string
+            Method used to estimate mean vector.
+            The default is 'hist'.
+        method_cov : string
+            Method used to estimate covariance matrix.
+            The default is 'hist'.
         **kwargs : dict
             All aditional parameters of risk_factors function.
 
@@ -391,6 +423,72 @@ class Portfolio(object):
         value = af.is_pos_def(self.cov_fm, threshold=1e-8)
         if value == False:
             print("You must convert self.cov_fm to a positive definite matrix")
+            
+            
+    def wc_stats(self, kind="stationary", q=0.05, n_sim=3000, window=3, dmu=0.1, dcov=0.1, seed=0):
+        r"""
+        Calculate the inputs that will be use by the wc_optimization method.
+        
+        Parameters
+        ----------
+        method : string
+            The method used to estimate uncertainty sets. The default is 'stationary'. Posible values are:
+            
+            - 'stationary': stationary bootstrapping method to estimate box and elliptical uncertainty set.
+            - 'circular': circular bootstrapping method to estimate box and elliptical uncertainty set.
+            - 'moving': moving bootstrapping method to estimate box and elliptical uncertainty set.
+            - 'delta-s': delta method to estimate box uncertainty set and stationary bootstrapping method for elliptical uncertainty set.
+            - 'delta-c': delta method to estimate box uncertainty set and circular bootstrapping method for elliptical uncertainty set.
+            - 'delta-m': delta method to estimate box uncertainty set and moving bootstrapping method for elliptical uncertainty set.
+        q : scalar
+            Significance level of the selected bootstrapping method.
+            The default is 0.05.
+        n_sim : scalar
+            Number of simulations of the bootstrapping method.
+            The default is 3000.
+        window:
+            Block size of the bootstrapping method. Must be greather than 1
+            and lower than the n_samples - n_features + 1
+            The default is 3.  
+        dmu : scalar
+            Percentage used by delta method to increase and decrease the mean vector in box constraints.
+            The default is 0.1.
+        dcov : scalar
+            Percentage used by delta method to increase and decrease the covariance matrix in box constraints.
+            The default is 0.1.
+        See Also
+        --------
+        riskfolio.ParamsEstimation.bootstrapping
+
+        """
+        X = self.returns
+        mu = X.mean().to_frame().T
+        cov = X.cov()
+                
+        if kind == "stationary" or kind == "circular" or kind == "moving":
+            mu_l, mu_u, cov_l, cov_u, cov_mu = pe.bootstrapping(X, kind=kind, q=q, n_sim=n_sim, window=window, seed=seed)
+            d_mu = (mu_u - mu_l)/2
+        elif kind == "delta-s" or kind == "delta-c" or kind == "delta-m":
+            if kind == "delta-s":
+                mu_l, mu_u, cov_l, cov_u, cov_mu = pe.bootstrapping(X, kind="stationary", q=q, n_sim=n_sim, window=window, seed=seed)
+            elif kind == "delta-c":
+                mu_l, mu_u, cov_l, cov_u, cov_mu = pe.bootstrapping(X, kind="circular", q=q, n_sim=n_sim, window=window, seed=seed)
+            elif kind == "delta-m":
+                mu_l, mu_u, cov_l, cov_u, cov_mu = pe.bootstrapping(X, kind="moving", q=q, n_sim=n_sim, window=window, seed=seed)
+            cov_l = cov - dcov * np.abs(cov)
+            cov_u = cov + dcov * np.abs(cov)
+            d_mu = dmu * np.abs(mu)            
+        else:
+            raise ValueError("method must be 'stationary', 'circular', 'moving', 'delta-s', 'delta-c' or 'delta-m'")
+        
+        k_mu = st.chi2.ppf(1-q, df=X.shape[1]) ** 0.5
+
+        self.cov_l = cov_l
+        self.cov_u = cov_u
+        self.cov_mu = cov_mu
+        self.d_mu = d_mu
+        self.k_mu = k_mu
+        
 
     def optimization(
         self, model="Classic", rm="MV", obj="Sharpe", rf=0, l=2, hist=True
@@ -441,7 +539,7 @@ class Portfolio(object):
             - 'ADD': Average Drawdown of uncompounded returns.
             - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
             
-        obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'.
+        obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
             Objective function of the optimization model.
             The default is 'Sharpe'. Posible values are:
 
@@ -800,15 +898,6 @@ class Portfolio(object):
 
         # Optimization Process
 
-        # Defining solvers
-        solvers = [cv.ECOS, cv.SCS, cv.OSQP, cv.CVXOPT]
-        sol_params = {
-            cv.ECOS: {"max_iters": 2000, "abstol": 1e-10},
-            cv.SCS: {"max_iters": 2500, "eps": 1e-10},
-            cv.OSQP: {"max_iter": 10000, "eps_abs": 1e-10},
-            cv.CVXOPT: {"max_iters": 2000, "abstol": 1e-10},
-        }
-
         # Defining objective function
         if obj == "Sharpe":
             if rm != "Classic":
@@ -824,9 +913,12 @@ class Portfolio(object):
 
         try:
             prob = cv.Problem(objective, constraints)
-            for solver in solvers:
+            for solver in self.solvers:
                 try:
-                    prob.solve(solver=solver, **sol_params[solver])
+                    if len(self.sol_params) == 0:
+                        prob.solve(solver=solver)
+                    else:
+                        prob.solve(solver=solver, **self.sol_params[solver])
                 except:
                     pass
                 if w.value is not None:
@@ -846,7 +938,11 @@ class Portfolio(object):
         except:
             pass
 
-        optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+        try:
+            optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+        except:
+            optimum = None
+            print("The problem doesn't have a solution with actual input parameters")
 
         return optimum
 
@@ -864,7 +960,9 @@ class Portfolio(object):
             \end{align}
         
         Where:
-            
+        
+        :math:`w` are the weights of the portfolio.
+        
         :math:`R(w)` is the risk measure.
     
         :math:`b` is a vector of risk constraints.
@@ -1043,15 +1141,6 @@ class Portfolio(object):
 
         # Optimization Process
 
-        # Defining solvers
-        solvers = [cv.ECOS, cv.SCS, cv.OSQP, cv.CVXOPT]
-        sol_params = {
-            cv.ECOS: {"max_iters": 2000, "abstol": 1e-10},
-            cv.SCS: {"max_iters": 2500, "eps": 1e-10},
-            cv.OSQP: {"max_iter": 10000, "eps_abs": 1e-10},
-            cv.CVXOPT: {"max_iters": 2000, "abstol": 1e-10},
-        }
-
         # Defining objective function
 
         objective = cv.Minimize(risk * 1000)
@@ -1060,9 +1149,12 @@ class Portfolio(object):
 
         try:
             prob = cv.Problem(objective, constraints)
-            for solver in solvers:
+            for solver in self.solvers:
                 try:
-                    prob.solve(solver=solver, **sol_params[solver])
+                    if len(self.sol_params) == 0:
+                        prob.solve(solver=solver)
+                    else:
+                        prob.solve(solver=solver, **self.sol_params[solver])
                 except:
                     pass
                 if w.value is not None:
@@ -1076,10 +1168,217 @@ class Portfolio(object):
 
         except:
             pass
-
-        rp_optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+        
+        try:
+            rp_optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+        except:
+            rp_optimum = None
+            print("The problem doesn't have a solution with actual input parameters")
 
         return rp_optimum
+
+    def wc_optimization(self, obj="Sharpe", rf=0, l=2, Umu='box', Ucov='box'):
+        r"""
+        This method that calculates the worst case mean variance portfolio
+        according to the objective function selected by the user.
+        
+        Parameters
+        ----------
+        obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
+            Objective function of the optimization model.
+            The default is 'Sharpe'. Posible values are:
+
+            - 'MinRisk': Minimize the selected risk measure.
+            - 'Utility': Maximize the Utility function :math:`mu w - l \phi_{i}(w)`.
+            - 'Sharpe': Maximize the risk adjusted return ratio based on the selected risk measure.
+            - 'MaxRet': Maximize the expected return of the portfolio.
+                
+        rf : float, optional
+            Risk free rate, must be in the same period of assets returns.
+            The default is 0.
+        l : scalar, optional
+            Risk aversion factor of the 'Utility' objective function.
+            The default is 2.      
+        Umu : str, optional
+            The type of uncertainty set for the mean vector used in the model.
+            The default is 'box'. Posible values are:
+
+            - 'box': Use a box uncertainty set for the mean vector.
+            - 'ellip': Use a elliptical uncertainty set for the mean vector.
+            - None: Don't use an uncertainty set for mean vector.
+                
+        Ucov : str, optional
+            The type of uncertainty set for the covariance matrix used in the model.
+            The default is 'box'. Posible values are:
+           
+            - 'box': Use a box uncertainty set for the covariance matrix.
+            - None: Don't use an uncertainty set for covariance matrix.
+
+        Returns
+        -------
+        w : DataFrame
+            The weights of optimum portfolio.
+
+        """
+
+        # General model Variables
+
+        mu = self.mu.to_numpy()
+        sigma = self.cov.to_numpy()
+        returns = self.returns.to_numpy()
+
+        cov_l = self.cov_l.to_numpy()
+        cov_u = self.cov_u.to_numpy()
+        cov_mu = self.cov_mu.to_numpy()
+        d_mu = self.d_mu.to_numpy()
+        k_mu = self.k_mu
+    
+        n = mu.shape[1]
+        w = cv.Variable((n, 1))
+        Au = cv.Variable((n, n), symmetric = True)
+        Al = cv.Variable((n, n), symmetric = True)
+
+        k = cv.Variable((1,1))    
+        rf0 = rf
+        
+        constraints = []
+        
+        if Umu == 'box':
+            if obj == 'Sharpe':
+                constraints += [mu @ w - d_mu @ cv.abs(w) - rf0 * k >= 1]                
+            else:
+                ret = mu @ w - d_mu @ cv.abs(w)
+        elif Umu == 'ellip':
+            if obj == 'Sharpe':
+                constraints += [mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w) - rf0 * k >= 1] 
+            else:
+                ret = mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w)
+        else:
+            if obj == 'Sharpe':
+                constraints += [mu @ w - rf0 * k >= 1]
+            else:
+                ret = mu @ w
+            
+        if Ucov == 'box':
+            M1 = cv.vstack([Au - Al, w.T])
+            if obj == 'Sharpe':
+                M2 = cv.vstack([w, k])
+            else:
+                M2 = cv.vstack([w, np.ones((1,1))])
+            M = cv.hstack([M1, M2])
+            risk = cv.trace(Au @ cov_u) - cv.trace(Al @ cov_l)
+            constraints += [M >> 0, Au >= 0, Al >= 0 ]
+        else:
+            risk = cv.quad_form(w, sigma)
+    
+
+        if obj == 'Sharpe':
+            constraints += [cv.sum(w) == k, k >= 0]
+            if self.sht == False:
+                constraints += [w <= k * self.upperlng, w >= 0]
+            elif self.sht == True:
+                constraints += [w <= k * self.upperlng, w >= -k * self.uppersht]
+                constraints += [cv.sum(cv.neg(w)) <= k * self.uppersht]
+        else:
+            constraints += [cv.sum(w) == 1]
+            if self.sht == False:
+                constraints += [w <= self.upperlng, w >= 0]
+            if self.sht == True:
+                constraints += [w <= self.upperlng, w >= -self.uppersht]
+                constraints += [cv.sum(cv.neg(w)) <= self.uppersht]
+
+
+        # Tracking Error Model Variables
+
+        c = np.array(self.benchweights, ndmin=2)
+        if self.kindbench == True:
+            bench = returns @ c
+        elif self.kindbench == False:
+            bench = np.array(self.benchindex, ndmin=2)
+
+        # Problem aditional linear constraints
+
+        if self.ainequality is not None and self.binequality is not None:
+            A = np.array(self.ainequality, ndmin=2) * 1000
+            B = np.array(self.binequality, ndmin=2) * 1000
+            if obj == "Sharpe":
+                constraints += [A @ w - B @ k >= 0]
+            else:
+                constraints += [A @ w - B >= 0]
+
+        # Tracking error Constraints
+
+        if obj == "Sharpe":
+            if self.allowTE == True:
+                TE_1 = cv.norm(returns @ w - bench @ k, "fro") / cv.sqrt(n - 1)
+                constraints += [TE_1 <= self.TE * k]
+        else:
+            if self.allowTE == True:
+                TE_1 = cv.norm(returns @ w - bench, "fro") / cv.sqrt(n - 1)
+                constraints += [TE_1 <= self.TE]
+
+        # Turnover Constraints
+
+        if obj == "Sharpe":
+            if self.allowTO == True:
+                TO_1 = cv.abs(w - c @ k) * 1000
+                constraints += [TO_1 <= self.turnover * k * 1000]
+        else:
+            if self.allowTO == True:
+                TO_1 = cv.abs(w - c) * 1000
+                constraints += [TO_1 <= self.turnover * 1000]
+
+
+        # Frontier Variables
+
+        portafolio = {}
+
+        for i in self.assetslist:
+            portafolio.update({i: []})
+
+        # Optimization Process
+            
+        # Defining objective function
+        if obj == "Sharpe":
+            objective = cv.Minimize(risk)
+        elif obj == "MinRisk":
+            objective = cv.Minimize(risk)
+        elif obj == "Utility":
+            objective = cv.Maximize(ret - l * risk)
+        elif obj == "MaxRet":
+            objective = cv.Maximize(ret)
+
+        try:
+            prob = cv.Problem(objective, constraints)
+            for solver in self.solvers:
+                try:
+                    if len(self.sol_params) == 0:
+                        prob.solve(solver=solver)
+                    else:
+                        prob.solve(solver=solver, **self.sol_params[solver])
+                except:
+                    pass
+                if w.value is not None:
+                    break
+    
+            weights = np.array(w.value, ndmin=2).T
+            weights = np.abs(weights) / np.sum(np.abs(weights))
+    
+            for j in self.assetslist:
+                portafolio[j].append(weights[0, self.assetslist.index(j)])
+
+        except:
+            pass
+
+        try:
+            wc_optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+        except:
+            wc_optimum = None
+            print("The problem doesn't have a solution with actual input parameters")
+
+        return wc_optimum
+
+
 
     def frontier_limits(self, model="Classic", rm="MV", rf=0, hist=True):
         r"""

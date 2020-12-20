@@ -30,3 +30,4 @@ Riskfolio-Lib has the following dependencies:
 * cvxpy>=1.0.25
 * scikit-learn>=0.22.0
 * statsmodels>=0.10.1
+* arch>=4.15

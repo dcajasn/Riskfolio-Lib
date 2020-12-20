@@ -3,6 +3,13 @@ Changelog
 #########
 
 
+Version 0.0.6
+=============
+
+- Repair some bugs.
+- Implement bootstrapping methods to estimate box and elliptical uncertainty sets for Worst Case Optimization.
+- Implement Worst Case Mean Variance Portfolio Optimization using box and elliptical uncertainty sets.
+
 Version 0.0.5
 =============
 

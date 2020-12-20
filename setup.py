@@ -8,11 +8,11 @@ with open("README.md", "r") as fh:
 DISTNAME = 'Riskfolio-Lib'
 MAINTAINER = 'Dany Cajas'
 MAINTAINER_EMAIL = 'dany.cajas.n@uni.pe'
-URL = 'https://riskfolio-lib.readthedocs.io/en/latest/'
+URL = 'https://github.com/dcajasn/Riskfolio-Lib'
 LICENSE = 'BSD (3-clause)'
-KEYWORDS = 'finance portfolio optimization quant asset allocation'
+KEYWORDS = 'finance, portfolio, optimization, quant, asset, allocation, investing'
 DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
-VERSION = '0.0.5'
+VERSION = '0.0.5.1.1'
 PYTHON_REQUIRES = ">=3.7"
 
 INSTALL_REQUIRES = [
@@ -23,6 +23,7 @@ INSTALL_REQUIRES = [
     'cvxpy>=1.0.25',
     'scikit-learn>=0.22.0',
     'statsmodels>=0.10.1',
+    'arch>=4.15',
 ]
 
 
@@ -51,8 +52,8 @@ if __name__ == "__main__":
     from setuptools import setup
 
     import sys
-    if sys.version_info[:2] < (3, 6):
-        raise RuntimeError("Riskfolio-Lib requires python >= 3.7.")
+    if sys.version_info[:2] < (3, int(PYTHON_REQUIRES[-1])):
+        raise RuntimeError("Riskfolio-Lib requires python " + PYTHON_REQUIRES)
 
     setup(
         name=DISTNAME,
@@ -64,12 +65,16 @@ if __name__ == "__main__":
         long_description=LONG_DESCRIPTION,
         long_description_content_type="text/markdown",
         license=LICENSE,
-	keywords=KEYWORDS,
+        keywords=KEYWORDS,
         url=URL,
         version=VERSION,
         download_url=DOWNLOAD_URL,
         python_requires=PYTHON_REQUIRES,
         install_requires=INSTALL_REQUIRES,
         packages=PACKAGES,
-        classifiers=CLASSIFIERS
+        classifiers=CLASSIFIERS,
+        project_urls={"Documentation": "https://riskfolio-lib.readthedocs.io/en/latest/",
+                      "Issues": "https://github.com/dcajasn/Riskfolio-Lib/issues",
+                      "Personal website": "http://financioneroncios.wordpress.com",
+                      },
     )

@@ -28,7 +28,7 @@ author = 'Dany Cajas'
 # The short X.Y version
 version = 'latest'
 # The full version, including alpha/beta/rc tags
-release = '0.0.5'
+release = '0.0.6'
 
 
 # -- General configuration ---------------------------------------------------
@@ -52,6 +52,7 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
+    'sphinxemoji.sphinxemoji',
 ]
 
 autodoc_member_order = 'bysource'
@@ -62,8 +63,9 @@ templates_path = ['_templates']
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
+# source_suffix = ['.rst', '.bib']
 source_suffix = '.rst'
+bibtex_bibfiles = ['biblio.bib']
 
 # The master toctree document.
 master_doc = 'index'
@@ -197,13 +199,13 @@ epub_exclude_files = ['search.html']
 # intersphinx_mapping = {'https://docs.python.org/': None}
 python_version = '.'.join(map(str, sys.version_info[0:2]))
 intersphinx_mapping = {
-    'sphinx': ('http://www.sphinx-doc.org/en/stable', None),
+    'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
     'python': ('https://docs.python.org/' + python_version, None),
     'matplotlib': ('https://matplotlib.org', None),
-    'numpy': ('https://docs.scipy.org/doc/numpy', None),
-    'sklearn': ('http://scikit-learn.org/stable', None),
-    'pandas': ('http://pandas.pydata.org/pandas-docs/stable', None),
-    'scipy': ('https://docs.scipy.org/doc/scipy/reference', None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'sklearn': ('https://scikit-learn.org/stable/', None),
+    'pandas': ('https://pandas.pydata.org/docs/', None),
+    'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
 }
 
 # -- Options for todo extension ----------------------------------------------

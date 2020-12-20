@@ -5,6 +5,8 @@ import sklearn.covariance as skcov
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from numpy.linalg import inv
+import riskfolio.AuxFunctions as au
+import arch.bootstrap as bs
 
 
 def mean_vector(X, method="hist", d=0.94):
@@ -780,9 +782,11 @@ def black_litterman(
     Returns
     -------
     mu : DataFrame    
-        The mean vector of black litterman model.
+        The mean vector of Black Litterman model.
     cov : DataFrame
-        The covariance matrix of black litterman model.
+        The covariance matrix of Black Litterman model.
+    w : DataFrame
+        The equilibrium weights of Black Litterman model, without constraints.
         
     Raises
     ------
@@ -831,3 +835,116 @@ def black_litterman(
     w = pd.DataFrame(w, index=assets)
 
     return mu, cov, w
+
+
+def bootstrapping(X, kind='stationary', q=0.05, n_sim=3000, window=3, seed=0):
+    r"""
+    Estimates the uncertainty sets of mean and covariance matrix through the selected
+    bootstrapping method.
+    
+    Parameters
+    ----------
+    X : DataFrame of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and 
+        n_features is the number of features.    
+    kind : str
+        The bootstrapping method. The default value is 'stationary'. Posible values are:
+        
+        - 'stationary': stationary bootstrapping method, see `StationaryBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.StationaryBootstrap.html#arch.bootstrap.StationaryBootstrap>`_ for more details.
+        - 'circular': circular bootstrapping method, see `CircularBlockBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.CircularBlockBootstrap.html#arch.bootstrap.CircularBlockBootstrap>`_ for more details.
+        - 'moving': moving bootstrapping method, see `MovingBlockBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.MovingBlockBootstrap.html#arch.bootstrap.MovingBlockBootstrap>`_ for more details.
+    q : scalar
+        Significance level of the selected bootstrapping method.
+        The default is 0.05.
+    n_sim : scalar
+        Number of simulations of the bootstrapping method.
+        The default is 3000.
+    window:
+        Block size of the bootstrapping method. Must be greather than 1
+        and lower than the n_samples - n_features + 1
+        The default is 3.  
+    seed:
+        Seed used to generate random numbers for bootstrapping method.
+        The default is 0. 
+    
+    Returns
+    -------
+    mu_l : DataFrame    
+        The q/2 percentile of mean vector obtained through the selected bootstrapping method.
+    mu_u : DataFrame
+        The 1-q/2 percentile of mean vector obtained through the selected bootstrapping method.
+    cov_l : DataFrame
+        The q/2 percentile of covariance matrix obtained through the selected bootstrapping method.
+    cov_u : DataFrame
+        The 1-q/2 percentile of covariance matrix obtained through the selected bootstrapping method.
+    cov_mu : DataFrame
+        The covariance matrix of estimation errors of mean vector obtained through the selected bootstrapping method.
+        We take the diagonal of this matrix following :cite:`b-fabozzi2007robust`.
+        
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+        
+    """
+
+    if not isinstance(X, pd.DataFrame):
+        raise ValueError("X must be a DataFrame")
+    
+    if window >= X.shape[0] - window + 1:
+        raise ValueError("block must be lower than  n_samples - window + 1")
+    elif window <= 1:
+        raise ValueError("block must be greather than 1")
+    
+    rs = np.random.RandomState(seed)
+
+    cols = X.columns.tolist()    
+    m = len(cols)                
+    mus = np.zeros((n_sim,1,m))
+    covs = np.zeros((n_sim,m,m))
+
+    if kind == 'stationary':
+        gen = bs.StationaryBootstrap(window, X, random_state=rs)
+    elif kind == 'circular':
+        gen = bs.CircularBlockBootstrap(window, X, random_state=rs)
+    elif kind == 'moving':
+        gen = bs.MovingBlockBootstrap(window, X, random_state=rs)
+    else:
+        raise ValueError("kind only can be 'stationary', 'circular' or 'moving'")
+    
+    i = 0
+    for data in gen.bootstrap(n_sim):
+        A = data[0][0]
+        mus[i] = A.mean().to_numpy().reshape(1,m)
+        covs[i] = A.cov().to_numpy()
+        i += 1
+        
+    mu_l = np.percentile(mus, q/2 * 100, axis=0, keepdims=True).reshape(1,m)
+    mu_u = np.percentile(mus, 100 - q/2 * 100, axis=0, keepdims=True).reshape(1,m)
+    
+    cov_l = np.percentile(covs, q/2 * 100, axis=0, keepdims=True).reshape(m,m)
+    cov_u = np.percentile(covs, 100 - q/2 * 100, axis=0, keepdims=True).reshape(m,m)           
+        
+    cov_mu = mus.reshape(n_sim,m) - X.mean().to_numpy().reshape(1,m)
+    cov_mu = np.cov(cov_mu.T)
+        
+    mu_l = pd.DataFrame(mu_l, index=[0], columns=cols)
+    mu_u = pd.DataFrame(mu_u, index=[0], columns=cols)
+
+    cov_l = pd.DataFrame(cov_l, index=cols, columns=cols)
+    cov_u = pd.DataFrame(cov_u, index=cols, columns=cols)
+    
+    cov_mu = np.diag(np.diag(cov_mu))
+    cov_mu = pd.DataFrame(cov_mu, index=cols, columns=cols)
+        
+    if au.is_pos_def(cov_l) == False:
+        cov_l = au.cov_fix(cov_l, method="clipped", threshold=1e-3)
+
+    if au.is_pos_def(cov_u) == False:
+        cov_u = au.cov_fix(cov_u, method="clipped", threshold=1e-3) 
+
+
+    return mu_l, mu_u, cov_l, cov_u, cov_mu
+
+    
+
