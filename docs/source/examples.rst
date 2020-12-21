@@ -15,3 +15,4 @@ The following examples are available:
 * `Mean risk optimization using risk factors models and principal component regression <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%209.ipynb>`_.
 * `Risk parity optimization using historical estimates <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2010.ipynb>`_.
 * `Risk parity optimization using risk factors models and stepwise regression <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2011.ipynb>`_.
+* `Worst case mean variance optimization using box and elliptical uncertainty sets <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2012.ipynb>`_.
