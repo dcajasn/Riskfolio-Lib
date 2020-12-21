@@ -11,7 +11,7 @@
 ## Description
 
 Riskfolio-Lib is a library for making quantitative strategic asset allocation
-or portfolio optimization in Python made in Peru :flag_pe:. It is built on top of
+or portfolio optimization in Python made in Peru &#x1F1F5;&#x1F1EA;. It is built on top of
 [cvxpy](https://www.cvxpy.org/) and closely integrated
 with [pandas](https://pandas.pydata.org/) data structures.
 
