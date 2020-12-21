@@ -2,7 +2,7 @@
 
 DESCRIPTION = "A Python Library for Portfolio Optimization and Strategic Asset Allocation"
 
-with open("README.md", "r") as fh:
+with open("README.md", encoding='UTF-8') as fh:
     LONG_DESCRIPTION = fh.read()
 
 DISTNAME = 'Riskfolio-Lib'
@@ -12,14 +12,14 @@ URL = 'https://github.com/dcajasn/Riskfolio-Lib'
 LICENSE = 'BSD (3-clause)'
 KEYWORDS = 'finance, portfolio, optimization, quant, asset, allocation, investing'
 DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
-VERSION = '0.0.5.1.1'
+VERSION = '0.0.5.1.7'
 PYTHON_REQUIRES = ">=3.7"
 
 INSTALL_REQUIRES = [
     'numpy>=1.17.0',
     'scipy>=1.0.1',
     'pandas>=1.0.0',
-    'matplotlib>=3.0.0',
+    'matplotlib>=3.3.0',
     'cvxpy>=1.0.25',
     'scikit-learn>=0.22.0',
     'statsmodels>=0.10.1',
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         maintainer_email=MAINTAINER_EMAIL,
         description=DESCRIPTION,
         long_description=LONG_DESCRIPTION,
-        long_description_content_type="text/markdown",
+        long_description_content_type='text/markdown; charset=UTF-8; variant=GFM',
         license=LICENSE,
         keywords=KEYWORDS,
         url=URL,

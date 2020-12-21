@@ -206,6 +206,8 @@ intersphinx_mapping = {
     'sklearn': ('https://scikit-learn.org/stable/', None),
     'pandas': ('https://pandas.pydata.org/docs/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'arch': ('https://bashtage.github.io/arch/', None),
+
 }
 
 # -- Options for todo extension ----------------------------------------------

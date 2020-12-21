@@ -78,9 +78,6 @@ Module Plans
 The plan for this modules is to add more functions that will be very useful
 to asset managers.
 
-The plan for this module is to add more functions that will be very useful
-to asset managers.
-
 * Mean Entropic Risk Optimization Portfolios.
 * Add functions to estimate Duration, Convexity, Key Rate Durations and Convexities of bonds without embedded options (for loadings matrix).
 * Add more functions based on suggestion of users.
