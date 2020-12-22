@@ -24,7 +24,7 @@ or portfolio optimization in Python made in Peru |:peru:|. It is built on top of
 `CVXPY <https://www.cvxpy.org/>`_ and closely integrated
 with `pandas <https://pandas.pydata.org/>`_ data structures.
 
-Some of key functionality that Riskfolio-Lib offers:
+Some of key functionalities that Riskfolio-Lib offers:
 
 - Portfolio optimization with 4 objective functions (Minimum Risk, Maximum Return, Maximum Risk Adjusted Return Ratio and Maximum Utility Function)
 - Portfolio optimization with 10 convex risk measures (Std. Dev., MAD, CVaR, Maximum Drawdown, among others)
