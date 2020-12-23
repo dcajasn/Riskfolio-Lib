@@ -16,3 +16,4 @@ The following examples are available:
 * `Risk parity optimization using historical estimates <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2010.ipynb>`_.
 * `Risk parity optimization using risk factors models and stepwise regression <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2011.ipynb>`_.
 * `Worst case mean variance optimization using box and elliptical uncertainty sets <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2012.ipynb>`_.
+* `Riskfolio-Lib and Xlwings <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2013.ipynb>`_.
