@@ -22,13 +22,13 @@ print(sys.path)
 # -- Project information -----------------------------------------------------
 
 project = 'Riskfolio-Lib'
-copyright = '2020, Dany Cajas'
+copyright = '2020-2021, Dany Cajas'
 author = 'Dany Cajas'
 
 # The short X.Y version
 version = 'latest'
 # The full version, including alpha/beta/rc tags
-release = '0.0.6'
+release = '0.0.7'
 
 
 # -- General configuration ---------------------------------------------------

@@ -2,6 +2,10 @@
 Examples
 ########
 
+.. raw:: html
+
+    <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
 The following examples are available:
 
 * `Mean risk optimization using historical estimates <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%201.ipynb>`_.
@@ -17,3 +21,4 @@ The following examples are available:
 * `Risk parity optimization using risk factors models and stepwise regression <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2011.ipynb>`_.
 * `Worst case mean variance optimization using box and elliptical uncertainty sets <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2012.ipynb>`_.
 * `Riskfolio-Lib and Xlwings <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2013.ipynb>`_.
+* `Ulcer Index Portfolio Optimization for Mean Risk and Risk  Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2014.ipynb>`_.

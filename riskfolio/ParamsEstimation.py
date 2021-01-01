@@ -16,24 +16,24 @@ def mean_vector(X, method="hist", d=0.94):
     Parameters
     ----------
     X : DataFrame of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
-        n_features is the number of features.   
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
     method : str, can be {'hist', 'ewma1' or 'ewma2'}
-        The method used to estimate the expected returns. 
+        The method used to estimate the expected returns.
         The default value is 'hist'.
-        
+
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
     d : scalar
         The smoothing factor of ewma methods.
         The default is 0.94.
-    
+
     Returns
     -------
     mu : 1d-array
         The estimation of expected returns.
-        
+
     Raises
     ------
     ValueError
@@ -61,15 +61,15 @@ def mean_vector(X, method="hist", d=0.94):
 def covar_matrix(X, method="hist", d=0.94, **kwargs):
     r"""
     Calculate the covariance matrix using the selected method.
-    
+
     Parameters
     ----------
     X : DataFrame of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
-        n_features is the number of features.    
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
     method : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
         The default is 'hist'. The method used to estimate the covariance matrix:
-        
+
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -78,22 +78,22 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         - 'shrunk': use the basic Shrunk Covariance method.
     d : scalar
         The smoothing factor of ewma methods.
-        The default is 0.94.            
+        The default is 0.94.
     **kwargs:
         Other variables related to covariance estimation. See
         `Scikit Learn <https://scikit-learn.org/stable/modules/covariance.html>`_
         for more details.
-    
+
     Returns
     -------
     cov : nd-array
         The estimation of covariance matrix.
-        
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-        
+
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -137,29 +137,29 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
     Parameters
     ----------
     X : DataFrame of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
+        Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     y : Series of shape (n_samples, 1)
         Target vector, where n_samples in the number of samples.
     criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
         The default is 'pvalue'. The criterion used to select the best features:
-        
+
         - 'pvalue': select the features based on p-values.
         - 'AIC': select the features based on lowest Akaike Information Criterion.
         - 'SIC': select the features based on lowest Schwarz Information Criterion.
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
     thresholdt : scalar, optional
-        Is the maximum p-value for each variable that will be 
+        Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.
     verbose : bool, optional
         Enable verbose output. The default is False.
 
     Returns
     -------
-    value : list    
+    value : list
         A list of the variables that produce the best model.
-        
+
     Raises
     ------
     ValueError
@@ -273,40 +273,40 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
 
 def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
     r"""
-    Select the variables that estimate the best model using stepwise 
-    backward regression.        
+    Select the variables that estimate the best model using stepwise
+    backward regression.
 
     Parameters
     ----------
     X : DataFrame of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
+        Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     y : Series of shape (n_samples, 1)
         Target vector, where n_samples in the number of samples.
     criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
         The default is 'pvalue'. The criterion used to select the best features:
-        
+
         - 'pvalue': select the features based on p-values.
         - 'AIC': select the features based on lowest Akaike Information Criterion.
         - 'SIC': select the features based on lowest Schwarz Information Criterion.
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
     threshold : scalar, optional
-        Is the maximum p-value for each variable that will be 
+        Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.
     verbose : bool, optional
         Enable verbose output. The default is False.
 
     Returns
     -------
-    value : list    
+    value : list
         A list of the variables that produce the best model.
-        
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-        
+
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -408,32 +408,32 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
 
 def PCR(X, y, n_components=0.95):
     r"""
-    Estimate the coeficients using Principal Components Regression (PCR).        
+    Estimate the coeficients using Principal Components Regression (PCR).
 
     Parameters
     ----------
     X : DataFrame of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
+        Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     y : Series of shape (n_samples, 1)
         Target vector, where n_samples in the number of samples.
     n_components : int, float, None or str, optional
         if 1 < n_components (int), it represents the number of components that
         will be keep. if 0 < n_components < 1 (float), it represents the
-        percentage of variance that the is explained by the components keeped. 
+        percentage of variance that the is explained by the components keeped.
         See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
         for more details. The default is 0.95.
 
     Returns
     -------
-    value : nd-array    
+    value : nd-array
         An array with the coefficients of the model calculated using PCR.
-        
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-        
+
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -482,15 +482,15 @@ def loadings_matrix(
     verbose=False,
 ):
     r"""
-    Estimate the loadings matrix using stepwise regression.        
+    Estimate the loadings matrix using stepwise regression.
 
     Parameters
     ----------
     X : DataFrame of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
+        Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     Y : DataFrame of shape (n_samples, n_assets)
-        Target matrix, where n_samples in the number of samples and 
+        Target matrix, where n_samples in the number of samples and
         n_assets is the number of assets.
     feature_selection: str 'stepwise' or 'PCR', optional
         Indicate the method used to estimate the loadings matrix.
@@ -500,34 +500,34 @@ def loadings_matrix(
         The default is 'Forward'.
     criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
         The default is 'pvalue'. The criterion used to select the best features:
-        
+
         - 'pvalue': select the features based on p-values.
         - 'AIC': select the features based on lowest Akaike Information Criterion.
         - 'SIC': select the features based on lowest Schwarz Information Criterion.
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
     threshold : scalar, optional
-        Is the maximum p-value for each variable that will be 
+        Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.
     n_components : int, float, None or str, optional
         if 1 < n_components (int), it represents the number of components that
         will be keep. if 0 < n_components < 1 (float), it represents the
-        percentage of variance that the is explained by the components keeped. 
+        percentage of variance that the is explained by the components keeped.
         See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
         for more details. The default is 0.95.
     verbose : bool, optional
         Enable verbose output. The default is False.
-        
+
     Returns
     -------
-    loadings : DataFrame    
+    loadings : DataFrame
         A DataFrame with the loadings matrix.
-        
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-        
+
     """
     if not isinstance(X, pd.DataFrame):
         raise ValueError("X must be a DataFrame")
@@ -583,7 +583,7 @@ def risk_factors(
     factors models :cite:`b-Ross` :cite:`b-Fan`.
 
     .. math::
-        R = \alpha + B F + \epsilon 
+        R = \alpha + B F + \epsilon
 
     .. math::
         \mu_{f} = \alpha +BE(F)
@@ -592,13 +592,13 @@ def risk_factors(
         \Sigma_{f} = B \Sigma_{F} B^{T} + \Sigma_{\epsilon}
 
     where:
-    
+
     :math:`R` is the series returns.
-        
+
     :math:`\alpha` is the intercept.
 
     :math:`B` is the loadings matrix.
-    
+
     :math:`F` is the expected returns vector of the risk factors.
 
     :math:`\Sigma_{F}` is the covariance matrix of the risk factors.
@@ -607,17 +607,17 @@ def risk_factors(
 
     :math:`\mu_{f}` is the expected returns vector obtained with the
     risk factor model.
-    
+
     :math:`\Sigma_{f}` is the covariance matrix obtained with the risk
     factor model.
-        
+
     Parameters
     ----------
     X : DataFrame of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
+        Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     Y : DataFrame of shape (n_samples, n_assets)
-        Target matrix, where n_samples in the number of samples and 
+        Target matrix, where n_samples in the number of samples and
         n_assets is the number of assets.
     B : DataFrame of shape (n_assets, n_features), optional
         Loadings matrix. If is not specified, is estimated using
@@ -626,47 +626,47 @@ def risk_factors(
         Indicate the method used to estimate the loadings matrix.
         The default is 'stepwise'.
     stepwise: str 'Forward' or 'Backward'
-        Indicate the method used for stepwise regression. 
+        Indicate the method used for stepwise regression.
         The default is 'Forward'.
     criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
         The default is 'pvalue'. The criterion used to select the best features:
-        
+
         - 'pvalue': select the features based on p-values.
         - 'AIC': select the features based on lowest Akaike Information Criterion.
         - 'SIC': select the features based on lowest Schwarz Information Criterion.
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
     threshold : scalar, optional
-        Is the maximum p-value for each variable that will be 
+        Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.
     n_components : int, float, None or str, optional
         if 1 < n_components (int), it represents the number of components that
         will be keep. if 0 < n_components < 1 (float), it represents the
-        percentage of variance that the is explained by the components keeped. 
+        percentage of variance that the is explained by the components keeped.
         See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
         for more details. The default is 0.95.
     error : bool
-        Indicate if diagonal covariance matrix of errors is included (only 
+        Indicate if diagonal covariance matrix of errors is included (only
         when B is estimated through a regression).
     **kwargs : dict
         Other variables related to the expected returns and covariance estimation.
 
     Returns
     -------
-    mu : DataFrame    
+    mu : DataFrame
         The mean vector of risk factors model.
     cov : DataFrame
         The covariance matrix of risk factors model.
     returns : DataFrame
         The returns based on a risk factor model.
     nav : DataFrame
-        The cumulated uncompound returns based on a risk factor model.        
+        The cumulated uncompound returns based on a risk factor model.
 
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-               
+
     """
     if not isinstance(X, pd.DataFrame) and not isinstance(Y, pd.DataFrame):
         raise ValueError("X and Y must be DataFrames")
@@ -717,9 +717,9 @@ def black_litterman(
     X, w, P, Q, delta=1, rf=0, eq=True, method_mu="hist", method_cov="hist", **kwargs
 ):
     r"""
-    Estimate the expected returns vector and covariance matrix based 
+    Estimate the expected returns vector and covariance matrix based
     on the black litterman model :cite:`b-BlackLitterman` :cite:`b-Black1`.
-    
+
     .. math::
         \Pi = \delta \Sigma w
 
@@ -727,15 +727,15 @@ def black_litterman(
         \Pi_{bl} = \left[(\tau\Sigma)^{-1}+ P \Omega^{-1}P \right]^{-1}
         \left[(\tau\Sigma)^{-1} \Pi + P \Omega^{-1}Q \right]
 
-    .. math::        
+    .. math::
         M = \left((\tau\Sigma)^{-1} + P'\Omega^{-1} P \right)^{-1}
 
-    .. math::        
+    .. math::
         \mu_{bl} = \Pi_{bl} + rf
 
     .. math::
         \Sigma_{bl} = \Sigma + M
-        
+
     where:
 
     :math:`rf` is the risk free rate.
@@ -743,7 +743,7 @@ def black_litterman(
     :math:`\delta` is the risk aversion factor.
 
     :math:`\Pi` is the equilibrium excess returns.
-    
+
     :math:`\Sigma` is the covariance matrix.
 
     :math:`P` is the views matrix.
@@ -754,40 +754,40 @@ def black_litterman(
 
     :math:`\mu_{bl}` is the mean vector obtained with the black
     litterman model.
-    
+
     :math:`\Sigma_{bl}` is the covariance matrix obtained with the black
     litterman model.
 
     Parameters
     ----------
     X : DataFrame of shape (n_samples, n_features)
-        Assets matrix, where n_samples is the number of samples and 
+        Assets matrix, where n_samples is the number of samples and
         n_features is the number of features.
     w : DataFrame of shape (n_assets, 1)
         Weights matrix, where n_assets is the number of assets.
     P : DataFrame of shape (n_views, n_assets)
-        Analyst's views matrix, can be relative or absolute.    
+        Analyst's views matrix, can be relative or absolute.
     Q : DataFrame of shape (n_views, 1)
         Expected returns of analyst's views.
     delta : float, optional
-        Risk aversion factor. The default value is 1.        
+        Risk aversion factor. The default value is 1.
     rf : scalar, optional
         Risk free rate. The default is 0.
     eq : bool, optional
-        Indicate if use equilibrum or historical excess returns. 
+        Indicate if use equilibrum or historical excess returns.
         The default is True.
     **kwargs : dict
         Other variables related to the expected returns and covariance estimation.
-        
+
     Returns
     -------
-    mu : DataFrame    
+    mu : DataFrame
         The mean vector of Black Litterman model.
     cov : DataFrame
         The covariance matrix of Black Litterman model.
     w : DataFrame
         The equilibrium weights of Black Litterman model, without constraints.
-        
+
     Raises
     ------
     ValueError
@@ -837,19 +837,19 @@ def black_litterman(
     return mu, cov, w
 
 
-def bootstrapping(X, kind='stationary', q=0.05, n_sim=3000, window=3, seed=0):
+def bootstrapping(X, kind="stationary", q=0.05, n_sim=3000, window=3, seed=0):
     r"""
     Estimates the uncertainty sets of mean and covariance matrix through the selected
     bootstrapping method.
-    
+
     Parameters
     ----------
     X : DataFrame of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
-        n_features is the number of features.    
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
     kind : str
         The bootstrapping method. The default value is 'stationary'. Posible values are:
-        
+
         - 'stationary': stationary bootstrapping method, see `StationaryBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.StationaryBootstrap.html#arch.bootstrap.StationaryBootstrap>`_ for more details.
         - 'circular': circular bootstrapping method, see `CircularBlockBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.CircularBlockBootstrap.html#arch.bootstrap.CircularBlockBootstrap>`_ for more details.
         - 'moving': moving bootstrapping method, see `MovingBlockBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.MovingBlockBootstrap.html#arch.bootstrap.MovingBlockBootstrap>`_ for more details.
@@ -862,14 +862,14 @@ def bootstrapping(X, kind='stationary', q=0.05, n_sim=3000, window=3, seed=0):
     window:
         Block size of the bootstrapping method. Must be greather than 1
         and lower than the n_samples - n_features + 1
-        The default is 3.  
+        The default is 3.
     seed:
         Seed used to generate random numbers for bootstrapping method.
-        The default is 0. 
-    
+        The default is 0.
+
     Returns
     -------
-    mu_l : DataFrame    
+    mu_l : DataFrame
         The q/2 percentile of mean vector obtained through the selected bootstrapping method.
     mu_u : DataFrame
         The 1-q/2 percentile of mean vector obtained through the selected bootstrapping method.
@@ -880,71 +880,75 @@ def bootstrapping(X, kind='stationary', q=0.05, n_sim=3000, window=3, seed=0):
     cov_mu : DataFrame
         The covariance matrix of estimation errors of mean vector obtained through the selected bootstrapping method.
         We take the diagonal of this matrix following :cite:`b-fabozzi2007robust`.
-        
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-        
+
     """
 
     if not isinstance(X, pd.DataFrame):
         raise ValueError("X must be a DataFrame")
-    
+
     if window >= X.shape[0] - window + 1:
         raise ValueError("block must be lower than  n_samples - window + 1")
     elif window <= 1:
         raise ValueError("block must be greather than 1")
-    
+
     rs = np.random.RandomState(seed)
 
-    cols = X.columns.tolist()    
-    m = len(cols)                
-    mus = np.zeros((n_sim,1,m))
-    covs = np.zeros((n_sim,m,m))
+    cols = X.columns.tolist()
+    cols_2 = [i + "-" + j for i in cols for j in cols]
+    m = len(cols)
+    mus = np.zeros((n_sim, 1, m))
+    covs = np.zeros((n_sim, m, m))
 
-    if kind == 'stationary':
+    if kind == "stationary":
         gen = bs.StationaryBootstrap(window, X, random_state=rs)
-    elif kind == 'circular':
+    elif kind == "circular":
         gen = bs.CircularBlockBootstrap(window, X, random_state=rs)
-    elif kind == 'moving':
+    elif kind == "moving":
         gen = bs.MovingBlockBootstrap(window, X, random_state=rs)
     else:
         raise ValueError("kind only can be 'stationary', 'circular' or 'moving'")
-    
+
     i = 0
     for data in gen.bootstrap(n_sim):
         A = data[0][0]
-        mus[i] = A.mean().to_numpy().reshape(1,m)
+        mus[i] = A.mean().to_numpy().reshape(1, m)
         covs[i] = A.cov().to_numpy()
         i += 1
-        
-    mu_l = np.percentile(mus, q/2 * 100, axis=0, keepdims=True).reshape(1,m)
-    mu_u = np.percentile(mus, 100 - q/2 * 100, axis=0, keepdims=True).reshape(1,m)
-    
-    cov_l = np.percentile(covs, q/2 * 100, axis=0, keepdims=True).reshape(m,m)
-    cov_u = np.percentile(covs, 100 - q/2 * 100, axis=0, keepdims=True).reshape(m,m)           
-        
-    cov_mu = mus.reshape(n_sim,m) - X.mean().to_numpy().reshape(1,m)
-    cov_mu = np.cov(cov_mu.T)
-        
+
+    mu_l = np.percentile(mus, q / 2 * 100, axis=0, keepdims=True).reshape(1, m)
+    mu_u = np.percentile(mus, 100 - q / 2 * 100, axis=0, keepdims=True).reshape(1, m)
+
+    cov_l = np.percentile(covs, q / 2 * 100, axis=0, keepdims=True).reshape(m, m)
+    cov_u = np.percentile(covs, 100 - q / 2 * 100, axis=0, keepdims=True).reshape(m, m)
+
     mu_l = pd.DataFrame(mu_l, index=[0], columns=cols)
     mu_u = pd.DataFrame(mu_u, index=[0], columns=cols)
 
     cov_l = pd.DataFrame(cov_l, index=cols, columns=cols)
     cov_u = pd.DataFrame(cov_u, index=cols, columns=cols)
-    
+
+    cov_mu = mus.reshape(n_sim, m) - X.mean().to_numpy().reshape(1, m)
+    cov_mu = np.cov(cov_mu.T)
+
     cov_mu = np.diag(np.diag(cov_mu))
     cov_mu = pd.DataFrame(cov_mu, index=cols, columns=cols)
-        
+
+    cov_sigma = covs - X.cov().to_numpy()
+    cov_sigma = cov_sigma.reshape((n_sim, m * m), order="F")
+    cov_sigma = np.cov(cov_sigma.T)
+
+    cov_sigma = np.diag(np.diag(cov_sigma))
+    cov_sigma = pd.DataFrame(cov_sigma, index=cols_2, columns=cols_2)
+
     if au.is_pos_def(cov_l) == False:
         cov_l = au.cov_fix(cov_l, method="clipped", threshold=1e-3)
 
     if au.is_pos_def(cov_u) == False:
-        cov_u = au.cov_fix(cov_u, method="clipped", threshold=1e-3) 
+        cov_u = au.cov_fix(cov_u, method="clipped", threshold=1e-3)
 
-
-    return mu_l, mu_u, cov_l, cov_u, cov_mu
-
-    
-
+    return mu_l, mu_u, cov_l, cov_u, cov_mu, cov_sigma

@@ -6,13 +6,14 @@ from scipy.linalg import sqrtm
 import riskfolio.RiskFunctions as rk
 import riskfolio.ParamsEstimation as pe
 import riskfolio.AuxFunctions as af
+import riskfolio.AuxFunctions as au
 
 
 class Portfolio(object):
     r"""
-    Class that creates a portfolio object with all properties needed to 
+    Class that creates a portfolio object with all properties needed to
     calculate optimum portfolios.
-    
+
     Parameters
     ----------
     returns : DataFrame, optional
@@ -44,7 +45,7 @@ class Portfolio(object):
     TE : float, optional
         The maximum limit of tracking error deviatons. The default is 0.05.
     benchindex : DataFrame, optional
-        A dataframe that containts the returns of an index. If kindbench is 
+        A dataframe that containts the returns of an index. If kindbench is
         False the tracking error constraints are calculated respect to this
         index. The default is None.
     benchweights : DataFrame, optional
@@ -79,9 +80,11 @@ class Portfolio(object):
         Constraint on max level of average drawdown of uncompounded cumulated
         returns. The default is None.
     upperCDaR : float, optional
-        Constraint on max level of conditional drawdown at risk of
+        Constraint on max level of conditional drawdown at risk (CDaR) of
         uncompounded cumulated returns. The default is None.
-
+    upperuci : float, optional
+        Constraint on max level of ulcer index (UCI) of
+        uncompounded cumulated returns. The default is None.
     """
 
     def __init__(
@@ -111,6 +114,7 @@ class Portfolio(object):
         uppermdd=None,
         upperadd=None,
         upperCDaR=None,
+        upperuci=None,
     ):
 
         # Optimization Models Options
@@ -136,6 +140,7 @@ class Portfolio(object):
         self.upperCDaR = upperCDaR
         self.upperflpm = upperflpm
         self.upperslpm = upperslpm
+        self.upperuci = upperuci
         self.allowTO = allowTO
         self.turnover = turnover
         self.allowTE = allowTE
@@ -159,26 +164,20 @@ class Portfolio(object):
         self.cov_l = None
         self.cov_u = None
         self.cov_mu = None
+        self.cov_sigma = None
         self.d_mu = None
+        self.k_mu = None
+        self.k_sigma = None
 
-        # Input Variables
-
-        self.returns
-        self.factors
-        self.benchweights
-        self.ainequality
-        self.binequality
-        
         # Solver params
-        
+
         self.solvers = [cv.ECOS, cv.SCS, cv.OSQP, cv.CVXOPT]
         self.sol_params = {
-                            # cv.ECOS: {"max_iters": 500, "abstol": 1e-8},
-                            # cv.SCS: {"max_iters": 2500, "eps": 1e-5},
-                            # cv.OSQP: {"max_iter": 10000, "eps_abs": 1e-8},
-                            # cv.CVXOPT: {"max_iters": 500, "abstol": 1e-8},
-                           }
-
+            # cv.ECOS: {"max_iters": 500, "abstol": 1e-8},
+            # cv.SCS: {"max_iters": 2500, "eps": 1e-5},
+            # cv.OSQP: {"max_iter": 10000, "eps_abs": 1e-8},
+            # cv.CVXOPT: {"max_iters": 500, "abstol": 1e-8},
+        }
 
     @property
     def returns(self):
@@ -286,7 +285,7 @@ class Portfolio(object):
 
     def assets_stats(self, method_mu="hist", method_cov="hist", **kwargs):
         r"""
-        Calculate the inputs that will be use by the optimization method when 
+        Calculate the inputs that will be used by the optimization method when
         we select the input model='Classic'.
 
         Parameters
@@ -326,28 +325,28 @@ class Portfolio(object):
         **kwargs
     ):
         r"""
-        Calculate the inputs that will be use by the optimization method when 
+        Calculate the inputs that will be used by the optimization method when
         we select the input model='BL'.
-        
+
         Parameters
         ----------
         P : DataFrame of shape (n_views, n_assets)
             Analyst's views matrix, can be relative or absolute.
         Q: DataFrame of shape (n_views, 1)
-            Expected returns of analyst's views.    
+            Expected returns of analyst's views.
         delta: float
-            Risk aversion factor. The default value is 1.      
+            Risk aversion factor. The default value is 1.
         rf: scalar, optional
             Risk free rate. The default is 0.
         w : DataFrame of shape (n_assets, 1)
             Weights matrix, where n_assets is the number of assets.
             The default is None.
         eq: bool, optional
-            Indicates if use equilibrum or historical excess returns. 
+            Indicates if use equilibrum or historical excess returns.
             The default is True.
         **kwargs : dict
             Other variables related to the mean and covariance estimation.
-        
+
         See Also
         --------
         riskfolio.ParamsEstimation.black_litterman
@@ -387,9 +386,9 @@ class Portfolio(object):
 
     def factors_stats(self, method_mu="hist", method_cov="hist", **kwargs):
         r"""
-        Calculate the inputs that will be use by the optimization method when 
+        Calculate the inputs that will be used by the optimization method when
         we select the input model='FM'.
-        
+
         Parameters
         ----------
         method_mu : string
@@ -423,23 +422,40 @@ class Portfolio(object):
         value = af.is_pos_def(self.cov_fm, threshold=1e-8)
         if value == False:
             print("You must convert self.cov_fm to a positive definite matrix")
-            
-            
-    def wc_stats(self, kind="stationary", q=0.05, n_sim=3000, window=3, dmu=0.1, dcov=0.1, seed=0):
+
+    def wc_stats(
+        self,
+        box="s",
+        ellip="s",
+        q=0.05,
+        n_sim=3000,
+        window=3,
+        dmu=0.1,
+        dcov=0.1,
+        seed=0,
+    ):
         r"""
-        Calculate the inputs that will be use by the wc_optimization method.
-        
+        Calculate the inputs that will be used by the wc_optimization method.
+
         Parameters
         ----------
-        method : string
-            The method used to estimate uncertainty sets. The default is 'stationary'. Posible values are:
-            
-            - 'stationary': stationary bootstrapping method to estimate box and elliptical uncertainty set.
-            - 'circular': circular bootstrapping method to estimate box and elliptical uncertainty set.
-            - 'moving': moving bootstrapping method to estimate box and elliptical uncertainty set.
-            - 'delta-s': delta method to estimate box uncertainty set and stationary bootstrapping method for elliptical uncertainty set.
-            - 'delta-c': delta method to estimate box uncertainty set and circular bootstrapping method for elliptical uncertainty set.
-            - 'delta-m': delta method to estimate box uncertainty set and moving bootstrapping method for elliptical uncertainty set.
+        box : string
+            The method used to estimate the box uncertainty sets. The default is 's'. Posible values are:
+
+            - 's': stationary bootstrapping method.
+            - 'c': circular bootstrapping method.
+            - 'm': moving bootstrapping method.
+            - 'n': assuming normal returns to calculate confidence levels.
+            - 'd': delta method, this method increase and decrease by a percentage.
+
+        ellip : string
+            The method used to estimate the elliptical uncertainty sets. The default is 's'. Posible values are:
+
+            - 's': stationary bootstrapping method.
+            - 'c': circular bootstrapping method.
+            - 'm': moving bootstrapping method.
+            - 'n': assuming normal returns to calculate confidence levels.
+
         q : scalar
             Significance level of the selected bootstrapping method.
             The default is 0.05.
@@ -449,7 +465,7 @@ class Portfolio(object):
         window:
             Block size of the bootstrapping method. Must be greather than 1
             and lower than the n_samples - n_features + 1
-            The default is 3.  
+            The default is 3.
         dmu : scalar
             Percentage used by delta method to increase and decrease the mean vector in box constraints.
             The default is 0.1.
@@ -461,34 +477,98 @@ class Portfolio(object):
         riskfolio.ParamsEstimation.bootstrapping
 
         """
+
+        if box not in list("scmdn"):
+            raise ValueError("box only can be 's', 'c', 'm', 'd' or 'n'")
+        if ellip not in list("scmn"):
+            raise ValueError("box only can be 's', 'c', 'm' or 'n'")
+
         X = self.returns
+        cols = X.columns.tolist()
+        cols_2 = [i + "-" + j for i in cols for j in cols]
+        (n, m) = X.shape
         mu = X.mean().to_frame().T
         cov = X.cov()
-                
-        if kind == "stationary" or kind == "circular" or kind == "moving":
-            mu_l, mu_u, cov_l, cov_u, cov_mu = pe.bootstrapping(X, kind=kind, q=q, n_sim=n_sim, window=window, seed=seed)
-            d_mu = (mu_u - mu_l)/2
-        elif kind == "delta-s" or kind == "delta-c" or kind == "delta-m":
-            if kind == "delta-s":
-                mu_l, mu_u, cov_l, cov_u, cov_mu = pe.bootstrapping(X, kind="stationary", q=q, n_sim=n_sim, window=window, seed=seed)
-            elif kind == "delta-c":
-                mu_l, mu_u, cov_l, cov_u, cov_mu = pe.bootstrapping(X, kind="circular", q=q, n_sim=n_sim, window=window, seed=seed)
-            elif kind == "delta-m":
-                mu_l, mu_u, cov_l, cov_u, cov_mu = pe.bootstrapping(X, kind="moving", q=q, n_sim=n_sim, window=window, seed=seed)
+
+        if box == "s":
+            mu_l, mu_u, cov_l, cov_u, _, _ = pe.bootstrapping(
+                X, kind="stationary", q=q, n_sim=n_sim, window=window, seed=seed
+            )
+            d_mu = (mu_u - mu_l) / 2
+        elif box == "c":
+            mu_l, mu_u, cov_l, cov_u, _, _ = pe.bootstrapping(
+                X, kind="circular", q=q, n_sim=n_sim, window=window, seed=seed
+            )
+            d_mu = (mu_u - mu_l) / 2
+        elif box == "m":
+            mu_l, mu_u, cov_l, cov_u, _, _ = pe.bootstrapping(
+                X, kind="moving", q=q, n_sim=n_sim, window=window, seed=seed
+            )
+            d_mu = (mu_u - mu_l) / 2
+        elif box == "n":
+            # Defining confidence level of mean vector assuming normal returns
+            mu_u = mu + st.norm.ppf(1 - q / 2) * np.diag(cov) / n ** 2
+            mu_l = mu - st.norm.ppf(1 - q / 2) * np.diag(cov) / n ** 2
+            d_mu = (mu_u - mu_l) / 2
+            d_mu = pd.DataFrame(d_mu, index=[0], columns=cols)
+
+            # Defining confidence level of covariance matrix assuming normal returns
+            rs = np.random.RandomState(seed=seed)
+            A = st.wishart.rvs(n, cov / n, size=10000, random_state=rs)
+            cov_l = np.percentile(A, q=q, axis=0)
+            cov_u = np.percentile(A, q=1 - q / 2, axis=0)
+
+            cov_l = pd.DataFrame(cov_l, index=cols, columns=cols)
+            cov_u = pd.DataFrame(cov_u, index=cols, columns=cols)
+
+            if au.is_pos_def(cov_l) == False:
+                cov_l = au.cov_fix(cov_l, method="clipped", threshold=1e-3)
+
+            if au.is_pos_def(cov_u) == False:
+                cov_u = au.cov_fix(cov_u, method="clipped", threshold=1e-3)
+
+        elif box == "d":
+            d_mu = dmu * np.abs(mu)
             cov_l = cov - dcov * np.abs(cov)
             cov_u = cov + dcov * np.abs(cov)
-            d_mu = dmu * np.abs(mu)            
-        else:
-            raise ValueError("method must be 'stationary', 'circular', 'moving', 'delta-s', 'delta-c' or 'delta-m'")
-        
-        k_mu = st.chi2.ppf(1-q, df=X.shape[1]) ** 0.5
+            d_mu = pd.DataFrame(d_mu, index=[0], columns=cols)
+            cov_l = pd.DataFrame(cov_l, index=cols, columns=cols)
+            cov_u = pd.DataFrame(cov_u, index=cols, columns=cols)
+
+        if ellip == "s":
+            _, _, _, _, cov_mu, cov_sigma = pe.bootstrapping(
+                X, kind="stationary", q=q, n_sim=n_sim, window=window, seed=seed
+            )
+        elif ellip == "c":
+            _, _, _, _, cov_mu, cov_sigma = pe.bootstrapping(
+                X, kind="circular", q=q, n_sim=n_sim, window=window, seed=seed
+            )
+        elif ellip == "m":
+            _, _, _, _, cov_mu, cov_sigma = pe.bootstrapping(
+                X, kind="moving", q=q, n_sim=n_sim, window=window, seed=seed
+            )
+        elif ellip == "n":
+            # Covariance of mean returns
+            cov_mu = cov / n
+            cov_mu = np.diag(np.diag(cov_mu))
+            cov_mu = pd.DataFrame(cov_mu, index=cols, columns=cols)
+            # Covariance of covariance matrix
+            K = au.commutation_matrix(cov)
+            I = np.identity(m * m)
+            cov_sigma = n * (I + K) @ np.kron(cov_mu, cov_mu)
+            cov_sigma = np.diag(np.diag(cov_sigma))
+            cov_sigma = pd.DataFrame(cov_sigma, index=cols_2, columns=cols_2)
+
+        k_mu = st.chi2.ppf(1 - q, df=m) ** 0.5
+        k_sigma = st.chi2.ppf(1 - q, df=m * m) ** 0.5
 
         self.cov_l = cov_l
         self.cov_u = cov_u
         self.cov_mu = cov_mu
+        self.cov_sigma = cov_sigma
         self.d_mu = d_mu
         self.k_mu = k_mu
-        
+        self.k_sigma = k_sigma
 
     def optimization(
         self, model="Classic", rm="MV", obj="Sharpe", rf=0, l=2, hist=True
@@ -538,13 +618,14 @@ class Portfolio(object):
             - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
             - 'ADD': Average Drawdown of uncompounded returns.
             - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
+            - 'UCI': Ulcer Index of uncompounded returns.
             
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
             Objective function of the optimization model.
             The default is 'Sharpe'. Posible values are:
 
             - 'MinRisk': Minimize the selected risk measure.
-            - 'Utility': Maximize the Utility function :math:`mu w - l \phi_{i}(w)`.
+            - 'Utility': Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
             - 'Sharpe': Maximize the risk adjusted return ratio based on the selected risk measure.
             - 'MaxRet': Maximize the expected return of the portfolio.
                 
@@ -703,6 +784,10 @@ class Portfolio(object):
         risk10 = CDaR + 1 / (alpha * n) * cv.sum(Zd)
         cdarconstraints = [Zd >= U[1:] - X1 - CDaR, Zd >= 0]
 
+        # Ulcer Index Model Variables
+
+        risk11 = cv.norm(U[1:] - X1) / np.sqrt(n)
+
         # Tracking Error Model Variables
 
         c = np.array(self.benchweights, ndmin=2)
@@ -841,6 +926,13 @@ class Portfolio(object):
             constraints += cdarconstraints
             drawdown = True
 
+        if self.upperuci is not None:
+            if obj == "Sharpe":
+                constraints += [risk11 <= self.upperuci * k]
+            else:
+                constraints += [risk11 <= self.upperuci]
+            drawdown = True
+
         # Defining risk function
 
         if rm == "MV":
@@ -881,6 +973,9 @@ class Portfolio(object):
             drawdown = True
             if self.upperCDaR is None:
                 constraints += cdarconstraints
+        elif rm == "UCI":
+            risk = risk11
+            drawdown = True
 
         if madmodel == True:
             constraints += madconstraints
@@ -987,6 +1082,7 @@ class Portfolio(object):
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
             - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
+            - 'UCI': Ulcer Index of uncompounded returns.
 
         rf : float, optional
             Risk free rate, must be in the same period of assets returns.
@@ -1042,9 +1138,6 @@ class Portfolio(object):
         # MV Model Variables
 
         risk1 = cv.quad_form(w, sigma)
-        returns_1 = af.cov_returns(sigma) * 1000
-        n1 = returns_1.shape[0]
-        risk1_1 = cv.norm(returns_1 @ w, "fro") / cv.sqrt(n1 - 1)
 
         # MAD Model Variables
 
@@ -1103,15 +1196,17 @@ class Portfolio(object):
             Zd * 1000 >= 0,
         ]
 
+        # Ulcer Index Model Variables
+
+        risk11 = cv.norm(U[1:] - X1) / np.sqrt(n)
+        # risk11 = cv.sum_squares(U[1:] - X1)/n
+
         # Defining risk function
 
         constraints = []
 
         if rm == "MV":
-            if model != "Classic":
-                risk = risk1_1
-            elif model == "Classic":
-                risk = risk1
+            risk = risk1
         elif rm == "MAD":
             risk = risk2
             constraints += madconstraints
@@ -1131,6 +1226,9 @@ class Portfolio(object):
             risk = risk10
             constraints += ddconstraints
             constraints += cdarconstraints
+        elif rm == "UCI":
+            risk = risk11
+            constraints += ddconstraints
 
         # Frontier Variables
 
@@ -1168,7 +1266,7 @@ class Portfolio(object):
 
         except:
             pass
-        
+
         try:
             rp_optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
         except:
@@ -1177,28 +1275,29 @@ class Portfolio(object):
 
         return rp_optimum
 
-    def wc_optimization(self, obj="Sharpe", rf=0, l=2, Umu='box', Ucov='box'):
+    def wc_optimization(self, obj="Sharpe", rf=0, l=2, Umu="box", Ucov="box"):
         r"""
         This method that calculates the worst case mean variance portfolio
-        according to the objective function selected by the user.
-        
+        according to the objective function and uncertainty sets selected by
+        the user.
+
         Parameters
         ----------
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
             Objective function of the optimization model.
             The default is 'Sharpe'. Posible values are:
 
-            - 'MinRisk': Minimize the selected risk measure.
-            - 'Utility': Maximize the Utility function :math:`mu w - l \phi_{i}(w)`.
-            - 'Sharpe': Maximize the risk adjusted return ratio based on the selected risk measure.
-            - 'MaxRet': Maximize the expected return of the portfolio.
-                
+            - 'MinRisk': Minimize the worst case formulation of the selected risk measure.
+            - 'Utility': Maximize the worst case formulation of the Utility function :math:`\mu w - l \phi_{i}(w)`.
+            - 'Sharpe': Maximize the worst case formulation of the risk adjusted return ratio based on the selected risk measure.
+            - 'MaxRet': Maximize the worst case formulation of the expected return of the portfolio.
+
         rf : float, optional
             Risk free rate, must be in the same period of assets returns.
             The default is 0.
         l : scalar, optional
             Risk aversion factor of the 'Utility' objective function.
-            The default is 2.      
+            The default is 2.
         Umu : str, optional
             The type of uncertainty set for the mean vector used in the model.
             The default is 'box'. Posible values are:
@@ -1206,12 +1305,13 @@ class Portfolio(object):
             - 'box': Use a box uncertainty set for the mean vector.
             - 'ellip': Use a elliptical uncertainty set for the mean vector.
             - None: Don't use an uncertainty set for mean vector.
-                
+
         Ucov : str, optional
             The type of uncertainty set for the covariance matrix used in the model.
             The default is 'box'. Posible values are:
-           
+
             - 'box': Use a box uncertainty set for the covariance matrix.
+            - 'ellip': Use a elliptical uncertainty set for the covariance matrix.
             - None: Don't use an uncertainty set for covariance matrix.
 
         Returns
@@ -1230,49 +1330,65 @@ class Portfolio(object):
         cov_l = self.cov_l.to_numpy()
         cov_u = self.cov_u.to_numpy()
         cov_mu = self.cov_mu.to_numpy()
+        cov_sigma = self.cov_sigma.to_numpy()
         d_mu = self.d_mu.to_numpy()
         k_mu = self.k_mu
-    
+        k_sigma = self.k_sigma
+
         n = mu.shape[1]
         w = cv.Variable((n, 1))
-        Au = cv.Variable((n, n), symmetric = True)
-        Al = cv.Variable((n, n), symmetric = True)
+        Au = cv.Variable((n, n), symmetric=True)
+        Al = cv.Variable((n, n), symmetric=True)
+        X = cv.Variable((n, n), symmetric=True)
+        Z = cv.Variable((n, n), symmetric=True)
 
-        k = cv.Variable((1,1))    
+        k = cv.Variable((1, 1))
         rf0 = rf
-        
+
         constraints = []
-        
-        if Umu == 'box':
-            if obj == 'Sharpe':
-                constraints += [mu @ w - d_mu @ cv.abs(w) - rf0 * k >= 1]                
+
+        if Umu == "box":
+            if obj == "Sharpe":
+                constraints += [mu @ w - d_mu @ cv.abs(w) - rf0 * k >= 1]
             else:
                 ret = mu @ w - d_mu @ cv.abs(w)
-        elif Umu == 'ellip':
-            if obj == 'Sharpe':
-                constraints += [mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w) - rf0 * k >= 1] 
+        elif Umu == "ellip":
+            if obj == "Sharpe":
+                constraints += [
+                    mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w) - rf0 * k >= 1
+                ]
             else:
                 ret = mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w)
         else:
-            if obj == 'Sharpe':
+            if obj == "Sharpe":
                 constraints += [mu @ w - rf0 * k >= 1]
             else:
                 ret = mu @ w
-            
-        if Ucov == 'box':
+
+        if Ucov == "box":
             M1 = cv.vstack([Au - Al, w.T])
-            if obj == 'Sharpe':
+            if obj == "Sharpe":
                 M2 = cv.vstack([w, k])
             else:
-                M2 = cv.vstack([w, np.ones((1,1))])
+                M2 = cv.vstack([w, np.ones((1, 1))])
             M = cv.hstack([M1, M2])
             risk = cv.trace(Au @ cov_u) - cv.trace(Al @ cov_l)
-            constraints += [M >> 0, Au >= 0, Al >= 0 ]
+            constraints += [M >> 0, Au >= 0, Al >= 0]
+        elif Ucov == "ellip":
+            M1 = cv.vstack([X, w.T])
+            if obj == "Sharpe":
+                M2 = cv.vstack([w, k])
+            else:
+                M2 = cv.vstack([w, np.ones((1, 1))])
+            M = cv.hstack([M1, M2])
+            risk = cv.trace(sigma @ (X + Z)) + k_sigma * cv.norm(
+                sqrtm(cov_sigma) @ (cv.vec(X) + cv.vec(Z))
+            )
+            constraints += [M >> 0, Z >> 0]
         else:
             risk = cv.quad_form(w, sigma)
-    
 
-        if obj == 'Sharpe':
+        if obj == "Sharpe":
             constraints += [cv.sum(w) == k, k >= 0]
             if self.sht == False:
                 constraints += [w <= k * self.upperlng, w >= 0]
@@ -1286,7 +1402,6 @@ class Portfolio(object):
             if self.sht == True:
                 constraints += [w <= self.upperlng, w >= -self.uppersht]
                 constraints += [cv.sum(cv.neg(w)) <= self.uppersht]
-
 
         # Tracking Error Model Variables
 
@@ -1328,7 +1443,6 @@ class Portfolio(object):
                 TO_1 = cv.abs(w - c) * 1000
                 constraints += [TO_1 <= self.turnover * 1000]
 
-
         # Frontier Variables
 
         portafolio = {}
@@ -1337,7 +1451,7 @@ class Portfolio(object):
             portafolio.update({i: []})
 
         # Optimization Process
-            
+
         # Defining objective function
         if obj == "Sharpe":
             objective = cv.Minimize(risk)
@@ -1360,10 +1474,10 @@ class Portfolio(object):
                     pass
                 if w.value is not None:
                     break
-    
+
             weights = np.array(w.value, ndmin=2).T
             weights = np.abs(weights) / np.sum(np.abs(weights))
-    
+
             for j in self.assetslist:
                 portafolio[j].append(weights[0, self.assetslist.index(j)])
 
@@ -1378,11 +1492,9 @@ class Portfolio(object):
 
         return wc_optimum
 
-
-
     def frontier_limits(self, model="Classic", rm="MV", rf=0, hist=True):
         r"""
-        Method that calculates the minimum risk and maximum return portfolios 
+        Method that calculates the minimum risk and maximum return portfolios
         available with current assets and constraints.
 
         Parameters
@@ -1391,11 +1503,25 @@ class Portfolio(object):
             Methodology used to estimate input parameters.
             The default is 'Classic'.
         rm : str, optional
-            Risk measure used by the optimization model. The default is 'MV'.
+            The risk measure used to optimze the portfolio.
+            The default is 'MV'. Posible values are:
+
+            - 'MV': Standard Deviation.
+            - 'MAD': Mean Absolute Deviation.
+            - 'MSV': Semi Standard Deviation.
+            - 'FLPM': First Lower Partial Moment (Omega Ratio).
+            - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
+            - 'CVaR': Conditional Value at Risk.
+            - 'WR': Worst Realization (Minimax)
+            - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
+            - 'ADD': Average Drawdown of uncompounded returns.
+            - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
+            - 'UCI': Ulcer Index of uncompounded returns.
+
         rf : scalar, optional
             Risk free rate. The default is 0.
         hist : bool, optional
-            Indicate if uses historical or factor estimation of returns to 
+            Indicate if uses historical or factor estimation of returns to
             calculate risk measures that depends on scenarios (All except
             'MV' risk measure). The default is True.
 
@@ -1403,7 +1529,7 @@ class Portfolio(object):
         -------
         limits : DataFrame
             A dataframe that containts the weights of the portfolios.
-            
+
         Notes
         -----
         This method is preferable (faster) to use instead of efficient_frontier
@@ -1442,7 +1568,7 @@ class Portfolio(object):
         rf : scalar, optional
             Risk free rate. The default is 0.
         hist : bool, optional
-            Indicate if uses historical or factor estimation of returns to 
+            Indicate if uses historical or factor estimation of returns to
             calculate risk measures that depends on scenarios (All except
             'MV' risk measure). The default is True.
 
@@ -1450,14 +1576,14 @@ class Portfolio(object):
         -------
         frontier : DataFrame
             A dataframe that containts the weights of the portfolios.
-            
+
         Notes
         -----
-        It's recommendable that don't use this method when there are too many 
+        It's recommendable that don't use this method when there are too many
         assets (more than 100) and you are using a scenario based risk measure
-        (all except standard deviation). It's preferable to use frontier_limits 
+        (all except standard deviation). It's preferable to use frontier_limits
         method (faster) to know the range of expected return and expected risk.
-        
+
         """
         mu = None
         sigma = None
@@ -1536,6 +1662,9 @@ class Portfolio(object):
         elif rm == "CDaR":
             risk_min = rk.ConAbsDD(returns @ w_min, alpha1)
             risk_max = rk.ConAbsDD(returns @ w_max, alpha1)
+        elif rm == "UCI":
+            risk_min = rk.UCIAbs(returns @ w_min)
+            risk_max = rk.UCIAbs(returns @ w_max)
 
         mus = np.linspace(ret_min, ret_max + (ret_max - ret_min) / (points), points + 1)
 
@@ -1554,6 +1683,7 @@ class Portfolio(object):
             "uppermdd",
             "upperadd",
             "upperCDaR",
+            "upperuci",
         ]
 
         risk_names = [
@@ -1567,6 +1697,7 @@ class Portfolio(object):
             "MDD",
             "ADD",
             "CDaR",
+            "UCI",
         ]
 
         item = risk_names.index(rm)
@@ -1611,6 +1742,7 @@ class Portfolio(object):
             "uppermdd",
             "upperadd",
             "upperCDaR",
+            "upperuci",
         ]
 
         for i in cons:
@@ -1642,6 +1774,13 @@ class Portfolio(object):
             "cov_bl_fm",
             "returns_fm",
             "nav_fm",
+            "cov_l",
+            "cov_u",
+            "cov_mu",
+            "cov_sigma",
+            "d_mu",
+            "k_mu",
+            "k_sigma",
         ]
 
         for i in cons:

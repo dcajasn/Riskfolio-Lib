@@ -26,6 +26,7 @@ rm_names = [
     "Max Drawdown",
     "Average Drawdown",
     "Conditional Drawdown at Risk",
+    "Ulcer Index",
 ]
 
 rmeasures = [
@@ -40,6 +41,7 @@ rmeasures = [
     "MDD",
     "ADD",
     "CDaR",
+    "UCI",
 ]
 
 
@@ -76,9 +78,9 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     Example
     -------
     ::
-        
+
         ax = plf.plot_series(data=Y, w=ws, cmap='tab20', height=6, width=10, ax=None)
-        
+
     .. image:: images/Port_Series.png
 
 
@@ -157,7 +159,7 @@ def plot_frontier(
     """
     Creates a plot of the efficient frontier for a risk measure specified by
     the user.
-    
+
     Parameters
     ----------
     w_frontier : DataFrame
@@ -167,10 +169,24 @@ def plot_frontier(
     cov : DataFrame of shape (n_features, n_features)
         Covariance matrix, where n_features is the number of features.
     returns : DataFrame of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
+        Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     rm : str, optional
-        Risk measure used to create the frontier. The default is 'MV'.
+        The risk measure used to estimate the frontier.
+        The default is 'MV'. Posible values are:
+
+        - 'MV': Standard Deviation.
+        - 'MAD': Mean Absolute Deviation.
+        - 'MSV': Semi Standard Deviation.
+        - 'FLPM': First Lower Partial Moment (Omega Ratio).
+        - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
+        - 'CVaR': Conditional Value at Risk.
+        - 'WR': Worst Realization (Minimax)
+        - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
+        - 'UCI': Ulcer Index of uncompounded returns.
+
     rf : float, optional
         Risk free rate or minimum aceptable return. The default is 0.
     alpha : float, optional
@@ -195,33 +211,33 @@ def plot_frontier(
         Width of the image in inches. The default is 10.
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
-        
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-     
+
     Returns
     -------
     ax : matplotlib Axes
         Returns the Axes object with the plot for further tweaking.
-        
+
     Example
     -------
     ::
-        
+
         label = 'Max Risk Adjusted Return Portfolio'
         mu = port.mu
         cov = port.cov
         returns = port.returns
-        
+
         ax = plf.plot_frontier(w_frontier=ws, mu=mu, cov=cov, returns=returns,
                                rm=rm, rf=0, alpha=0.01, cmap='viridis', w=w1,
                                label='Portfolio', marker='*', s=16, c='r',
                                height=6, width=10, ax=None)
-        
+
     .. image:: images/MSV_Frontier.png
-    
+
     """
 
     if not isinstance(w_frontier, pd.DataFrame):
@@ -338,7 +354,7 @@ def plot_pie(
 ):
     """
     Create a pie chart with portfolio weights.
-    
+
     Parameters
     ----------
     w : DataFrame
@@ -358,26 +374,26 @@ def plot_pie(
         Width of the image in inches. The default is 10.
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
-        
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-    
+
     Returns
     -------
     ax :  matplotlib axis.
         Returns the Axes object with the plot for further tweaking.
-    
+
     Example
     -------
     ::
-        
+
         ax = plf.plot_pie(w=w1, title='Portafolio', height=6, width=10, cmap="tab20", ax=None)
-        
+
     .. image:: images/Pie_Chart.png
-    
-    
+
+
     """
 
     if not isinstance(w, pd.DataFrame):
@@ -490,7 +506,7 @@ def plot_pie(
 def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax=None):
     r"""
     Create a chart with the asset composition of the efficient frontier.
-    
+
     Parameters
     ----------
     w_frontier : DataFrame
@@ -506,26 +522,26 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
         Width of the image in inches. The default is 10.
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
-    
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-    
+
     Returns
     -------
     ax :  matplotlib axis.
         Returns the Axes object with the plot for further tweaking.
-    
+
     Example
     -------
     ::
-        
+
         ax = plf.plot_frontier_area(w_frontier=ws, cmap="tab20", height=6, width=10, ax=None)
-        
+
     .. image:: images/Area_Frontier.png
-    
-    
+
+
     """
 
     if not isinstance(w_frontier, pd.DataFrame):
@@ -583,7 +599,7 @@ def plot_risk_con(
 ):
     r"""
     Create a chart with the risk contribution per asset of the portfolio.
-    
+
     Parameters
     ----------
     w : DataFrame
@@ -591,10 +607,21 @@ def plot_risk_con(
     cov : DataFrame of shape (n_features, n_features)
         Covariance matrix, where n_features is the number of features.
     returns : DataFrame of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
-        n_features is the number of features.        
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
     rm : str, optional
-        Risk measure used to estimate risk contribution. The default is 'MV'.
+        Risk measure used to estimate risk contribution.
+        The default is 'MV'. Posible values are:
+
+        - 'MV': Standard Deviation.
+        - 'MAD': Mean Absolute Deviation.
+        - 'MSV': Semi Standard Deviation.
+        - 'FLPM': First Lower Partial Moment (Omega Ratio).
+        - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
+        - 'CVaR': Conditional Value at Risk.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
+        - 'UCI': Ulcer Index of uncompounded returns.
+
     rf : float, optional
         Risk free rate or minimum aceptable return. The default is 0.
     alpha : float, optional
@@ -608,27 +635,27 @@ def plot_risk_con(
         Width of the image in inches. The default is 10.
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
-    
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-    
+
     Returns
     -------
     ax :  matplotlib axis.
         Returns the Axes object with the plot for further tweaking.
-    
+
     Example
     -------
     ::
 
-        ax = plf.plot_risk_con(w=w2, cov=cov, returns=returns, rm='MSV', 
+        ax = plf.plot_risk_con(w=w2, cov=cov, returns=returns, rm='MSV',
                                rf=0, alpha=0.01, cmap="tab20", height=6,
                                width=10, ax=None)
-        
+
     .. image:: images/Risk_Con.png
-    
+
     """
 
     if not isinstance(w, pd.DataFrame):
@@ -665,7 +692,7 @@ def plot_risk_con(
 def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
     r"""
     Create a histogram of portfolio returns with the risk measures.
-    
+
     Parameters
     ----------
     returns : DataFrame
@@ -683,25 +710,25 @@ def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
         Width of the image in inches. The default is 10.
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
-    
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-    
+
     Returns
     -------
     ax : matplotlib axis.
         Returns the Axes object with the plot for further tweaking.
-        
+
     Example
     -------
     ::
-        
+
         ax = plf.plot_hist(data=Y, w=w1, alpha=0.01, bins=50, height=6, width=10, ax=None)
-        
+
     .. image:: images/Histogram.png
-    
+
     """
 
     if not isinstance(returns, pd.DataFrame):
@@ -797,7 +824,7 @@ def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
 def plot_drawdown(nav, w, alpha=0.01, height=8, width=10, ax=None):
     r"""
     Create a chart with the evolution of portfolio prices and drawdown.
-    
+
     Parameters
     ----------
     nav : DataFrame
@@ -813,26 +840,27 @@ def plot_drawdown(nav, w, alpha=0.01, height=8, width=10, ax=None):
         Width of the image in inches. The default is 10.
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
-    
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-    
+
     Returns
     -------
     ax : matplotlib axis.
         Returns the Axes object with the plot for further tweaking.
-    
+
     Example
     -------
     ::
+
         nav=port.nav
-        
+
         ax = plf.plot_drawdown(nav=nav, w=w1, alpha=0.01, height=8, width=10, ax=None)
 
     .. image:: images/Drawdown.png
-    
+
     """
 
     if not isinstance(nav, pd.DataFrame):
@@ -884,26 +912,27 @@ def plot_drawdown(nav, w, alpha=0.01, height=8, width=10, ax=None):
     ]
     data = [prices, DD]
     color1 = ["b", "orange"]
-    risk = [-rk.MaxAbsDD(a), -rk.AvgAbsDD(a), -rk.ConAbsDD(a, alpha)]
+    risk = [-rk.MaxAbsDD(a), -rk.AvgAbsDD(a), -rk.ConAbsDD(a, alpha), -rk.UCIAbs(a)]
     label = [
         "Maximum Drawdown: " + "{0:.2%}".format(risk[0]),
         "Average Drawdown: " + "{0:.2%}".format(risk[1]),
         "{0:.2%}".format((1 - alpha))
         + " Confidence CDaR: "
         + "{0:.2%}".format(risk[2]),
+        "Ulcer Index: " + "{0:.2%}".format(risk[3]),
     ]
-    color2 = ["r", "limegreen", "fuchsia"]
+    color2 = ["r", "b", "limegreen", "fuchsia"]
 
     j = 0
 
-    ymin = np.min(DD) * 1.4
+    ymin = np.min(DD) * 1.5
 
     for i in ax:
         i.clear()
         i.plot_date(index, data[j], "-", color=color1[j])
         if j == 1:
             i.fill_between(index, 0, data[j], facecolor=color1[j], alpha=0.3)
-            for k in range(0, 3):
+            for k in range(0, len(risk)):
                 i.axhline(y=risk[k], color=color2[k], linestyle="-", label=label[k])
             i.set_ylim(ymin, 0)
             i.legend(loc="lower right")  # , fontsize = 'x-small')

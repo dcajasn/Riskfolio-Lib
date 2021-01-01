@@ -2,6 +2,10 @@
 Portfolio Models
 ################
 
+.. raw:: html
+
+    <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
 Some Theory
 ===========
 
@@ -59,7 +63,7 @@ Where:
 
 :math:`Aw \geq B`: is a set of linear constraints.
 
-:math:`\phi_{i}(w)`: are 10 available risk measures. The available risk
+:math:`\phi_{i}(w)`: are 11 available risk measures. The available risk
 measures are:
 
 - Standard Deviation :cite:`a-Markowitz`.
@@ -72,6 +76,7 @@ measures are:
 - Maximum Drawdown of uncompounded returns (Calmar Ratio) :cite:`a-Uryasev1`.
 - Average Drawdown of uncompounded returns :cite:`a-Uryasev1`.
 - Conditional Drawdown at Risk of uncompounded returns :cite:`a-Uryasev1`.
+- Ulcer Index of uncompounded returns :cite:`a-martin1989`.
 
 :math:`c_{i}`: are maximum values on each risk measure.
 
@@ -102,7 +107,7 @@ Where:
 
 :math:`b`: is a vector of risk contribution constraints.
 
-:math:`\phi(w)`: are 7 available risk measures. The available risk
+:math:`\phi(w)`: are 8 available risk measures. The available risk
 measures are:
 
 - Standard Deviation :cite:`a-Markowitz`.
@@ -112,6 +117,7 @@ measures are:
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.
 - Conditional Drawdown at Risk of uncompounded returns :cite:`a-Uryasev1`.
+- Ulcer Index of uncompounded returns :cite:`a-martin1989`.
 
 :math:`c`: is an arbitrary constant.
 
@@ -174,16 +180,17 @@ Where:
 .. math::
 
     \begin{align}
-    U^{box}_{\mu} & = \{ \mu \, | \, | \mu - \hat{\mu} | \geq \delta \} \\
-    U^{ellip}_{\mu} & = \{ \mu \, | \mu = \hat{\mu} + \kappa \Sigma^{1/2}_{\mu} \} \\
+    U^{box}_{\mu} & = \left \{ \mu \, | \, | \mu - \hat{\mu} | \leq \delta \right \} \\
+    U^{ellip}_{\mu} & = \left \{ \mu \, | \left ( \mu - \hat{\mu} \right ) \Sigma^{-1}_{\mu} \left ( \mu - \hat{\mu} \right )^{T} \leq k^{2}_{\mu} \right \} \\
     \end{align}
 
-:math:`U_{\Sigma}` is the uncertainty set of the covariance matrix.
+:math:`U_{\Sigma}` is the uncertainty set of the covariance matrix. The uncertainty sets can be:
 
 .. math::
 
     \begin{align}
-    U^{box}_{\Sigma} = \{ \Sigma \, | \, \Sigma_{lower} \geq \Sigma \geq \Sigma_{upper} \} \\
+    U^{box}_{\Sigma} & = \left \{ \Sigma \, | \, \Sigma_{lower} \leq \Sigma \leq \Sigma_{upper} \, , \, \Sigma \succeq 0 \right \} \\
+    U^{ellip}_{\Sigma} & = \left \{ \Sigma \, | \left ( \text{vec}(\Sigma) - \text{vec}(\hat{\Sigma}) \right ) \Sigma^{-1}_{\Sigma} \left ( \text{vec}(\Sigma) - \text{vec}(\hat{\Sigma}) \right )^{T} \leq k^{2}_{\Sigma} \, , \, \Sigma \succeq 0 \right \}  \\
     \end{align}
 
 :math:`Aw \geq B`: is a set of linear constraints.

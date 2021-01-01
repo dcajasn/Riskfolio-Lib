@@ -1,12 +1,13 @@
 # Riskfolio-Lib
 
-**Quantitative Strategic Asset Allocation, easy for you.**
+**Quantitative Strategic Asset Allocation, Easy for Everyone.**
 
 <div class="row">
 <img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/master/docs/source/images/MSV_Frontier.png" height="200">
 <img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/master/docs/source/images/Pie_Chart.png" height="200">
 </div>
 
+<a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 ## Description
 
@@ -17,15 +18,44 @@ with [pandas](https://pandas.pydata.org/) data structures.
 
 Some of key functionalities that Riskfolio-Lib offers:
 
-* Portfolio optimization with 4 objective functions (Minimum Risk, Maximum Return, Maximum Risk Adjusted Return Ratio and Maximum Utility Function)
-* Portfolio optimization with 10 convex risk measures (Std. Dev., MAD, CVaR, Maximum Drawdown, among others)
-* Risk Parity Portfolio optimization with 7 convex risk measures (Std. Dev., MAD, CVaR, Maximum Drawdown, among others)
+* Portfolio optimization with 4 objective functions:
+
+    * Minimum Risk.
+    * Maximum Return.
+    * Maximum Utility Function.
+    * Maximum Risk Adjusted Return Ratio.
+
+* Portfolio optimization with 11 convex risk measures:
+
+    * Standard Deviation.
+    * Semi Standard Deviation.
+    * Mean Absolute Deviation (MAD).
+    * First Lower Partial Moment (Omega Ratio)
+    * Second Lower Partial Moment (Sortino Ratio)
+    * Conditional Value at Risk (CVaR).
+    * Worst Case Realization (Minimax Model)
+    * Maximum Drawdown (Calmar Ratio)
+    * Average Drawdown
+    * Conditional Drawdown at Risk (CDaR).
+    * Ulcer Index.
+
+* Risk Parity Portfolio optimization with 8 convex risk measures:
+
+    * Standard Deviation.
+    * Semi Standard Deviation.
+    * Mean Absolute Deviation (MAD).
+    * First Lower Partial Moment (Omega Ratio)
+    * Second Lower Partial Moment (Sortino Ratio)
+    * Conditional Value at Risk (CVaR).
+    * Conditional Drawdown at Risk (CDaR).
+    * Ulcer Index.
+
 * Worst Case Mean Variance Portfolio optimization.
 * Portfolio optimization with Black Litterman model.
 * Portfolio optimization with Risk Factors model.
 * Portfolio optimization with constraints on tracking error and turnover.
 * Portfolio optimization with short positions and leveraged portfolios.
-* Tools for build efficient frontier for 10 risk measures.
+* Tools for build efficient frontier for 11 risk measures.
 * Tools for build linear constraints on assets, asset classes and risk factors.
 * Tools for build views on assets and asset classes.
 * Tools for calculate risk measures.
@@ -68,7 +98,6 @@ The latest stable release (and older versions) can be installed from PyPI:
 ## Development
 
 Riskfolio-Lib development takes place on Github: https://github.com/dcajasn/Riskfolio-Lib
-
 
 ## RoadMap
 

@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy import linalg as LA
 from statsmodels.stats.correlation_tools import cov_nearest
+from scipy.sparse import csr_matrix
 
 ###############################################################################
 # Some Aditional Functions
@@ -10,7 +11,7 @@ from statsmodels.stats.correlation_tools import cov_nearest
 
 def is_pos_def(cov, threshold=1e-8):
     r"""
-    Indicate if a matrix is positive (semi)definite.        
+    Indicate if a matrix is positive (semi)definite.
 
     Parameters
     ----------
@@ -19,9 +20,9 @@ def is_pos_def(cov, threshold=1e-8):
 
     Returns
     -------
-    value : bool    
+    value : bool
         True if matrix is positive (semi)definite.
-        
+
     Raises
     ------
         ValueError when the value cannot be calculated.
@@ -47,7 +48,7 @@ def correl_matrix(cov):
     -------
     corr : nd-array
         A correlation matrix.
-        
+
     Raises
     ------
         ValueError when the value cannot be calculated.
@@ -86,9 +87,9 @@ def cov_fix(cov, method="clipped", **kwargs):
 
     Returns
     -------
-    cov_ : bool    
+    cov_ : bool
         A positive definite covariance matrix.
-        
+
     Raises
     ------
         ValueError when the value cannot be calculated.
@@ -122,7 +123,7 @@ def cov_returns(cov, seed=0):
     -------
     a : nd-array
         A matrix of returns that have a covariance matrix cov.
-        
+
     Raises
     ------
         ValueError when the value cannot be calculated.
@@ -145,3 +146,31 @@ def cov_returns(cov, seed=0):
     a = a @ L1.T
 
     return a
+
+
+def commutation_matrix(cov):
+    r"""
+    Generate the commutation matrix of the covariance matrix cov.
+
+    Parameters
+    ----------
+    cov : nd-array of shape (n_features, n_features)
+        Assets covariance matrix, where n_features is the number of features.
+
+    Returns
+    -------
+    K : nd-array
+        The commutation matrix of the covariance matrix cov.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    (m, n) = cov.shape
+    row = np.arange(m * n)
+    col = row.reshape((m, n), order="F").ravel()
+    data = np.ones(m * n, dtype=np.int8)
+    K = csr_matrix((data, (row, col)), shape=(m * n, m * n))
+    K = K.toarray()
+    return K

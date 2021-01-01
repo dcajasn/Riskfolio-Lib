@@ -7,6 +7,10 @@
 Plot Functions
 ##############
 
+.. raw:: html
+
+    <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
 This section containts some functions that allows us to create charts that 
 helps us to analyze quickly the properties of our optimum portfolios.
 
@@ -54,7 +58,10 @@ Example
     rm = 'MSV'  # Semi Standard Deviation
     
     # Estimate inputs of the model (historical estimates)
-    port.assets_stats(method='hist')
+    method_mu='hist' # Method to estimate expected returns based on historical data.
+    method_cov='hist' # Method to estimate covariance matrix based on historical data.
+
+    port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
     
     # Estimate the portfolio that maximizes the risk adjusted return ratio
     w1 = port.optimization(model='Classic', rm=rm, obj='Sharpe', rf=0.0, l=0, hist=True)

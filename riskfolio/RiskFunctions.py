@@ -15,9 +15,11 @@ __all__ = [
     "MaxAbsDD",
     "AvgAbsDD",
     "ConAbsDD",
+    "UCIAbs",
     "MaxRelDD",
     "AvgRelDD",
     "ConRelDD",
+    "UCIRel",
     "Sharpe_Risk",
     "Sharpe",
     "Risk_Contribution",
@@ -34,19 +36,19 @@ def MAD(X):
 
     Parameters
     ----------
-    X : 1d-array 
+    X : 1d-array
         a returns series, must have Tx1 size.
 
     Returns
     -------
-    value : float    
+    value : float
         MAD of a returns series.
-        
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-        
+
     Examples
     --------
     Examples should be written in doctest format, and should illustrate how
@@ -54,7 +56,7 @@ def MAD(X):
 
     >>> print([i for i in example_generator(4)])
     [0, 1, 2, 3]
-      
+
     """
 
     a = np.array(X, ndmin=2)
@@ -75,13 +77,13 @@ def SemiDeviation(X):
 
     .. math::
         \text{SemiDev}(X) = \left [ \frac{1}{T-1}\sum_{t=1}^{T}
-        (X_{t} - \mathbb{E}(X_{t}))^2 \right ]^{1/2}    
+        (X_{t} - \mathbb{E}(X_{t}))^2 \right ]^{1/2}
 
     Parameters
     ----------
-    X : 1d-array 
+    X : 1d-array
         Returns series, must have Tx1 size.
-                        
+
     Raises
     ------
     ValueError
@@ -118,11 +120,11 @@ def VaR_Hist(X, alpha=0.01):
 
     Parameters
     ----------
-    X : 1d-array 
+    X : 1d-array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of VaR. The default is 0.01.
-                        
+
     Raises
     ------
     ValueError
@@ -159,11 +161,11 @@ def CVaR_Hist(X, alpha=0.01):
 
     Parameters
     ----------
-    X : 1d-array 
+    X : 1d-array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of CVaR. The default is 0.01.
-                        
+
     Raises
     ------
     ValueError
@@ -202,9 +204,9 @@ def WR(X):
 
     Parameters
     ----------
-    X : 1d-array 
+    X : 1d-array
         Returns series, must have Tx1 size.
-                        
+
     Raises
     ------
     ValueError
@@ -214,7 +216,7 @@ def WR(X):
     -------
     value : float
         WR of a returns series.
-        
+
     """
 
     a = np.array(X, ndmin=2)
@@ -236,21 +238,21 @@ def LPM(X, MAR=0, p=1):
 
     .. math::
         \text{LPM}(X, \text{MAR}, p) = \left [ \frac{1}{T}\sum_{t=1}^{T}
-        \max(\text{MAR} - X_{t}, 0) \right ]^{\frac{1}{p}}    
+        \max(\text{MAR} - X_{t}, 0) \right ]^{\frac{1}{p}}
 
     Where:
-    
+
     :math:`\text{MAR}` is the minimum acceptable return.
 
     Parameters
     ----------
-    X : 1d-array 
+    X : 1d-array
         Returns series, must have Tx1 size.
     MAR : float, optional
         Minimum acceptable return. The default is 0.
     p : float, optional
         order of the :math:`\text{LPM}`. The default is 1.
-                        
+
     Raises
     ------
     ValueError
@@ -288,15 +290,15 @@ def Entropic_RM(X, theta=1):
 
     .. math::
         \text{ERM}(X) = \theta \log\left(\mathbb{E}
-        [e^{-\frac{1}{\theta} X}]\right)        
-        
+        [e^{-\frac{1}{\theta} X}]\right)
+
     Parameters
     ----------
-    X : 1d-array 
+    X : 1d-array
         Returns series, must have Tx1 size.
     theta : float, optional
         Risk aversion parameter, must be greater than zero. The default is 1.
-                        
+
     Raises
     ------
     ValueError
@@ -306,7 +308,7 @@ def Entropic_RM(X, theta=1):
     -------
     value : float
         ERM of a returns series.
-    
+
     """
 
     a = np.array(X, ndmin=2)
@@ -343,18 +345,18 @@ def EVaR_Hist(X, alpha=0.01):
     .. math::
         \text{EVaR}_{\alpha}(X) = \inf_{z>0} \left \{ z^{-1}
         \ln \left (\frac{M_X(z)}{\alpha} \right ) \right \}
-    
+
     Where:
-    
+
     :math:`M_X(z)` is the moment generating function of X.
-    
+
     Parameters
     ----------
-    X : 1d-array 
+    X : 1d-array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of EVaR. The default is 0.01.
-                        
+
     Raises
     ------
     ValueError
@@ -364,7 +366,7 @@ def EVaR_Hist(X, alpha=0.01):
     -------
     value : float
         EVaR of a returns series.
-    
+
     """
 
     a = np.array(X, ndmin=2)
@@ -389,22 +391,22 @@ def MaxAbsDD(X):
     .. math::
         \text{MDD}(X) = \max_{j \in (0,T)} \left [\max_{t \in (0,T)}
         \left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right ) \right ]
-    
+
     Parameters
     ----------
-    X : 1d-array 
+    X : 1d-array
         Returns series, must have Tx1 size.
-                        
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-        
+
     Returns
     -------
     value : float
-        MDD of a uncumpound cumulated returns.
-    
+        MDD of an uncumpound cumulated returns.
+
     """
 
     a = np.array(X, ndmin=2)
@@ -436,13 +438,13 @@ def AvgAbsDD(X):
 
     .. math::
         \text{ADD}(X) = \frac{1}{T}\sum_{i=0}^{T}\max_{t \in (0,T)}
-        \left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right ) 
-    
+        \left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right )
+
     Parameters
     ----------
     X : 1d-array
         Returns series, must have Tx1 size.
-                                
+
     Raises
     ------
     ValueError
@@ -451,8 +453,8 @@ def AvgAbsDD(X):
     Returns
     -------
     value : float
-        ADD of a uncumpound cumulated returns.
-    
+        ADD of an uncumpound cumulated returns.
+
     """
 
     a = np.array(X, ndmin=2)
@@ -493,11 +495,11 @@ def ConAbsDD(X, alpha=0.01):
         \sum_{i=0}^{T} \max \left [ \max_{t \in (0,T)}
         \left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right )
         - \text{DaR}_{\alpha}(X), 0 \right ]
-    
+
     Where:
 
     :math:`\text{DaR}_{\alpha}` is the Drawdown at Risk of an uncumpound
-    cumulated return series :math:`X`.  
+    cumulated return series :math:`X`.
 
     Parameters
     ----------
@@ -514,7 +516,7 @@ def ConAbsDD(X, alpha=0.01):
     Returns
     -------
     value : float
-        CDaR of a uncumpound cumulated returns series.
+        CDaR of an uncumpound cumulated returns series.
 
     """
 
@@ -544,6 +546,60 @@ def ConAbsDD(X, alpha=0.01):
     return value
 
 
+def UCIAbs(X):
+    r"""
+    Calculates the Ulcer Index (UCI) of a returns series
+    using uncumpound cumulated returns.
+
+    .. math::
+        \text{UCI}(X) =\sqrt{\frac{1}{T}\sum_{i=0}^{T} \max_{t \in (0,T)}
+        \left ( \sum_{i=0}^{t}X_{i} - \sum_{i=0}^{j}X_{i} \right )^2}
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Ulcer Index of an uncumpound cumulated returns.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    prices = np.insert(np.array(a), 0, 1, axis=0)
+    NAV = np.cumsum(np.array(prices), axis=0)
+    value = 0
+    peak = -99999
+    n = 0
+    for i in NAV:
+        if i > peak:
+            peak = i
+        DD = peak - i
+        if DD > 0:
+            value += DD ** 2
+        n += 1
+    if n == 0:
+        value = 0
+    else:
+        value = np.sqrt(value / n)
+
+    value = value.item()
+
+    return value
+
+
 def MaxRelDD(X):
     r"""
     Calculates the Maximum Drawdown (MDD) of a returns series
@@ -552,17 +608,17 @@ def MaxRelDD(X):
     .. math::
         \text{MDD}(X) = \max_{j \in (0,T)}\left[\max_{t \in (0,T)}
         \left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right ) \right]
-    
+
     Parameters
     ----------
-    X : 1d-array 
+    X : 1d-array
         Returns series, must have Tx1 size.
-                        
+
     Raises
     ------
     ValueError
         When the value cannot be calculated.
-        
+
     Returns
     -------
     value : float
@@ -595,17 +651,17 @@ def MaxRelDD(X):
 def AvgRelDD(X):
     r"""
     Calculates the Average Drawdown (ADD) of a returns series
-    using cumpound acumulated returns.
+    using cumpound cumulated returns.
 
     .. math::
         \text{ADD}(X) = \frac{1}{T}\sum_{i=0}^{T}\max_{t \in (0,T)}
-        \left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right ) 
-    
+        \left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right )
+
     Parameters
     ----------
     X : 1d-array
         Returns series, must have Tx1 size.
-                                
+
     Raises
     ------
     ValueError
@@ -614,8 +670,8 @@ def AvgRelDD(X):
     Returns
     -------
     value : float
-        ADD of a cumpound acumulated returns.
-    
+        ADD of a cumpound cumulated returns.
+
     """
 
     a = np.array(X, ndmin=2)
@@ -656,11 +712,11 @@ def ConRelDD(X, alpha=0.01):
         \sum_{i=0}^{T} \max \left [ \max_{t \in (0,T)}
         \left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right )
         - \text{DaR}_{\alpha}(X), 0 \right ]
-    
+
     Where:
 
     :math:`\text{DaR}_{\alpha}` is the Drawdown at Risk of a cumpound
-    acumulated return series :math:`X`.       
+    cumulated return series :math:`X`.
 
     Parameters
     ----------
@@ -707,6 +763,60 @@ def ConRelDD(X, alpha=0.01):
     return value
 
 
+def UCIRel(X):
+    r"""
+    Calculates the Ulcer Index (UCI) of a returns series
+    using cumpound cumulated returns.
+
+    .. math::
+        \text{UCI}(X) = \sqrt{\frac{1}{T}\sum_{i=0}^{T}\max_{t \in (0,T)}
+        \left ( \prod_{i=0}^{t}(1+X_{i}) - \prod_{i=0}^{j}(1+X_{i}) \right )^2}
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Ulcer Index of a cumpound cumulated returns.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    prices = 1 + np.insert(np.array(a), 0, 0, axis=0)
+    NAV = np.cumprod(prices, axis=0)
+    value = 0
+    peak = -99999
+    n = 0
+    for i in NAV:
+        if i > peak:
+            peak = i
+        DD = (peak - i) / peak
+        if DD > 0:
+            value += DD ** 2
+        n += 1
+    if n == 0:
+        value = 0
+    else:
+        value = np.sqrt(value / n)
+
+    value = value.item()
+
+    return value
+
+
 ###############################################################################
 # Risk Adjusted Return Ratios
 ###############################################################################
@@ -723,12 +833,12 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
     cov : DataFrame or nd-array of shape (n_features, n_features)
         Covariance matrix, where n_features is the number of features.
     returns : DataFrame or nd-array of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
+        Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     rm : str, optional
         Risk measure used in the denominator of the ratio. The default is
         'MV'. Posible values are:
-            
+
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
         - 'MSV': Semi Standard Deviation.
@@ -740,7 +850,8 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
         - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-        
+        - 'UCI': Ulcer Index of uncompounded returns.
+
     rf : float, optional
         Risk free rate. The default is 0.
     **kwargs : dict
@@ -788,6 +899,8 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
         risk = AvgAbsDD(a)
     elif rm == "CDaR":
         risk = ConAbsDD(a, alpha=alpha)
+    elif rm == "UCI":
+        risk = UCIAbs(a)
 
     value = risk
 
@@ -801,20 +914,20 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
     .. math::
         \text{Sharpe}(X) =  \frac{\mathbb{E}(X) -
         r_{f}}{\phi(X)}
-    
+
     Where:
-    
+
     :math:`X` is the vector of portfolio returns.
-    
+
     :math:`r_{f}` is the risk free rate, when the risk measure is
-    
+
     :math:`\text{LPM}` uses instead of :math:`r_{f}` the :math:`\text{MAR}`.
-    
+
     :math:`\phi(X)` is a convex risk measure. The risk measures availabe are:
-        
+
     Parameters
     ----------
-    
+
     w : DataFrame or 1d-array of shape (n_assets, 1)
         Weights matrix, where n_assets is the number of assets.
     mu : DataFrame or nd-array of shape (1, n_assets)
@@ -822,12 +935,12 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
     cov : DataFrame or nd-array of shape (n_features, n_features)
         Covariance matrix, where n_features is the number of features.
     returns : DataFrame or nd-array of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
+        Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     rm : str, optional
         Risk measure used in the denominator of the ratio. The default is
         'MV'. Posible values are:
-            
+
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
         - 'MSV': Semi Standard Deviation.
@@ -839,7 +952,8 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
         - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-        
+        - 'UCI': Ulcer Index of uncompounded returns.
+
     rf : float, optional
         Risk free rate. The default is 0.
     **kwargs : dict
@@ -899,12 +1013,12 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
     cov : DataFrame or nd-array of shape (n_features, n_features)
         Covariance matrix, where n_features is the number of features.
     returns : DataFrame or nd-array of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and 
+        Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     rm : str, optional
         Risk measure used in the denominator of the ratio. The default is
         'MV'. Posible values are:
-            
+
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
         - 'MSV': Semi Standard Deviation.
@@ -916,7 +1030,8 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
         - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-        
+        - 'UCI': Ulcer Index of uncompounded returns.
+
     rf : float, optional
         Risk free rate. The default is 0.
     **kwargs : dict
@@ -939,8 +1054,6 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
         cov_ = np.array(cov, ndmin=2)
     if returns is not None:
         returns_ = np.array(returns, ndmin=2)
-
-    # risk = Sharpe_Risk(w, cov=cov_, returns=returns_, rm=rm, rf=rf, alpha=alpha)
 
     RC = []
     d_i = 0.0000001
@@ -987,6 +1100,9 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.01):
         elif rm == "CDaR":
             risk_1 = ConAbsDD(a_1, alpha=alpha)
             risk_2 = ConAbsDD(a_2, alpha=alpha)
+        elif rm == "UCI":
+            risk_1 = UCIAbs(a_1)
+            risk_2 = UCIAbs(a_2)
 
         RC_i = (risk_1 - risk_2) / (2 * d_i) * w_[i, 0]
         RC.append(RC_i)

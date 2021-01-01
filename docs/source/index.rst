@@ -7,14 +7,18 @@ Riskfolio-Lib
    :keywords: portfolio optimization python, portfolio optimization, Markowitz portfolio optimization, cvar portfolio optimization, asset allocation, strategic asset allocation
 
 
-**Quantitative Strategic Asset Allocation, easy for you.**
+**Quantitative Strategic Asset Allocation, Easy for Everyone.**
 
 .. image:: images/MSV_Frontier.png
     :width: 45%
     
 .. image:: images/Pie_Chart.png
     :width: 45%
-    
+
+.. raw:: html
+
+    <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
 
 Description
 ===========
@@ -26,15 +30,44 @@ with `pandas <https://pandas.pydata.org/>`_ data structures.
 
 Some of key functionalities that Riskfolio-Lib offers:
 
-- Portfolio optimization with 4 objective functions (Minimum Risk, Maximum Return, Maximum Risk Adjusted Return Ratio and Maximum Utility Function)
-- Portfolio optimization with 10 convex risk measures (Std. Dev., MAD, CVaR, Maximum Drawdown, among others)
-- Risk Parity Portfolio optimization with 7 convex risk measures (Std. Dev., MAD, CVaR, Maximum Drawdown, among others)
+- Mean Risk Portfolio optimization with 4 objective functions:
+
+    - Minimum Risk.
+    - Maximum Return.
+    - Maximum Utility Function.
+    - Maximum Risk Adjusted Return Ratio.
+
+- Mean Risk Portfolio optimization with 11 convex risk measures:
+
+    - Standard Deviation.
+    - Semi Standard Deviation.
+    - Mean Absolute Deviation (MAD).
+    - First Lower Partial Moment (Omega Ratio)
+    - Second Lower Partial Moment (Sortino Ratio)
+    - Conditional Value at Risk (CVaR).
+    - Worst Case Realization (Minimax Model)
+    - Maximum Drawdown (Calmar Ratio).
+    - Average Drawdown
+    - Conditional Drawdown at Risk (CDaR).
+    - Ulcer Index.
+
+- Risk Parity Portfolio optimization with 8 convex risk measures:
+
+    - Standard Deviation.
+    - Semi Standard Deviation.
+    - Mean Absolute Deviation (MAD).
+    - First Lower Partial Moment (Omega Ratio)
+    - Second Lower Partial Moment (Sortino Ratio)
+    - Conditional Value at Risk (CVaR).
+    - Conditional Drawdown at Risk (CDaR).
+    - Ulcer Index.
+
 - Worst Case Mean Variance Portfolio optimization.
 - Portfolio optimization with Black Litterman model.
 - Portfolio optimization with Risk Factors model.
 - Portfolio optimization with constraints on tracking error and turnover.
 - Portfolio optimization with short positions and leveraged portfolios.
-- Tools for build efficient frontier for 10 risk measures.
+- Tools for build efficient frontier for 11 risk measures.
 - Tools for build linear constraints on assets, asset classes and risk factors.
 - Tools for build views on assets and asset classes.
 - Tools for calculate risk measures.
