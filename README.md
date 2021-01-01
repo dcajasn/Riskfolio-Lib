@@ -18,14 +18,14 @@ with [pandas](https://pandas.pydata.org/) data structures.
 
 Some of key functionalities that Riskfolio-Lib offers:
 
-* Portfolio optimization with 4 objective functions:
+* Mean Risk Portfolio optimization with 4 objective functions:
 
     * Minimum Risk.
     * Maximum Return.
     * Maximum Utility Function.
     * Maximum Risk Adjusted Return Ratio.
 
-* Portfolio optimization with 11 convex risk measures:
+* Mean Risk Portfolio optimization with 11 convex risk measures:
 
     * Standard Deviation.
     * Semi Standard Deviation.
