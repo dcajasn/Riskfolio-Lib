@@ -5,6 +5,7 @@ sphinxcontrib-napoleon
 sphinx-rtd-theme
 sphinxcontrib-bibtex
 sphinxemoji
+sphinx-sitemap
 RinohType
 numpy
 scipy

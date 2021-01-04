@@ -53,6 +53,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
     'sphinxemoji.sphinxemoji',
+    'sphinx_sitemap',
 ]
 
 autodoc_member_order = 'bysource'
@@ -115,11 +116,14 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
+sitemap_filename = 'sitemap.xml'
+html_extra_path = ['robots.txt']
+
 
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Riskfoliodoc'
+htmlhelp_basename = 'Riskfolio-Lib-doc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
