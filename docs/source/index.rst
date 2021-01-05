@@ -31,6 +31,7 @@ Riskfolio-Lib
 
     <a href="https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt"><img alt="GitHub license" src="https://img.shields.io/github/license/dcajasn/Riskfolio-Lib"></a>
 
+
 .. image:: https://img.shields.io/github/license/dcajasn/Riskfolio-Lib   :alt: GitHub license   :target: https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
 .. image:: https://mybinder.org/badge_logo.svg
