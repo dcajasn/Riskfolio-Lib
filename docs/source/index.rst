@@ -23,16 +23,11 @@ Riskfolio-Lib
 
 
 .. image:: https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib?color=green   :alt: GitHub stars   :target: https://github.com/dcajasn/Riskfolio-Lib/stargazers
-
 .. image:: https://static.pepy.tech/personalized-badge/riskfolio-lib?period=month&units=none&left_color=grey&right_color=orange&left_text=Downloads/Month
  :target: https://pepy.tech/project/riskfolio-lib
-
 .. raw:: html
 
     <a href="https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt"><img alt="GitHub license" src="https://img.shields.io/github/license/dcajasn/Riskfolio-Lib"></a>
-
-
-.. image:: https://img.shields.io/github/license/dcajasn/Riskfolio-Lib   :alt: GitHub license   :target: https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
 .. image:: https://mybinder.org/badge_logo.svg
  :target: https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD
