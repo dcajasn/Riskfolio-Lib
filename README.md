@@ -8,6 +8,14 @@
 </div>
 
 <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+<a href="https://github.com/dcajasn/Riskfolio-Lib/graphs/commit-activity"><img src="https://img.shields.io/badge/Maintained%3F-yes-brightgreen.svg" alt="issues"></a>
+[![PyPi](https://img.shields.io/pypi/v/Riskfolio-Lib.svg)]((https://pypi.org/project/Riskfolio-Lib/))
+[![Python](https://img.shields.io/pypi/pyversions/Riskfolio-Lib.svg)]((https://pypi.org/project/Riskfolio-Lib/))
+[![Documentation Status](https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest)](https://riskfolio-lib.readthedocs.io/en/latest/)
+[![GitHub issues](https://img.shields.io/github/issues/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/issues)
+[![GitHub license](https://img.shields.io/github/license/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD)
+[![GitHub stars](https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib?style=social)](https://github.com/dcajasn/Riskfolio-Lib/stargazers)
 
 ## Description
 
