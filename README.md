@@ -11,10 +11,12 @@
 
 [![PyPi](https://img.shields.io/pypi/v/Riskfolio-Lib.svg)]((https://pypi.org/project/Riskfolio-Lib/))
 [![Python](https://img.shields.io/pypi/pyversions/Riskfolio-Lib.svg)]((https://pypi.org/project/Riskfolio-Lib/))
+[![Downloads](https://static.pepy.tech/personalized-badge/riskfolio-lib?period=month&units=none&left_color=grey&right_color=orange&left_text=Downloads/Month)](https://pepy.tech/project/riskfolio-lib)
+[![GitHub stars](https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib?color=green)](https://github.com/dcajasn/Riskfolio-Lib/stargazers)
 [![Documentation Status](https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest)](https://riskfolio-lib.readthedocs.io/en/latest/)
 [![GitHub license](https://img.shields.io/github/license/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD)
-[![GitHub stars](https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib?style=social)](https://github.com/dcajasn/Riskfolio-Lib/stargazers)
+
 
 ## Description
 
