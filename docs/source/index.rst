@@ -19,7 +19,7 @@ Riskfolio-Lib
 
 .. raw:: html
 
-    <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+    <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a><br>
 
 
 .. image:: https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib?color=green   :alt: GitHub stars   :target: https://github.com/dcajasn/Riskfolio-Lib/stargazers
@@ -28,6 +28,7 @@ Riskfolio-Lib
 .. raw:: html
 
     <a href='https://riskfolio-lib.readthedocs.io/en/latest/?badge=latest'><img src='https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest' alt='Documentation Status' /></a>
+
 
 .. image:: https://img.shields.io/github/license/dcajasn/Riskfolio-Lib   :alt: GitHub license   :target: https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 .. image:: https://mybinder.org/badge_logo.svg
