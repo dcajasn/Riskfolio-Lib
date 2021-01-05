@@ -29,7 +29,7 @@ Riskfolio-Lib
 
 .. raw:: html
 
-    <a href='https://riskfolio-lib.readthedocs.io/en/latest/?badge=latest'><img src='https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest' alt='Documentation Status' /></a>
+    <a href="https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt"><img alt="GitHub license" src="https://img.shields.io/github/license/dcajasn/Riskfolio-Lib"></a>
 
 .. image:: https://img.shields.io/github/license/dcajasn/Riskfolio-Lib   :alt: GitHub license   :target: https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
