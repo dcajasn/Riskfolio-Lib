@@ -17,15 +17,19 @@ Riskfolio-Lib
 .. image:: images/Pie_Chart.png
     :width: 45%
 
-[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B833SXD)
+.. raw:: html
 
-[![PyPi](https://img.shields.io/pypi/v/Riskfolio-Lib.svg)]((https://pypi.org/project/Riskfolio-Lib/))
-[![Python](https://img.shields.io/pypi/pyversions/Riskfolio-Lib.svg)]((https://pypi.org/project/Riskfolio-Lib/))
-[![Downloads](https://static.pepy.tech/personalized-badge/riskfolio-lib?period=month&units=none&left_color=grey&right_color=orange&left_text=Downloads/Month)](https://pepy.tech/project/riskfolio-lib)
-[![GitHub stars](https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib?color=green)](https://github.com/dcajasn/Riskfolio-Lib/stargazers)
-[![Documentation Status](https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest)](https://riskfolio-lib.readthedocs.io/en/latest/)
-[![GitHub license](https://img.shields.io/github/license/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD)
+    <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
+.. image:: https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib?color=green   :alt: GitHub stars   :target: https://github.com/dcajasn/Riskfolio-Lib/stargazers
+.. image:: https://static.pepy.tech/personalized-badge/riskfolio-lib?period=month&units=none&left_color=grey&right_color=orange&left_text=Downloads/Month
+ :target: https://pepy.tech/project/riskfolio-lib
+.. image:: https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest
+:target: https://riskfolio-lib.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
+.. image:: https://img.shields.io/github/license/dcajasn/Riskfolio-Lib   :alt: GitHub license   :target: https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+.. image:: https://mybinder.org/badge_logo.svg
+ :target: https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD
 
 
 Description
