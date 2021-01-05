@@ -18,6 +18,7 @@ Riskfolio-Lib
     :width: 45%
 
 [![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B833SXD)
+
 [![PyPi](https://img.shields.io/pypi/v/Riskfolio-Lib.svg)]((https://pypi.org/project/Riskfolio-Lib/))
 [![Python](https://img.shields.io/pypi/pyversions/Riskfolio-Lib.svg)]((https://pypi.org/project/Riskfolio-Lib/))
 [![Documentation Status](https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest)](https://riskfolio-lib.readthedocs.io/en/latest/)
