@@ -763,15 +763,12 @@ class Portfolio(object):
             X1 = 1 + nav @ w
 
         U = cv.Variable((nav.shape[0] + 1, 1))
-        ddconstraints = [U[1:] * 1000 >= X1 * 1000,
-                         U[1:] * 1000 >= U[:-1] * 1000]
+        ddconstraints = [U[1:] * 1000 >= X1 * 1000, U[1:] * 1000 >= U[:-1] * 1000]
 
         if obj == "Sharpe":
-            ddconstraints += [U[1:] * 1000 >= k * 1000,
-                              U[0] * 1000 == k * 1000]
+            ddconstraints += [U[1:] * 1000 >= k * 1000, U[0] * 1000 == k * 1000]
         else:
-            ddconstraints += [U[1:] * 1000 >= 1 * 1000,
-                              U[0] * 1000 == 1 * 1000]
+            ddconstraints += [U[1:] * 1000 >= 1 * 1000, U[0] * 1000 == 1 * 1000]
 
         # Maximum Drawdown Model Variables
 
@@ -788,8 +785,10 @@ class Portfolio(object):
         CDaR = cv.Variable((1, 1))
         Zd = cv.Variable((nav.shape[0], 1))
         risk10 = CDaR + 1 / (alpha * n) * cv.sum(Zd)
-        cdarconstraints = [Zd * 1000 >= U[1:] * 1000 - X1 * 1000 - CDaR * 1000, 
-                           Zd * 1000 >= 0]
+        cdarconstraints = [
+            Zd * 1000 >= U[1:] * 1000 - X1 * 1000 - CDaR * 1000,
+            Zd * 1000 >= 0,
+        ]
 
         # Ulcer Index Model Variables
 
@@ -800,19 +799,18 @@ class Portfolio(object):
         t = cv.Variable((1, 1))
         s = cv.Variable((1, 1), nonneg=True)
         ui = cv.Variable((n, 1))
-        risk12 = t + s * np.log(1/(alpha * n))
-        
-        if obj == "Sharpe":        
+        risk12 = t + s * np.log(1 / (alpha * n))
+
+        if obj == "Sharpe":
             evarconstraints = [cv.sum(ui) * 1000 <= s * 1000]
-            evarconstraints += [cv.constraints.ExpCone(-X * 1000 - t * 1000, 
-                                               np.ones((n,1)) @ s * 1000,
-                                               ui * 1000)]
+            evarconstraints += [
+                cv.constraints.ExpCone(
+                    -X * 1000 - t * 1000, np.ones((n, 1)) @ s * 1000, ui * 1000
+                )
+            ]
         else:
             evarconstraints = [cv.sum(ui) <= s]
-            evarconstraints += [cv.constraints.ExpCone(-X  - t, 
-                                                       np.ones((n,1)) @ s,
-                                                       ui)]
-
+            evarconstraints += [cv.constraints.ExpCone(-X - t, np.ones((n, 1)) @ s, ui)]
 
         # Tracking Error Model Variables
 
@@ -965,7 +963,6 @@ class Portfolio(object):
             else:
                 constraints += [risk12 <= self.upperEVaR]
             constraints += evarconstraints
-            
 
         # Defining risk function
 
@@ -1057,7 +1054,7 @@ class Portfolio(object):
             if obj == "Sharpe":
                 weights = np.array(w.value / k.value, ndmin=2).T
                 if rm == "EVaR":
-                    self.z_EVaR = s.value/k.value
+                    self.z_EVaR = s.value / k.value
             else:
                 weights = np.array(w.value, ndmin=2).T
                 if rm == "EVaR":
@@ -1244,11 +1241,13 @@ class Portfolio(object):
         t = cv.Variable((1, 1))
         s = cv.Variable((1, 1), nonneg=True)
         ui = cv.Variable((n, 1))
-        risk12 = t + s * np.log(1/(alpha * n))
+        risk12 = t + s * np.log(1 / (alpha * n))
         evarconstraints = [cv.sum(ui) * 1000 <= s * 1000]
-        evarconstraints += [cv.constraints.ExpCone(-X * 1000 - t * 1000,
-                                                   np.ones((n,1)) @ s * 1000,
-                                                   ui * 1000)]
+        evarconstraints += [
+            cv.constraints.ExpCone(
+                -X * 1000 - t * 1000, np.ones((n, 1)) @ s * 1000, ui * 1000
+            )
+        ]
 
         # Defining risk function
 
@@ -1281,7 +1280,6 @@ class Portfolio(object):
         elif rm == "EVaR":
             risk = risk12
             constraints += evarconstraints
-
 
         # Frontier Variables
 

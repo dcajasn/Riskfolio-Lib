@@ -792,9 +792,7 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
         + "{0:.2%}".format(-risk[2] + mu)
         + "): "
         + "{0:.2%}".format(risk[2]),
-        "{0:.2%}".format((1 - alpha))
-        + " Confidence VaR: "
-        + "{0:.2%}".format(risk[3]),
+        "{0:.2%}".format((1 - alpha)) + " Confidence VaR: " + "{0:.2%}".format(risk[3]),
         "{0:.2%}".format((1 - alpha))
         + " Confidence CVaR: "
         + "{0:.2%}".format(risk[4]),
@@ -929,14 +927,17 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
     ]
     data = [prices, DD]
     color1 = ["b", "orange"]
-    risk = [-rk.MDD_Abs(a), -rk.ADD_Abs(a), -rk.DaR_Abs(a, alpha),
-            -rk.CDaR_Abs(a, alpha), -rk.UCI_Abs(a)]
+    risk = [
+        -rk.MDD_Abs(a),
+        -rk.ADD_Abs(a),
+        -rk.DaR_Abs(a, alpha),
+        -rk.CDaR_Abs(a, alpha),
+        -rk.UCI_Abs(a),
+    ]
     label = [
         "Maximum Drawdown: " + "{0:.2%}".format(risk[0]),
         "Average Drawdown: " + "{0:.2%}".format(risk[1]),
-        "{0:.2%}".format((1 - alpha))
-        + " Confidence DaR: "
-        + "{0:.2%}".format(risk[2]),
+        "{0:.2%}".format((1 - alpha)) + " Confidence DaR: " + "{0:.2%}".format(risk[2]),
         "{0:.2%}".format((1 - alpha))
         + " Confidence CDaR: "
         + "{0:.2%}".format(risk[3]),
@@ -1034,132 +1035,138 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
     X = X.to_numpy().ravel()
 
     rowLabels = [
-                "Profitability and Other Inputs",
-                "Mean Return",
-                "Compounded Cummulated Return",
-                "Minimum Acceptable Return (MAR)",
-                "Significance Level", 
-                "",
-                "Risk Measures based on Returns",
-                "Standard Deviation",
-                "Mean Absolute Deviation (MAD)",
-                "Semi Standard Deviation",
-                "First Lower Partial Moment (FLPM)",
-                "Second Lower Partial Moment (SLPM)",
-                "Value at Risk (VaR)",
-                "Conditional Value at Risk (CVaR)",
-                "Entropic Value at Risk (EVaR)",
-                "Worst Realization",
-                "Skewness",
-                "Kurtosis",
-                "",
-                "Risk Measures based on Drawdowns (*)",
-                "Max Drawdown (MDD)",
-                "Average Drawdown (ADD)",
-                "Drawdown at Risk (DaR)",
-                "Conditional Drawdown at Risk (CDaR)",
-                "Ulcer Index",
-                "(*) Using uncompounded cumulated returns",
-                ]
-        
-    indicators = ['',
-                  (mu @ w).to_numpy().item(),
-                  np.prod(1 + X)-1,
-                  MAR,
-                  alpha,
-                  '',
-                  '',
-                  np.sqrt(w.T @ cov @ w).to_numpy().item(),
-                  rk.MAD(X),
-                  rk.SemiDeviation(X),
-                  rk.LPM(X, MAR=MAR, p=1),
-                  rk.LPM(X, MAR=MAR, p=2),
-                  rk.VaR_Hist(X, alpha=alpha),
-                  rk.CVaR_Hist(X, alpha=alpha),
-                  rk.EVaR_Hist(X, alpha=alpha)[0],
-                  rk.WR(X),
-                  st.skew(X, bias=False),
-                  st.kurtosis(X, bias=False),
-                  '',
-                  '',
-                  rk.MDD_Abs(X),
-                  rk.ADD_Abs(X),
-                  rk.DaR_Abs(X),
-                  rk.CDaR_Abs(X, alpha=alpha),
-                  rk.UCI_Abs(X),
-                  '',
-                 ]
-    
+        "Profitability and Other Inputs",
+        "Mean Return",
+        "Compounded Cummulated Return",
+        "Minimum Acceptable Return (MAR)",
+        "Significance Level",
+        "",
+        "Risk Measures based on Returns",
+        "Standard Deviation",
+        "Mean Absolute Deviation (MAD)",
+        "Semi Standard Deviation",
+        "First Lower Partial Moment (FLPM)",
+        "Second Lower Partial Moment (SLPM)",
+        "Value at Risk (VaR)",
+        "Conditional Value at Risk (CVaR)",
+        "Entropic Value at Risk (EVaR)",
+        "Worst Realization",
+        "Skewness",
+        "Kurtosis",
+        "",
+        "Risk Measures based on Drawdowns (*)",
+        "Max Drawdown (MDD)",
+        "Average Drawdown (ADD)",
+        "Drawdown at Risk (DaR)",
+        "Conditional Drawdown at Risk (CDaR)",
+        "Ulcer Index",
+        "(*) Using uncompounded cumulated returns",
+    ]
+
+    indicators = [
+        "",
+        (mu @ w).to_numpy().item(),
+        np.prod(1 + X) - 1,
+        MAR,
+        alpha,
+        "",
+        "",
+        np.sqrt(w.T @ cov @ w).to_numpy().item(),
+        rk.MAD(X),
+        rk.SemiDeviation(X),
+        rk.LPM(X, MAR=MAR, p=1),
+        rk.LPM(X, MAR=MAR, p=2),
+        rk.VaR_Hist(X, alpha=alpha),
+        rk.CVaR_Hist(X, alpha=alpha),
+        rk.EVaR_Hist(X, alpha=alpha)[0],
+        rk.WR(X),
+        st.skew(X, bias=False),
+        st.kurtosis(X, bias=False),
+        "",
+        "",
+        rk.MDD_Abs(X),
+        rk.ADD_Abs(X),
+        rk.DaR_Abs(X),
+        rk.CDaR_Abs(X, alpha=alpha),
+        rk.UCI_Abs(X),
+        "",
+    ]
+
     ratios = []
     for i in range(len(indicators)):
-        if i < 6 or indicators[i] == '' or rowLabels[i] in ["Skewness", "Kurtosis"]:
-            ratios.append('')
+        if i < 6 or indicators[i] == "" or rowLabels[i] in ["Skewness", "Kurtosis"]:
+            ratios.append("")
         else:
-            ratio = (indicators[1] - MAR)/indicators[i]
+            ratio = (indicators[1] - MAR) / indicators[i]
             ratios.append(ratio * 100)
-    
+
     for i in range(len(indicators)):
-        if indicators[i] != '':
+        if indicators[i] != "":
             if rowLabels[i] in ["Skewness", "Kurtosis"]:
                 indicators[i] = "{:.5f}".format(indicators[i])
             else:
                 indicators[i] = "{:.4%}".format(indicators[i])
-        if ratios[i] != '':
-                ratios[i] = "{:.6f}".format(ratios[i])
-    
-    data = pd.DataFrame({'A': rowLabels,'B': indicators, 'C': ratios}).to_numpy()
-            
+        if ratios[i] != "":
+            ratios[i] = "{:.6f}".format(ratios[i])
+
+    data = pd.DataFrame({"A": rowLabels, "B": indicators, "C": ratios}).to_numpy()
+
     ax.set_axis_off()
-    ax.axis('tight')
-    ax.axis('off')
-    
-    colLabels = ['', "Values", "(Return - MAR)/Risk x 100"]
+    ax.axis("tight")
+    ax.axis("off")
+
+    colLabels = ["", "Values", "(Return - MAR)/Risk x 100"]
     colWidths = [0.45, 0.275, 0.275]
     rowHeight = 0.07
-    
-    table = ax.table( 
-        cellText = data,
-        colLabels = colLabels, 
-        colWidths = colWidths,
-        cellLoc ='center',  
-        loc ='upper left',
-        bbox=[-0.03,0,1,1])         
-          
+
+    table = ax.table(
+        cellText=data,
+        colLabels=colLabels,
+        colWidths=colWidths,
+        cellLoc="center",
+        loc="upper left",
+        bbox=[-0.03, 0, 1, 1],
+    )
+
     table.auto_set_font_size(False)
-    
+
     cellDict = table.get_celld()
     k = 1
-    
-    rowHeight = 1/len(rowLabels)
-    
+
+    rowHeight = 1 / len(rowLabels)
+
     for i in range(0, len(colLabels)):
-        cellDict[(0, i)].set_text_props(weight='bold', color='white', size='x-large')
-        cellDict[(0, i)].set_facecolor('darkblue')
-        cellDict[(0, i)].set_edgecolor('white')
+        cellDict[(0, i)].set_text_props(weight="bold", color="white", size="x-large")
+        cellDict[(0, i)].set_facecolor("darkblue")
+        cellDict[(0, i)].set_edgecolor("white")
         cellDict[(0, i)].set_height(rowHeight)
-        for j in range(1,len(rowLabels)+1):
-            cellDict[(j, 0)].set_text_props(weight='bold', color='black', size='x-large', ha='left')
-            cellDict[(j, i)].set_text_props( color='black', size='x-large')
-            cellDict[(j, 0)].set_edgecolor('white')
-            cellDict[(j, i)].set_edgecolor('white')
+        for j in range(1, len(rowLabels) + 1):
+            cellDict[(j, 0)].set_text_props(
+                weight="bold", color="black", size="x-large", ha="left"
+            )
+            cellDict[(j, i)].set_text_props(color="black", size="x-large")
+            cellDict[(j, 0)].set_edgecolor("white")
+            cellDict[(j, i)].set_edgecolor("white")
             if k % 2 != 0:
-                cellDict[(j, 0)].set_facecolor('whitesmoke')
-                cellDict[(j, i)].set_facecolor('whitesmoke')
+                cellDict[(j, 0)].set_facecolor("whitesmoke")
+                cellDict[(j, i)].set_facecolor("whitesmoke")
             if j in [6, 19]:
-                cellDict[(j, 0)].set_facecolor('white')
-                cellDict[(j, i)].set_facecolor('white')
+                cellDict[(j, 0)].set_facecolor("white")
+                cellDict[(j, i)].set_facecolor("white")
             if j in [1, 7, 20]:
-                cellDict[(j, 0)].set_text_props(color='white')
-                cellDict[(j, 0)].set_facecolor('orange')
-                cellDict[(j, i)].set_facecolor('orange')
+                cellDict[(j, 0)].set_text_props(color="white")
+                cellDict[(j, 0)].set_facecolor("orange")
+                cellDict[(j, i)].set_facecolor("orange")
                 k = 1
             k += 1
-            
+
             cellDict[(j, i)].set_height(rowHeight)
-    
-    cellDict[(len(rowLabels), 0)].set_text_props(weight='normal', color='black', size='large')
-    cellDict[(len(rowLabels), 0)].set_facecolor('white')
-                            
+
+    cellDict[(len(rowLabels), 0)].set_text_props(
+        weight="normal", color="black", size="large"
+    )
+    cellDict[(len(rowLabels), 0)].set_facecolor("white")
+
     fig = plt.gcf()
     fig.tight_layout()
 

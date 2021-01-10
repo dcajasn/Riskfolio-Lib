@@ -275,9 +275,9 @@ def LPM(X, MAR=0, p=1):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
-    if p not in [1,2]:
+    if p not in [1, 2]:
         raise ValueError("p can only be 1 or 2")
-        
+
     value = MAR - a
 
     if p == 2:
@@ -297,11 +297,11 @@ def Entropic_RM(X, z=1, alpha=0.05):
 
     .. math::
         \text{ERM}_{\alpha}(X) = z\ln \left (\frac{M_X(z^{-1})}{\alpha} \right )
-        
+
     Where:
 
     :math:`M_X(z)` is the moment generating function of X.
-    
+
     Parameters
     ----------
     X : 1d-array
@@ -310,7 +310,7 @@ def Entropic_RM(X, z=1, alpha=0.05):
         Risk aversion parameter, must be greater than zero. The default is 1.
     alpha : float, optional
         Significance level of EVaR. The default is 0.05.
-        
+
     Raises
     ------
     ValueError
@@ -328,9 +328,9 @@ def Entropic_RM(X, z=1, alpha=0.05):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
-    
+
     value = np.mean(np.exp(-1 / z * a), axis=0)
-    value = z * (np.log(value) + np.log(1/alpha))
+    value = z * (np.log(value) + np.log(1 / alpha))
     value = value.item()
 
     return value
@@ -342,9 +342,9 @@ def _Entropic_RM(z, X, alpha=0.05):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
-    
+
     value = np.mean(np.exp(-1 / z * a), axis=0)
-    value = z * (np.log(value) + np.log(1/alpha))
+    value = z * (np.log(value) + np.log(1 / alpha))
     value = value.item()
 
     return value
@@ -388,12 +388,9 @@ def EVaR_Hist(X, alpha=0.05):
         raise ValueError("returns must have Tx1 size")
 
     bnd = Bounds([1e-12], [np.inf])
-    result = minimize(_Entropic_RM,
-                      [1],
-                      args=(X, alpha),
-                      method='SLSQP',
-                      bounds=bnd,
-                      tol=1e-12)
+    result = minimize(
+        _Entropic_RM, [1], args=(X, alpha), method="SLSQP", bounds=bnd, tol=1e-12
+    )
     t = result.x
     t = t.item()
     value = _Entropic_RM(t, X, alpha)
@@ -564,7 +561,7 @@ def CDaR_Abs(X, alpha=0.05):
     .. math::
         \text{CDaR}_{\alpha}(X) = \text{DaR}_{\alpha}(X) + \frac{1}{\alpha T}
         \sum_{j=0}^{T} \max \left [ \max_{t \in (0,j)}
-        \left ( \sum_{i=0}^{t}X_{i} \right ) - \sum_{i=0}^{j}X_{i} 
+        \left ( \sum_{i=0}^{t}X_{i} \right ) - \sum_{i=0}^{j}X_{i}
         - \text{DaR}_{\alpha}(X), 0 \right ]
 
     Where:
@@ -623,7 +620,7 @@ def UCI_Abs(X):
     using uncumpound cumulated returns.
 
     .. math::
-        \text{UCI}(X) =\sqrt{\frac{1}{T}\sum_{j=0}^{T} \left [ \max_{t \in 
+        \text{UCI}(X) =\sqrt{\frac{1}{T}\sum_{j=0}^{T} \left [ \max_{t \in
         (0,j)} \left ( \sum_{i=0}^{t}X_{i} \right ) - \sum_{i=0}^{j}X_{i}
         \right ] ^2}
 
@@ -679,7 +676,7 @@ def MDD_Rel(X):
 
     .. math::
         \text{MDD}(X) = \max_{j \in (0,T)}\left[\max_{t \in (0,j)}
-        \left ( \prod_{i=0}^{t}(1+X_{i}) \right ) - \prod_{i=0}^{j}(1+X_{i}) 
+        \left ( \prod_{i=0}^{t}(1+X_{i}) \right ) - \prod_{i=0}^{j}(1+X_{i})
         \right]
 
     Parameters
@@ -838,7 +835,7 @@ def CDaR_Rel(X, alpha=0.05):
     .. math::
         \text{CDaR}_{\alpha}(X) = \text{DaR}_{\alpha}(X) + \frac{1}{\alpha T}
         \sum_{i=0}^{T} \max \left [ \max_{t \in (0,T)}
-        \left ( \prod_{i=0}^{t}(1+X_{i}) \right )- \prod_{i=0}^{j}(1+X_{i}) 
+        \left ( \prod_{i=0}^{t}(1+X_{i}) \right )- \prod_{i=0}^{j}(1+X_{i})
         - \text{DaR}_{\alpha}(X), 0 \right ]
 
     Where:
@@ -897,7 +894,7 @@ def UCI_Rel(X):
     using cumpound cumulated returns.
 
     .. math::
-        \text{UCI}(X) =\sqrt{\frac{1}{T}\sum_{j=0}^{T} \left [ \max_{t \in 
+        \text{UCI}(X) =\sqrt{\frac{1}{T}\sum_{j=0}^{T} \left [ \max_{t \in
         (0,j)} \left ( \prod_{i=0}^{t}(1+X_{i}) \right )- \prod_{i=0}^{j}
         (1+X_{i}) \right ] ^2}
 
