@@ -6,6 +6,14 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Version 0.1.0
+=============
+
+- Repair some bugs in RiskFunctions.
+- Implement the Reports module that helps to build reports on Jupyter Notebook and Excel.
+- Implement plot_table, a function that resume some indicators of a portfolio.
+- Add Entropic Value at Risk for Mean Risk Portfolio Optimization and Risk Parity Portfolio Optimization.
+
 Version 0.0.7
 =============
 

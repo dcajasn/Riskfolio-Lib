@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import scipy.stats as st
 import riskfolio.RiskFunctions as rk
 
 __all__ = [
@@ -12,6 +13,7 @@ __all__ = [
     "plot_risk_con",
     "plot_hist",
     "plot_drawdown",
+    "plot_table",
 ]
 
 rm_names = [
@@ -20,11 +22,13 @@ rm_names = [
     "Semi Standard Deviation",
     "Value at Risk",
     "Conditional Value at Risk",
+    "Entropic Value at Risk",
     "Worst Realization",
     "First Lower Partial Moment",
     "Second Lower Partial Moment",
     "Max Drawdown",
     "Average Drawdown",
+    "Drawdown at Risk",
     "Conditional Drawdown at Risk",
     "Ulcer Index",
 ]
@@ -35,11 +39,13 @@ rmeasures = [
     "MSV",
     "VaR",
     "CVaR",
+    "EVaR",
     "WR",
     "FLPM",
     "SLPM",
     "MDD",
     "ADD",
+    "DaR",
     "CDaR",
     "UCI",
 ]
@@ -53,7 +59,7 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     ----------
     returns : DataFrame
         Assets returns.
-    w : DataFrame
+    w : DataFrame of shape (n_assets, n_portfolios)
         Portfolio weights.
     cmap : cmap, optional
         Colorscale, represente the risk adjusted return ratio.
@@ -79,14 +85,14 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     -------
     ::
 
-        ax = plf.plot_series(data=Y, w=ws, cmap='tab20', height=6, width=10, ax=None)
+        ax = plf.plot_series(returns=Y, w=ws, cmap='tab20', height=6, width=10, ax=None)
 
     .. image:: images/Port_Series.png
 
 
     """
     if not isinstance(returns, pd.DataFrame):
-        raise ValueError("data must be a DataFrame")
+        raise ValueError("returns must be a DataFrame")
 
     if not isinstance(w, pd.DataFrame):
         raise ValueError("w must be a DataFrame")
@@ -145,7 +151,7 @@ def plot_frontier(
     returns=None,
     rm="MV",
     rf=0,
-    alpha=0.01,
+    alpha=0.05,
     cmap="viridis",
     w=None,
     label="Portfolio",
@@ -181,20 +187,23 @@ def plot_frontier(
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'CVaR': Conditional Value at Risk.
+        - 'EVaR': Conditional Value at Risk.
         - 'WR': Worst Realization (Minimax)
         - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded returns.
+        - 'DaR': Drawdown at Risk of uncompounded returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
         - 'UCI': Ulcer Index of uncompounded returns.
 
     rf : float, optional
         Risk free rate or minimum aceptable return. The default is 0.
     alpha : float, optional
-        Significante level of VaR, CVaR and CDaR. The default is 0.01.
+        Significante level of VaR, CVaR, EVaR, DaR and CDaR.
+        The default is 0.05.
     cmap : cmap, optional
         Colorscale, represente the risk adjusted return ratio.
         The default is 'viridis'.
-    w : DataFrame, optional
+    w : DataFrame of shape (n_assets, 1), optional
         A portfolio specified by the user. The default is None.
     label : str, optional
         Name of portfolio that appear on plot legend.
@@ -232,7 +241,7 @@ def plot_frontier(
         returns = port.returns
 
         ax = plf.plot_frontier(w_frontier=ws, mu=mu, cov=cov, returns=returns,
-                               rm=rm, rf=0, alpha=0.01, cmap='viridis', w=w1,
+                               rm=rm, rf=0, alpha=0.05, cmap='viridis', w=w1,
                                label='Portfolio', marker='*', s=16, c='r',
                                height=6, width=10, ax=None)
 
@@ -357,8 +366,8 @@ def plot_pie(
 
     Parameters
     ----------
-    w : DataFrame
-        Weights of the portfolio.
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
     title : str, optional
         Title of the chart. The default is ''.
     others : float, optional
@@ -591,7 +600,7 @@ def plot_risk_con(
     returns=None,
     rm="MV",
     rf=0,
-    alpha=0.01,
+    alpha=0.05,
     color="tab:blue",
     height=6,
     width=10,
@@ -602,8 +611,8 @@ def plot_risk_con(
 
     Parameters
     ----------
-    w : DataFrame
-        Weights of a portfolio.
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
     cov : DataFrame of shape (n_features, n_features)
         Covariance matrix, where n_features is the number of features.
     returns : DataFrame of shape (n_samples, n_features)
@@ -619,13 +628,18 @@ def plot_risk_con(
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'CVaR': Conditional Value at Risk.
+        - 'EVaR': Conditional Value at Risk.
+        - 'WR': Worst Realization (Minimax)
+        - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded returns.
+        - 'DaR': Drawdown at Risk of uncompounded returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
         - 'UCI': Ulcer Index of uncompounded returns.
 
     rf : float, optional
         Risk free rate or minimum aceptable return. The default is 0.
     alpha : float, optional
-        Significante level of VaR, CVaR and CDaR. The default is 0.01.
+        Significante level of VaR, CVaR and CDaR. The default is 0.05.
     color : str, optional
         Color used to plot each asset risk contribution.
         The default is 'tab:blue'.
@@ -651,7 +665,7 @@ def plot_risk_con(
     ::
 
         ax = plf.plot_risk_con(w=w2, cov=cov, returns=returns, rm='MSV',
-                               rf=0, alpha=0.01, cmap="tab20", height=6,
+                               rf=0, alpha=0.05, cmap="tab20", height=6,
                                width=10, ax=None)
 
     .. image:: images/Risk_Con.png
@@ -689,7 +703,7 @@ def plot_risk_con(
     return ax
 
 
-def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
+def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
     r"""
     Create a histogram of portfolio returns with the risk measures.
 
@@ -697,11 +711,10 @@ def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
     ----------
     returns : DataFrame
         Assets returns.
-    w : DataFrame, optional
-        A portfolio specified by the user to compare with the efficient
-        frontier. The default is None.
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
     alpha : float, optional
-        Significante level of VaR, CVaR and CDaR. The default is 0.01.
+        Significante level of VaR, CVaR and EVaR. The default is 0.05.
     bins : float, optional
         Number of bins of the histogram. The default is 50.
     height : float, optional
@@ -725,14 +738,14 @@ def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
     -------
     ::
 
-        ax = plf.plot_hist(data=Y, w=w1, alpha=0.01, bins=50, height=6, width=10, ax=None)
+        ax = plf.plot_hist(returns=Y, w=w1, alpha=0.05, bins=50, height=6, width=10, ax=None)
 
     .. image:: images/Histogram.png
 
     """
 
     if not isinstance(returns, pd.DataFrame):
-        raise ValueError("data must be a DataFrame")
+        raise ValueError("returns must be a DataFrame")
 
     if not isinstance(w, pd.DataFrame):
         raise ValueError("w must be a DataFrame")
@@ -766,6 +779,7 @@ def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
         mu - rk.MAD(a),
         -rk.VaR_Hist(a, alpha),
         -rk.CVaR_Hist(a, alpha),
+        -rk.EVaR_Hist(a, alpha)[0],
         -rk.WR(a),
     ]
     label = [
@@ -780,13 +794,16 @@ def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
         + "{0:.2%}".format(risk[2]),
         "{0:.2%}".format((1 - alpha))
         + " Confidence VaR: "
-        + "{0:.2%}".format(-risk[3]),
+        + "{0:.2%}".format(risk[3]),
         "{0:.2%}".format((1 - alpha))
         + " Confidence CVaR: "
-        + "{0:.2%}".format(-risk[4]),
-        "Worst Realization: " + "{0:.2%}".format(-risk[5]),
+        + "{0:.2%}".format(risk[4]),
+        "{0:.2%}".format((1 - alpha))
+        + " Confidence EVaR: "
+        + "{0:.2%}".format(risk[5]),
+        "Worst Realization: " + "{0:.2%}".format(risk[6]),
     ]
-    color = ["b", "r", "fuchsia", "darkorange", "limegreen", "darkgrey"]
+    color = ["b", "r", "fuchsia", "darkorange", "limegreen", "dodgerblue", "darkgrey"]
 
     for i, j, k in zip(risk, label, color):
         ax.axvline(x=i, color=k, linestyle="-", label=j)
@@ -821,7 +838,7 @@ def plot_hist(returns, w, alpha=0.01, bins=50, height=6, width=10, ax=None):
     return ax
 
 
-def plot_drawdown(nav, w, alpha=0.01, height=8, width=10, ax=None):
+def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
     r"""
     Create a chart with the evolution of portfolio prices and drawdown.
 
@@ -833,12 +850,12 @@ def plot_drawdown(nav, w, alpha=0.01, height=8, width=10, ax=None):
         A portfolio specified by the user to compare with the efficient
         frontier. The default is None.
     alpha : float, optional
-        Significante level of VaR, CVaR and CDaR. The default is 0.01.
+        Significante level of DaR and CDaR. The default is 0.05.
     height : float, optional
         Height of the image in inches. The default is 8.
     width : float, optional
         Width of the image in inches. The default is 10.
-    ax : matplotlib axis, optional
+    ax : matplotlib axis of size (2,1), optional
         If provided, plot on this axis. The default is None.
 
     Raises
@@ -857,14 +874,14 @@ def plot_drawdown(nav, w, alpha=0.01, height=8, width=10, ax=None):
 
         nav=port.nav
 
-        ax = plf.plot_drawdown(nav=nav, w=w1, alpha=0.01, height=8, width=10, ax=None)
+        ax = plf.plot_drawdown(nav=nav, w=w1, alpha=0.05, height=8, width=10, ax=None)
 
     .. image:: images/Drawdown.png
 
     """
 
     if not isinstance(nav, pd.DataFrame):
-        raise ValueError("data must be a DataFrame")
+        raise ValueError("nav must be a DataFrame")
 
     if not isinstance(w, pd.DataFrame):
         raise ValueError("w must be a DataFrame")
@@ -912,16 +929,20 @@ def plot_drawdown(nav, w, alpha=0.01, height=8, width=10, ax=None):
     ]
     data = [prices, DD]
     color1 = ["b", "orange"]
-    risk = [-rk.MaxAbsDD(a), -rk.AvgAbsDD(a), -rk.ConAbsDD(a, alpha), -rk.UCIAbs(a)]
+    risk = [-rk.MDD_Abs(a), -rk.ADD_Abs(a), -rk.DaR_Abs(a, alpha),
+            -rk.CDaR_Abs(a, alpha), -rk.UCI_Abs(a)]
     label = [
         "Maximum Drawdown: " + "{0:.2%}".format(risk[0]),
         "Average Drawdown: " + "{0:.2%}".format(risk[1]),
         "{0:.2%}".format((1 - alpha))
-        + " Confidence CDaR: "
+        + " Confidence DaR: "
         + "{0:.2%}".format(risk[2]),
-        "Ulcer Index: " + "{0:.2%}".format(risk[3]),
+        "{0:.2%}".format((1 - alpha))
+        + " Confidence CDaR: "
+        + "{0:.2%}".format(risk[3]),
+        "Ulcer Index: " + "{0:.2%}".format(risk[4]),
     ]
-    color2 = ["r", "b", "limegreen", "fuchsia"]
+    color2 = ["r", "b", "limegreen", "dodgerblue", "fuchsia"]
 
     j = 0
 
@@ -941,6 +962,204 @@ def plot_drawdown(nav, w, alpha=0.01, height=8, width=10, ax=None):
         i.grid(linestyle=":")
         j = j + 1
 
+    fig = plt.gcf()
+    fig.tight_layout()
+
+    return ax
+
+
+def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
+    r"""
+    Create a table with information about risk measures and risk adjusted
+    return ratios.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    w : DataFrame
+        Portfolio weights.
+    MAR: float, optional
+        Minimum acceptable return.
+    alpha: float, optional
+        Significance level for VaR, CVaR, EVaR, DaR and CDaR.
+    height : float, optional
+        Height of the image in inches. The default is 9.
+    width : float, optional
+        Width of the image in inches. The default is 12.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax : matplotlib axis
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = plf.plot_table(returns=Y, w=ws, MAR=0, alpha=0.05, ax=None)
+
+    .. image:: images/Port_Table.png
+
+
+    """
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
+
+    if not isinstance(w, pd.DataFrame):
+        raise ValueError("w must be a DataFrame")
+
+    if returns.shape[1] != w.shape[0]:
+        a1 = str(returns.shape)
+        a2 = str(w.shape)
+        raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
+
+    if ax is None:
+        ax = plt.gca()
+        fig = plt.gcf()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+
+    mu = returns.mean()
+    cov = returns.cov()
+
+    X = returns @ w
+    X = X.to_numpy().ravel()
+
+    rowLabels = [
+                "Profitability and Other Inputs",
+                "Mean Return",
+                "Compounded Cummulated Return",
+                "Minimum Acceptable Return (MAR)",
+                "Significance Level", 
+                "",
+                "Risk Measures based on Returns",
+                "Standard Deviation",
+                "Mean Absolute Deviation (MAD)",
+                "Semi Standard Deviation",
+                "First Lower Partial Moment (FLPM)",
+                "Second Lower Partial Moment (SLPM)",
+                "Value at Risk (VaR)",
+                "Conditional Value at Risk (CVaR)",
+                "Entropic Value at Risk (EVaR)",
+                "Worst Realization",
+                "Skewness",
+                "Kurtosis",
+                "",
+                "Risk Measures based on Drawdowns (*)",
+                "Max Drawdown (MDD)",
+                "Average Drawdown (ADD)",
+                "Drawdown at Risk (DaR)",
+                "Conditional Drawdown at Risk (CDaR)",
+                "Ulcer Index",
+                "(*) Using uncompounded cumulated returns",
+                ]
+        
+    indicators = ['',
+                  (mu @ w).to_numpy().item(),
+                  np.prod(1 + X)-1,
+                  MAR,
+                  alpha,
+                  '',
+                  '',
+                  np.sqrt(w.T @ cov @ w).to_numpy().item(),
+                  rk.MAD(X),
+                  rk.SemiDeviation(X),
+                  rk.LPM(X, MAR=MAR, p=1),
+                  rk.LPM(X, MAR=MAR, p=2),
+                  rk.VaR_Hist(X, alpha=alpha),
+                  rk.CVaR_Hist(X, alpha=alpha),
+                  rk.EVaR_Hist(X, alpha=alpha)[0],
+                  rk.WR(X),
+                  st.skew(X, bias=False),
+                  st.kurtosis(X, bias=False),
+                  '',
+                  '',
+                  rk.MDD_Abs(X),
+                  rk.ADD_Abs(X),
+                  rk.DaR_Abs(X),
+                  rk.CDaR_Abs(X, alpha=alpha),
+                  rk.UCI_Abs(X),
+                  '',
+                 ]
+    
+    ratios = []
+    for i in range(len(indicators)):
+        if i < 6 or indicators[i] == '' or rowLabels[i] in ["Skewness", "Kurtosis"]:
+            ratios.append('')
+        else:
+            ratio = (indicators[1] - MAR)/indicators[i]
+            ratios.append(ratio * 100)
+    
+    for i in range(len(indicators)):
+        if indicators[i] != '':
+            if rowLabels[i] in ["Skewness", "Kurtosis"]:
+                indicators[i] = "{:.5f}".format(indicators[i])
+            else:
+                indicators[i] = "{:.4%}".format(indicators[i])
+        if ratios[i] != '':
+                ratios[i] = "{:.6f}".format(ratios[i])
+    
+    data = pd.DataFrame({'A': rowLabels,'B': indicators, 'C': ratios}).to_numpy()
+            
+    ax.set_axis_off()
+    ax.axis('tight')
+    ax.axis('off')
+    
+    colLabels = ['', "Values", "(Return - MAR)/Risk x 100"]
+    colWidths = [0.45, 0.275, 0.275]
+    rowHeight = 0.07
+    
+    table = ax.table( 
+        cellText = data,
+        colLabels = colLabels, 
+        colWidths = colWidths,
+        cellLoc ='center',  
+        loc ='upper left',
+        bbox=[-0.03,0,1,1])         
+          
+    table.auto_set_font_size(False)
+    
+    cellDict = table.get_celld()
+    k = 1
+    
+    rowHeight = 1/len(rowLabels)
+    
+    for i in range(0, len(colLabels)):
+        cellDict[(0, i)].set_text_props(weight='bold', color='white', size='x-large')
+        cellDict[(0, i)].set_facecolor('darkblue')
+        cellDict[(0, i)].set_edgecolor('white')
+        cellDict[(0, i)].set_height(rowHeight)
+        for j in range(1,len(rowLabels)+1):
+            cellDict[(j, 0)].set_text_props(weight='bold', color='black', size='x-large', ha='left')
+            cellDict[(j, i)].set_text_props( color='black', size='x-large')
+            cellDict[(j, 0)].set_edgecolor('white')
+            cellDict[(j, i)].set_edgecolor('white')
+            if k % 2 != 0:
+                cellDict[(j, 0)].set_facecolor('whitesmoke')
+                cellDict[(j, i)].set_facecolor('whitesmoke')
+            if j in [6, 19]:
+                cellDict[(j, 0)].set_facecolor('white')
+                cellDict[(j, i)].set_facecolor('white')
+            if j in [1, 7, 20]:
+                cellDict[(j, 0)].set_text_props(color='white')
+                cellDict[(j, 0)].set_facecolor('orange')
+                cellDict[(j, i)].set_facecolor('orange')
+                k = 1
+            k += 1
+            
+            cellDict[(j, i)].set_height(rowHeight)
+    
+    cellDict[(len(rowLabels), 0)].set_text_props(weight='normal', color='black', size='large')
+    cellDict[(len(rowLabels), 0)].set_facecolor('white')
+                            
     fig = plt.gcf()
     fig.tight_layout()
 

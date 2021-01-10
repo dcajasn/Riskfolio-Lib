@@ -94,7 +94,7 @@ class Portfolio(object):
         uppersht=0.2,
         upperlng=1,
         factors=None,
-        alpha=0.01,
+        alpha=0.05,
         kindbench=True,
         allowTO=False,
         turnover=0.05,
@@ -110,6 +110,7 @@ class Portfolio(object):
         upperflpm=None,
         upperslpm=None,
         upperCVaR=None,
+        upperEVaR=None,
         upperwr=None,
         uppermdd=None,
         upperadd=None,
@@ -134,6 +135,7 @@ class Portfolio(object):
         self.uppermad = uppermad
         self.uppersdev = uppersdev
         self.upperCVaR = upperCVaR
+        self.upperEVaR = upperCVaR
         self.upperwr = upperwr
         self.uppermdd = uppermdd
         self.upperadd = uppermdd
@@ -158,6 +160,7 @@ class Portfolio(object):
         self.cov_bl_fm = None
         self.returns_fm = None
         self.nav_fm = None
+        self.z_EVaR = None
 
         # Inputs of Worst Case Optimization Models
 
@@ -614,6 +617,7 @@ class Portfolio(object):
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
+            - 'EVaR': Entropic Value at Risk.
             - 'WR': Worst Realization (Minimax)
             - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
             - 'ADD': Average Drawdown of uncompounded returns.
@@ -718,9 +722,8 @@ class Portfolio(object):
 
         # CVaR Model Variables
 
-        alpha1 = self.alpha
         VaR = cv.Variable((1, 1))
-        alpha = alpha1
+        alpha = self.alpha
         X = returns @ w
         Z = cv.Variable((returns.shape[0], 1))
         risk4 = VaR + 1 / (alpha * n) * cv.sum(Z)
@@ -760,12 +763,15 @@ class Portfolio(object):
             X1 = 1 + nav @ w
 
         U = cv.Variable((nav.shape[0] + 1, 1))
-        ddconstraints = [U[1:] >= X1, U[1:] >= U[:-1]]
+        ddconstraints = [U[1:] * 1000 >= X1 * 1000,
+                         U[1:] * 1000 >= U[:-1] * 1000]
 
         if obj == "Sharpe":
-            ddconstraints += [U[1:] >= k, U[0] == k]
+            ddconstraints += [U[1:] * 1000 >= k * 1000,
+                              U[0] * 1000 == k * 1000]
         else:
-            ddconstraints += [U[1:] >= 1, U[0] == 1]
+            ddconstraints += [U[1:] * 1000 >= 1 * 1000,
+                              U[0] * 1000 == 1 * 1000]
 
         # Maximum Drawdown Model Variables
 
@@ -782,11 +788,31 @@ class Portfolio(object):
         CDaR = cv.Variable((1, 1))
         Zd = cv.Variable((nav.shape[0], 1))
         risk10 = CDaR + 1 / (alpha * n) * cv.sum(Zd)
-        cdarconstraints = [Zd >= U[1:] - X1 - CDaR, Zd >= 0]
+        cdarconstraints = [Zd * 1000 >= U[1:] * 1000 - X1 * 1000 - CDaR * 1000, 
+                           Zd * 1000 >= 0]
 
         # Ulcer Index Model Variables
 
         risk11 = cv.norm(U[1:] - X1) / np.sqrt(n)
+
+        # Entropic Value at Risk Model Variables
+
+        t = cv.Variable((1, 1))
+        s = cv.Variable((1, 1), nonneg=True)
+        ui = cv.Variable((n, 1))
+        risk12 = t + s * np.log(1/(alpha * n))
+        
+        if obj == "Sharpe":        
+            evarconstraints = [cv.sum(ui) * 1000 <= s * 1000]
+            evarconstraints += [cv.constraints.ExpCone(-X * 1000 - t * 1000, 
+                                               np.ones((n,1)) @ s * 1000,
+                                               ui * 1000)]
+        else:
+            evarconstraints = [cv.sum(ui) <= s]
+            evarconstraints += [cv.constraints.ExpCone(-X  - t, 
+                                                       np.ones((n,1)) @ s,
+                                                       ui)]
+
 
         # Tracking Error Model Variables
 
@@ -933,6 +959,14 @@ class Portfolio(object):
                 constraints += [risk11 <= self.upperuci]
             drawdown = True
 
+        if self.upperEVaR is not None:
+            if obj == "Sharpe":
+                constraints += [risk12 <= self.upperEVaR * k]
+            else:
+                constraints += [risk12 <= self.upperEVaR]
+            constraints += evarconstraints
+            
+
         # Defining risk function
 
         if rm == "MV":
@@ -976,6 +1010,10 @@ class Portfolio(object):
         elif rm == "UCI":
             risk = risk11
             drawdown = True
+        elif rm == "EVaR":
+            risk = risk12
+            if self.upperEVaR is None:
+                constraints += evarconstraints
 
         if madmodel == True:
             constraints += madconstraints
@@ -995,10 +1033,7 @@ class Portfolio(object):
 
         # Defining objective function
         if obj == "Sharpe":
-            if rm != "Classic":
-                objective = cv.Minimize(risk)
-            elif rm == "Classic":
-                objective = cv.Minimize(risk * 1000)
+            objective = cv.Minimize(risk * 1000)
         elif obj == "MinRisk":
             objective = cv.Minimize(risk)
         elif obj == "Utility":
@@ -1021,8 +1056,12 @@ class Portfolio(object):
 
             if obj == "Sharpe":
                 weights = np.array(w.value / k.value, ndmin=2).T
+                if rm == "EVaR":
+                    self.z_EVaR = s.value/k.value
             else:
                 weights = np.array(w.value, ndmin=2).T
+                if rm == "EVaR":
+                    self.z_EVaR = s.value
 
             if self.sht == False:
                 weights = np.abs(weights) / np.sum(np.abs(weights))
@@ -1081,6 +1120,7 @@ class Portfolio(object):
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
+            - 'EVaR': Entropic Value at Risk.
             - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
             - 'UCI': Ulcer Index of uncompounded returns.
 
@@ -1154,9 +1194,8 @@ class Portfolio(object):
 
         # CVaR Model Variables
 
-        alpha1 = self.alpha
         VaR = cv.Variable((1, 1))
-        alpha = alpha1
+        alpha = self.alpha
         X = returns @ w
         Z = cv.Variable((returns.shape[0], 1))
         risk4 = VaR + 1 / (alpha * n) * cv.sum(Z)
@@ -1199,7 +1238,17 @@ class Portfolio(object):
         # Ulcer Index Model Variables
 
         risk11 = cv.norm(U[1:] - X1) / np.sqrt(n)
-        # risk11 = cv.sum_squares(U[1:] - X1)/n
+
+        # Entropic Value at Risk Model Variables
+
+        t = cv.Variable((1, 1))
+        s = cv.Variable((1, 1), nonneg=True)
+        ui = cv.Variable((n, 1))
+        risk12 = t + s * np.log(1/(alpha * n))
+        evarconstraints = [cv.sum(ui) * 1000 <= s * 1000]
+        evarconstraints += [cv.constraints.ExpCone(-X * 1000 - t * 1000,
+                                                   np.ones((n,1)) @ s * 1000,
+                                                   ui * 1000)]
 
         # Defining risk function
 
@@ -1229,6 +1278,10 @@ class Portfolio(object):
         elif rm == "UCI":
             risk = risk11
             constraints += ddconstraints
+        elif rm == "EVaR":
+            risk = risk12
+            constraints += evarconstraints
+
 
         # Frontier Variables
 
@@ -1512,6 +1565,7 @@ class Portfolio(object):
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
+            - 'EVaR': Entropic Value at Risk.
             - 'WR': Worst Realization (Minimax)
             - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
             - 'ADD': Average Drawdown of uncompounded returns.
@@ -1622,7 +1676,7 @@ class Portfolio(object):
                 returns = np.array(self.returns, ndmin=2)
                 nav = np.array(self.nav, ndmin=2)
 
-        alpha1 = self.alpha
+        alpha = self.alpha
 
         limits = self.frontier_limits(model="Classic", rm=rm, rf=rf, hist=hist)
 
@@ -1642,8 +1696,8 @@ class Portfolio(object):
             risk_min = rk.SemiDeviation(returns @ w_min)
             risk_max = rk.SemiDeviation(returns @ w_max)
         elif rm == "CVaR":
-            risk_min = rk.CVaR_Hist(returns @ w_min, alpha1)
-            risk_max = rk.CVaR_Hist(returns @ w_max, alpha1)
+            risk_min = rk.CVaR_Hist(returns @ w_min, alpha)
+            risk_max = rk.CVaR_Hist(returns @ w_max, alpha)
         elif rm == "WR":
             risk_min = rk.WR(returns @ w_min)
             risk_max = rk.WR(returns @ w_max)
@@ -1654,17 +1708,20 @@ class Portfolio(object):
             risk_min = rk.LPM(returns @ w_min, rf, 2)
             risk_max = rk.LPM(returns @ w_max, rf, 2)
         elif rm == "MDD":
-            risk_min = rk.MaxAbsDD(returns @ w_min)
-            risk_max = rk.MaxAbsDD(returns @ w_max)
+            risk_min = rk.MDD_Abs(returns @ w_min)
+            risk_max = rk.MDD_Abs(returns @ w_max)
         elif rm == "ADD":
-            risk_min = rk.AvgAbsDD(returns @ w_min)
-            risk_max = rk.AvgAbsDD(returns @ w_max)
+            risk_min = rk.ADD_Abs(returns @ w_min)
+            risk_max = rk.ADD_Abs(returns @ w_max)
         elif rm == "CDaR":
-            risk_min = rk.ConAbsDD(returns @ w_min, alpha1)
-            risk_max = rk.ConAbsDD(returns @ w_max, alpha1)
+            risk_min = rk.CDaR_Abs(returns @ w_min, alpha)
+            risk_max = rk.CDaR_Abs(returns @ w_max, alpha)
         elif rm == "UCI":
-            risk_min = rk.UCIAbs(returns @ w_min)
-            risk_max = rk.UCIAbs(returns @ w_max)
+            risk_min = rk.UCI_Abs(returns @ w_min)
+            risk_max = rk.UCI_Abs(returns @ w_max)
+        elif rm == "EVaR":
+            risk_min = rk.EVaR_Hist(returns @ w_min, alpha)[0]
+            risk_max = rk.EVaR_Hist(returns @ w_max, alpha)[0]
 
         mus = np.linspace(ret_min, ret_max + (ret_max - ret_min) / (points), points + 1)
 
@@ -1677,6 +1734,7 @@ class Portfolio(object):
             "uppermad",
             "uppersdev",
             "upperCVaR",
+            "upperEVaR",
             "upperwr",
             "upperflpm",
             "upperslpm",
@@ -1691,6 +1749,7 @@ class Portfolio(object):
             "MAD",
             "MSV",
             "CVaR",
+            "EVaR",
             "WR",
             "FLPM",
             "SLPM",
@@ -1736,6 +1795,7 @@ class Portfolio(object):
             "uppermad",
             "uppersdev",
             "upperCVaR",
+            "upperEVaR",
             "upperwr",
             "upperflpm",
             "upperslpm",

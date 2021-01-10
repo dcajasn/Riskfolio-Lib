@@ -24,5 +24,4 @@ mainly focused on mean variance optimization, ignoring advances in other
 convex risk measures (CVaR, MAD, Maximum Drawdown, etc.) and other
 estimations techniques like robust estimates, Black Litterman and risk factors
 models. For this reason, I developed Riskfolio-Lib, a well documented library
-that will benefit academics and practicioners to apply complex optimizations
-models in their strategic asset allocation process.
+that will help students, academics and practitioners to apply mathematically complex optimization models in their strategic asset allocation process.

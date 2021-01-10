@@ -19,7 +19,7 @@
 ## Description
 
 Riskfolio-Lib is a library for making quantitative strategic asset allocation
-or portfolio optimization in Python made in Peru &#x1F1F5;&#x1F1EA;. It is built on top of
+or portfolio optimization in Python made in Peru &#x1F1F5;&#x1F1EA;. . Its objective is to help students, academics and practitioners to build investment portfolios based on mathematically complex models with low effort. It is built on top of
 [cvxpy](https://www.cvxpy.org/) and closely integrated
 with [pandas](https://pandas.pydata.org/) data structures.
 
@@ -32,7 +32,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Maximum Utility Function.
     * Maximum Risk Adjusted Return Ratio.
 
-* Mean Risk Portfolio optimization with 11 convex risk measures:
+* Mean Risk Portfolio optimization with 12 convex risk measures:
 
     * Standard Deviation.
     * Semi Standard Deviation.
@@ -40,13 +40,14 @@ Some of key functionalities that Riskfolio-Lib offers:
     * First Lower Partial Moment (Omega Ratio)
     * Second Lower Partial Moment (Sortino Ratio)
     * Conditional Value at Risk (CVaR).
+    * Entropic Value at Risk (EVaR).
     * Worst Case Realization (Minimax Model)
     * Maximum Drawdown (Calmar Ratio)
     * Average Drawdown
     * Conditional Drawdown at Risk (CDaR).
     * Ulcer Index.
 
-* Risk Parity Portfolio optimization with 8 convex risk measures:
+* Risk Parity Portfolio optimization with 9 convex risk measures:
 
     * Standard Deviation.
     * Semi Standard Deviation.
@@ -54,6 +55,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     * First Lower Partial Moment (Omega Ratio)
     * Second Lower Partial Moment (Sortino Ratio)
     * Conditional Value at Risk (CVaR).
+    * Entropic Value at Risk (EVaR).
     * Conditional Drawdown at Risk (CDaR).
     * Ulcer Index.
 
@@ -62,14 +64,15 @@ Some of key functionalities that Riskfolio-Lib offers:
 * Portfolio optimization with Risk Factors model.
 * Portfolio optimization with constraints on tracking error and turnover.
 * Portfolio optimization with short positions and leveraged portfolios.
-* Tools for build efficient frontier for 11 risk measures.
-* Tools for build linear constraints on assets, asset classes and risk factors.
-* Tools for build views on assets and asset classes.
-* Tools for calculate risk measures.
-* Tools for calculate risk contributions per asset.
-* Tools for calculate uncertainty sets for mean vector and covariance matrix.
-* Tools for estimate loadings matrix (Stepwise Regression and Principal Components Regression).
-* Tools for visualizing portfolio properties and risk measures.
+* Tools to build efficient frontier for 12 risk measures.
+* Tools to build linear constraints on assets, asset classes and risk factors.
+* Tools to build views on assets and asset classes.
+* Tools to calculate risk measures.
+* Tools to calculate risk contributions per asset.
+* Tools to calculate uncertainty sets for mean vector and covariance matrix.
+* Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
+* Tools to visualizing portfolio properties and risk measures.
+* Tools to build reports on Jupyter Notebook and Excel. 
 
 
 ## Documentation
@@ -111,6 +114,5 @@ Riskfolio-Lib development takes place on Github: https://github.com/dcajasn/Risk
 The plan for this module is to add more functions that will be very useful
 to asset managers.
 
-* Mean Entropic Risk Optimization Portfolios.
 * Add functions to estimate Duration, Convexity, Key Rate Durations and Convexities of bonds without embedded options (for loadings matrix).
 * Add more functions based on suggestion of users.
