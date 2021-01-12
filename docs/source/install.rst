@@ -35,3 +35,4 @@ Riskfolio-Lib has the following dependencies:
 * scikit-learn>=0.22.0
 * statsmodels>=0.10.1
 * arch>=4.15
+* XlsxWriter>=1.3.7

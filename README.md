@@ -96,6 +96,7 @@ Installation requires:
 * [scikit-learn](https://scikit-learn.org/stable/) >= 0.22.0
 * [statsmodels](https://www.statsmodels.org/) >= 0.10.1
 * [arch](https://bashtage.github.io/arch/) >= 4.15
+* [XlsxWriter](https://xlsxwriter.readthedocs.io) >= 1.3.7
 
 
 ## Installation

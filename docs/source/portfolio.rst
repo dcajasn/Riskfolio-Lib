@@ -1,6 +1,6 @@
-################
-Portfolio Models
-################
+######################
+Portfolio Optimization
+######################
 
 .. raw:: html
 
@@ -9,8 +9,8 @@ Portfolio Models
 Some Theory
 ===========
 
-Mean Risk Portfolios
---------------------
+Mean Risk Portfolio Optimization
+--------------------------------
 
 Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
 one of the following 4 objective functions:
@@ -88,8 +88,8 @@ second lower partial moment, :math:`r_{f}` is the minimum acceptable return
 :math:`\lambda`: is the risk aversion coefficient of the investor.
 
 
-Risk Parity Portfolios
-----------------------
+Risk Parity Portfolio Optimization
+----------------------------------
 
 Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
 the general risk parity model :cite:`a-Roncalli`:
@@ -123,8 +123,8 @@ measures are:
 
 :math:`c`: is an arbitrary constant.
 
-Worst Case Mean Variance Portfolios
------------------------------------
+Worst Case Mean Variance Portfolio Optimization
+-----------------------------------------------
 
 Riskfolio-Lib allows to calculate worst case mean variance optimum portfolios
 :cite:`a-Lobo` :cite:`a-fabozzi2007robust` :cite:`a-Tutuncu` :cite:`a-Palomar` 
