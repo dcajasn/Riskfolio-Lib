@@ -73,6 +73,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 * Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
 * Tools to visualizing portfolio properties and risk measures.
 * Tools to build reports on Jupyter Notebook and Excel. 
+* Option to use commercial optimization solver like MOSEK or GUROBI for large scale problems. 
 
 
 ## Documentation
@@ -96,7 +97,7 @@ Installation requires:
 * [scikit-learn](https://scikit-learn.org/stable/) >= 0.22.0
 * [statsmodels](https://www.statsmodels.org/) >= 0.10.1
 * [arch](https://bashtage.github.io/arch/) >= 4.15
-* [XlsxWriter](https://xlsxwriter.readthedocs.io) >= 1.3.7
+* [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 1.3.7
 
 
 ## Installation

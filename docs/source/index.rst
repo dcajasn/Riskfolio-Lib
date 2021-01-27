@@ -91,6 +91,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 - Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
 - Tools to visualizing portfolio properties and risk measures.
 - Tools to build reports on Jupyter Notebook and Excel. 
+- Option to use commercial optimization solver like MOSEK or GUROBI for large scale problems.
 
 
 Contents

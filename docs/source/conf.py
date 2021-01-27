@@ -28,7 +28,7 @@ author = 'Dany Cajas'
 # The short X.Y version
 version = 'latest'
 # The full version, including alpha/beta/rc tags
-release = '0.1.0'
+release = '0.1.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -211,6 +211,7 @@ intersphinx_mapping = {
     'pandas': ('https://pandas.pydata.org/docs/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
     'arch': ('https://bashtage.github.io/arch/', None),
+    'xlsxwriter': ('https://xlsxwriter.readthedocs.io', None),
 
 }
 

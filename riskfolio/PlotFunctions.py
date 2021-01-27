@@ -696,7 +696,7 @@ def plot_risk_con(
     ::
 
         ax = plf.plot_risk_con(w=w2, cov=cov, returns=returns, rm='MSV',
-                               rf=0, alpha=0.05, cmap="tab20", height=6,
+                               rf=0, alpha=0.05, color="tab:blue", height=6,
                                width=10, ax=None)
 
     .. image:: images/Risk_Con.png
