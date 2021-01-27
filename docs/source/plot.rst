@@ -35,8 +35,8 @@ Example
     end = '2019-12-30'
     
     # List of assets
-    tickers = ['JCI', 'TGT', 'CMCSA', 'CPB', 'MO', 'NBL', 'APA', 'MMC', 'JPM',
-              'ZION', 'PSA', 'AGN', 'BAX', 'BMY', 'LUV', 'PCAR', 'TXT', 'DHR',
+    tickers = ['JCI', 'TGT', 'CMCSA', 'CPB', 'MO', 'APA', 'MMC', 'JPM',
+              'ZION', 'PSA', 'BAX', 'BMY', 'LUV', 'PCAR', 'TXT', 'DHR',
               'DE', 'MSFT', 'HPQ', 'SEE', 'VZ', 'CNP', 'NI']
     tickers.sort()
     

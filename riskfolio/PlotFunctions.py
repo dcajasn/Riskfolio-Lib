@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 from matplotlib import cm
 import scipy.stats as st
 import riskfolio.RiskFunctions as rk
@@ -135,6 +136,9 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
 
         ax.plot_date(index, prices, "-", label=labels[i])
 
+    ax.xaxis.set_major_locator(mdates.AutoDateLocator(tz=None, minticks=5, maxticks=10))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+
     ax.set_yticklabels(["{:3.2f}".format(x) for x in ax.get_yticks()])
     ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
@@ -160,9 +164,10 @@ def plot_frontier(
     c="r",
     height=6,
     width=10,
+    t_factor=252,
     ax=None,
 ):
-    """
+    r"""
     Creates a plot of the efficient frontier for a risk measure specified by
     the user.
 
@@ -209,7 +214,7 @@ def plot_frontier(
         Name of portfolio that appear on plot legend.
         The default is 'Portfolio'.
     marker : str, optional
-        Marker of w_. The default is '*'.
+        Marker of w. The default is "*".
     s : float, optional
         Size of marker. The default is 16.
     c : str, optional
@@ -218,6 +223,17 @@ def plot_frontier(
         Height of the image in inches. The default is 6.
     width : float, optional
         Width of the image in inches. The default is 10.
+    t_factor : float, optional
+        Factor used to annualize expected return and expected risks for
+        risk measures based on returns (not drawdowns). The default is 252.
+        
+        .. math::
+            
+            \begin{align}
+            \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
+            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
+            \end{align}
+            
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
 
@@ -242,10 +258,11 @@ def plot_frontier(
 
         ax = plf.plot_frontier(w_frontier=ws, mu=mu, cov=cov, returns=returns,
                                rm=rm, rf=0, alpha=0.05, cmap='viridis', w=w1,
-                               label='Portfolio', marker='*', s=16, c='r',
-                               height=6, width=10, ax=None)
+                               label=label, marker='*', s=16, c='r',
+                               height=6, width=10, t_factor=252, ax=None)
 
     .. image:: images/MSV_Frontier.png
+
 
     """
 
@@ -305,8 +322,13 @@ def plot_frontier(
         risk = rk.Sharpe_Risk(
             weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha
         )
+
         ret = mu_ @ weights
-        ret = ret.item()
+        ret = ret.item() * t_factor
+        
+        if rm not in ["MDD","ADD","CDaR","UCI"]:            
+            risk = risk * t_factor ** 0.5
+
         ratio = (ret - rf) / risk
 
         X1.append(risk)
@@ -324,7 +346,11 @@ def plot_frontier(
                 weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha
             )
             ret = mu_ @ weights
-            ret = ret.item()
+            ret = ret.item() * t_factor
+            
+            if rm not in ["MDD","ADD","CDaR","UCI"]:            
+                risk = risk * t_factor ** 0.5
+            
             ratio = (ret - rf) / risk
 
             X2.append(risk)
@@ -340,6 +366,8 @@ def plot_frontier(
 
     ax.set_ylim(ymin, ymax)
     ax.set_xlim(xmin, xmax)
+
+    ax.xaxis.set_major_locator(plt.AutoLocator())
 
     ax.set_yticklabels(["{:.4%}".format(x) for x in ax.get_yticks()])
     ax.set_xticklabels(["{:.4%}".format(x) for x in ax.get_xticks()])
@@ -361,7 +389,7 @@ def plot_frontier(
 def plot_pie(
     w, title="", others=0.05, nrow=25, cmap="tab20", height=6, width=8, ax=None
 ):
-    """
+    r"""
     Create a pie chart with portfolio weights.
 
     Parameters
@@ -398,7 +426,8 @@ def plot_pie(
     -------
     ::
 
-        ax = plf.plot_pie(w=w1, title='Portafolio', height=6, width=10, cmap="tab20", ax=None)
+        ax = plf.plot_pie(w=w1, title='Portafolio', height=6, width=10,
+                          cmap="tab20", ax=None)
 
     .. image:: images/Pie_Chart.png
 
@@ -512,7 +541,8 @@ def plot_pie(
     return ax
 
 
-def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax=None):
+def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, 
+                       ax=None):
     r"""
     Create a chart with the asset composition of the efficient frontier.
 
@@ -546,7 +576,8 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
     -------
     ::
 
-        ax = plf.plot_frontier_area(w_frontier=ws, cmap="tab20", height=6, width=10, ax=None)
+        ax = plf.plot_frontier_area(w_frontier=ws, cmap="tab20", height=6,
+                                    width=10, ax=None)
 
     .. image:: images/Area_Frontier.png
 
@@ -670,6 +701,7 @@ def plot_risk_con(
 
     .. image:: images/Risk_Con.png
 
+
     """
 
     if not isinstance(w, pd.DataFrame):
@@ -738,9 +770,11 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
     -------
     ::
 
-        ax = plf.plot_hist(returns=Y, w=w1, alpha=0.05, bins=50, height=6, width=10, ax=None)
+        ax = plf.plot_hist(returns=Y, w=w1, alpha=0.05, bins=50, height=6,
+                           width=10, ax=None)
 
     .. image:: images/Histogram.png
+
 
     """
 
@@ -824,6 +858,7 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
 
     factor = (np.max(a) - np.min(a)) / bins
 
+    ax.xaxis.set_major_locator(plt.AutoLocator())
     ax.set_xticklabels(["{:3.2%}".format(x) for x in ax.get_xticks()])
     ax.set_yticklabels(["{:3.2%}".format(x * factor) for x in ax.get_yticks()])
     ax.legend(loc="upper right")  # , fontsize = 'x-small')
@@ -875,6 +910,7 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
         ax = plf.plot_drawdown(nav=nav, w=w1, alpha=0.05, height=8, width=10, ax=None)
 
     .. image:: images/Drawdown.png
+
 
     """
 
@@ -959,6 +995,8 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
             i.set_ylim(ymin, 0)
             i.legend(loc="lower right")  # , fontsize = 'x-small')
         i.set_title(titles[j])
+        i.xaxis.set_major_locator(mdates.AutoDateLocator(tz=None, minticks=5, maxticks=10))
+        i.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
         i.set_yticklabels(["{:3.2%}".format(x) for x in i.get_yticks()])
         i.grid(linestyle=":")
         j = j + 1
@@ -969,7 +1007,8 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
     return ax
 
 
-def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
+def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, t_factor=252,
+               ax=None):
     r"""
     Create a table with information about risk measures and risk adjusted
     return ratios.
@@ -988,6 +1027,17 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
         Height of the image in inches. The default is 9.
     width : float, optional
         Width of the image in inches. The default is 12.
+    t_factor : float, optional
+        Factor used to annualize expected return and expected risks for
+        risk measures based on returns (not drawdowns). The default is 252.
+        
+        .. math::
+            
+            \begin{align}
+            \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
+            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
+            \end{align}
+        
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
 
@@ -1005,7 +1055,7 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
     -------
     ::
 
-        ax = plf.plot_table(returns=Y, w=ws, MAR=0, alpha=0.05, ax=None)
+        ax = plf.plot_table(returns=Y, w=w1, MAR=0, alpha=0.05, ax=None)
 
     .. image:: images/Port_Table.png
 
@@ -1030,56 +1080,59 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
 
     mu = returns.mean()
     cov = returns.cov()
-
+    days = (returns.index[-1] - returns.index[0]).days + 1
+    
     X = returns @ w
     X = X.to_numpy().ravel()
 
     rowLabels = [
         "Profitability and Other Inputs",
-        "Mean Return",
-        "Compounded Cummulated Return",
-        "Minimum Acceptable Return (MAR)",
+        "Mean Return (1)",
+        "Compound Annual Growth Rate (CAGR)",
+        "Minimum Acceptable Return (MAR) (1)",
         "Significance Level",
         "",
         "Risk Measures based on Returns",
-        "Standard Deviation",
-        "Mean Absolute Deviation (MAD)",
-        "Semi Standard Deviation",
-        "First Lower Partial Moment (FLPM)",
-        "Second Lower Partial Moment (SLPM)",
-        "Value at Risk (VaR)",
-        "Conditional Value at Risk (CVaR)",
-        "Entropic Value at Risk (EVaR)",
-        "Worst Realization",
+        "Standard Deviation (2)",
+        "Mean Absolute Deviation (MAD) (2)",
+        "Semi Standard Deviation (2)",
+        "First Lower Partial Moment (FLPM) (2)",
+        "Second Lower Partial Moment (SLPM) (2)",
+        "Value at Risk (VaR) (2)",
+        "Conditional Value at Risk (CVaR) (2)",
+        "Entropic Value at Risk (EVaR) (2)",
+        "Worst Realization (2)",
         "Skewness",
         "Kurtosis",
         "",
-        "Risk Measures based on Drawdowns (*)",
+        "Risk Measures based on Drawdowns (3)",
         "Max Drawdown (MDD)",
         "Average Drawdown (ADD)",
         "Drawdown at Risk (DaR)",
         "Conditional Drawdown at Risk (CDaR)",
         "Ulcer Index",
-        "(*) Using uncompounded cumulated returns",
+        "(1) Annualized, multiplied by " + str(t_factor),
+        "(2) Annualized, multiplied by √" + str(t_factor),
+        "(3) Based on uncompounded cumulated returns",
     ]
 
     indicators = [
         "",
-        (mu @ w).to_numpy().item(),
-        np.prod(1 + X) - 1,
+        (mu @ w).to_numpy().item() * t_factor,
+        np.power(np.prod(1 + X), 360/days) - 1,
         MAR,
         alpha,
         "",
         "",
-        np.sqrt(w.T @ cov @ w).to_numpy().item(),
-        rk.MAD(X),
-        rk.SemiDeviation(X),
-        rk.LPM(X, MAR=MAR, p=1),
-        rk.LPM(X, MAR=MAR, p=2),
-        rk.VaR_Hist(X, alpha=alpha),
-        rk.CVaR_Hist(X, alpha=alpha),
-        rk.EVaR_Hist(X, alpha=alpha)[0],
-        rk.WR(X),
+        np.sqrt(w.T @ cov @ w).to_numpy().item() * t_factor ** 0.5,
+        rk.MAD(X) * t_factor ** 0.5,
+        rk.SemiDeviation(X) * t_factor ** 0.5,
+        rk.LPM(X, MAR=MAR, p=1) * t_factor ** 0.5,
+        rk.LPM(X, MAR=MAR, p=2) * t_factor ** 0.5,
+        rk.VaR_Hist(X, alpha=alpha) * t_factor ** 0.5,
+        rk.CVaR_Hist(X, alpha=alpha) * t_factor ** 0.5,
+        rk.EVaR_Hist(X, alpha=alpha)[0] * t_factor ** 0.5,
+        rk.WR(X) * t_factor ** 0.5,
         st.skew(X, bias=False),
         st.kurtosis(X, bias=False),
         "",
@@ -1090,6 +1143,8 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
         rk.CDaR_Abs(X, alpha=alpha),
         rk.UCI_Abs(X),
         "",
+        "",
+        "",
     ]
 
     ratios = []
@@ -1098,7 +1153,7 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
             ratios.append("")
         else:
             ratio = (indicators[1] - MAR) / indicators[i]
-            ratios.append(ratio * 100)
+            ratios.append(ratio)
 
     for i in range(len(indicators)):
         if indicators[i] != "":
@@ -1115,7 +1170,7 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
     ax.axis("tight")
     ax.axis("off")
 
-    colLabels = ["", "Values", "(Return - MAR)/Risk x 100"]
+    colLabels = ["", "Values", "(Return - MAR)/Risk"]
     colWidths = [0.45, 0.275, 0.275]
     rowHeight = 0.07
 
@@ -1134,13 +1189,15 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
     k = 1
 
     rowHeight = 1 / len(rowLabels)
-
-    for i in range(0, len(colLabels)):
+    ncols = len(colLabels)
+    nrows = len(rowLabels)
+    
+    for i in range(0, ncols):
         cellDict[(0, i)].set_text_props(weight="bold", color="white", size="x-large")
         cellDict[(0, i)].set_facecolor("darkblue")
         cellDict[(0, i)].set_edgecolor("white")
         cellDict[(0, i)].set_height(rowHeight)
-        for j in range(1, len(rowLabels) + 1):
+        for j in range(1, nrows + 1):
             cellDict[(j, 0)].set_text_props(
                 weight="bold", color="black", size="x-large", ha="left"
             )
@@ -1162,10 +1219,12 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, ax=None):
 
             cellDict[(j, i)].set_height(rowHeight)
 
-    cellDict[(len(rowLabels), 0)].set_text_props(
-        weight="normal", color="black", size="large"
-    )
-    cellDict[(len(rowLabels), 0)].set_facecolor("white")
+    for i in range(0, ncols):
+        for j in range(nrows - 2, nrows + 1):
+            cellDict[(j, i)].set_text_props(
+                weight="normal", color="black", size="large"
+            )
+            cellDict[(j, i)].set_facecolor("white")
 
     fig = plt.gcf()
     fig.tight_layout()

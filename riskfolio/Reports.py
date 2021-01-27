@@ -18,7 +18,8 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 def jupyter_report(
-    returns, w, rm="MV", rf=0, alpha=0.05, others=0.05, nrow=25, height=6, width=14
+    returns, w, rm="MV", rf=0, alpha=0.05, others=0.05, nrow=25, height=6,
+    width=14, t_factor=252
 ):
     r"""
     Create a matplotlib report with useful information to analyze risk and
@@ -61,6 +62,17 @@ def jupyter_report(
         Average height of charts in the image in inches. The default is 6.
     width : float, optional
         Width of the image in inches. The default is 14.
+    t_factor : float, optional
+        Factor used to annualize expected return and expected risks for
+        risk measures based on returns (not drawdowns). The default is 252.
+        
+        .. math::
+            
+            \begin{align}
+            \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
+            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
+            \end{align}
+        
     ax : matplotlib axis of size (6,1), optional
         If provided, plot on this axis. The default is None.
 
@@ -97,7 +109,8 @@ def jupyter_report(
         gridspec_kw={"height_ratios": [2, 1, 1.5, 1, 1, 1]},
     )
 
-    ax[0] = plf.plot_table(returns, w, MAR=rf, alpha=alpha, ax=ax[0])
+    ax[0] = plf.plot_table(returns, w, MAR=rf, alpha=alpha, t_factor=t_factor,
+                           ax=ax[0])
 
     ax[2] = plf.plot_pie(
         w=w,
@@ -127,7 +140,7 @@ def jupyter_report(
     return ax
 
 
-def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
+def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
     r"""
     Create an Excel report (with formulas) with useful information to analyze
     risk and profitability of investment portfolios.
@@ -143,6 +156,17 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
     alpha : float, optional
         Significante level of VaR, CVaR, EVaR, DaR and CDaR.
         The default is 0.05.
+    t_factor : float, optional
+        Factor used to annualize expected return and expected risks for
+        risk measures based on returns (not drawdowns). The default is 252.
+        
+        .. math::
+            
+            \begin{align}
+            \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
+            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
+            \end{align}
+        
     name : str, optional
         Name or name with path where the Excel report will be saved. If no
         path is provided the report will be saved in the same path of
@@ -168,12 +192,13 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
     portfolios = w.columns.tolist()
     dates = returns.index.tolist()
     year = str(datetime.datetime.now().year)
+    days = (returns.index[-1] - returns.index[0]).days + 1
 
     # Create a Pandas Excel writer using XlsxWriter as the engine.
     writer = pd.ExcelWriter(name + ".xlsx", engine="xlsxwriter")
 
     # Convert the dataframe to an XlsxWriter Excel object.
-    w.to_excel(writer, sheet_name="Resume", startrow=32, startcol=0)
+    w.to_excel(writer, sheet_name="Resume", startrow=35, startcol=0)
     returns.to_excel(writer, sheet_name="Returns", index_label=["Date"])
 
     # Get the xlsxwriter objects from the dataframe writer object.
@@ -206,6 +231,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
     cell_format7 = workbook.add_format(
         {"num_format": "yyyy-mm-dd", "bold": True, "border": True}
     )
+    cell_format8 = workbook.add_format({"num_format": "0,000", "border": True})
 
     cols = xl_col_to_name(1) + ":" + xl_col_to_name(n2)
     worksheet1.set_column(cols, 11, cell_format3)
@@ -219,7 +245,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
     worksheet7.write(0, 0, "Date", cell_format1)
     worksheet8.write(0, 0, "Date", cell_format1)
 
-    worksheet1.set_column("A:A", 32)
+    worksheet1.set_column("A:A", 35)
     worksheet2.set_column("A:A", 10, cell_format5)
     worksheet3.set_column("A:A", 10, cell_format5)
     worksheet4.set_column("A:A", 10, cell_format5)
@@ -245,25 +271,26 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
         "",
         "",
         "Profitability and Other Inputs",
-        "Mean Return",
-        "Compounded Cumulated Return",
-        "MAR",
+        "Total Days in DataBase",
+        "Mean Return (1)",
+        "Compound Annual Growth Rate (CAGR)",
+        "Minimum Acceptable Return (MAR) (1)",
         "Alpha",
         "",
         "Risk Measures based on Returns",
-        "Standard Deviation",
-        "Mean Absolute Deviation (MAD)",
-        "Semi Standard Deviation",
-        "First Lower Partial Moment (FLPM)",
-        "Second Lower Partial Moment (SLPM)",
-        "Value at Risk (VaR)",
-        "Conditional Value at Risk (CVaR)",
-        "Entropic Value at Risk (EVaR)",
-        "Worst Realization",
+        "Standard Deviation (2)",
+        "Mean Absolute Deviation (MAD) (2)",
+        "Semi Standard Deviation (2)",
+        "First Lower Partial Moment (FLPM) (2)",
+        "Second Lower Partial Moment (SLPM) (2)",
+        "Value at Risk (VaR) (2)",
+        "Conditional Value at Risk (CVaR) (2)",
+        "Entropic Value at Risk (EVaR) (2)",
+        "Worst Realization (2)",
         "Skewness",
         "Kurtosis",
         "",
-        "Risk Measures based on Drawdowns (*)",
+        "Risk Measures based on Drawdowns (3)",
         "Max Drawdown (MDD)",
         "Average Drawdown (ADD)",
         "Drawdown at Risk (DaR)",
@@ -278,7 +305,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
     for i in range(0, len(portfolios)):
         a = "Portfolio " + str(i + 1)
         worksheet1.write(3, 1 + i, a, cell_format1)
-        worksheet1.write(32, 1 + i, a, cell_format1)
+        worksheet1.write(35, 1 + i, a, cell_format1)
         worksheet3.write(0, 1 + i, a, cell_format1)
         worksheet4.write(0, 1 + i, a, cell_format1)
         worksheet5.write(0, 1 + i, a, cell_format1)
@@ -287,8 +314,8 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
         worksheet8.write(0, 1 + i, a, cell_format1)
 
     for j in range(0, len(portfolios)):
-        r_0 = xl_rowcol_to_cell(7, 1 + j)
-        r_1 = xl_range_abs(33, 1 + j, 32 + n1, 1 + j)
+        r_0 = xl_rowcol_to_cell(8, 1 + j) # MAR cell
+        r_1 = xl_range_abs(36, 1 + j, 35 + n1, 1 + j)
         r_2 = xl_range_abs(1, 1 + j, n2, 1 + j)
         for i in range(0, n2):
             r_3 = xl_range(i + 1, 1, i + 1, n1)
@@ -298,7 +325,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
             formula2 = "=ABS(Portfolios!" + r_4 + "-AVERAGE(Portfolios!" + r_2 + "))"
             formula3 = "=SUM(Portfolios!" + r_5 + ")"
             formula4 = "=MAX(CumRet!" + r_5 + ")-CumRet!" + r_4
-            formula5 = "=MAX(Resume!" + r_0 + "-Portfolios!" + r_4 + ", 0)"
+            formula5 = "=MAX(Resume!" + r_0 + "/ " + str(t_factor) + "-Portfolios!" + r_4 + ", 0)"
             formula6 = "=MAX(AVERAGE(Portfolios!" + r_2 + ")-Portfolios!" + r_4 + ", 0)"
             worksheet3.write_formula(i + 1, 1 + j, formula1, cell_format3)
             worksheet4.write_formula(i + 1, 1 + j, formula2, cell_format3)
@@ -307,11 +334,12 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
             worksheet7.write_formula(i + 1, 1 + j, formula5, cell_format3)
             worksheet8.write_formula(i + 1, 1 + j, formula6, cell_format3)
 
-        r_6 = xl_rowcol_to_cell(8, 1 + j)
-        AVG = "=AVERAGE(Portfolios!" + r_2 + ")"
-        CUM = "{=PRODUCT(1 + Portfolios!" + r_2 + ")-1}"
-        STDEV = "=STDEV(Portfolios!" + r_2 + ")"
-        MAD = "=AVERAGE(Absdev!" + r_2 + ")"
+        r_6 = xl_rowcol_to_cell(9, 1 + j) # Alpha cell
+        r_7 = xl_rowcol_to_cell(17, 1 + j) # Value at Risk cell
+        AVG = "=AVERAGE(Portfolios!" + r_2 + ") * " + str(t_factor) + ""
+        CUM = "{=PRODUCT(1 + Portfolios!" + r_2 + ")^(360/"+ str(days) + ")-1}"
+        STDEV = "=STDEV(Portfolios!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
+        MAD = "=AVERAGE(Absdev!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
         ALPHA = "=" + str(alpha)
         VaR = (
             "=-SMALL(Portfolios!"
@@ -320,14 +348,19 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
             + r_2
             + ")*"
             + r_6
-            + ",0))"
+            + ",0)) * SQRT("
+            + str(t_factor)
+            + ")" 
+            
         )
         CVaR = (
             "=-((SUMIF(Portfolios!"
             + r_2
-            + ',"<="&'
-            + VaR[2:]
-            + ",Portfolios!"
+            + ',"<="&(-'
+            + r_7 
+            + "/SQRT("
+            + str(t_factor)
+            + ")),Portfolios!"
             + r_2
             + ")"
         )
@@ -336,18 +369,29 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
             + r_2
             + ")*"
             + r_6
-            + ",0)*"
-            + VaR[2:]
-            + ")/(COUNT(Portfolios!"
+            + ",0)*(-"
+            + r_7
+            + "/SQRT("
+            + str(t_factor)
+            + ")))/(COUNT(Portfolios!"
             + r_2
             + ")*"
             + r_6
-            + ")+"
-            + VaR[2:]
+            + ")-"
+            + r_7
+            + "/SQRT("
+            + str(t_factor)
+            + ")) * SQRT("
+            + str(t_factor)
+            + ")" 
+        )
+        EVaR = (
+            "=" + str(rk.EVaR_Hist(returns @ w, alpha=alpha)[0])
+            + " * SQRT("
+            + str(t_factor)
             + ")"
         )
-        EVaR = "=" + str(rk.EVaR_Hist(returns @ w, alpha=alpha)[0])
-        WR = "=-MIN(Portfolios!" + r_2 + ")"
+        WR = "=-MIN(Portfolios!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
         MDD = "=MAX(Drawdown!" + r_2 + ")"
         ADD = "=AVERAGE(Drawdown!" + r_2 + ")"
         DaR = (
@@ -379,13 +423,16 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
         )
         ULC = "=SQRT(SUMSQ(Drawdown!" + r_2 + ")/COUNT(Drawdown!" + r_2 + "))"
         MAR = "=" + str(rf)
-        FLPM = "=AVERAGE(devBelowTarget!" + r_2 + ")"
+        FLPM = "=AVERAGE(devBelowTarget!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
         SLPM = (
             "=SQRT(SUMSQ(devBelowTarget!"
             + r_2
             + ")/(COUNT(devBelowTarget!"
             + r_2
             + ") - 1))"
+            + " * SQRT("
+            + str(t_factor)
+            + ")"
         )
         SDEV = (
             "=SQRT(SUMSQ(devBelowMean!"
@@ -393,6 +440,9 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
             + ")/(COUNT(devBelowMean!"
             + r_2
             + ") - 1))"
+            + " * SQRT("
+            + str(t_factor)
+            + ")"
         )
         SKEW = "=SKEW(Portfolios!" + r_2 + ")"
         KURT = "=KURT(Portfolios!" + r_2 + ")"
@@ -403,6 +453,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
             "",
             "",
             "",
+            str(days),
             AVG,
             CUM,
             MAR,
@@ -432,6 +483,8 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
         for i in range(0, len(labels_2)):
             if labels_1[i] in ["Skewness", "Kurtosis"]:
                 worksheet1.write_formula(i, 1 + j, labels_2[i], cell_format6)
+            elif labels_1[i] in ["Total Days in DataBase"]:
+                worksheet1.write_formula(i, 1 + j, labels_2[i], cell_format8)
             elif labels_2[i] != "":
                 worksheet1.write_formula(i, 1 + j, labels_2[i], cell_format4)
 
@@ -439,7 +492,9 @@ def excel_report(returns, w, rf=0, alpha=0.05, name="report"):
     merge_format.set_text_wrap()
     worksheet1.set_row(1, 215)
     worksheet1.merge_range("A2:K2", __LICENSE__.replace("2021", year), merge_format)
-    worksheet1.write(29, 0, "(*) Using uncompounded cumulated returns")
+    worksheet1.write(30, 0, "(1) Annualized, multiplied by " + str(t_factor))
+    worksheet1.write(31, 0, "(2) Annualized, multiplied by √" + str(t_factor))
+    worksheet1.write(32, 0, "(3) Based on uncompounded cumulated returns")
     worksheet1.write(0, 0, "Riskfolio-Lib Report", cell_format2)
 
     writer.save()

@@ -24,11 +24,13 @@ Portfolio Optimization Models
 * `Worst case mean variance optimization using box and elliptical uncertainty sets <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2012.ipynb>`_.
 * `Ulcer Index Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2014.ipynb>`_.
 * `Entropic Value at Risk (EVaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2015.ipynb>`_.
+* `Riskfolio-Lib with MOSEK for Real Applications (612 assets and 4943 observations) <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2017.ipynb>`_.
 
 
 Backtesting
 --------------------
 * `Multi Assets Algorithmic Trading Backtesting with transaction cost and slippage using Backtrader <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%205.ipynb>`_.
+* `Multi Assets Algorithmic Trading Backtesting using Vectorbt <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2018.ipynb>`_.
 
 
 Excel and Reporting

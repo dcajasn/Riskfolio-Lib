@@ -6,7 +6,6 @@ from scipy.linalg import sqrtm
 import riskfolio.RiskFunctions as rk
 import riskfolio.ParamsEstimation as pe
 import riskfolio.AuxFunctions as af
-import riskfolio.AuxFunctions as au
 
 
 class Portfolio(object):
@@ -184,25 +183,32 @@ class Portfolio(object):
 
     @property
     def returns(self):
-        a = self._returns
-        if a is not None and isinstance(a, pd.DataFrame):
-            self.assetslist = a.columns.tolist()
-            self.nav = a.cumsum()
-            self.numassets = len(self.assetslist)
+        if self._returns is not None and isinstance(self._returns, pd.DataFrame):
+            return self._returns
         else:
             raise NameError("returns must be a DataFrame")
-        return a
 
     @returns.setter
     def returns(self, value):
-        a = value
-        if a is not None and isinstance(a, pd.DataFrame):
-            self._returns = a
-            self.assetslist = a.columns.tolist()
-            self.nav = a.cumsum()
-            self.numassets = len(self.assetslist)
+        if value is not None and isinstance(value, pd.DataFrame):
+            self._returns = value
         else:
             raise NameError("returns must be a DataFrame")
+            
+    @property
+    def nav(self):
+        if self._returns is not None and isinstance(self._returns, pd.DataFrame):
+            return self._returns.cumsum()
+
+    @property
+    def assetslist(self):
+        if self._returns is not None and isinstance(self._returns, pd.DataFrame):
+            return self._returns.columns.tolist()
+
+    @property
+    def numassets(self):
+        if self._returns is not None and isinstance(self._returns, pd.DataFrame):
+            return self._returns.shape[1]
 
     @property
     def factors(self):
@@ -524,11 +530,11 @@ class Portfolio(object):
             cov_l = pd.DataFrame(cov_l, index=cols, columns=cols)
             cov_u = pd.DataFrame(cov_u, index=cols, columns=cols)
 
-            if au.is_pos_def(cov_l) == False:
-                cov_l = au.cov_fix(cov_l, method="clipped", threshold=1e-3)
+            if af.is_pos_def(cov_l) == False:
+                cov_l = af.cov_fix(cov_l, method="clipped", threshold=1e-3)
 
-            if au.is_pos_def(cov_u) == False:
-                cov_u = au.cov_fix(cov_u, method="clipped", threshold=1e-3)
+            if af.is_pos_def(cov_u) == False:
+                cov_u = af.cov_fix(cov_u, method="clipped", threshold=1e-3)
 
         elif box == "d":
             d_mu = dmu * np.abs(mu)
@@ -556,7 +562,7 @@ class Portfolio(object):
             cov_mu = np.diag(np.diag(cov_mu))
             cov_mu = pd.DataFrame(cov_mu, index=cols, columns=cols)
             # Covariance of covariance matrix
-            K = au.commutation_matrix(cov)
+            K = af.commutation_matrix(cov)
             I = np.identity(m * m)
             cov_sigma = n * (I + K) @ np.kron(cov_mu, cov_mu)
             cov_sigma = np.diag(np.diag(cov_sigma))
@@ -713,8 +719,8 @@ class Portfolio(object):
         u = np.ones((returns.shape[0], 1)) * mu
         a = returns - u
         risk2 = cv.sum(Y) / n
-        # madconstraints=[a*w >= -Y, a*w <= Y, Y >= 0]
-        madconstraints = [a @ w <= Y, Y >= 0]
+        # madconstraints=[a @ w >= -Y, a @ w <= Y, Y >= 0]
+        madconstraints = [a @ w >= -Y, Y >= 0]
 
         # Semi Variance Model Variables
 
@@ -792,7 +798,7 @@ class Portfolio(object):
 
         # Ulcer Index Model Variables
 
-        risk11 = cv.norm(U[1:] - X1) / np.sqrt(n)
+        risk11 = cv.norm(U[1:] * 1000 - X1 * 1000, "fro") / np.sqrt(n)
 
         # Entropic Value at Risk Model Variables
 
@@ -811,6 +817,7 @@ class Portfolio(object):
         else:
             evarconstraints = [cv.sum(ui) <= s]
             evarconstraints += [cv.constraints.ExpCone(-X - t, np.ones((n, 1)) @ s, ui)]
+
 
         # Tracking Error Model Variables
 
@@ -860,11 +867,11 @@ class Portfolio(object):
         if obj == "Sharpe":
             if self.allowTE == True:
                 TE_1 = cv.norm(returns @ w - bench @ k, "fro") / cv.sqrt(n - 1)
-                constraints += [TE_1 <= self.TE * k]
+                constraints += [TE_1 * 1000 <= self.TE * k * 1000]
         else:
             if self.allowTE == True:
                 TE_1 = cv.norm(returns @ w - bench, "fro") / cv.sqrt(n - 1)
-                constraints += [TE_1 <= self.TE]
+                constraints += [TE_1 * 1000 <= self.TE * 1000]
 
         # Turnover Constraints
 
@@ -952,9 +959,9 @@ class Portfolio(object):
 
         if self.upperuci is not None:
             if obj == "Sharpe":
-                constraints += [risk11 <= self.upperuci * k]
+                constraints += [risk11 <= self.upperuci * 1000 * k]
             else:
-                constraints += [risk11 <= self.upperuci]
+                constraints += [risk11 <= self.upperuci * 1000]
             drawdown = True
 
         if self.upperEVaR is not None:
@@ -1032,11 +1039,11 @@ class Portfolio(object):
         if obj == "Sharpe":
             objective = cv.Minimize(risk * 1000)
         elif obj == "MinRisk":
-            objective = cv.Minimize(risk)
+            objective = cv.Minimize(risk * 1000)
         elif obj == "Utility":
             objective = cv.Maximize(ret - l * risk)
         elif obj == "MaxRet":
-            objective = cv.Maximize(ret)
+            objective = cv.Maximize(ret * 1000)
 
         try:
             prob = cv.Problem(objective, constraints)
@@ -1182,8 +1189,8 @@ class Portfolio(object):
         u = np.ones((returns.shape[0], 1)) * mu
         a = returns - u
         risk2 = cv.sum(Y) / n
-        # madconstraints=[a*w >= -Y, a*w <= Y, Y >= 0]
-        madconstraints = [a @ w <= Y, Y >= 0]
+        # madconstraints=[a @ w >= -Y, a @ w <= Y, Y >= 0]
+        madconstraints = [a @ w >= -Y, Y >= 0]
 
         # Semi Variance Model Variables
 
@@ -1234,7 +1241,7 @@ class Portfolio(object):
 
         # Ulcer Index Model Variables
 
-        risk11 = cv.norm(U[1:] - X1) / np.sqrt(n)
+        risk11 = cv.norm(U[1:] - X1, "fro") / np.sqrt(n)
 
         # Entropic Value at Risk Model Variables
 
@@ -1406,10 +1413,10 @@ class Portfolio(object):
         elif Umu == "ellip":
             if obj == "Sharpe":
                 constraints += [
-                    mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w) - rf0 * k >= 1
+                    mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w, "fro") - rf0 * k >= 1
                 ]
             else:
-                ret = mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w)
+                ret = mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w, "fro")
         else:
             if obj == "Sharpe":
                 constraints += [mu @ w - rf0 * k >= 1]
@@ -1433,7 +1440,7 @@ class Portfolio(object):
                 M2 = cv.vstack([w, np.ones((1, 1))])
             M = cv.hstack([M1, M2])
             risk = cv.trace(sigma @ (X + Z)) + k_sigma * cv.norm(
-                sqrtm(cov_sigma) @ (cv.vec(X) + cv.vec(Z))
+                sqrtm(cov_sigma) @ (cv.vec(X) + cv.vec(Z)), "fro"
             )
             constraints += [M >> 0, Z >> 0]
         else:
@@ -1596,10 +1603,13 @@ class Portfolio(object):
             model=model, rm=rm, obj="MaxRet", rf=rf, l=0, hist=hist
         )
 
-        limits = pd.concat([w_min, w_max], axis=1)
-        limits.columns = ["w_min", "w_max"]
-
-        return limits
+        if w_min is not None and w_max is not None:
+            limits = pd.concat([w_min, w_max], axis=1)
+            limits.columns = ["w_min", "w_max"]
+            return limits
+        else:
+            raise NameError("The limits of the frontier can't be found")
+       
 
     def efficient_frontier(self, model="Classic", rm="MV", points=20, rf=0, hist=True):
         r"""
@@ -1676,7 +1686,7 @@ class Portfolio(object):
 
         alpha = self.alpha
 
-        limits = self.frontier_limits(model="Classic", rm=rm, rf=rf, hist=hist)
+        limits = self.frontier_limits(model=model, rm=rm, rf=rf, hist=hist)
 
         w_min = np.array(limits.iloc[:, 0], ndmin=2).T
         w_max = np.array(limits.iloc[:, 1], ndmin=2).T
@@ -1721,11 +1731,9 @@ class Portfolio(object):
             risk_min = rk.EVaR_Hist(returns @ w_min, alpha)[0]
             risk_max = rk.EVaR_Hist(returns @ w_max, alpha)[0]
 
-        mus = np.linspace(ret_min, ret_max + (ret_max - ret_min) / (points), points + 1)
+        mus = np.linspace(ret_min, ret_max, points)
 
-        risks = np.linspace(
-            risk_min, risk_max + (risk_max - risk_min) / (points), points + 1
-        )
+        risks = np.linspace(risk_min, risk_max, points)
 
         risk_lims = [
             "upperdev",
@@ -1772,14 +1780,15 @@ class Portfolio(object):
                     w = self.optimization(
                         model=model, rm=rm, obj="MaxRet", rf=rf, l=0, hist=hist
                     )
-                n += 1
-                frontier.append(w)
+                if w is not None:
+                    n += 1
+                    frontier.append(w)
             except:
                 pass
 
         setattr(self, risk_lims[item], None)
         frontier = pd.concat(frontier, axis=1)
-        frontier.columns = list(range(len(risks)))
+        frontier.columns = list(range(n))
 
         return frontier
 
