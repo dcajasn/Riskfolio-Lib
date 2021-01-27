@@ -30,7 +30,7 @@ Portfolio Optimization Models
 Backtesting
 --------------------
 * `Multi Assets Algorithmic Trading Backtesting with transaction cost and slippage using Backtrader <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%205.ipynb>`_.
-* `Multi Assets Algorithmic Trading Backtesting using Vectorbt <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2018.ipynb>`_.
+* `Multi Assets Algorithmic Trading Backtesting with Vectorbt <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2018.ipynb>`_.
 
 
 Excel and Reporting
