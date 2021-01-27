@@ -1002,7 +1002,7 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         w_ = w_.T
     if w_.shape[0] > 1 and w_.shape[1] > 1:
         raise ValueError("weights must have n_assets x 1 size")
-        
+
     if cov is not None:
         cov_ = np.array(cov, ndmin=2)
     if returns is not None:
@@ -1121,8 +1121,8 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
     elif returns is None and rm != "MV":
         raise ValueError(
             "returns scenarios are necessary to calculate the sharpe ratio"
-        )    
-    
+        )
+
     mu_ = np.array(mu, ndmin=2)
 
     if cov is not None:
@@ -1200,7 +1200,7 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         w_ = w_.T
     if w_.shape[0] > 1 and w_.shape[1] > 1:
         raise ValueError("weights must have n_assets x 1 size")
-    
+
     if cov is not None:
         cov_ = np.array(cov, ndmin=2)
     if returns is not None:

@@ -194,7 +194,7 @@ class Portfolio(object):
             self._returns = value
         else:
             raise NameError("returns must be a DataFrame")
-            
+
     @property
     def nav(self):
         if self._returns is not None and isinstance(self._returns, pd.DataFrame):
@@ -817,7 +817,6 @@ class Portfolio(object):
         else:
             evarconstraints = [cv.sum(ui) <= s]
             evarconstraints += [cv.constraints.ExpCone(-X - t, np.ones((n, 1)) @ s, ui)]
-
 
         # Tracking Error Model Variables
 
@@ -1609,7 +1608,6 @@ class Portfolio(object):
             return limits
         else:
             raise NameError("The limits of the frontier can't be found")
-       
 
     def efficient_frontier(self, model="Classic", rm="MV", points=20, rf=0, hist=True):
         r"""

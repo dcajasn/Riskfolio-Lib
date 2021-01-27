@@ -18,8 +18,16 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 
 def jupyter_report(
-    returns, w, rm="MV", rf=0, alpha=0.05, others=0.05, nrow=25, height=6,
-    width=14, t_factor=252
+    returns,
+    w,
+    rm="MV",
+    rf=0,
+    alpha=0.05,
+    others=0.05,
+    nrow=25,
+    height=6,
+    width=14,
+    t_factor=252,
 ):
     r"""
     Create a matplotlib report with useful information to analyze risk and
@@ -109,8 +117,7 @@ def jupyter_report(
         gridspec_kw={"height_ratios": [2, 1, 1.5, 1, 1, 1]},
     )
 
-    ax[0] = plf.plot_table(returns, w, MAR=rf, alpha=alpha, t_factor=t_factor,
-                           ax=ax[0])
+    ax[0] = plf.plot_table(returns, w, MAR=rf, alpha=alpha, t_factor=t_factor, ax=ax[0])
 
     ax[2] = plf.plot_pie(
         w=w,
@@ -314,7 +321,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
         worksheet8.write(0, 1 + i, a, cell_format1)
 
     for j in range(0, len(portfolios)):
-        r_0 = xl_rowcol_to_cell(8, 1 + j) # MAR cell
+        r_0 = xl_rowcol_to_cell(8, 1 + j)  # MAR cell
         r_1 = xl_range_abs(36, 1 + j, 35 + n1, 1 + j)
         r_2 = xl_range_abs(1, 1 + j, n2, 1 + j)
         for i in range(0, n2):
@@ -325,7 +332,15 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
             formula2 = "=ABS(Portfolios!" + r_4 + "-AVERAGE(Portfolios!" + r_2 + "))"
             formula3 = "=SUM(Portfolios!" + r_5 + ")"
             formula4 = "=MAX(CumRet!" + r_5 + ")-CumRet!" + r_4
-            formula5 = "=MAX(Resume!" + r_0 + "/ " + str(t_factor) + "-Portfolios!" + r_4 + ", 0)"
+            formula5 = (
+                "=MAX(Resume!"
+                + r_0
+                + "/ "
+                + str(t_factor)
+                + "-Portfolios!"
+                + r_4
+                + ", 0)"
+            )
             formula6 = "=MAX(AVERAGE(Portfolios!" + r_2 + ")-Portfolios!" + r_4 + ", 0)"
             worksheet3.write_formula(i + 1, 1 + j, formula1, cell_format3)
             worksheet4.write_formula(i + 1, 1 + j, formula2, cell_format3)
@@ -334,10 +349,10 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
             worksheet7.write_formula(i + 1, 1 + j, formula5, cell_format3)
             worksheet8.write_formula(i + 1, 1 + j, formula6, cell_format3)
 
-        r_6 = xl_rowcol_to_cell(9, 1 + j) # Alpha cell
-        r_7 = xl_rowcol_to_cell(17, 1 + j) # Value at Risk cell
+        r_6 = xl_rowcol_to_cell(9, 1 + j)  # Alpha cell
+        r_7 = xl_rowcol_to_cell(17, 1 + j)  # Value at Risk cell
         AVG = "=AVERAGE(Portfolios!" + r_2 + ") * " + str(t_factor) + ""
-        CUM = "{=PRODUCT(1 + Portfolios!" + r_2 + ")^(360/"+ str(days) + ")-1}"
+        CUM = "{=PRODUCT(1 + Portfolios!" + r_2 + ")^(360/" + str(days) + ")-1}"
         STDEV = "=STDEV(Portfolios!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
         MAD = "=AVERAGE(Absdev!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
         ALPHA = "=" + str(alpha)
@@ -350,14 +365,13 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
             + r_6
             + ",0)) * SQRT("
             + str(t_factor)
-            + ")" 
-            
+            + ")"
         )
         CVaR = (
             "=-((SUMIF(Portfolios!"
             + r_2
             + ',"<="&(-'
-            + r_7 
+            + r_7
             + "/SQRT("
             + str(t_factor)
             + ")),Portfolios!"
@@ -383,10 +397,11 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
             + str(t_factor)
             + ")) * SQRT("
             + str(t_factor)
-            + ")" 
+            + ")"
         )
         EVaR = (
-            "=" + str(rk.EVaR_Hist(returns @ w, alpha=alpha)[0])
+            "="
+            + str(rk.EVaR_Hist(returns @ w, alpha=alpha)[0])
             + " * SQRT("
             + str(t_factor)
             + ")"

@@ -137,7 +137,7 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
         ax.plot_date(index, prices, "-", label=labels[i])
 
     ax.xaxis.set_major_locator(mdates.AutoDateLocator(tz=None, minticks=5, maxticks=10))
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
     ax.set_yticklabels(["{:3.2f}".format(x) for x in ax.get_yticks()])
     ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
@@ -325,8 +325,8 @@ def plot_frontier(
 
         ret = mu_ @ weights
         ret = ret.item() * t_factor
-        
-        if rm not in ["MDD","ADD","CDaR","UCI"]:            
+
+        if rm not in ["MDD", "ADD", "CDaR", "UCI"]:
             risk = risk * t_factor ** 0.5
 
         ratio = (ret - rf) / risk
@@ -347,10 +347,10 @@ def plot_frontier(
             )
             ret = mu_ @ weights
             ret = ret.item() * t_factor
-            
-            if rm not in ["MDD","ADD","CDaR","UCI"]:            
+
+            if rm not in ["MDD", "ADD", "CDaR", "UCI"]:
                 risk = risk * t_factor ** 0.5
-            
+
             ratio = (ret - rf) / risk
 
             X2.append(risk)
@@ -541,8 +541,7 @@ def plot_pie(
     return ax
 
 
-def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, 
-                       ax=None):
+def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax=None):
     r"""
     Create a chart with the asset composition of the efficient frontier.
 
@@ -995,8 +994,10 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
             i.set_ylim(ymin, 0)
             i.legend(loc="lower right")  # , fontsize = 'x-small')
         i.set_title(titles[j])
-        i.xaxis.set_major_locator(mdates.AutoDateLocator(tz=None, minticks=5, maxticks=10))
-        i.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        i.xaxis.set_major_locator(
+            mdates.AutoDateLocator(tz=None, minticks=5, maxticks=10)
+        )
+        i.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
         i.set_yticklabels(["{:3.2%}".format(x) for x in i.get_yticks()])
         i.grid(linestyle=":")
         j = j + 1
@@ -1007,8 +1008,9 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
     return ax
 
 
-def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, t_factor=252,
-               ax=None):
+def plot_table(
+    returns, w, MAR=0, alpha=0.05, height=9, width=12, t_factor=252, ax=None
+):
     r"""
     Create a table with information about risk measures and risk adjusted
     return ratios.
@@ -1081,7 +1083,7 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, t_factor=252,
     mu = returns.mean()
     cov = returns.cov()
     days = (returns.index[-1] - returns.index[0]).days + 1
-    
+
     X = returns @ w
     X = X.to_numpy().ravel()
 
@@ -1119,7 +1121,7 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, t_factor=252,
     indicators = [
         "",
         (mu @ w).to_numpy().item() * t_factor,
-        np.power(np.prod(1 + X), 360/days) - 1,
+        np.power(np.prod(1 + X), 360 / days) - 1,
         MAR,
         alpha,
         "",
@@ -1191,7 +1193,7 @@ def plot_table(returns, w, MAR=0, alpha=0.05, height=9, width=12, t_factor=252,
     rowHeight = 1 / len(rowLabels)
     ncols = len(colLabels)
     nrows = len(rowLabels)
-    
+
     for i in range(0, ncols):
         cellDict[(0, i)].set_text_props(weight="bold", color="white", size="x-large")
         cellDict[(0, i)].set_facecolor("darkblue")
