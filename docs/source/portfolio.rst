@@ -63,7 +63,7 @@ Where:
 
 :math:`Aw \geq B`: is a set of linear constraints.
 
-:math:`\phi_{i}(w)`: are 12 available risk measures. The available risk
+:math:`\phi_{i}(w)`: are 13 available risk measures. The available risk
 measures are:
 
 - Standard Deviation :cite:`a-Markowitz`.
@@ -74,10 +74,11 @@ measures are:
 - Conditional Value at Risk :cite:`a-Rockafellar`.
 - Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`.
 - Worst Realization (Minimax) :cite:`a-Mansini2`.
-- Maximum Drawdown of uncompounded returns (Calmar Ratio) :cite:`a-Uryasev1`.
-- Average Drawdown of uncompounded returns :cite:`a-Uryasev1`.
-- Conditional Drawdown at Risk of uncompounded returns :cite:`a-Uryasev1`.
-- Ulcer Index of uncompounded returns :cite:`a-martin1989`.
+- Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio) :cite:`a-Uryasev1`.
+- Average Drawdown of uncompounded cumulative returns :cite:`a-Uryasev1`.
+- Conditional Drawdown at Risk of uncompounded cumulative returns :cite:`a-Uryasev1`.
+- Entropic Drawdown at Risk of uncompounded cumulative returns.
+- Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
 
 :math:`c_{i}`: are maximum values on each risk measure.
 
@@ -108,7 +109,7 @@ Where:
 
 :math:`b`: is a vector of risk contribution constraints.
 
-:math:`\phi(w)`: are 9 available risk measures. The available risk
+:math:`\phi(w)`: are 10 available risk measures. The available risk
 measures are:
 
 - Standard Deviation :cite:`a-Markowitz`.
@@ -118,8 +119,9 @@ measures are:
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.
 - Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`.
-- Conditional Drawdown at Risk of uncompounded returns :cite:`a-Uryasev1`.
-- Ulcer Index of uncompounded returns :cite:`a-martin1989`.
+- Conditional Drawdown at Risk of uncompounded cumulative returns :cite:`a-Uryasev1`.
+- Entropic Drawdown at Risk of uncompounded cumulative returns.
+- Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
 
 :math:`c`: is an arbitrary constant.
 

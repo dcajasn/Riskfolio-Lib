@@ -31,13 +31,13 @@ Example
     yf.pdr_override()
     
     # Date range
-    start = '2017-01-01'
+    start = '2016-01-01'
     end = '2019-12-30'
-    
-    # List of assets
+
+    # Tickers of assets
     tickers = ['JCI', 'TGT', 'CMCSA', 'CPB', 'MO', 'APA', 'MMC', 'JPM',
-              'ZION', 'PSA', 'BAX', 'BMY', 'LUV', 'PCAR', 'TXT', 'DHR',
-              'DE', 'MSFT', 'HPQ', 'SEE', 'VZ', 'CNP', 'NI']
+               'ZION', 'PSA', 'BAX', 'BMY', 'LUV', 'PCAR', 'TXT', 'TMO',
+               'DE', 'MSFT', 'HPQ', 'SEE', 'VZ', 'CNP', 'NI', 'T', 'BA']
     tickers.sort()
     
     # Downloading the data

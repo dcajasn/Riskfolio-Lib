@@ -16,11 +16,13 @@ __all__ = [
     "ADD_Abs",
     "DaR_Abs",
     "CDaR_Abs",
+    "EDaR_Abs",
     "UCI_Abs",
     "MDD_Rel",
     "ADD_Rel",
     "DaR_Rel",
     "CDaR_Rel",
+    "EDaR_Rel",
     "UCI_Rel",
     "Sharpe_Risk",
     "Sharpe",
@@ -376,9 +378,9 @@ def EVaR_Hist(X, alpha=0.05):
 
     Returns
     -------
-    value : float
-        EVaR of a returns series.
-
+    (value, z) : tuple
+        EVaR of a returns series and value of z that minimize EVaR.
+        
     """
 
     a = np.array(X, ndmin=2)
@@ -400,7 +402,7 @@ def EVaR_Hist(X, alpha=0.05):
 def MDD_Abs(X):
     r"""
     Calculate the Maximum Drawdown (MDD) of a returns series
-    using uncumpound cumulated returns.
+    using uncumpounded cumulative returns.
 
     .. math::
         \text{MDD}(X) = \max_{j \in (0,T)} \left [\max_{t \in (0,j)}
@@ -419,7 +421,7 @@ def MDD_Abs(X):
     Returns
     -------
     value : float
-        MDD of an uncumpound cumulated returns.
+        MDD of an uncumpounded cumulative returns.
 
     """
 
@@ -448,7 +450,7 @@ def MDD_Abs(X):
 def ADD_Abs(X):
     r"""
     Calculate the Average Drawdown (ADD) of a returns series
-    using uncumpound cumulated returns.
+    using uncumpounded cumulative returns.
 
     .. math::
         \text{ADD}(X) = \frac{1}{T}\sum_{j=0}^{T}\left [ \max_{t \in (0,j)}
@@ -467,7 +469,7 @@ def ADD_Abs(X):
     Returns
     -------
     value : float
-        ADD of an uncumpound cumulated returns.
+        ADD of an uncumpounded cumulative returns.
 
     """
 
@@ -502,7 +504,7 @@ def ADD_Abs(X):
 def DaR_Abs(X, alpha=0.05):
     r"""
     Calculate the Drawdown at Risk (DaR) of a returns series
-    using uncumpound cumulated returns.
+    using uncumpounded cumulative returns.
 
     .. math::
         \text{DaR}_{\alpha}(X) & = \max_{j \in (0,T)} \left \{ \text{DD}(X,j)
@@ -516,7 +518,7 @@ def DaR_Abs(X, alpha=0.05):
     X : 1d-array
         Returns series, must have Tx1 size..
     alpha : float, optional
-        Significance level of CDaR. The default is 0.05.
+        Significance level of DaR. The default is 0.05.
 
     Raises
     ------
@@ -526,7 +528,7 @@ def DaR_Abs(X, alpha=0.05):
     Returns
     -------
     value : float
-        DaR of an uncumpound cumulated returns series.
+        DaR of an uncumpounded cumulative returns series.
 
     """
 
@@ -556,7 +558,7 @@ def DaR_Abs(X, alpha=0.05):
 def CDaR_Abs(X, alpha=0.05):
     r"""
     Calculate the Conditional Drawdown at Risk (CDaR) of a returns series
-    using uncumpound cumulated returns.
+    using uncumpounded cumulative returns.
 
     .. math::
         \text{CDaR}_{\alpha}(X) = \text{DaR}_{\alpha}(X) + \frac{1}{\alpha T}
@@ -584,7 +586,7 @@ def CDaR_Abs(X, alpha=0.05):
     Returns
     -------
     value : float
-        CDaR of an uncumpound cumulated returns series.
+        CDaR of an uncumpounded cumulative returns series.
 
     """
 
@@ -614,10 +616,62 @@ def CDaR_Abs(X, alpha=0.05):
     return value
 
 
+def EDaR_Abs(X, alpha=0.05):
+    r"""
+    Calculate the Entropic Drawdown at Risk (EDaR) of a returns series
+    using uncumpounded cumulative returns.
+
+    .. math::
+        \text{EDaR}_{\alpha}(X) & = \inf_{z>0} \left \{ z
+        \ln \left (\frac{M_{\text{DD}(X)}(z^{-1})}{\alpha} \right ) \right \}  \\
+        \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \sum_{i=0}^{t}X_{i}
+        \right )- \sum_{i=0}^{j}X_{i} \\
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size..
+    alpha : float, optional
+        Significance level of EDaR. The default is 0.05.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    (value, z) : tuple
+        EDaR of an uncumpounded cumulative returns series 
+        and value of z that minimize EDaR.
+        
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    prices = np.insert(np.array(a), 0, 1, axis=0)
+    NAV = np.cumsum(np.array(prices), axis=0)
+    DD = []
+    peak = -99999
+    for i in NAV:
+        if i > peak:
+            peak = i
+        DD.append(-(peak - i))
+    del DD[0]
+
+    (value, t) = EVaR_Hist(np.array(DD), alpha=0.05)
+
+    return (value, t)
+
+
 def UCI_Abs(X):
     r"""
     Calculate the Ulcer Index (UCI) of a returns series
-    using uncumpound cumulated returns.
+    using uncumpounded cumulative returns.
 
     .. math::
         \text{UCI}(X) =\sqrt{\frac{1}{T}\sum_{j=0}^{T} \left [ \max_{t \in
@@ -637,7 +691,7 @@ def UCI_Abs(X):
     Returns
     -------
     value : float
-        Ulcer Index of an uncumpound cumulated returns.
+        Ulcer Index of an uncumpounded cumulative returns.
 
     """
 
@@ -662,7 +716,7 @@ def UCI_Abs(X):
     if n == 0:
         value = 0
     else:
-        value = np.sqrt(value / n)
+        value = np.sqrt(value / (n - 1))
 
     value = value.item()
 
@@ -672,7 +726,7 @@ def UCI_Abs(X):
 def MDD_Rel(X):
     r"""
     Calculate the Maximum Drawdown (MDD) of a returns series
-    using cumpound cumulated returns.
+    using cumpounded cumulative returns.
 
     .. math::
         \text{MDD}(X) = \max_{j \in (0,T)}\left[\max_{t \in (0,j)}
@@ -692,7 +746,7 @@ def MDD_Rel(X):
     Returns
     -------
     value : float
-        MDD of a cumpound cumulated returns.
+        MDD of a cumpounded cumulative returns.
 
     """
 
@@ -721,7 +775,7 @@ def MDD_Rel(X):
 def ADD_Rel(X):
     r"""
     Calculate the Average Drawdown (ADD) of a returns series
-    using cumpound cumulated returns.
+    using cumpounded cumulative returns.
 
     .. math::
         \text{ADD}(X) = \frac{1}{T}\sum_{j=0}^{T} \left [ \max_{t \in (0,j)}
@@ -741,7 +795,7 @@ def ADD_Rel(X):
     Returns
     -------
     value : float
-        ADD of a cumpound cumulated returns.
+        ADD of a cumpounded cumulative returns.
 
     """
 
@@ -776,7 +830,7 @@ def ADD_Rel(X):
 def DaR_Rel(X, alpha=0.05):
     r"""
     Calculate the Drawdown at Risk (DaR) of a returns series
-    using cumpound cumulated returns.
+    using cumpounded cumulative returns.
 
     .. math::
         \text{DaR}_{\alpha}(X) & = \max_{j \in (0,T)} \left \{ \text{DD}(X,j)
@@ -790,7 +844,7 @@ def DaR_Rel(X, alpha=0.05):
     X : 1d-array
         Returns series, must have Tx1 size..
     alpha : float, optional
-        Significance level of CDaR. The default is 0.05.
+        Significance level of DaR. The default is 0.05.
 
     Raises
     ------
@@ -800,7 +854,7 @@ def DaR_Rel(X, alpha=0.05):
     Returns
     -------
     value : float
-        DaR of a cumpound cumulated returns series.
+        DaR of a cumpounded cumulative returns series.
 
     """
 
@@ -830,7 +884,7 @@ def DaR_Rel(X, alpha=0.05):
 def CDaR_Rel(X, alpha=0.05):
     r"""
     Calculate the Conditional Drawdown at Risk (CDaR) of a returns series
-    using cumpound cumulated returns.
+    using cumpounded cumulative returns.
 
     .. math::
         \text{CDaR}_{\alpha}(X) = \text{DaR}_{\alpha}(X) + \frac{1}{\alpha T}
@@ -858,7 +912,7 @@ def CDaR_Rel(X, alpha=0.05):
     Returns
     -------
     value : float
-        CDaR of a cumpound cumulated returns series.
+        CDaR of a cumpounded cumulative returns series.
 
     """
 
@@ -888,10 +942,62 @@ def CDaR_Rel(X, alpha=0.05):
     return value
 
 
+def EDaR_Rel(X, alpha=0.05):
+    r"""
+    Calculate the Entropic Drawdown at Risk (EDaR) of a returns series
+    using cumpounded cumulative returns.
+
+    .. math::
+        \text{EDaR}_{\alpha}(X) & = \inf_{z>0} \left \{ z
+        \ln \left (\frac{M_{\text{DD}(X)}(z^{-1})}{\alpha} \right ) \right \}  \\
+        \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \prod_{i=0}^{t}(1+X_{i})
+        \right )- \prod_{i=0}^{j}(1+X_{i})
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size..
+    alpha : float, optional
+        Significance level of EDaR. The default is 0.05.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    (value, z) : tuple
+        EDaR of a cumpounded cumulative returns series 
+        and value of z that minimize EDaR.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("X must have Tx1 size")
+
+    prices = 1 + np.insert(np.array(a), 0, 0, axis=0)
+    NAV = np.cumprod(prices, axis=0)
+    DD = []
+    peak = -99999
+    for i in NAV:
+        if i > peak:
+            peak = i
+        DD.append(-(peak - i) / peak)
+    del DD[0]
+
+    (value, t) = EVaR_Hist(np.array(DD), alpha=0.05)
+
+    return (value, t)
+
+
 def UCI_Rel(X):
     r"""
     Calculate the Ulcer Index (UCI) of a returns series
-    using cumpound cumulated returns.
+    using cumpounded cumulative returns.
 
     .. math::
         \text{UCI}(X) =\sqrt{\frac{1}{T}\sum_{j=0}^{T} \left [ \max_{t \in
@@ -911,7 +1017,7 @@ def UCI_Rel(X):
     Returns
     -------
     value : float
-        Ulcer Index of a cumpound cumulated returns.
+        Ulcer Index of a cumpounded cumulative returns.
 
     """
 
@@ -936,7 +1042,7 @@ def UCI_Rel(X):
     if n == 0:
         value = 0
     else:
-        value = np.sqrt(value / n)
+        value = np.sqrt(value / (n - 1))
 
     value = value.item()
 
@@ -974,16 +1080,18 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         - 'CVaR': Conditional Value at Risk.
         - 'EVaR': Entropic Value at Risk.
         - 'WR': Worst Realization (Minimax)
-        - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
-        - 'ADD': Average Drawdown of uncompounded returns.
-        - 'DaR': Drawdown at Risk of uncompounded returns.
-        - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-        - 'UCI': Ulcer Index of uncompounded returns.
+        - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded cumulative returns.
+        - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+        - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
         Risk free rate. The default is 0.
-    **kwargs : dict
-        Other arguments that depends on the risk measure.
+    alpha : float, optional
+        Significance level of VaR, CVaR, EDaR, DaR, CDaR and EDaR.
+        The default is 0.05.
 
     Raises
     ------
@@ -1036,6 +1144,8 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         risk = DaR_Abs(a, alpha=alpha)
     elif rm == "CDaR":
         risk = CDaR_Abs(a, alpha=alpha)
+    elif rm == "EDaR":
+        risk = EDaR_Abs(a, alpha=alpha)[0]
     elif rm == "UCI":
         risk = UCI_Abs(a)
 
@@ -1087,16 +1197,18 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         - 'CVaR': Conditional Value at Risk.
         - 'EVaR': Entropic Value at Risk.
         - 'WR': Worst Realization (Minimax)
-        - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
-        - 'ADD': Average Drawdown of uncompounded returns.
-        - 'DaR': Drawdown at Risk of uncompounded returns.
-        - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-        - 'UCI': Ulcer Index of uncompounded returns.
+        - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded cumulative returns.
+        - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+        - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
         Risk free rate. The default is 0.
-    **kwargs : dict
-        Other arguments that depends on the risk measure.
+    alpha : float, optional
+        Significance level of VaR, CVaR, EDaR, DaR, CDaR and EDaR.
+        The default is 0.05.
 
     Raises
     ------
@@ -1172,16 +1284,18 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         - 'CVaR': Conditional Value at Risk.
         - 'EVaR': Entropic Value at Risk.
         - 'WR': Worst Realization (Minimax)
-        - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
-        - 'ADD': Average Drawdown of uncompounded returns.
-        - 'DaR': Drawdown at Risk of uncompounded returns.
-        - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-        - 'UCI': Ulcer Index of uncompounded returns.
+        - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded cumulative returns.
+        - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+        - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
         Risk free rate. The default is 0.
-    **kwargs : dict
-        Other arguments that depends on the risk measure.
+    alpha : float, optional
+        Significance level of VaR, CVaR, EDaR, DaR, CDaR and EDaR.
+        The default is 0.05.
 
     Raises
     ------
@@ -1257,6 +1371,9 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         elif rm == "CDaR":
             risk_1 = CDaR_Abs(a_1, alpha=alpha)
             risk_2 = CDaR_Abs(a_2, alpha=alpha)
+        elif rm == "EDaR":
+            risk_1 = EDaR_Abs(a_1, alpha=alpha)[0]
+            risk_2 = EDaR_Abs(a_2, alpha=alpha)[0]
         elif rm == "UCI":
             risk_1 = UCI_Abs(a_1)
             risk_2 = UCI_Abs(a_2)

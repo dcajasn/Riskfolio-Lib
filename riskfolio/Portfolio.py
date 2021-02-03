@@ -70,20 +70,25 @@ class Portfolio(object):
         The default is None.
     upperCVaR : float, optional
         Constraint on max level of CVaR. The default is None.
+    upperEVaR : float, optional
+        Constraint on max level of EVaR. The default is None.
     upperwr : float, optional
         Constraint on max level of worst realization. The default is None.
     uppermdd : float, optional
-        Constraint on max level of maximum drawdown of uncompounded cumulated
+        Constraint on max level of maximum drawdown of uncompounded cumulative
         returns. The default is None.
     upperadd : float, optional
-        Constraint on max level of average drawdown of uncompounded cumulated
+        Constraint on max level of average drawdown of uncompounded cumulative
         returns. The default is None.
     upperCDaR : float, optional
         Constraint on max level of conditional drawdown at risk (CDaR) of
-        uncompounded cumulated returns. The default is None.
+        uncompounded cumulative returns. The default is None.
+    upperEDaR : float, optional
+        Constraint on max level of entropic drawdown at risk (EDaR) of
+        uncompounded cumulative returns. The default is None.
     upperuci : float, optional
         Constraint on max level of ulcer index (UCI) of
-        uncompounded cumulated returns. The default is None.
+        uncompounded cumulative returns. The default is None.
     """
 
     def __init__(
@@ -114,6 +119,7 @@ class Portfolio(object):
         uppermdd=None,
         upperadd=None,
         upperCDaR=None,
+        upperEDaR=None,
         upperuci=None,
     ):
 
@@ -134,11 +140,12 @@ class Portfolio(object):
         self.uppermad = uppermad
         self.uppersdev = uppersdev
         self.upperCVaR = upperCVaR
-        self.upperEVaR = upperCVaR
+        self.upperEVaR = upperEVaR
         self.upperwr = upperwr
         self.uppermdd = uppermdd
-        self.upperadd = uppermdd
+        self.upperadd = upperadd
         self.upperCDaR = upperCDaR
+        self.upperEDaR = upperEDaR
         self.upperflpm = upperflpm
         self.upperslpm = upperslpm
         self.upperuci = upperuci
@@ -625,10 +632,11 @@ class Portfolio(object):
             - 'CVaR': Conditional Value at Risk.
             - 'EVaR': Entropic Value at Risk.
             - 'WR': Worst Realization (Minimax)
-            - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
-            - 'ADD': Average Drawdown of uncompounded returns.
-            - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-            - 'UCI': Ulcer Index of uncompounded returns.
+            - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+            - 'ADD': Average Drawdown of uncompounded cumulative returns.
+            - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+            - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+            - 'UCI': Ulcer Index of uncompounded cumulative returns.
             
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
             Objective function of the optimization model.
@@ -707,10 +715,10 @@ class Portfolio(object):
 
         # MV Model Variables
 
-        risk1 = cv.quad_form(w, sigma)
-        returns_1 = af.cov_returns(sigma) * 1000
-        n1 = returns_1.shape[0]
-        risk1_1 = cv.norm(returns_1 @ w, "fro") / cv.sqrt(n1 - 1)
+        g = cv.Variable(nonneg=True)
+        G = np.linalg.cholesky(sigma)
+        risk1 = g ** 2
+        devconstraints = [cv.SOC(g, G.T @ w)]
 
         # MAD Model Variables
 
@@ -818,6 +826,28 @@ class Portfolio(object):
             evarconstraints = [cv.sum(ui) <= s]
             evarconstraints += [cv.constraints.ExpCone(-X - t, np.ones((n, 1)) @ s, ui)]
 
+        # Entropic Drawdown at Risk Model Variables
+
+        t1 = cv.Variable((1, 1))
+        s1 = cv.Variable((1, 1), nonneg=True)
+        uj = cv.Variable((n, 1))
+        risk13 = t1 + s1 * np.log(1 / (alpha * n))
+
+        if obj == "Sharpe":
+            edarconstraints = [cv.sum(uj) * 1000 <= s1 * 1000]
+            edarconstraints += [
+                cv.constraints.ExpCone(
+                    U[1:] * 1000 - X1 * 1000 - t1 * 1000,
+                    np.ones((n, 1)) @ s1 * 1000,
+                    uj * 1000,
+                )
+            ]
+        else:
+            edarconstraints = [cv.sum(uj) <= s1]
+            edarconstraints += [
+                cv.constraints.ExpCone(U[1:] - X1 - t1, np.ones((n, 1)) @ s1, uj)
+            ]
+
         # Tracking Error Model Variables
 
         c = np.array(self.benchweights, ndmin=2)
@@ -887,9 +917,10 @@ class Portfolio(object):
 
         if self.upperdev is not None:
             if obj == "Sharpe":
-                constraints += [risk1_1 <= self.upperdev * k]
+                constraints += [g <= self.upperdev * k]
             else:
-                constraints += [risk1 <= self.upperdev ** 2]
+                constraints += [g <= self.upperdev]
+            constraints += devconstraints
 
         if self.uppermad is not None:
             if obj == "Sharpe":
@@ -970,13 +1001,19 @@ class Portfolio(object):
                 constraints += [risk12 <= self.upperEVaR]
             constraints += evarconstraints
 
+        if self.upperEDaR is not None:
+            if obj == "Sharpe":
+                constraints += [risk13 <= self.upperEDaR * k]
+            else:
+                constraints += [risk13 <= self.upperEDaR]
+            constraints += edarconstraints
+
         # Defining risk function
 
         if rm == "MV":
-            if model != "Classic":
-                risk = risk1_1
-            elif model == "Classic":
-                risk = risk1
+            risk = risk1
+            if self.upperdev is None:
+                constraints += devconstraints
         elif rm == "MAD":
             risk = risk2
             madmodel = True
@@ -1013,10 +1050,16 @@ class Portfolio(object):
         elif rm == "UCI":
             risk = risk11
             drawdown = True
+            l = l / 1000
         elif rm == "EVaR":
             risk = risk12
             if self.upperEVaR is None:
                 constraints += evarconstraints
+        elif rm == "EDaR":
+            risk = risk13
+            drawdown = True
+            if self.upperEDaR is None:
+                constraints += edarconstraints
 
         if madmodel == True:
             constraints += madconstraints
@@ -1124,8 +1167,9 @@ class Portfolio(object):
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
             - 'EVaR': Entropic Value at Risk.
-            - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-            - 'UCI': Ulcer Index of uncompounded returns.
+            - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+            - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+            - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
         rf : float, optional
             Risk free rate, must be in the same period of assets returns.
@@ -1180,7 +1224,10 @@ class Portfolio(object):
 
         # MV Model Variables
 
-        risk1 = cv.quad_form(w, sigma)
+        g = cv.Variable(nonneg=True)
+        G = np.linalg.cholesky(sigma)
+        risk1 = g ** 2
+        devconstraints = [cv.SOC(g, G.T @ w)]
 
         # MAD Model Variables
 
@@ -1255,12 +1302,28 @@ class Portfolio(object):
             )
         ]
 
+        # Entropic Drawdown at Risk Model Variables
+
+        t1 = cv.Variable((1, 1))
+        s1 = cv.Variable((1, 1), nonneg=True)
+        uj = cv.Variable((n, 1))
+        risk13 = t1 + s1 * np.log(1 / (alpha * n))
+        edarconstraints = [cv.sum(uj) * 1000 <= s1 * 1000]
+        edarconstraints += [
+            cv.constraints.ExpCone(
+                U[1:] * 1000 - X1 * 1000 - t1 * 1000,
+                np.ones((n, 1)) @ s1 * 1000,
+                uj * 1000,
+            )
+        ]
+
         # Defining risk function
 
         constraints = []
 
         if rm == "MV":
             risk = risk1
+            constraints += devconstraints
         elif rm == "MAD":
             risk = risk2
             constraints += madconstraints
@@ -1286,6 +1349,10 @@ class Portfolio(object):
         elif rm == "EVaR":
             risk = risk12
             constraints += evarconstraints
+        elif rm == "EDaR":
+            risk = risk13
+            constraints += ddconstraints
+            constraints += edarconstraints
 
         # Frontier Variables
 
@@ -1401,6 +1468,7 @@ class Portfolio(object):
 
         k = cv.Variable((1, 1))
         rf0 = rf
+        g = cv.Variable(nonneg=True)
 
         constraints = []
 
@@ -1412,10 +1480,10 @@ class Portfolio(object):
         elif Umu == "ellip":
             if obj == "Sharpe":
                 constraints += [
-                    mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w, "fro") - rf0 * k >= 1
+                    mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w) - rf0 * k >= 1
                 ]
             else:
-                ret = mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w, "fro")
+                ret = mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w)
         else:
             if obj == "Sharpe":
                 constraints += [mu @ w - rf0 * k >= 1]
@@ -1438,12 +1506,13 @@ class Portfolio(object):
             else:
                 M2 = cv.vstack([w, np.ones((1, 1))])
             M = cv.hstack([M1, M2])
-            risk = cv.trace(sigma @ (X + Z)) + k_sigma * cv.norm(
-                sqrtm(cov_sigma) @ (cv.vec(X) + cv.vec(Z)), "fro"
-            )
+            risk = cv.trace(sigma @ (X + Z))
+            risk += k_sigma * cv.norm(sqrtm(cov_sigma) @ (cv.vec(X) + cv.vec(Z)))
             constraints += [M >> 0, Z >> 0]
         else:
-            risk = cv.quad_form(w, sigma)
+            G = np.linalg.cholesky(sigma)
+            risk = g ** 2
+            constraints += [cv.SOC(g, G.T @ w)]
 
         if obj == "Sharpe":
             constraints += [cv.sum(w) == k, k >= 0]
@@ -1571,10 +1640,11 @@ class Portfolio(object):
             - 'CVaR': Conditional Value at Risk.
             - 'EVaR': Entropic Value at Risk.
             - 'WR': Worst Realization (Minimax)
-            - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
-            - 'ADD': Average Drawdown of uncompounded returns.
-            - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-            - 'UCI': Ulcer Index of uncompounded returns.
+            - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+            - 'ADD': Average Drawdown of uncompounded cumulative returns.
+            - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+            - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+            - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
         rf : scalar, optional
             Risk free rate. The default is 0.
@@ -1621,7 +1691,23 @@ class Portfolio(object):
             Methodology used to estimate input parameters.
             The default is 'Classic'.
         rm : str, optional
-            Risk measure used by the optimization model. The default is 'MV'.
+            The risk measure used to optimze the portfolio.
+            The default is 'MV'. Posible values are:
+
+            - 'MV': Standard Deviation.
+            - 'MAD': Mean Absolute Deviation.
+            - 'MSV': Semi Standard Deviation.
+            - 'FLPM': First Lower Partial Moment (Omega Ratio).
+            - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
+            - 'CVaR': Conditional Value at Risk.
+            - 'EVaR': Entropic Value at Risk.
+            - 'WR': Worst Realization (Minimax)
+            - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+            - 'ADD': Average Drawdown of uncompounded cumulative returns.
+            - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+            - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+            - 'UCI': Ulcer Index of uncompounded cumulative returns.
+        
         points : scalar, optional
             Number of point calculated from the efficient frontier.
             The default is 50.
@@ -1728,6 +1814,9 @@ class Portfolio(object):
         elif rm == "EVaR":
             risk_min = rk.EVaR_Hist(returns @ w_min, alpha)[0]
             risk_max = rk.EVaR_Hist(returns @ w_max, alpha)[0]
+        elif rm == "EDaR":
+            risk_min = rk.EDaR_Abs(returns @ w_min, alpha)[0]
+            risk_max = rk.EDaR_Abs(returns @ w_max, alpha)[0]
 
         mus = np.linspace(ret_min, ret_max, points)
 
@@ -1745,6 +1834,7 @@ class Portfolio(object):
             "uppermdd",
             "upperadd",
             "upperCDaR",
+            "upperEDaR",
             "upperuci",
         ]
 
@@ -1760,6 +1850,7 @@ class Portfolio(object):
             "MDD",
             "ADD",
             "CDaR",
+            "EDaR",
             "UCI",
         ]
 
@@ -1807,6 +1898,7 @@ class Portfolio(object):
             "uppermdd",
             "upperadd",
             "upperCDaR",
+            "upperEDaR",
             "upperuci",
         ]
 

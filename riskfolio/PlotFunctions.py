@@ -31,6 +31,7 @@ rm_names = [
     "Average Drawdown",
     "Drawdown at Risk",
     "Conditional Drawdown at Risk",
+    "Entropic Drawdown at Risk",
     "Ulcer Index",
 ]
 
@@ -48,6 +49,7 @@ rmeasures = [
     "ADD",
     "DaR",
     "CDaR",
+    "EDaR",
     "UCI",
 ]
 
@@ -139,7 +141,9 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     ax.xaxis.set_major_locator(mdates.AutoDateLocator(tz=None, minticks=5, maxticks=10))
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
 
-    ax.set_yticklabels(["{:3.2f}".format(x) for x in ax.get_yticks()])
+    ticks_loc = ax.get_yticks().tolist()
+    ax.set_yticks(ax.get_yticks().tolist())
+    ax.set_yticklabels(["{:3.2f}".format(x) for x in ticks_loc])
     ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
     fig = plt.gcf()
@@ -195,10 +199,11 @@ def plot_frontier(
         - 'EVaR': Conditional Value at Risk.
         - 'WR': Worst Realization (Minimax)
         - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
-        - 'ADD': Average Drawdown of uncompounded returns.
-        - 'DaR': Drawdown at Risk of uncompounded returns.
-        - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-        - 'UCI': Ulcer Index of uncompounded returns.
+        - 'ADD': Average Drawdown of uncompounded cumulative returns.
+        - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+        - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
         Risk free rate or minimum aceptable return. The default is 0.
@@ -326,7 +331,7 @@ def plot_frontier(
         ret = mu_ @ weights
         ret = ret.item() * t_factor
 
-        if rm not in ["MDD", "ADD", "CDaR", "UCI"]:
+        if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
             risk = risk * t_factor ** 0.5
 
         ratio = (ret - rf) / risk
@@ -348,7 +353,7 @@ def plot_frontier(
             ret = mu_ @ weights
             ret = ret.item() * t_factor
 
-            if rm not in ["MDD", "ADD", "CDaR", "UCI"]:
+            if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
                 risk = risk * t_factor ** 0.5
 
             ratio = (ret - rf) / risk
@@ -369,8 +374,12 @@ def plot_frontier(
 
     ax.xaxis.set_major_locator(plt.AutoLocator())
 
-    ax.set_yticklabels(["{:.4%}".format(x) for x in ax.get_yticks()])
-    ax.set_xticklabels(["{:.4%}".format(x) for x in ax.get_xticks()])
+    ticks_loc = ax.get_yticks().tolist()
+    ax.set_yticks(ax.get_yticks().tolist())
+    ax.set_yticklabels(["{:.2%}".format(x) for x in ticks_loc])
+    ticks_loc = ax.get_xticks().tolist()
+    ax.set_xticks(ax.get_xticks().tolist())
+    ax.set_xticklabels(["{:.2%}".format(x) for x in ticks_loc])
 
     ax.tick_params(axis="y", direction="in")
     ax.tick_params(axis="x", direction="in")
@@ -611,7 +620,9 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
     ax.set_ylim(0, 1)
     ax.set_xlim(0, len(X) - 1)
 
-    ax.set_yticklabels(["{:3.2%}".format(x) for x in ax.get_yticks()])
+    ticks_loc = ax.get_yticks().tolist()
+    ax.set_yticks(ax.get_yticks().tolist())
+    ax.set_yticklabels(["{:3.2%}".format(x) for x in ticks_loc])
     ax.grid(linestyle=":")
 
     n = int(np.ceil(len(labels) / nrow))
@@ -634,6 +645,7 @@ def plot_risk_con(
     color="tab:blue",
     height=6,
     width=10,
+    t_factor=252,
     ax=None,
 ):
     r"""
@@ -660,11 +672,11 @@ def plot_risk_con(
         - 'CVaR': Conditional Value at Risk.
         - 'EVaR': Conditional Value at Risk.
         - 'WR': Worst Realization (Minimax)
-        - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
-        - 'ADD': Average Drawdown of uncompounded returns.
-        - 'DaR': Drawdown at Risk of uncompounded returns.
-        - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-        - 'UCI': Ulcer Index of uncompounded returns.
+        - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded cumulative returns.
+        - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+        - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
         Risk free rate or minimum aceptable return. The default is 0.
@@ -677,6 +689,17 @@ def plot_risk_con(
         Height of the image in inches. The default is 6.
     width : float, optional
         Width of the image in inches. The default is 10.
+    t_factor : float, optional
+        Factor used to annualize expected return and expected risks for
+        risk measures based on returns (not drawdowns). The default is 252.
+        
+        .. math::
+            
+            \begin{align}
+            \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
+            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
+            \end{align}
+            
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
 
@@ -694,9 +717,9 @@ def plot_risk_con(
     -------
     ::
 
-        ax = plf.plot_risk_con(w=w2, cov=cov, returns=returns, rm='MSV',
+        ax = plf.plot_risk_con(w=w2, cov=cov, returns=returns, rm=rm,
                                rf=0, alpha=0.05, color="tab:blue", height=6,
-                               width=10, ax=None)
+                               width=10, t_factor=252, ax=None)
 
     .. image:: images/Risk_Con.png
 
@@ -720,12 +743,16 @@ def plot_risk_con(
 
     RC = rk.Risk_Contribution(w, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha)
 
+    if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
+        RC = RC * t_factor ** 0.5
+
     ax.bar(X, RC, alpha=0.7, color=color, edgecolor="black")
 
     ax.set_xlim(-0.5, len(X) - 0.5)
 
+    ticks_loc = ax.get_yticks().tolist()
     ax.set_yticks(ax.get_yticks())
-    ax.set_yticklabels(["{:3.5%}".format(x) for x in ax.get_yticks()])
+    ax.set_yticklabels(["{:3.4%}".format(x) for x in ticks_loc])
     ax.grid(linestyle=":")
 
     fig = plt.gcf()
@@ -858,8 +885,12 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
     factor = (np.max(a) - np.min(a)) / bins
 
     ax.xaxis.set_major_locator(plt.AutoLocator())
-    ax.set_xticklabels(["{:3.2%}".format(x) for x in ax.get_xticks()])
-    ax.set_yticklabels(["{:3.2%}".format(x * factor) for x in ax.get_yticks()])
+    ticks_loc = ax.get_xticks().tolist()
+    ax.set_xticks(ax.get_xticks())
+    ax.set_xticklabels(["{:3.2%}".format(x) for x in ticks_loc])
+    ticks_loc = ax.get_yticks().tolist()
+    ax.set_yticks(ax.get_yticks())
+    ax.set_yticklabels(["{:3.2%}".format(x * factor) for x in ticks_loc])
     ax.legend(loc="upper right")  # , fontsize = 'x-small')
     ax.grid(linestyle=":")
     ax.set_ylabel("Probability Density")
@@ -963,22 +994,26 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
     data = [prices, DD]
     color1 = ["b", "orange"]
     risk = [
-        -rk.MDD_Abs(a),
+        -rk.UCI_Abs(a),
         -rk.ADD_Abs(a),
         -rk.DaR_Abs(a, alpha),
         -rk.CDaR_Abs(a, alpha),
-        -rk.UCI_Abs(a),
+        -rk.EDaR_Abs(a, alpha)[0],
+        -rk.MDD_Abs(a),
     ]
     label = [
-        "Maximum Drawdown: " + "{0:.2%}".format(risk[0]),
+        "Ulcer Index: " + "{0:.2%}".format(risk[0]),
         "Average Drawdown: " + "{0:.2%}".format(risk[1]),
         "{0:.2%}".format((1 - alpha)) + " Confidence DaR: " + "{0:.2%}".format(risk[2]),
         "{0:.2%}".format((1 - alpha))
         + " Confidence CDaR: "
         + "{0:.2%}".format(risk[3]),
-        "Ulcer Index: " + "{0:.2%}".format(risk[4]),
+        "{0:.2%}".format((1 - alpha))
+        + " Confidence EDaR: "
+        + "{0:.2%}".format(risk[4]),
+        "Maximum Drawdown: " + "{0:.2%}".format(risk[5]),
     ]
-    color2 = ["r", "b", "limegreen", "dodgerblue", "fuchsia"]
+    color2 = ["b", "r", "fuchsia", "limegreen", "dodgerblue", "darkgrey"]
 
     j = 0
 
@@ -998,7 +1033,9 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
             mdates.AutoDateLocator(tz=None, minticks=5, maxticks=10)
         )
         i.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-        i.set_yticklabels(["{:3.2%}".format(x) for x in i.get_yticks()])
+        ticks_loc = i.get_yticks().tolist()
+        i.set_yticks(i.get_yticks())
+        i.set_yticklabels(["{:3.2%}".format(x) for x in ticks_loc])
         i.grid(linestyle=":")
         j = j + 1
 
@@ -1108,11 +1145,12 @@ def plot_table(
         "Kurtosis",
         "",
         "Risk Measures based on Drawdowns (3)",
-        "Max Drawdown (MDD)",
+        "Ulcer Index (UCI)",
         "Average Drawdown (ADD)",
         "Drawdown at Risk (DaR)",
         "Conditional Drawdown at Risk (CDaR)",
-        "Ulcer Index",
+        "Entropic Drawdown at Risk (EDaR)",
+        "Max Drawdown (MDD)",
         "(1) Annualized, multiplied by " + str(t_factor),
         "(2) Annualized, multiplied by √" + str(t_factor),
         "(3) Based on uncompounded cumulated returns",
@@ -1139,11 +1177,12 @@ def plot_table(
         st.kurtosis(X, bias=False),
         "",
         "",
-        rk.MDD_Abs(X),
+        rk.UCI_Abs(X),
         rk.ADD_Abs(X),
         rk.DaR_Abs(X),
         rk.CDaR_Abs(X, alpha=alpha),
-        rk.UCI_Abs(X),
+        rk.EDaR_Abs(X, alpha=alpha)[0],
+        rk.MDD_Abs(X),
         "",
         "",
         "",

@@ -51,11 +51,12 @@ def jupyter_report(
         - 'CVaR': Conditional Value at Risk.
         - 'EVaR': Conditional Value at Risk.
         - 'WR': Worst Realization (Minimax)
-        - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
-        - 'ADD': Average Drawdown of uncompounded returns.
-        - 'DaR': Drawdown at Risk of uncompounded returns.
-        - 'CDaR': Conditional Drawdown at Risk of uncompounded returns.
-        - 'UCI': Ulcer Index of uncompounded returns.
+        - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded cumulative returns.
+        - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+        - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
         Risk free rate or minimum aceptable return. The default is 0.
@@ -205,7 +206,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
     writer = pd.ExcelWriter(name + ".xlsx", engine="xlsxwriter")
 
     # Convert the dataframe to an XlsxWriter Excel object.
-    w.to_excel(writer, sheet_name="Resume", startrow=35, startcol=0)
+    w.to_excel(writer, sheet_name="Resume", startrow=36, startcol=0)
     returns.to_excel(writer, sheet_name="Returns", index_label=["Date"])
 
     # Get the xlsxwriter objects from the dataframe writer object.
@@ -252,7 +253,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
     worksheet7.write(0, 0, "Date", cell_format1)
     worksheet8.write(0, 0, "Date", cell_format1)
 
-    worksheet1.set_column("A:A", 35)
+    worksheet1.set_column("A:A", 36)
     worksheet2.set_column("A:A", 10, cell_format5)
     worksheet3.set_column("A:A", 10, cell_format5)
     worksheet4.set_column("A:A", 10, cell_format5)
@@ -298,11 +299,12 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
         "Kurtosis",
         "",
         "Risk Measures based on Drawdowns (3)",
-        "Max Drawdown (MDD)",
+        "Ulcer Index (UCI)",
         "Average Drawdown (ADD)",
         "Drawdown at Risk (DaR)",
         "Conditional Drawdown at Risk (CDaR)",
-        "Ulcer Index (ULC)",
+        "Entropic Drawdown at Risk (CDaR)",
+        "Max Drawdown (MDD)",
     ]
 
     for i in range(0, len(labels_1)):
@@ -312,7 +314,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
     for i in range(0, len(portfolios)):
         a = "Portfolio " + str(i + 1)
         worksheet1.write(3, 1 + i, a, cell_format1)
-        worksheet1.write(35, 1 + i, a, cell_format1)
+        worksheet1.write(36, 1 + i, a, cell_format1)
         worksheet3.write(0, 1 + i, a, cell_format1)
         worksheet4.write(0, 1 + i, a, cell_format1)
         worksheet5.write(0, 1 + i, a, cell_format1)
@@ -322,7 +324,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
 
     for j in range(0, len(portfolios)):
         r_0 = xl_rowcol_to_cell(8, 1 + j)  # MAR cell
-        r_1 = xl_range_abs(36, 1 + j, 35 + n1, 1 + j)
+        r_1 = xl_range_abs(37, 1 + j, 36 + n1, 1 + j)
         r_2 = xl_range_abs(1, 1 + j, n2, 1 + j)
         for i in range(0, n2):
             r_3 = xl_range(i + 1, 1, i + 1, n1)
@@ -436,7 +438,8 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
             + DaR[2:]
             + ")"
         )
-        ULC = "=SQRT(SUMSQ(Drawdown!" + r_2 + ")/COUNT(Drawdown!" + r_2 + "))"
+        EDaR = "=" + str(rk.EDaR_Abs(returns @ w, alpha=alpha)[0])
+        UCI = "=SQRT(SUMSQ(Drawdown!" + r_2 + ")/COUNT(Drawdown!" + r_2 + "))"
         MAR = "=" + str(rf)
         FLPM = "=AVERAGE(devBelowTarget!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
         SLPM = (
@@ -488,11 +491,12 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
             KURT,
             "",
             "",
-            MDD,
+            UCI,
             ADD,
             DaR,
             CDaR,
-            ULC,
+            EDaR,
+            MDD,
         ]
 
         for i in range(0, len(labels_2)):
@@ -507,9 +511,9 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
     merge_format.set_text_wrap()
     worksheet1.set_row(1, 215)
     worksheet1.merge_range("A2:K2", __LICENSE__.replace("2021", year), merge_format)
-    worksheet1.write(30, 0, "(1) Annualized, multiplied by " + str(t_factor))
-    worksheet1.write(31, 0, "(2) Annualized, multiplied by √" + str(t_factor))
-    worksheet1.write(32, 0, "(3) Based on uncompounded cumulated returns")
+    worksheet1.write(31, 0, "(1) Annualized, multiplied by " + str(t_factor))
+    worksheet1.write(32, 0, "(2) Annualized, multiplied by √" + str(t_factor))
+    worksheet1.write(33, 0, "(3) Based on uncompounded cumulated returns")
     worksheet1.write(0, 0, "Riskfolio-Lib Report", cell_format2)
 
     writer.save()

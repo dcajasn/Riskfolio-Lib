@@ -32,7 +32,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Maximum Utility Function.
     * Maximum Risk Adjusted Return Ratio.
 
-* Mean Risk Portfolio optimization with 12 convex risk measures:
+* Mean Risk Portfolio optimization with 13 convex risk measures:
 
     * Standard Deviation.
     * Semi Standard Deviation.
@@ -45,9 +45,10 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Maximum Drawdown (Calmar Ratio)
     * Average Drawdown
     * Conditional Drawdown at Risk (CDaR).
+    * Entropic Drawdown at Risk (EDaR).
     * Ulcer Index.
 
-* Risk Parity Portfolio optimization with 9 convex risk measures:
+* Risk Parity Portfolio optimization with 10 convex risk measures:
 
     * Standard Deviation.
     * Semi Standard Deviation.
@@ -57,6 +58,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Conditional Value at Risk (CVaR).
     * Entropic Value at Risk (EVaR).
     * Conditional Drawdown at Risk (CDaR).
+    * Entropic Drawdown at Risk (EDaR).
     * Ulcer Index.
 
 * Worst Case Mean Variance Portfolio optimization.
@@ -64,7 +66,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 * Portfolio optimization with Risk Factors model.
 * Portfolio optimization with constraints on tracking error and turnover.
 * Portfolio optimization with short positions and leveraged portfolios.
-* Tools to build efficient frontier for 12 risk measures.
+* Tools to build efficient frontier for 13 risk measures.
 * Tools to build linear constraints on assets, asset classes and risk factors.
 * Tools to build views on assets and asset classes.
 * Tools to calculate risk measures.
@@ -116,5 +118,6 @@ Riskfolio-Lib development takes place on Github: https://github.com/dcajasn/Risk
 The plan for this module is to add more functions that will be very useful
 to asset managers.
 
+* Add Black Litterman for factors models.
 * Add functions to estimate Duration, Convexity, Key Rate Durations and Convexities of bonds without embedded options (for loadings matrix).
 * Add more functions based on suggestion of users.
