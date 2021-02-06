@@ -14,8 +14,6 @@ formats: all
 
 # Optionally set the version of Python and requirements required to build your docs
 
-version: 2
-
 python:
   version: 3.7
   install:
