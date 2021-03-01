@@ -235,7 +235,7 @@ def plot_frontier(
         .. math::
             \begin{aligned}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
-            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
+            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}} \\
             \end{aligned}
 
     ax : matplotlib axis, optional
@@ -695,7 +695,7 @@ def plot_risk_con(
         .. math::
             \begin{aligned}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
-            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
+            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}} \\
             \end{aligned}
             
     ax : matplotlib axis, optional
@@ -1071,7 +1071,7 @@ def plot_table(
         .. math::
             \begin{aligned}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
-            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
+            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}} \\
             \end{aligned}
         
     ax : matplotlib axis, optional

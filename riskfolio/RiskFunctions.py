@@ -360,11 +360,11 @@ def EVaR_Hist(X, alpha=0.05):
 
     .. math::
         \text{EVaR}_{\alpha}(X) = \inf_{z>0} \left \{ z
-        \ln \left (\frac{M_X(z^{-1})}{\alpha} \right ) \right \}
+        \ln \left (\frac{M_{X}(z^{-1})}{\alpha} \right ) \right \}
 
     Where:
 
-    :math:`M_X(t)` is the moment generating function of X.
+    :math:`M_{X}(t)` is the moment generating function of X.
 
     Parameters
     ----------

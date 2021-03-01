@@ -131,11 +131,11 @@ htmlhelp_basename = 'Riskfolio-Lib-doc'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
-    # 'papersize': 'letterpaper',
+    'papersize': 'a4paper',
 
     # The font size ('10pt', '11pt' or '12pt').
     #
-    # 'pointsize': '10pt',
+    'pointsize': '11pt',
 
     # Additional stuff for the LaTeX preamble.
     #
@@ -170,11 +170,11 @@ man_pages = [
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
-texinfo_documents = [
-    (master_doc, 'Riskfolio', 'Riskfolio-Lib Documentation',
-     author, 'Riskfolio-Lib', 'One line description of project.',
-     'Miscellaneous'),
-]
+#texinfo_documents = [
+#    (master_doc, 'Riskfolio', 'Riskfolio-Lib Documentation',
+#     author, 'Riskfolio-Lib', 'One line description of project.',
+#     'Miscellaneous'),
+#]
 
 
 # -- Options for Epub output -------------------------------------------------
