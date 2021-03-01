@@ -668,6 +668,7 @@ def risk_factors(
         When the value cannot be calculated.
 
     """
+
     if not isinstance(X, pd.DataFrame) and not isinstance(Y, pd.DataFrame):
         raise ValueError("X and Y must be DataFrames")
 
