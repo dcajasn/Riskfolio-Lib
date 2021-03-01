@@ -18,33 +18,41 @@ one of the following 4 objective functions:
 - **Maximum Return Portfolio:**
 
 .. math::
+    \begin{aligned}
     &\underset{w}{\max} & & \mu w\\
     &\text{s.t.} & & Aw \geq B\\
     & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+    \end{aligned}
 
 
 - **Minimum Risk Portfolio:**
 
 .. math::
+    \begin{aligned}
     &\underset{w}{\min} & & \phi_{k}(w)\\
     &\text{s.t.} & & Aw \geq B\\
     & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+    \end{aligned}
 
 
 - **Maximum Risk Adjusted Return Ratio Portfolio:**
 
 .. math::
+    \begin{aligned}
     &\underset{w}{\max} & & \frac{\mu w - r_{f}}{\phi_{k}(w)}\\
     &\text{s.t.} & & Aw \geq B\\
     & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+    \end{aligned}
 
 
 - **Maximum Utility Portfolio:**
 
 .. math::
+    \begin{aligned}
     &\underset{w}{\max} & & \mu w - \lambda \phi_{k}(w)\\
     &\text{s.t.} & & Aw \geq B\\
     & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+    \end{aligned}
 
 
 Where:
@@ -88,9 +96,11 @@ Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
 the general risk parity model :cite:`a-Roncalli`:
 
 .. math::
+    \begin{aligned}
     &\underset{w}{\min} & & \phi(w)\\
     &\text{s.t.} & & b \log(w) \geq c\\
     & & & w \geq 0 \\
+    \end{aligned}
 
 
 Where:
@@ -126,31 +136,39 @@ that results from optimize one of the following 4 objective functions:
 - **Worst Case Maximum Return Portfolio:**
 
 .. math::
+    \begin{aligned}
     &\underset{w}{\max} & & \underset{\mu \, \in \, U_{\mu}}{\min} \mu w\\
     &\text{s.t.} & & Aw \geq B\\
+    \end{aligned}
 
 
 - **Worst Case Minimum Risk Portfolio:**
 
 .. math::
+    \begin{aligned}
     &\underset{w}{\max} & & \underset{\Sigma \, \in \, U_{\Sigma}}{\max} w^{T} \Sigma w\\
     &\text{s.t.} & & Aw \geq B\\
+    \end{aligned}
 
             
 - **Worst Case Maximum Risk Adjusted Return Ratio Portfolio:**
 
 .. math::
+    \begin{aligned}
     &\underset{w}{\max} & & \cfrac{\underset{\mu \, \in \, U_{\mu}}{\min} \mu w - r_{f}}
     {\underset{\Sigma \, \in \, U_{\Sigma}}{\max} \sqrt{w^{T} \Sigma w}}\\
     &\text{s.t.} & & Aw \geq B\\
+    \end{aligned}
 
 
 - **Worst Case Maximum Utility Portfolio:**
 
 .. math::
+    \begin{aligned}
     &\underset{w}{\max} & & \underset{\mu \, \in \, U_{\mu}}{\min} \mu w
     - \underset{\Sigma \, \in \, U_{\Sigma}}{\max}  \lambda w^{T} \Sigma w\\
     &\text{s.t.} & & Aw \geq B\\
+    \end{aligned}
 
 
 Where:
@@ -164,15 +182,19 @@ Where:
 :math:`U_{\mu}` is the uncertainty set of the mean vector. The uncertainty sets can be:
 
 .. math::
+    \begin{aligned}
     U^{box}_{\mu} & = \left \{ \mu \, | \, | \mu - \hat{\mu} | \leq \delta \right \} \\
     U^{ellip}_{\mu} & = \left \{ \mu \, | \left ( \mu - \hat{\mu} \right ) \Sigma^{-1}_{\mu} \left ( \mu - \hat{\mu} \right )^{T} \leq k^{2}_{\mu} \right \} \\
+    \end{aligned}
 
 
 :math:`U_{\Sigma}` is the uncertainty set of the covariance matrix. The uncertainty sets can be:
 
 .. math::
+    \begin{aligned}
     U^{box}_{\Sigma} & = \left \{ \Sigma \, | \, \Sigma_{lower} \leq \Sigma \leq \Sigma_{upper} \, , \, \Sigma \succeq 0 \right \} \\
     U^{ellip}_{\Sigma} & = \left \{ \Sigma \, | \left ( \text{vec}(\Sigma) - \text{vec}(\hat{\Sigma}) \right ) \Sigma^{-1}_{\Sigma} \left ( \text{vec}(\Sigma) - \text{vec}(\hat{\Sigma}) \right )^{T} \leq k^{2}_{\Sigma} \, , \, \Sigma \succeq 0 \right \}  \\
+    \end{aligned}
 
 
 :math:`Aw \geq B`: is a set of linear constraints.

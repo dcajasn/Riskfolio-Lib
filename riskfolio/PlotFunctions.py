@@ -233,10 +233,11 @@ def plot_frontier(
         risk measures based on returns (not drawdowns). The default is 252.
         
         .. math::
+            \begin{aligned}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
+            \end{aligned}
 
-            
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
 
@@ -692,9 +693,10 @@ def plot_risk_con(
         risk measures based on returns (not drawdowns). The default is 252.
         
         .. math::
+            \begin{aligned}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
-
+            \end{aligned}
             
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
@@ -1067,9 +1069,10 @@ def plot_table(
         risk measures based on returns (not drawdowns). The default is 252.
         
         .. math::
+            \begin{aligned}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
-
+            \end{aligned}
         
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.

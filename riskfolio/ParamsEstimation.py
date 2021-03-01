@@ -583,13 +583,12 @@ def risk_factors(
     factors models :cite:`b-Ross` :cite:`b-Fan`.
 
     .. math::
-        R = \alpha + B F + \epsilon
+        \begin{aligned}
+        R & = \alpha + B F + \epsilon \\
+        \mu_{f} & = \alpha +BE(F) \\
+        \Sigma_{f} & = B \Sigma_{F} B^{T} + \Sigma_{\epsilon} \\
+        \end{aligned}
 
-    .. math::
-        \mu_{f} = \alpha +BE(F)
-
-    .. math::
-        \Sigma_{f} = B \Sigma_{F} B^{T} + \Sigma_{\epsilon}
 
     where:
 
@@ -722,20 +721,15 @@ def black_litterman(
     on the black litterman model :cite:`b-BlackLitterman` :cite:`b-Black1`.
 
     .. math::
-        \Pi = \delta \Sigma w
-
-    .. math::
-        \Pi_{bl} = \left[(\tau\Sigma)^{-1}+ P \Omega^{-1}P \right]^{-1}
+        \begin{aligned}
+        \Pi & = \delta \Sigma w
+        \Pi_{bl} & = \left[(\tau\Sigma)^{-1}+ P \Omega^{-1}P \right]^{-1}
         \left[(\tau\Sigma)^{-1} \Pi + P \Omega^{-1}Q \right]
+        M & = \left((\tau\Sigma)^{-1} + P'\Omega^{-1} P \right)^{-1}
+        \mu_{bl} & = \Pi_{bl} + rf
+        \Sigma_{bl} & = \Sigma + M
+        \end{aligned}
 
-    .. math::
-        M = \left((\tau\Sigma)^{-1} + P'\Omega^{-1} P \right)^{-1}
-
-    .. math::
-        \mu_{bl} = \Pi_{bl} + rf
-
-    .. math::
-        \Sigma_{bl} = \Sigma + M
 
     where:
 

@@ -76,9 +76,10 @@ def jupyter_report(
         risk measures based on returns (not drawdowns). The default is 252.
         
         .. math::
+            \begin{aligned}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
-
+            \end{aligned}
         
     ax : matplotlib axis of size (6,1), optional
         If provided, plot on this axis. The default is None.
@@ -167,9 +168,10 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
         risk measures based on returns (not drawdowns). The default is 252.
         
         .. math::
+            \begin{aligned}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
-
+            \end{aligned}
         
     name : str, optional
         Name or name with path where the Excel report will be saved. If no

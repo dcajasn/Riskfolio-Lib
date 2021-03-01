@@ -595,11 +595,11 @@ class Portfolio(object):
         solves is:
         
         .. math::
-            \begin{align}
+            \begin{aligned}
             &\underset{x}{\text{optimize}} & & F(w)\\
             &\text{s. t.} & & Aw \geq B\\
             & & & \phi_{i}(w) \leq c_{i}\\
-            \end{align}
+            \end{aligned}
         
         Where:
             
@@ -1133,11 +1133,11 @@ class Portfolio(object):
         solves is:
         
         .. math::
-            \begin{align}
+            \begin{aligned}
             &\underset{w}{\min} & & R(w)\\
             &\text{s.t.} & & b \log(w) \geq c\\
             & & & w \geq 0 \\
-            \end{align}
+            \end{aligned}
         
         Where:
         
