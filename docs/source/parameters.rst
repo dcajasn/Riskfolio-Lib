@@ -28,6 +28,7 @@ Module Functions
 
 Bibliography
 ============
+
 .. bibliography:: biblio.bib
    :style: unsrt
    :labelprefix: B
