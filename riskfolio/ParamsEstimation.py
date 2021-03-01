@@ -722,12 +722,12 @@ def black_litterman(
 
     .. math::
         \begin{aligned}
-        \Pi & = \delta \Sigma w
-        \Pi_{bl} & = \left[(\tau\Sigma)^{-1}+ P \Omega^{-1}P \right]^{-1}
-        \left[(\tau\Sigma)^{-1} \Pi + P \Omega^{-1}Q \right]
-        M & = \left((\tau\Sigma)^{-1} + P'\Omega^{-1} P \right)^{-1}
-        \mu_{bl} & = \Pi_{bl} + rf
-        \Sigma_{bl} & = \Sigma + M
+        \Pi & = \delta \Sigma w \\
+        \Pi_{bl} & = \left[(\tau\Sigma)^{-1}+ P^{T} \Omega^{-1}P \right]^{-1}
+        \left[(\tau\Sigma)^{-1} \Pi + P^{T} \Omega^{-1} Q \right] \\
+        M & = \left((\tau\Sigma)^{-1} + P^{T} \Omega^{-1} P \right)^{-1} \\
+        \mu_{bl} & = \Pi_{bl} + rf \\
+        \Sigma_{bl} & = \Sigma + M \\
         \end{aligned}
 
 
