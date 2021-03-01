@@ -625,7 +625,7 @@ def EDaR_Abs(X, alpha=0.05):
         \text{EDaR}_{\alpha}(X) & = \inf_{z>0} \left \{ z
         \ln \left (\frac{M_{\text{DD}(X)}(z^{-1})}{\alpha} \right ) \right \}  \\
         \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \sum_{i=0}^{t}X_{i}
-        \right )- \sum_{i=0}^{j}X_{i} \\
+        \right )- \sum_{i=0}^{j}X_{i}
 
     Parameters
     ----------
