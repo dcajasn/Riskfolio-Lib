@@ -64,11 +64,14 @@ Some of key functionalities that Riskfolio-Lib offers:
 * Worst Case Mean Variance Portfolio optimization.
 * Portfolio optimization with Black Litterman model.
 * Portfolio optimization with Risk Factors model.
+* Portfolio optimization with Black Litterman Bayesian model.
+* Portfolio optimization with Augmented Black Litterman model.
 * Portfolio optimization with constraints on tracking error and turnover.
 * Portfolio optimization with short positions and leveraged portfolios.
 * Tools to build efficient frontier for 13 risk measures.
 * Tools to build linear constraints on assets, asset classes and risk factors.
 * Tools to build views on assets and asset classes.
+* Tools to build views on risk factors.
 * Tools to calculate risk measures.
 * Tools to calculate risk contributions per asset.
 * Tools to calculate uncertainty sets for mean vector and covariance matrix.
@@ -118,6 +121,5 @@ Riskfolio-Lib development takes place on Github: https://github.com/dcajasn/Risk
 The plan for this module is to add more functions that will be very useful
 to asset managers.
 
-* Add Black Litterman for factors models.
 * Add functions to estimate Duration, Convexity, Key Rate Durations and Convexities of bonds without embedded options (for loadings matrix).
 * Add more functions based on suggestion of users.

@@ -240,12 +240,10 @@ def LPM(X, MAR=0, p=1):
     Calculate the First or Second Lower Partial Moment of a returns series.
 
     .. math::
-        \begin{aligned}
         \text{LPM}(X, \text{MAR}, 1) &= \frac{1}{T}\sum_{t=1}^{T}
         \max(\text{MAR} - X_{t}, 0) \\
         \text{LPM}(X, \text{MAR}, 2) &= \left [ \frac{1}{T-1}\sum_{t=1}^{T}
         \max(\text{MAR} - X_{t}, 0)^{2} \right ]^{\frac{1}{2}} \\
-        \end{aligned}
 
 
     Where:
@@ -360,11 +358,11 @@ def EVaR_Hist(X, alpha=0.05):
 
     .. math::
         \text{EVaR}_{\alpha}(X) = \inf_{z>0} \left \{ z
-        \ln \left (\frac{M_{X}(z^{-1})}{\alpha} \right ) \right \}
+        \ln \left (\frac{M_X(z^{-1})}{\alpha} \right ) \right \}
 
     Where:
 
-    :math:`M_{X}(t)` is the moment generating function of X.
+    :math:`M_X(t)` is the moment generating function of X.
 
     Parameters
     ----------
@@ -509,14 +507,11 @@ def DaR_Abs(X, alpha=0.05):
     using uncumpounded cumulative returns.
 
     .. math::
-        \begin{aligned}
         \text{DaR}_{\alpha}(X) & = \max_{j \in (0,T)} \left \{ \text{DD}(X,j)
         \in \mathbb{R}: F_{\text{DD}} \left ( \text{DD}(X,j) \right )< 1-\alpha
         \right \} \\
         \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \sum_{i=0}^{t}X_{i}
-        \right )- \sum_{i=0}^{j}X_{i} \\
-        \end{aligned}
-
+        \right )- \sum_{i=0}^{j}X_{i}
 
     Parameters
     ----------
@@ -627,13 +622,10 @@ def EDaR_Abs(X, alpha=0.05):
     using uncumpounded cumulative returns.
 
     .. math::
-        \begin{aligned}
         \text{EDaR}_{\alpha}(X) & = \inf_{z>0} \left \{ z
         \ln \left (\frac{M_{\text{DD}(X)}(z^{-1})}{\alpha} \right ) \right \}  \\
         \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \sum_{i=0}^{t}X_{i}
         \right )- \sum_{i=0}^{j}X_{i} \\
-        \end{aligned}
-
 
     Parameters
     ----------
@@ -841,14 +833,11 @@ def DaR_Rel(X, alpha=0.05):
     using cumpounded cumulative returns.
 
     .. math::
-        \begin{aligned}
         \text{DaR}_{\alpha}(X) & = \max_{j \in (0,T)} \left \{ \text{DD}(X,j)
         \in \mathbb{R}: F_{\text{DD}} \left ( \text{DD}(X,j) \right )< 1 - \alpha
         \right \} \\
         \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \prod_{i=0}^{t}(1+X_{i})
-        \right )- \prod_{i=0}^{j}(1+X_{i}) \\
-        \end{aligned}
-
+        \right )- \prod_{i=0}^{j}(1+X_{i})
 
     Parameters
     ----------
@@ -959,13 +948,10 @@ def EDaR_Rel(X, alpha=0.05):
     using cumpounded cumulative returns.
 
     .. math::
-        \begin{aligned}
         \text{EDaR}_{\alpha}(X) & = \inf_{z>0} \left \{ z
         \ln \left (\frac{M_{\text{DD}(X)}(z^{-1})}{\alpha} \right ) \right \}  \\
         \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \prod_{i=0}^{t}(1+X_{i})
-        \right )- \prod_{i=0}^{j}(1+X_{i}) \\
-        \end{aligned}
-
+        \right )- \prod_{i=0}^{j}(1+X_{i})
 
     Parameters
     ----------

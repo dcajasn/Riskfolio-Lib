@@ -56,6 +56,7 @@ def assets_constraints(constraints, asset_classes):
                                      'Financial', 'Financial', 'Treasury', 'Treasury'],}
 
         asset_classes = pd.DataFrame(asset_classes)
+        asset_classes = asset_classes.sort_values(by=['Assets'])
 
         constraints = {'Disabled': [False, False, False, False, False, False, False],
                        'Type': ['Classes', 'Classes', 'Assets', 'Assets', 'Classes',
@@ -308,7 +309,8 @@ def factors_constraints(constraints, loadings):
         constraints = {'Disabled': [False, False, False],
                        'Factor': ['MTUM', 'USMV', 'VLUE'],
                        'Sign': ['<=', '<=', '>='],
-                       'Value': [0.9, -1.2, 0.3],}
+                       'Value': [0.9, -1.2, 0.3],
+                       'Relative Factor': ['USMV', '', '']}
 
         constraints = pd.DataFrame(constraints)
 
@@ -339,8 +341,8 @@ def factors_constraints(constraints, loadings):
     ):
         raise ValueError("constraints and loadings must be DataFrames")
 
-    if constraints.shape[1] != 4:
-        raise ValueError("constraints must have four columns")
+    if constraints.shape[1] != 5:
+        raise ValueError("constraints must have five columns")
 
     n = len(constraints)
     data = constraints.fillna("")
@@ -355,6 +357,9 @@ def factors_constraints(constraints, loadings):
             elif data[i][2] == "<=":
                 d = -1
             C1 = loadings[data[i][1]].values
+            if data[i][4] != "":
+                C2 = loadings[data[i][4]].values
+                C1 = C1 - C2
             C.append(C1 * d)
             D.append([data[i][3] * d])
 
@@ -414,7 +419,7 @@ def assets_views(views, asset_classes):
                                       'Financial', 'Financial', 'Treasury', 'Treasury'],}
 
         asset_classes = pd.DataFrame(asset_classes)
-
+        asset_classes = asset_classes.sort_values(by=['Assets'])
 
         views = {'Disabled': [False, False, False, False],
                  'Type': ['Assets', 'Classes', 'Classes', 'Assets'],
@@ -537,5 +542,116 @@ def assets_views(views, asset_classes):
         if Q[i, 0] < 0:
             P[i, :] = -1 * P[i, :]
             Q[i, :] = -1 * Q[i, :]
+
+    return P, Q
+
+
+def factors_views(views, loadings, const=True):
+    r"""
+    Create the factors constraints matrixes C and D of the constraint
+    :math:`Cw \geq D`.
+
+    Parameters
+    ----------
+    constraints : DataFrame of shape (n_constraints, n_fields)
+        Constraints matrix, where n_constraints is the number of constraints
+        and n_fields is the number of fields of constraints matrix, the fields
+        are:
+
+        - Disabled: (bool) indicates if the constraint is enable.
+        - Factor: (str) the name of the factor of the constraint.
+        - Sign: (str) can be '>=' or '<='.
+        - Value: (scalar) is the maximum or minimum value of the factor.
+
+    loadings : DataFrame of shape (n_assets, n_features)
+        The loadings matrix.
+
+    Returns
+    -------
+    P : nd-array
+        The matrix P that shows the relation among factors in each factor view.
+
+    Q : nd-array
+        The matrix Q that shows the expected return of each factor view.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    ::
+
+        loadings = {'const': [0.0004, 0.0002, 0.0000, 0.0006, 0.0001, 0.0003, -0.0003],
+                    'MTUM': [0.1916, 1.0061, 0.8695, 1.9996, 0.0000, 0.0000, 0.0000],
+                    'QUAL': [0.0000, 2.0129, 1.4301, 0.0000, 0.0000, 0.0000, 0.0000],
+                    'SIZE': [0.0000, 0.0000, 0.0000, 0.4717, 0.0000, -0.1857, 0.0000],
+                    'USMV': [-0.7838, -1.6439, -1.0176, -1.4407, 0.0055, 0.5781, 0.0000],
+                    'VLUE': [1.4772, -0.7590, -0.4090, 0.0000, -0.0054, -0.4844, 0.9435]}
+
+        loadings = pd.DataFrame(loadings)
+
+        factorsviews = {'Disabled': [False, False, False],
+                        'Factor': ['MTUM', 'USMV', 'VLUE'],
+                        'Sign': ['<=', '<=', '>='],
+                        'Value': [0.9, -1.2, 0.3],
+                        'Relative Factor': ['USMV', '', '']}
+
+        factorsviews = pd.DataFrame(factorsviews)
+
+
+    The constraint looks like this:
+
+    .. image:: images/factorsviews.png
+
+    It is easier to construct the constraints in excel and then upload to a
+    dataframe.
+
+    To create the matrixes P and Q we use the following command:
+
+    ::
+
+        P, Q = cf.factors_views(factorsviews, loadings, const=True)
+
+
+    The matrixes P and Q looks like this:
+
+    .. image:: images/P_fxQ_f.png
+
+    """
+
+    if not isinstance(views, pd.DataFrame) and not isinstance(loadings, pd.DataFrame):
+        raise ValueError("constraints and loadings must be DataFrames")
+
+    if views.shape[1] != 5:
+        raise ValueError("constraints must have five columns")
+
+    n = len(views)
+    data = views.fillna("")
+    data = data.values.tolist()
+    factorslist = loadings.columns.tolist()
+    if const == True:
+        factorslist = factorslist[1:]
+    m = len(factorslist)
+
+    P = []
+    Q = []
+    for i in range(0, n):
+        if data[i][0] == False:
+            item = factorslist.index(data[i][1])
+            if data[i][2] == ">=":
+                d = 1
+            elif data[i][2] == "<=":
+                d = -1
+            P1 = [0] * m
+            P1[item] = d
+            if data[i][4] != "":
+                item = factorslist.index(data[i][4])
+                P1[item] = -d
+            P.append(P1)
+            Q.append([data[i][3] * d])
+
+    P = np.array(P, ndmin=2)
+    Q = np.array(Q, ndmin=2)
 
     return P, Q

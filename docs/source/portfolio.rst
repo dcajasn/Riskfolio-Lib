@@ -72,12 +72,12 @@ measures are:
 - First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.
-- Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`.
+- Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`, :cite:`a-Cajas1`.
 - Worst Realization (Minimax) :cite:`a-Mansini2`.
 - Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio) :cite:`a-Uryasev1`.
 - Average Drawdown of uncompounded cumulative returns :cite:`a-Uryasev1`.
 - Conditional Drawdown at Risk of uncompounded cumulative returns :cite:`a-Uryasev1`.
-- Entropic Drawdown at Risk of uncompounded cumulative returns.
+- Entropic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas1`.
 - Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
 
 :math:`c_{i}`: are maximum values on each risk measure.
@@ -118,9 +118,9 @@ measures are:
 - First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.
-- Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`.
+- Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`, :cite:`a-Cajas1`.
 - Conditional Drawdown at Risk of uncompounded cumulative returns :cite:`a-Uryasev1`.
-- Entropic Drawdown at Risk of uncompounded cumulative returns.
+- Entropic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas1`.
 - Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
 
 :math:`c`: is an arbitrary constant.

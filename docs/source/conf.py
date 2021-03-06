@@ -28,7 +28,7 @@ author = 'Dany Cajas'
 # The short X.Y version
 version = 'latest'
 # The full version, including alpha/beta/rc tags
-release = '0.1.2'
+release = '0.1.4'
 
 
 # -- General configuration ---------------------------------------------------
@@ -53,7 +53,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
     'sphinxemoji.sphinxemoji',
-#    'sphinx_sitemap',
+    'sphinx_sitemap',
 ]
 
 autodoc_member_order = 'bysource'
@@ -118,8 +118,8 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
-# sitemap_filename = 'sitemap.xml'
-# html_extra_path = ['robots.txt']
+sitemap_filename = 'sitemap.xml'
+html_extra_path = ['robots.txt']
 
 
 # -- Options for HTMLHelp output ---------------------------------------------

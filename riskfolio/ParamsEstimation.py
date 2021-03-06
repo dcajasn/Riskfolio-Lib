@@ -68,8 +68,9 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     method : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
-        The default is 'hist'. The method used to estimate the covariance matrix:
-
+        The method used to estimate the covariance matrix:
+        The default is 'hist'. 
+            
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -568,6 +569,7 @@ def risk_factors(
     X,
     Y,
     B=None,
+    const=False,
     method_mu="hist",
     method_cov="hist",
     feature_selection="stepwise",
@@ -588,8 +590,8 @@ def risk_factors(
         \mu_{f} & = \alpha +BE(F) \\
         \Sigma_{f} & = B \Sigma_{F} B^{T} + \Sigma_{\epsilon} \\
         \end{aligned}
-
-
+        
+        
     where:
 
     :math:`R` is the series returns.
@@ -621,6 +623,9 @@ def risk_factors(
     B : DataFrame of shape (n_assets, n_features), optional
         Loadings matrix. If is not specified, is estimated using
         stepwise regression. The default is None.
+    const : bool, optional
+        Indicate if the loadings matrix has a constant.
+        The default is False.
     method: str 'stepwise' or 'PCR', optional
         Indicate the method used to estimate the loadings matrix.
         The default is 'stepwise'.
@@ -667,7 +672,6 @@ def risk_factors(
         When the value cannot be calculated.
 
     """
-
     if not isinstance(X, pd.DataFrame) and not isinstance(Y, pd.DataFrame):
         raise ValueError("X and Y must be DataFrames")
 
@@ -682,11 +686,12 @@ def risk_factors(
             n_components=n_components,
             verbose=False,
         )
-        X1 = sm.add_constant(X)
     elif not isinstance(B, pd.DataFrame):
         raise ValueError("B must be a DataFrame")
-    elif isinstance(B, pd.DataFrame):
-        X1 = X.copy()
+
+    X1 = X.copy()
+    if const == True or "const" in B.columns.tolist():
+        X1 = sm.add_constant(X)
 
     assets = Y.columns.tolist()
     dates = X.index.tolist()
@@ -718,22 +723,22 @@ def black_litterman(
 ):
     r"""
     Estimate the expected returns vector and covariance matrix based
-    on the black litterman model :cite:`b-BlackLitterman` :cite:`b-Black1`.
+    on the Black Litterman model :cite:`b-BlackLitterman` :cite:`b-Black1`.
 
     .. math::
         \begin{aligned}
-        \Pi & = \delta \Sigma w
-        \Pi_{bl} & = \left[(\tau\Sigma)^{-1}+ P \Omega^{-1}P \right]^{-1}
-        \left[(\tau\Sigma)^{-1} \Pi + P \Omega^{-1}Q \right]
-        M & = \left((\tau\Sigma)^{-1} + P'\Omega^{-1} P \right)^{-1}
-        \mu_{bl} & = \Pi_{bl} + rf
-        \Sigma_{bl} & = \Sigma + M
+        \Pi & = \delta \Sigma w \\
+        \Pi_{BL} & = \left [ (\tau\Sigma)^{-1}+ P^{T} \Omega^{-1}P \right]^{-1}
+        \left[(\tau\Sigma)^{-1} \Pi + P^{T} \Omega^{-1} Q \right] \\
+        M & = \left((\tau\Sigma)^{-1} + P^{T}\Omega^{-1} P \right)^{-1} \\
+        \mu_{BL} & = \Pi_{BL} + r_{f} \\
+        \Sigma_{BL} & = \Sigma + M \\
         \end{aligned}
 
 
     where:
 
-    :math:`rf` is the risk free rate.
+    :math:`r_{f}` is the risk free rate.
 
     :math:`\delta` is the risk aversion factor.
 
@@ -745,19 +750,19 @@ def black_litterman(
 
     :math:`Q` is the views returns matrix.
 
-    :math:`\Omega` is covariance matrix of the error views.
+    :math:`\Omega` is the covariance matrix of the error views.
 
-    :math:`\mu_{bl}` is the mean vector obtained with the black
+    :math:`\mu_{BL}` is the mean vector obtained with the black
     litterman model.
 
-    :math:`\Sigma_{bl}` is the covariance matrix obtained with the black
+    :math:`\Sigma_{BL}` is the covariance matrix obtained with the black
     litterman model.
 
     Parameters
     ----------
-    X : DataFrame of shape (n_samples, n_features)
+    X : DataFrame of shape (n_samples, n_assets)
         Assets matrix, where n_samples is the number of samples and
-        n_features is the number of features.
+        n_assets is the number of assets.
     w : DataFrame of shape (n_assets, 1)
         Weights matrix, where n_assets is the number of assets.
     P : DataFrame of shape (n_views, n_assets)
@@ -771,6 +776,23 @@ def black_litterman(
     eq : bool, optional
         Indicate if use equilibrum or historical excess returns.
         The default is True.
+    method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+        The method used to estimate the expected returns.
+        The default value is 'hist'.
+
+        - 'hist': use historical estimates.
+        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+    method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+        The method used to estimate the covariance matrix:
+        The default is 'hist'. 
+        
+        - 'hist': use historical estimates.
+        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ledoit': use the Ledoit and Wolf Shrinkage method.
+        - 'oas': use the Oracle Approximation Shrinkage method.
+        - 'shrunk': use the basic Shrunk Covariance method.
     **kwargs : dict
         Other variables related to the expected returns and covariance estimation.
 
@@ -823,7 +845,428 @@ def black_litterman(
     mu = PI_ + rf
     mu = mu.T
     cov = S + M
-    w = (1 / (1 + tau)) * inv(delta * cov) @ PI_
+    w = inv(delta * cov) @ PI_
+
+    mu = pd.DataFrame(mu, columns=assets)
+    cov = pd.DataFrame(cov, index=assets, columns=assets)
+    w = pd.DataFrame(w, index=assets)
+
+    return mu, cov, w
+
+
+def augmented_black_litterman(
+    X,
+    w,
+    F=None,
+    B=None,
+    P=None,
+    Q=None,
+    P_f=None,
+    Q_f=None,
+    delta=1,
+    rf=0,
+    eq=True,
+    const=True,
+    method_mu="hist",
+    method_cov="hist",
+    **kwargs
+):
+    r"""
+    Estimate the expected returns vector and covariance matrix based
+    on the Augmented Black Litterman model :cite:`b-WCheung`.
+
+    .. math::
+        \begin{aligned}
+        \Pi^{a} & = \delta \left [ \begin{array}{c} \Sigma \\ \Sigma_{F} B^{T} \\ \end{array} \right ] w \\
+        P^{a} & = \left [ \begin{array}{cc} P & 0 \\ 0 & P_{F} \\ \end{array} \right ] \\
+        Q^{a} & = \left [ \begin{array}{c} Q \\ Q_{F} \\ \end{array} \right ] \\
+        \Sigma^{a} & = \left [ \begin{array}{cc} \Sigma & B \Sigma_{F}\\ \Sigma_{F} B^{T} & \Sigma_{F} \\ \end{array} \right ] \\
+        \Omega^{a} & = \left [ \begin{array}{cc} \Omega & 0 \\ 0 & \Omega_{F} \\ \end{array} \right ] \\
+        \Pi^{a}_{BL} & = \left [ (\tau \Sigma^{a})^{-1} + (P^{a})^{T} (\Omega^{a})^{-1} P^{a} \right ]^{-1}
+        \left [ (\tau\Sigma^{a})^{-1} \Pi^{a} + (P^{a})^{T} (\Omega^{a})^{-1} Q^{a} \right ] \\
+        M^{a} & = \left ( (\tau\Sigma^{a})^{-1} + (P^{a})^{T} (\Omega^{a})^{-1} P^{a} \right )^{-1} \\
+        \mu^{a}_{BL} & = \Pi^{a}_{BL} + r_{f} \\
+        \Sigma^{a}_{BL} & = \Sigma^{a} + M^{a} \\
+        \end{aligned}
+
+
+    where:
+
+    :math:`r_{f}` is the risk free rate.
+
+    :math:`\delta` is the risk aversion factor.
+
+    :math:`B` is the loadings matrix.
+    
+    :math:`\Sigma` is the covariance matrix of assets.
+    
+    :math:`\Sigma_{F}` is the covariance matrix of factors.
+
+    :math:`\Sigma^{a}` is the augmented covariance matrix.
+    
+    :math:`P` is the assets views matrix.
+
+    :math:`Q` is the assets views returns matrix.
+    
+    :math:`P_{F}` is the factors views matrix.
+
+    :math:`Q_{F}` is the factors views returns matrix.    
+
+    :math:`P^{a}` is the augmented views matrix.
+    
+    :math:`Q^{a}` is the augmented views returns matrix.
+    
+    :math:`\Pi^{a}` is the augmented equilibrium excess returns.
+
+    :math:`\Omega` is the covariance matrix of errors of assets views.
+
+    :math:`\Omega_{F}` is the covariance matrix of errors of factors views.
+
+    :math:`\Omega^{a}` is the covariance matrix of errors of augmented views.
+
+    :math:`\mu^{a}_{BL}` is the mean vector obtained with the Augmented Black
+    Litterman model.
+
+    :math:`\Sigma^{a}_{BL}` is the covariance matrix obtained with the Augmented
+    Black Litterman model.
+
+    Parameters
+    ----------
+    X : DataFrame of shape (n_samples, n_assets)
+        Assets matrix, where n_samples is the number of samples and
+        n_assets is the number of features.
+    w : DataFrame of shape (n_assets, 1)
+        Weights matrix, where n_assets is the number of assets.
+    F : DataFrame of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
+    B : DataFrame of shape (n_assets, n_features), optional
+        Loadings matrix. The default is None.    
+    P : DataFrame of shape (n_views, n_assets)
+        Analyst's views matrix, can be relative or absolute.
+    Q : DataFrame of shape (n_views, 1)
+        Expected returns of analyst's views.
+    P_f : DataFrame of shape (n_views, n_features)
+        Analyst's factors views matrix, can be relative or absolute.
+    Q_f : DataFrame of shape (n_views, 1)
+        Expected returns of analyst's factors views.
+    delta : float, optional
+        Risk aversion factor. The default value is 1.
+    rf : scalar, optional
+        Risk free rate. The default is 0.
+    eq : bool, optional
+        Indicate if use equilibrum or historical excess returns.
+        The default is True.
+    const : bool, optional
+        Indicate if use equilibrum or historical excess returns.
+        The default is True.
+    method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+        The method used to estimate the expected returns.
+        The default value is 'hist'.
+
+        - 'hist': use historical estimates.
+        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+    method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+        The method used to estimate the covariance matrix:
+        The default is 'hist'. 
+        
+        - 'hist': use historical estimates.
+        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ledoit': use the Ledoit and Wolf Shrinkage method.
+        - 'oas': use the Oracle Approximation Shrinkage method.
+        - 'shrunk': use the basic Shrunk Covariance method.
+    **kwargs : dict
+        Other variables related to the expected returns and covariance estimation.
+
+    Returns
+    -------
+    mu : DataFrame
+        The mean vector of Augmented Black Litterman model.
+    cov : DataFrame
+        The covariance matrix of Augmented Black Litterman model.
+    w : DataFrame
+        The equilibrium weights of Augmented Black Litterman model, without constraints.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    """
+    if not isinstance(X, pd.DataFrame) and not isinstance(w, pd.DataFrame):
+        raise ValueError("X and w must be DataFrames")
+
+    if not isinstance(F, pd.DataFrame) and not isinstance(B, pd.DataFrame):
+        raise ValueError("F and B must be DataFrames")
+
+    if w.shape[0] > 1 and w.shape[1] > 1:
+        raise ValueError("w must be a column DataFrame")
+
+    assets = X.columns.tolist()
+    N = len(assets)
+
+    w = np.array(w, ndmin=2)
+    if w.shape[0] == 1:
+        w = w.T
+
+    if B is not None:
+        B = np.array(B, ndmin=2)
+        if const == True:
+            alpha = B[:, :1]
+            B = B[:, 1:]
+
+    mu = np.array(mean_vector(X, method=method_mu, **kwargs), ndmin=2)
+    S = np.array(covar_matrix(X, method=method_cov, **kwargs), ndmin=2)
+
+    tau = 1 / X.shape[0]
+
+    if F is not None:
+        mu_f = np.array(mean_vector(F, method=method_mu, **kwargs), ndmin=2)
+        S_f = np.array(covar_matrix(F, method=method_cov, **kwargs), ndmin=2)
+
+    if P is not None and Q is not None and P_f is None and Q_f is None:
+        S_a = S
+        P_a = P
+        Q_a = Q
+        Omega = np.array(np.diag(np.diag(P @ (tau * S) @ P.T)), ndmin=2)
+        Omega_a = Omega
+
+        if eq == True:
+            PI_a_ = delta * S_a @ w
+        elif eq == False:
+            PI_a_ = mu.T - rf
+    elif P is None and Q is None and P_f is not None and Q_f is not None:
+        S_a = S_f
+        P_a = P_f
+        Q_a = Q_f
+        Omega_f = np.array(np.diag(np.diag(P_f @ (tau * S_f) @ P_f.T)), ndmin=2)
+        Omega_a = Omega_f
+
+        if eq == True:
+            PI_a_ = delta * (S_f @ B.T) @ w
+        elif eq == False:
+            PI_a_ = mu_f.T - rf
+
+    elif P is not None and Q is not None and P_f is not None and Q_f is not None:
+        S_a = np.hstack((np.vstack((S, S_f @ B.T)), np.vstack((B @ S_f, S_f))))
+
+        P = np.array(P, ndmin=2)
+        Q = np.array(Q, ndmin=2)
+        P_f = np.array(P_f, ndmin=2)
+        Q_f = np.array(Q_f, ndmin=2)
+        zeros_1 = np.zeros((P_f.shape[0], P.shape[1]))
+        zeros_2 = np.zeros((P.shape[0], P_f.shape[1]))
+        P_a = np.hstack((np.vstack((P, zeros_1)), np.vstack((zeros_2, P_f))))
+        Q_a = np.vstack((Q, Q_f))
+
+        Omega = np.array(np.diag(np.diag(P @ (tau * S) @ P.T)), ndmin=2)
+        Omega_f = np.array(np.diag(np.diag(P_f @ (tau * S_f) @ P_f.T)), ndmin=2)
+        zeros = np.zeros((Omega.shape[0], Omega_f.shape[0]))
+        Omega_a = np.hstack((np.vstack((Omega, zeros.T)), np.vstack((zeros, Omega_f))))
+
+        if eq == True:
+            PI_a_ = delta * (np.vstack((S, S_f @ B.T)) @ w)
+        elif eq == False:
+            PI_a_ = np.vstack((mu.T, mu_f.T)) - rf
+
+    PI_a = inv(inv(tau * S_a) + P_a.T @ inv(Omega_a) @ P_a) @ (
+        inv(tau * S_a) @ PI_a_ + P_a.T @ inv(Omega_a) @ Q_a
+    )
+    M_a = inv(inv(tau * S_a) + P_a.T @ inv(Omega_a) @ P_a)
+    # PI_a = PI_a_ + (tau * S_a @ P_a.T) * inv(P_a @ tau * S_a @ P_a.T + Omega) * (Q_a - P_a @ PI_a_)
+    # M = tau * S_a - (tau * S_a @ P_a.T) * inv(P_a @ tau * S_a @ P_a.T + Omega_a) @ P_a @ tau * S_a
+
+    mu_a = PI_a + rf
+    mu_a = mu_a.T
+    cov_a = S_a + M_a
+    w_a = inv(delta * cov_a) @ PI_a
+
+    if P is None and Q is None and P_f is not None and Q_f is not None:
+        mu_a = mu_a @ B.T
+        cov_a = B @ cov_a @ B.T
+        w_a = inv(delta * cov_a) @ B @ PI_a
+
+    if const == True:
+        mu_a = mu_a[:, :N] + alpha.T
+
+    mu_a = pd.DataFrame(mu_a[:, :N], columns=assets)
+    cov_a = pd.DataFrame(cov_a[:N, :N], index=assets, columns=assets)
+    w_a = pd.DataFrame(w_a[:N, 0], index=assets)
+
+    return mu_a, cov_a, w_a
+
+
+def black_litterman_bayesian(
+    X,
+    F,
+    B,
+    P_f,
+    Q_f,
+    delta=1,
+    rf=0,
+    eq=True,
+    const=True,
+    diag=True,
+    method_mu="hist",
+    method_cov="hist",
+    **kwargs
+):
+    r"""
+    Estimate the expected returns vector and covariance matrix based
+    on the black litterman model :cite:`b-BLB`.
+
+    .. math::
+        \begin{aligned}
+        \Sigma_{F} & = B \Sigma_{F} B^{T} + D \\
+        \overline{\Pi}_{F} & = \left ( \Sigma_{F}^{-1} + P_{F}^{T}\Omega_{F}^{-1}P_{F} \right )^{-1} \left ( \Sigma_{F}^{-1}\Pi_{F} + P_{F}^{T}\Omega_{F}^{-1}Q_{F} \right) \\
+        \overline{\Sigma}_{F} & = \left ( \Sigma_{F}^{-1} + P_{F}^{T}\Omega_{F}^{-1}P_{F} \right )^{-1} \\
+        \Sigma_{BLB} & = \left( \Sigma^{-1} - \Sigma^{-1} B \left( \overline{\Sigma}_{F}^{-1} + B^{T}\Sigma^{-1}B \right)^{-1} B^{T}\Sigma^{-1} \right )^{-1} \\
+        \mu_{BLB} & = \Sigma_{BLB} \left ( \Sigma^{-1} B \left( \overline{\Sigma}_{F}^{-1} +B^{T}\Sigma^{-1}B \right)^{-1} \overline{\Sigma}_{F}^{-1} \overline{\Pi}_{F} \right ) + r_{f} \\
+        \end{aligned}
+
+
+    where:
+
+    :math:`r_{f}` is the risk free rate.
+
+    :math:`B` is the loadings matrix.
+
+    :math:`D` is a diagonal matrix of variance of errors of a factor model.
+
+    :math:`\Sigma` is the covariance matrix obtained with a factor model.
+
+    :math:`\Pi_{F}` is the equilibrium excess returns of factors.
+
+    :math:`\overline{\Pi}_{F}` is the posterior excess returns of factors.
+    
+    :math:`\Sigma_{F}` is the covariance matrix of factors.
+
+    :math:`\overline{\Sigma}_{F}` is the posterior covariance matrix of factors.
+    
+    :math:`P_{F}` is the factors views matrix.
+
+    :math:`Q_{F}` is the factors views returns matrix.    
+
+    :math:`\Omega_{F}` is the covariance matrix of errors of factors views.
+
+    :math:`\mu_{BLB}` is the mean vector obtained with the Black
+    Litterman Bayesian model or posterior predictive mean.
+
+    :math:`\Sigma_{BLB}` is the covariance matrix obtained with the Black
+    Litterman Bayesian model or posterior predictive covariance.
+
+    Parameters
+    ----------
+    X : DataFrame of shape (n_samples, n_assets)
+        Assets matrix, where n_samples is the number of samples and
+        n_assets is the number of assets.
+    F : DataFrame of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
+    B : DataFrame of shape (n_assets, n_features), optional
+        Loadings matrix. The default is None.
+    P_f : DataFrame of shape (n_views, n_features)
+        Analyst's factors views matrix, can be relative or absolute.
+    Q_f : DataFrame of shape (n_views, 1)
+        Expected returns of analyst's factors views.
+    delta : float, optional
+        Risk aversion factor. The default value is 1.
+    rf : scalar, optional
+        Risk free rate. The default is 0.
+    eq : bool, optional
+        Indicate if use equilibrum or historical excess returns.
+        The default is True.
+    const : bool, optional
+        Indicate if the loadings matrix has a constant.
+        The default is True.
+    diag : bool, optional
+        Indicate if we use the diagonal matrix to calculate covariance matrix
+        of factor model, only useful when we work with a factor model based on 
+        a regresion model (only equity portfolio).
+        The default is True.
+    method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+        The method used to estimate the expected returns.
+        The default value is 'hist'.
+
+        - 'hist': use historical estimates.
+        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+    method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+        The method used to estimate the covariance matrix:
+        The default is 'hist'. 
+        
+        - 'hist': use historical estimates.
+        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ledoit': use the Ledoit and Wolf Shrinkage method.
+        - 'oas': use the Oracle Approximation Shrinkage method.
+        - 'shrunk': use the basic Shrunk Covariance method.
+    **kwargs : dict
+        Other variables related to the expected returns and covariance estimation.
+
+    Returns
+    -------
+    mu : DataFrame
+        The mean vector of Black Litterman model.
+    cov : DataFrame
+        The covariance matrix of Black Litterman model.
+    w : DataFrame
+        The equilibrium weights of Black Litterman model, without constraints.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    """
+    if not isinstance(X, pd.DataFrame):
+        raise ValueError("X must be DataFrames")
+
+    if not isinstance(F, pd.DataFrame) and not isinstance(B, pd.DataFrame):
+        raise ValueError("F and B must be DataFrames")
+
+    assets = X.columns.tolist()
+
+    if B is not None:
+        B = np.array(B, ndmin=2)
+        if const == True:
+            alpha = B[:, :1]
+            B = B[:, 1:]
+
+    mu_f = np.array(mean_vector(F, method=method_mu, **kwargs), ndmin=2)
+    mu_f = (mu_f - rf).T
+
+    tau = 1 / X.shape[0]
+
+    S_f = np.array(covar_matrix(F, method=method_cov, **kwargs), ndmin=2)
+    S = B @ S_f @ B.T
+
+    if diag == True:
+        D = X.to_numpy() - F @ B.T
+        D = np.diag(D.var())
+        S = S + D
+
+    Omega_f = np.array(np.diag(np.diag(P_f @ (tau * S_f) @ P_f.T)), ndmin=2)
+
+    S_hat = inv(inv(S_f) + P_f.T @ inv(Omega_f) @ P_f)
+
+    Pi_hat = S_hat @ (inv(S_f) @ mu_f + P_f.T @ inv(Omega_f) @ Q_f)
+
+    S_blb = inv(inv(S) - inv(S) @ B @ inv(inv(S_hat) + B.T @ inv(S) @ B) @ B.T @ inv(S))
+
+    Pi_blb = (
+        S_blb @ inv(S) @ B @ inv(inv(S_hat) + B.T @ inv(S) @ B) @ inv(S_hat) @ Pi_hat
+    )
+
+    mu = Pi_blb + rf
+
+    if const == True:
+        mu = mu + alpha
+    mu = mu.T
+    cov = S_blb
+    w = inv(delta * cov) @ mu.T
 
     mu = pd.DataFrame(mu, columns=assets)
     cov = pd.DataFrame(cov, index=assets, columns=assets)

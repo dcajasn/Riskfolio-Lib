@@ -6,7 +6,7 @@ import riskfolio.PlotFunctions as plf
 import riskfolio.RiskFunctions as rk
 
 
-__LICENSE__ = """Copyright (c) 2020-2021, Dany Cajas
+__LICENSE__ = """Copyright (c) 2020-2021, Dany Cajas 
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -76,10 +76,11 @@ def jupyter_report(
         risk measures based on returns (not drawdowns). The default is 252.
         
         .. math::
-            \begin{aligned}
+            
+            \begin{align}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
-            \end{aligned}
+            \end{align}
         
     ax : matplotlib axis of size (6,1), optional
         If provided, plot on this axis. The default is None.
@@ -168,10 +169,11 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
         risk measures based on returns (not drawdowns). The default is 252.
         
         .. math::
-            \begin{aligned}
+            
+            \begin{align}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
-            \end{aligned}
+            \end{align}
         
     name : str, optional
         Name or name with path where the Excel report will be saved. If no
@@ -509,6 +511,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
     merge_format.set_text_wrap()
     worksheet1.set_row(1, 215)
     worksheet1.merge_range("A2:K2", __LICENSE__.replace("2021", year), merge_format)
+    worksheet1.write(2, 0, "https://github.com/dcajasn/Riskfolio-Lib")
     worksheet1.write(31, 0, "(1) Annualized, multiplied by " + str(t_factor))
     worksheet1.write(32, 0, "(2) Annualized, multiplied by √" + str(t_factor))
     worksheet1.write(33, 0, "(3) Based on uncompounded cumulated returns")

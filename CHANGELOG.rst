@@ -6,6 +6,13 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Version 0.1.4
+=============
+
+- Add Black Litterman with factors in two flavors: Black Litterman Bayesian model and Augmented Black Litterman model.
+- Implement factors_views, a function that allows to design views on risk factors for Black Litterman with factors.
+- Repair some bugs.
+
 Version 0.1.2
 =============
 

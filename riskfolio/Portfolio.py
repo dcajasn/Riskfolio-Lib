@@ -306,12 +306,23 @@ class Portfolio(object):
 
         Parameters
         ----------
-        method_mu : string
-            Method used to estimate mean vector.
-            The default is 'hist'.
-        method_cov : string
-            Method used to estimate covariance matrix.
-            The default is 'hist'.
+        method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+            The method used to estimate the expected returns.
+            The default value is 'hist'.
+    
+            - 'hist': use historical estimates.
+            - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+            The method used to estimate the covariance matrix:
+            The default is 'hist'. 
+            
+            - 'hist': use historical estimates.
+            - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ledoit': use the Ledoit and Wolf Shrinkage method.
+            - 'oas': use the Oracle Approximation Shrinkage method.
+            - 'shrunk': use the basic Shrunk Covariance method.
         **kwargs : dict
             All aditional parameters of mean_vector and covar_matrix functions.
 
@@ -326,7 +337,13 @@ class Portfolio(object):
         self.cov = pe.covar_matrix(self.returns, method=method_cov, **kwargs)
         value = af.is_pos_def(self.cov, threshold=1e-8)
         if value == False:
-            print("You must convert self.cov to a positive definite matrix")
+            try:
+                self.cov = af.cov_fix(self.cov, method="clipped", threshold=1e-5)
+                value = af.is_pos_def(self.cov, threshold=1e-8)
+                if value == False:
+                    print("You must convert self.cov to a positive definite matrix")
+            except:
+                print("You must convert self.cov to a positive definite matrix")
 
     def blacklitterman_stats(
         self,
@@ -360,6 +377,23 @@ class Portfolio(object):
         eq: bool, optional
             Indicates if use equilibrum or historical excess returns.
             The default is True.
+        method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+            The method used to estimate the expected returns.
+            The default value is 'hist'.
+    
+            - 'hist': use historical estimates.
+            - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+            The method used to estimate the covariance matrix:
+            The default is 'hist'. 
+            
+            - 'hist': use historical estimates.
+            - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ledoit': use the Ledoit and Wolf Shrinkage method.
+            - 'oas': use the Oracle Approximation Shrinkage method.
+            - 'shrunk': use the basic Shrunk Covariance method.
         **kwargs : dict
             Other variables related to the mean and covariance estimation.
 
@@ -398,7 +432,13 @@ class Portfolio(object):
 
         value = af.is_pos_def(self.cov_bl, threshold=1e-8)
         if value == False:
-            print("You must convert self.cov_bl to a positive definite matrix")
+            try:
+                self.cov_bl = af.cov_fix(self.cov_bl, method="clipped", threshold=1e-5)
+                value = af.is_pos_def(self.cov_bl, threshold=1e-8)
+                if value == False:
+                    print("You must convert self.cov_bl to a positive definite matrix")
+            except:
+                print("You must convert self.cov_bl to a positive definite matrix")
 
     def factors_stats(self, method_mu="hist", method_cov="hist", **kwargs):
         r"""
@@ -407,12 +447,23 @@ class Portfolio(object):
 
         Parameters
         ----------
-        method_mu : string
-            Method used to estimate mean vector.
-            The default is 'hist'.
-        method_cov : string
-            Method used to estimate covariance matrix.
-            The default is 'hist'.
+        method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+            The method used to estimate the expected returns.
+            The default value is 'hist'.
+    
+            - 'hist': use historical estimates.
+            - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+            The method used to estimate the covariance matrix:
+            The default is 'hist'. 
+            
+            - 'hist': use historical estimates.
+            - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ledoit': use the Ledoit and Wolf Shrinkage method.
+            - 'oas': use the Oracle Approximation Shrinkage method.
+            - 'shrunk': use the basic Shrunk Covariance method.
         **kwargs : dict
             All aditional parameters of risk_factors function.
 
@@ -437,7 +488,203 @@ class Portfolio(object):
 
         value = af.is_pos_def(self.cov_fm, threshold=1e-8)
         if value == False:
-            print("You must convert self.cov_fm to a positive definite matrix")
+            try:
+                self.cov_fm = af.cov_fix(self.cov_fm, method="clipped", threshold=1e-5)
+                value = af.is_pos_def(self.cov_fm, threshold=1e-8)
+                if value == False:
+                    print("You must convert self.cov_fm to a positive definite matrix")
+            except:
+                print("You must convert self.cov_fm to a positive definite matrix")
+
+    def blfactors_stats(
+        self,
+        flavor="BLB",
+        B=None,
+        P=None,
+        Q=None,
+        P_f=None,
+        Q_f=None,
+        rf=0,
+        w=None,
+        delta=None,
+        eq=True,
+        const=False,
+        diag=False,
+        method_mu="hist",
+        method_cov="hist",
+        kwargs_1=None,
+        kwargs_2=None,
+    ):
+        r"""
+        Calculate the inputs that will be used by the optimization method when
+        we select the input model='BL'.
+
+        Parameters
+        ----------
+        flavor : str
+            Model used, can be 'BLB' for Black Litterman Bayesian or 'ABL' for
+            Augmented Black Litterman. The default value is 'BLB'.
+        B : DataFrame of shape (n_assets, n_features)
+            Loadings matrix. The default value is None.
+        P : DataFrame of shape (n_views, n_assets)
+            Analyst's views matrix, can be relative or absolute.
+        Q: DataFrame of shape (n_views, 1)
+            Expected returns of analyst's views.
+        P_f : DataFrame of shape (n_views, n_assets)
+            Analyst's factors views matrix, can be relative or absolute.
+        Q_f: DataFrame of shape (n_views, 1)
+            Expected returns of analyst's factors views.
+        delta: float
+            Risk aversion factor. The default value is 1.
+        rf: scalar, optional
+            Risk free rate. The default is 0.
+        w : DataFrame of shape (n_assets, 1)
+            Weights matrix, where n_assets is the number of assets.
+            The default is None.
+        eq: bool, optional
+            Indicates if use equilibrum or historical excess returns.
+            The default is True.
+        const : bool, optional
+            Indicate if the loadings matrix has a constant.
+            The default is False.
+        diag : bool, optional
+            Indicate if we use the diagonal matrix to calculate covariance matrix
+            of factor model, only useful when we work with a factor model based on 
+            a regresion model (only equity portfolio).
+            The default is False.
+        method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+            The method used to estimate the expected returns.
+            The default value is 'hist'.
+    
+            - 'hist': use historical estimates.
+            - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+            The method used to estimate the covariance matrix:
+            The default is 'hist'. 
+            
+            - 'hist': use historical estimates.
+            - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ledoit': use the Ledoit and Wolf Shrinkage method.
+            - 'oas': use the Oracle Approximation Shrinkage method.
+            - 'shrunk': use the basic Shrunk Covariance method.
+        kwargs_1 : dict
+            Other variables related to the loadings matrix estimation.
+        kwargs_2 : dict
+            Other variables related to the factors Black Litterman model selected.
+
+        See Also
+        --------
+        riskfolio.ParamsEstimation.augmented_black_litterman
+        riskfolio.ParamsEstimation.black_litterman_bayesian
+
+        """
+        X = self.returns
+        F = self.factors
+
+        if w is None:
+            w = np.array(self.benchweights, ndmin=2)
+
+        if delta is None:
+            a = np.array(self.mu, ndmin=2) @ np.array(w, ndmin=2)
+            delta = (a - rf) / (
+                np.array(w, ndmin=2).T
+                @ np.array(self.cov, ndmin=2)
+                @ np.array(w, ndmin=2)
+            )
+            delta = delta.item()
+
+        if B is None:
+            B = pe.loadings_matrix(X=F, Y=X, **kwargs_1)
+            const = True
+
+        if flavor == "BLB":
+            if isinstance(kwargs_1, dict):
+                mu, cov, w = pe.black_litterman_bayesian(
+                    X=X,
+                    F=F,
+                    B=B,
+                    P_f=P_f,
+                    Q_f=Q_f,
+                    delta=delta,
+                    rf=rf,
+                    eq=eq,
+                    const=const,
+                    diag=diag,
+                    method_mu=method_mu,
+                    method_cov=method_cov,
+                    **kwargs_2
+                )
+            else:
+                mu, cov, w = pe.black_litterman_bayesian(
+                    X=X,
+                    F=F,
+                    B=B,
+                    P_f=P_f,
+                    Q_f=Q_f,
+                    delta=delta,
+                    rf=rf,
+                    eq=eq,
+                    const=const,
+                    diag=diag,
+                    method_mu=method_mu,
+                    method_cov=method_cov,
+                )
+
+        elif flavor == "ABL":
+            if isinstance(kwargs_1, dict):
+                mu, cov, w = pe.augmented_black_litterman(
+                    X=X,
+                    w=w,
+                    F=F,
+                    B=B,
+                    P=P,
+                    Q=Q,
+                    P_f=P_f,
+                    Q_f=Q_f,
+                    delta=delta,
+                    rf=rf,
+                    eq=eq,
+                    const=const,
+                    method_mu=method_mu,
+                    method_cov=method_cov,
+                    **kwargs_2
+                )
+            else:
+                mu, cov, w = pe.augmented_black_litterman(
+                    X=X,
+                    w=w,
+                    F=F,
+                    B=B,
+                    P=P,
+                    Q=Q,
+                    P_f=P_f,
+                    Q_f=Q_f,
+                    delta=delta,
+                    rf=rf,
+                    eq=eq,
+                    const=const,
+                    method_mu=method_mu,
+                    method_cov=method_cov,
+                )
+
+        self.mu_bl_fm = mu
+        self.cov_bl_fm = cov
+
+        value = af.is_pos_def(self.cov_bl_fm, threshold=1e-8)
+        if value == False:
+            try:
+                self.cov_bl_fm = af.cov_fix(
+                    self.cov_bl_fm, method="clipped", threshold=1e-5
+                )
+                value = af.is_pos_def(self.cov_bl_fm, threshold=1e-8)
+                if value == False:
+                    print(
+                        "You must convert self.cov_bl_fm to a positive definite matrix"
+                    )
+            except:
+                print("You must convert self.cov_bl_fm to a positive definite matrix")
 
     def wc_stats(
         self,
@@ -595,11 +842,11 @@ class Portfolio(object):
         solves is:
         
         .. math::
-            \begin{aligned}
+            \begin{align}
             &\underset{x}{\text{optimize}} & & F(w)\\
             &\text{s. t.} & & Aw \geq B\\
             & & & \phi_{i}(w) \leq c_{i}\\
-            \end{aligned}
+            \end{align}
         
         Where:
             
@@ -619,6 +866,7 @@ class Portfolio(object):
             - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
             - 'BL': use estimates of expected return vector and covariance matrix based on the Black Litterman model.
             - 'FM': use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.
+            - 'BLFM': use estimates of expected return vector and covariance matrix based on Black Litterman applied to a Risk Factor model specified by the user.
             
         rm : str, optional
             The risk measure used to optimze the portfolio.
@@ -654,9 +902,16 @@ class Portfolio(object):
             Risk aversion factor of the 'Utility' objective function.
             The default is 2.
         hist : bool, optional
-            Indicate if uses historical or factor estimation of returns to 
-            calculate risk measures that depends on scenarios (All except
-            'MV' risk measure). The default is True.
+            Indicate what kind of returns are used to calculate risk measures
+            that depends on scenarios (All except 'MV' risk measure).
+            If model = 'BL', True means historical covariance and returns and
+            False Black Litterman covariance and historical returns.
+            If model = 'FM', True means historical covariance and returns and
+            False Risk Factor model for covariance and returns.
+            If model = 'BL_FM', True means historical covariance and returns,
+            False Black Litteram with Risk Factor model for covariance and
+            Risk Factor model for returns, and '2' Risk Factor model for
+            covariance and returns. The default is True.
 
         Returns
         -------
@@ -703,6 +958,10 @@ class Portfolio(object):
                 sigma = np.array(self.cov, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
                 nav = np.array(self.nav, ndmin=2)
+            elif hist == 2:
+                sigma = np.array(self.cov_fm, ndmin=2)
+                returns = np.array(self.returns_fm, ndmin=2)
+                nav = np.array(self.nav_fm, ndmin=2)
 
         # General Model Variables
 
@@ -716,7 +975,12 @@ class Portfolio(object):
         # MV Model Variables
 
         g = cv.Variable(nonneg=True)
-        G = np.linalg.cholesky(sigma)
+
+        try:
+            G = np.linalg.cholesky(sigma)
+        except:
+            G = sqrtm(sigma)
+
         risk1 = g ** 2
         devconstraints = [cv.SOC(g, G.T @ w)]
 
@@ -1179,10 +1443,12 @@ class Portfolio(object):
             The vector of risk constraints per asset.
             The default is 1/n (number of assets).
         hist : bool, optional
-            Indicate if uses historical or factor estimation of returns to 
-            calculate risk measures that depends on scenarios (All except
-            'MV' risk measure). The default is True.
-
+            Indicate what kind of returns are used to calculate risk measures
+            that depends on scenarios (All except 'MV' risk measure). 
+            If model = 'FM', True means historical covariance and returns and
+            False Risk Factor model for covariance and returns. The default is
+            True.
+            
         Returns
         -------
         w : DataFrame
@@ -1225,7 +1491,12 @@ class Portfolio(object):
         # MV Model Variables
 
         g = cv.Variable(nonneg=True)
-        G = np.linalg.cholesky(sigma)
+
+        try:
+            G = np.linalg.cholesky(sigma)
+        except:
+            G = sqrtm(sigma)
+
         risk1 = g ** 2
         devconstraints = [cv.SOC(g, G.T @ w)]
 
@@ -1510,7 +1781,10 @@ class Portfolio(object):
             risk += k_sigma * cv.norm(sqrtm(cov_sigma) @ (cv.vec(X) + cv.vec(Z)))
             constraints += [M >> 0, Z >> 0]
         else:
-            G = np.linalg.cholesky(sigma)
+            try:
+                G = np.linalg.cholesky(sigma)
+            except:
+                G = sqrtm(sigma)
             risk = g ** 2
             constraints += [cv.SOC(g, G.T @ w)]
 
@@ -1649,9 +1923,16 @@ class Portfolio(object):
         rf : scalar, optional
             Risk free rate. The default is 0.
         hist : bool, optional
-            Indicate if uses historical or factor estimation of returns to
-            calculate risk measures that depends on scenarios (All except
-            'MV' risk measure). The default is True.
+            Indicate what kind of returns are used to calculate risk measures
+            that depends on scenarios (All except 'MV' risk measure). 
+            If model = 'BL', True means historical covariance and returns and
+            False Black Litterman covariance and historical returns.
+            If model = 'FM', True means historical covariance and returns and
+            False Risk Factor model for covariance and returns.
+            If model = 'BL_FM', True means historical covariance and returns,
+            False Black Litteram with Risk Factor model for covariance and
+            Risk Factor model for returns, and '2' Risk Factor model for
+            covariance and returns. The default is True.
 
         Returns
         -------
@@ -1714,9 +1995,16 @@ class Portfolio(object):
         rf : scalar, optional
             Risk free rate. The default is 0.
         hist : bool, optional
-            Indicate if uses historical or factor estimation of returns to
-            calculate risk measures that depends on scenarios (All except
-            'MV' risk measure). The default is True.
+            Indicate what kind of returns are used to calculate risk measures
+            that depends on scenarios (All except 'MV' risk measure).
+            If model = 'BL', True means historical covariance and returns and
+            False Black Litterman covariance and historical returns.
+            If model = 'FM', True means historical covariance and returns and
+            False Risk Factor model for covariance and returns.
+            If model = 'BL_FM', True means historical covariance and returns,
+            False Black Litteram with Risk Factor model for covariance and
+            Risk Factor model for returns, and '2' Risk Factor model for
+            covariance and returns. The default is True.
 
         Returns
         -------
@@ -1729,8 +2017,8 @@ class Portfolio(object):
         assets (more than 100) and you are using a scenario based risk measure
         (all except standard deviation). It's preferable to use frontier_limits
         method (faster) to know the range of expected return and expected risk.
-
         """
+
         mu = None
         sigma = None
         returns = None
@@ -1758,15 +2046,19 @@ class Portfolio(object):
             returns = np.array(self.returns, ndmin=2)
             nav = np.array(self.nav, ndmin=2)
         elif model == "BL_FM":
-            mu = np.array(self.mu_bl_fm_2, ndmin=2)
+            mu = np.array(self.mu_bl_fm, ndmin=2)
             if hist == False:
-                sigma = np.array(self.cov_bl_fm_2, ndmin=2)
+                sigma = np.array(self.cov_bl_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
                 nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
                 nav = np.array(self.nav, ndmin=2)
+            elif hist == 2:
+                sigma = np.array(self.cov_fm, ndmin=2)
+                returns = np.array(self.returns_fm, ndmin=2)
+                nav = np.array(self.nav_fm, ndmin=2)
 
         alpha = self.alpha
 
