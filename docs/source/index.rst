@@ -134,5 +134,6 @@ Module Plans
 The plan for this library is to add more functions that will be very useful
 for students, academics and practitioners.
 
+* Add Hierarchical Equal Risk Contribution portfolio and other risk parity portfolios based on vanilla risk parity model.
 * Add functions to estimate Duration, Convexity, Key Rate Durations and Convexities of bonds without embedded options (for loadings matrix).
 * Add more functions based on suggestion of users.

@@ -56,6 +56,8 @@ class Portfolio(object):
     binequality : 1d-array, optional
         The matrix :math:`B` of the linear constraint :math:`A \geq B`.
         The default is None.
+    lowerret : float, optional
+        Constraint on min level of expected return. The default is None.
     upperdev : float, optional
         Constraint on max level of standard deviation. The default is None.
     uppermad : float, optional
@@ -108,6 +110,7 @@ class Portfolio(object):
         benchweights=None,
         ainequality=None,
         binequality=None,
+        lowerret=None,
         upperdev=None,
         uppermad=None,
         uppersdev=None,
@@ -136,6 +139,7 @@ class Portfolio(object):
         self._benchweights = benchweights
         self._ainequality = ainequality
         self._binequality = binequality
+        self.lowerret = lowerret
         self.upperdev = upperdev
         self.uppermad = uppermad
         self.uppersdev = uppersdev
@@ -1177,6 +1181,14 @@ class Portfolio(object):
                 TO_1 = cv.abs(w - c) * 1000
                 constraints += [TO_1 <= self.turnover * 1000]
 
+        # Problem return Constraints
+
+        if self.lowerret is not None:
+            if obj == "Sharpe":
+                constraints += [ret >= self.lowerret * k]
+            else:
+                constraints += [ret >= self.lowerret]
+
         # Problem risk Constraints
 
         if self.upperdev is not None:
@@ -2179,6 +2191,7 @@ class Portfolio(object):
 
         """
         cons = [
+            "lowerret",
             "upperdev",
             "uppermad",
             "uppersdev",
