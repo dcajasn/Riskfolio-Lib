@@ -12,10 +12,18 @@ Mac OS X, Windows, and Linux
 Riskfolio-lib only supports Python 3.7+ on OS X, Windows, and Linux. I recommend
 using pip for installation.
 
-1. (Windows only) Download the Visual Studio build tools for Python 3
-(`download <https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=BuildTools&rel=16>`_).
+1. It is highly recommendable that you must have installed a scientific Python distribution like `anaconda <https://www.anaconda.com/products/individual>` or `winpython <https://winpython.github.io>` (Windows only).
 
-2. Install ``Riskfolio-lib``.
+2. If you don't have installed cvxpy, you must follow cvxpy installation `instructions <https://www.cvxpy.org/install/index.html>`_ before installing Riskfolio-Lib.
+
+3. If you still have problems installing cvxpy, you can download cvxpy wheel from this `link <link https://www.lfd.uci.edu/~gohlke/pythonlibs/#cvxpy>` and install using pip.
+
+  ::
+
+      pip install path/cvxpy‑version.whl
+
+
+4. Install ``Riskfolio-lib``.
 
   ::
 
