@@ -663,7 +663,7 @@ def EDaR_Abs(X, alpha=0.05):
         DD.append(-(peak - i))
     del DD[0]
 
-    (value, t) = EVaR_Hist(np.array(DD), alpha=0.05)
+    (value, t) = EVaR_Hist(np.array(DD), alpha=alpha)
 
     return (value, t)
 
@@ -989,7 +989,7 @@ def EDaR_Rel(X, alpha=0.05):
         DD.append(-(peak - i) / peak)
     del DD[0]
 
-    (value, t) = EVaR_Hist(np.array(DD), alpha=0.05)
+    (value, t) = EVaR_Hist(np.array(DD), alpha=alpha)
 
     return (value, t)
 
