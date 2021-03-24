@@ -12,11 +12,11 @@ Mac OS X, Windows, and Linux
 Riskfolio-lib only supports Python 3.7+ on OS X, Windows, and Linux. I recommend
 using pip for installation.
 
-1. It is highly recommendable that you must have installed a scientific Python distribution like `anaconda <https://www.anaconda.com/products/individual>` or `winpython <https://winpython.github.io>` (Windows only).
+1. It is highly recommendable that you must have installed a scientific Python distribution like `anaconda <https://www.anaconda.com/products/individual>`_ or `winpython <https://winpython.github.io>`_ (Windows only).
 
 2. If you don't have installed cvxpy, you must follow cvxpy installation `instructions <https://www.cvxpy.org/install/index.html>`_ before installing Riskfolio-Lib.
 
-3. If you still have problems installing cvxpy, you can download cvxpy wheel from this `link <link https://www.lfd.uci.edu/~gohlke/pythonlibs/#cvxpy>` and install using pip.
+3. If you still have problems installing cvxpy, you can download cvxpy wheel from this `link <link https://www.lfd.uci.edu/~gohlke/pythonlibs/#cvxpy>`_ and install using pip.
 
   ::
 
@@ -28,7 +28,17 @@ using pip for installation.
   ::
 
       pip install riskfolio-lib
+
+
+5. To run some examples is necessary to install `yfinance <https://pypi.org/project/yfinance/>`_.
+
+  ::
+
+      pip install yfinance
   
+
+6. To run some examples is necessary to install MOSEK, you must follow MOSEK installation `instructions <https://docs.mosek.com/9.2/install/installation.html>`_. To get a MOSEK license you must go to this `link <https://www.mosek.com/products/academic-licenses/>`_.
+
 
 Dependencies
 ============
