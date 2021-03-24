@@ -25,6 +25,7 @@ INSTALL_REQUIRES = [
     'statsmodels>=0.10.1',
     'arch>=4.15',
     'xlsxwriter>=1.3.7',
+    'yfinance>=0.1.55',
 ]
 
 
