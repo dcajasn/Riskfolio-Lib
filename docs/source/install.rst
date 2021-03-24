@@ -16,7 +16,7 @@ using pip for installation.
 
 2. If you don't have installed cvxpy, you must follow cvxpy installation `instructions <https://www.cvxpy.org/install/index.html>`_ before installing Riskfolio-Lib.
 
-3. If you still have problems installing cvxpy, you can download cvxpy wheel from this `link <link https://www.lfd.uci.edu/~gohlke/pythonlibs/#cvxpy>`_ and install using pip.
+3. If you still have problems installing cvxpy, you can download cvxpy wheel from this `link <https://www.lfd.uci.edu/~gohlke/pythonlibs/#cvxpy>`_ and install using pip.
 
   ::
 
