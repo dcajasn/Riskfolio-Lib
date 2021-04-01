@@ -28,6 +28,7 @@ def jupyter_report(
     height=6,
     width=14,
     t_factor=252,
+    ini_days=1,
 ):
     r"""
     Create a matplotlib report with useful information to analyze risk and
@@ -81,7 +82,13 @@ def jupyter_report(
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
             \end{align}
-        
+
+    ini_days : float, optional
+        If provided, it is the number of days of compounding for first return.
+        It is used to calculate Compound Annual Growth Rate (CAGR). This value
+        depend on assumptions used in t_factor, for example if data is monthly
+        you can use 21 (252 days per year) or 30 (360 days per year). The
+        default is 1 for daily returns.        
     ax : matplotlib axis of size (6,1), optional
         If provided, plot on this axis. The default is None.
 
@@ -118,7 +125,9 @@ def jupyter_report(
         gridspec_kw={"height_ratios": [2, 1, 1.5, 1, 1, 1]},
     )
 
-    ax[0] = plf.plot_table(returns, w, MAR=rf, alpha=alpha, t_factor=t_factor, ax=ax[0])
+    ax[0] = plf.plot_table(
+        returns, w, MAR=rf, alpha=alpha, t_factor=t_factor, ini_days=ini_days, ax=ax[0]
+    )
 
     ax[2] = plf.plot_pie(
         w=w,
@@ -148,7 +157,7 @@ def jupyter_report(
     return ax
 
 
-def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
+def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, ini_days=1, name="report"):
     r"""
     Create an Excel report (with formulas) with useful information to analyze
     risk and profitability of investment portfolios.
@@ -174,7 +183,13 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
             \end{align}
-        
+
+    ini_days : float, optional
+        If provided, it is the number of days of compounding for first return.
+        It is used to calculate Compound Annual Growth Rate (CAGR). This value
+        depend on assumptions used in t_factor, for example if data is monthly
+        you can use 21 (252 days per year) or 30 (360 days per year). The
+        default is 1 for daily returns.        
     name : str, optional
         Name or name with path where the Excel report will be saved. If no
         path is provided the report will be saved in the same path of
@@ -200,7 +215,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, name="report"):
     portfolios = w.columns.tolist()
     dates = returns.index.tolist()
     year = str(datetime.datetime.now().year)
-    days = (returns.index[-1] - returns.index[0]).days + 1
+    days = (returns.index[-1] - returns.index[0]).days + ini_days
 
     # Create a Pandas Excel writer using XlsxWriter as the engine.
     writer = pd.ExcelWriter(name + ".xlsx", engine="xlsxwriter")

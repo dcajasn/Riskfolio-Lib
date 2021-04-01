@@ -70,7 +70,7 @@ def MAD(X):
         raise ValueError("returns must have Tx1 size")
 
     value = np.mean(np.absolute(a - np.mean(a, axis=0)), axis=0)
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -148,7 +148,7 @@ def VaR_Hist(X, alpha=0.05):
     sorted_a = np.sort(a, axis=0)
     index = int(np.ceil(alpha * len(sorted_a)) - 1)
     value = -sorted_a[index]
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -193,7 +193,7 @@ def CVaR_Hist(X, alpha=0.05):
         sum_var = sum_var + sorted_a[i] - sorted_a[index]
 
     value = -sorted_a[index] - sum_var / (alpha * len(sorted_a))
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -230,7 +230,7 @@ def WR(X):
 
     sorted_a = np.sort(a, axis=0)
     value = -sorted_a[0]
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -333,7 +333,7 @@ def Entropic_RM(X, z=1, alpha=0.05):
 
     value = np.mean(np.exp(-1 / z * a), axis=0)
     value = z * (np.log(value) + np.log(1 / alpha))
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -347,7 +347,7 @@ def _Entropic_RM(z, X, alpha=0.05):
 
     value = np.mean(np.exp(-1 / z * a), axis=0)
     value = z * (np.log(value) + np.log(1 / alpha))
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -442,7 +442,7 @@ def MDD_Abs(X):
         if DD > value:
             value = DD
 
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -496,7 +496,7 @@ def ADD_Abs(X):
     else:
         value = value / (n - 1)
 
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -550,7 +550,7 @@ def DaR_Abs(X, alpha=0.05):
     sorted_DD = np.sort(np.array(DD), axis=0)
     index = int(np.ceil(alpha * len(sorted_DD)) - 1)
     value = -sorted_DD[index]
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -611,7 +611,7 @@ def CDaR_Abs(X, alpha=0.05):
     for i in range(0, index + 1):
         sum_var = sum_var + sorted_DD[i] - sorted_DD[index]
     value = -sorted_DD[index] - sum_var / (alpha * len(sorted_DD))
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -718,7 +718,7 @@ def UCI_Abs(X):
     else:
         value = np.sqrt(value / (n - 1))
 
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -767,7 +767,7 @@ def MDD_Rel(X):
         if DD > value:
             value = DD
 
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -822,7 +822,7 @@ def ADD_Rel(X):
     else:
         value = value / (n - 1)
 
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -876,7 +876,7 @@ def DaR_Rel(X, alpha=0.05):
     sorted_DD = np.sort(np.array(DD), axis=0)
     index = int(np.ceil(alpha * len(sorted_DD)) - 1)
     value = -sorted_DD[index]
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -937,7 +937,7 @@ def CDaR_Rel(X, alpha=0.05):
     for i in range(0, index + 1):
         sum_var = sum_var + sorted_DD[i] - sorted_DD[index]
     value = -sorted_DD[index] - sum_var / (alpha * len(sorted_DD))
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
@@ -1044,7 +1044,7 @@ def UCI_Rel(X):
     else:
         value = np.sqrt(value / (n - 1))
 
-    value = value.item()
+    value = np.array(value).item()
 
     return value
 
