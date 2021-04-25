@@ -9,10 +9,11 @@ Changelog
 Version 0.2.0
 =============
 
-- Add Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization models.
+- Implement Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization models.
+- Implement the function plot_bar() that help us to plot portfolios with negative weights.
 - Add the option to build dollar neutral portfolios.
-- Add an example of how to build Logarithmic Mean Risk (Kelly Criterion) portfolios.
-- Add an example of how to build dollar neutral portfolios.
+- Add an example that shows how to build Logarithmic Mean Risk (Kelly Criterion) portfolios.
+- Add an example that shows how to build dollar neutral portfolios.
 
 Version 0.1.5
 =============
