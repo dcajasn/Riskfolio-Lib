@@ -19,11 +19,11 @@ one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & \mu w\\
+    &\underset{w}{\max} & & R (w)\\
     &\text{s.t.} & & Aw \geq B\\
-    & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+    & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,13] \\
+    & & & R (w) \geq \overline{\mu}
     \end{aligned}
-
 
 - **Minimum Risk Portfolio:**
 
@@ -31,7 +31,8 @@ one of the following 4 objective functions:
     \begin{aligned}
     &\underset{w}{\min} & & \phi_{k}(w)\\
     &\text{s.t.} & & Aw \geq B\\
-    & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+    & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,13] \\
+    & & & R (w) \geq \overline{\mu}
     \end{aligned}
 
 
@@ -39,9 +40,10 @@ one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & \frac{\mu w - r_{f}}{\phi_{k}(w)}\\
+    &\underset{w}{\max} & & \frac{R (w) - r_{f}}{\phi_{k}(w)}\\
     &\text{s.t.} & & Aw \geq B\\
-    & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+    & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,13] \\
+    & & & R (w) \geq \overline{\mu}
     \end{aligned}
 
 
@@ -49,17 +51,28 @@ one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & \mu w - \lambda \phi_{k}(w)\\
+    &\underset{w}{\max} & & R (w) - \lambda \phi_{k}(w)\\
     &\text{s.t.} & & Aw \geq B\\
-    & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,10] \\
+    & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,13] \\
+    & & & R (w) \geq \overline{\mu}
     \end{aligned}
 
 
 Where:
-    
-:math:`\mu`: is the vector of expected returns.
+
+:math:`R (w)` is the return function, posible values are:
+
+    - :math:`\mu w`: arithmetic return.
+    - :math:`\mu w - 0.5 w^{\tau} \Sigma w`: approximate logarithmic return :cite:`a-Thorp`.
+    - :math:`\frac{1}{T} \sum^{T}_{i=1} \ln (1+ r_{i} w)`: exact logarithmic return :cite:`a-Cajas2`.
 
 :math:`w`: is the vector of weights of the optimum portfolio.
+
+:math:`\mu`: is the vector of expected returns.
+
+:math:`\Sigma`: is the covariance matrix of assets returns.
+
+:math:`r`: is the matrix of assets returns.
 
 :math:`Aw \geq B`: is a set of linear constraints.
 

@@ -25,14 +25,14 @@ with [pandas](https://pandas.pydata.org/) data structures.
 
 Some of key functionalities that Riskfolio-Lib offers:
 
-* Mean Risk Portfolio optimization with 4 objective functions:
+* Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 4 objective functions:
 
     * Minimum Risk.
     * Maximum Return.
     * Maximum Utility Function.
     * Maximum Risk Adjusted Return Ratio.
 
-* Mean Risk Portfolio optimization with 13 convex risk measures:
+* Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 13 convex risk measures:
 
     * Standard Deviation.
     * Semi Standard Deviation.
@@ -48,7 +48,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Entropic Drawdown at Risk (EDaR).
     * Ulcer Index.
 
-* Risk Parity Portfolio optimization with 10 convex risk measures:
+* Risk Parity Portfolio Optimization with 10 convex risk measures:
 
     * Standard Deviation.
     * Semi Standard Deviation.
@@ -61,7 +61,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Entropic Drawdown at Risk (EDaR).
     * Ulcer Index.
 
-* Worst Case Mean Variance Portfolio optimization.
+* Worst Case Mean Variance Portfolio Optimization.
 * Portfolio optimization with Black Litterman model.
 * Portfolio optimization with Risk Factors model.
 * Portfolio optimization with Black Litterman Bayesian model.

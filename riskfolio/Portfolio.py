@@ -22,11 +22,14 @@ class Portfolio(object):
         Indicate if the portfolio consider short positions (negative weights).
         The default is False.
     uppersht : float, optional
-        Indicate the maximum value of the sum of short positions.
-        The default is 0.2.
+        Indicate the maximum value of the sum of absolute values of short
+        positions (negative weights). The default is 0.2.
     upperlng : float, optional
         Indicate the maximum value of the sum of long positions (positive
         weights). The default is 1.
+    budget : float, optional
+        Indicate the maximum value of the sum of positions (positive
+        weights) and short positions (negative weights). The default is 1.
     factors : DataFrame, optional
         A dataframe that containts the returns of the factors.
         The default is None.
@@ -99,6 +102,7 @@ class Portfolio(object):
         sht=False,
         uppersht=0.2,
         upperlng=1,
+        budget=1,
         factors=None,
         alpha=0.05,
         kindbench=True,
@@ -132,6 +136,7 @@ class Portfolio(object):
         self.sht = sht
         self.uppersht = uppersht
         self.upperlng = upperlng
+        self.budget = budget
         self._factors = factors
         self.alpha = alpha
         self.kindbench = kindbench
@@ -171,6 +176,7 @@ class Portfolio(object):
         self.returns_fm = None
         self.nav_fm = None
         self.z_EVaR = None
+        self.z_EDaR = None
 
         # Inputs of Worst Case Optimization Models
 
@@ -838,7 +844,7 @@ class Portfolio(object):
         self.k_sigma = k_sigma
 
     def optimization(
-        self, model="Classic", rm="MV", obj="Sharpe", rf=0, l=2, hist=True
+        self, model="Classic", rm="MV", obj="Sharpe", kelly=False, rf=0, l=2, hist=True
     ):
         r"""
         This method that calculates the optimum portfolio according to the
@@ -899,6 +905,11 @@ class Portfolio(object):
             - 'Sharpe': Maximize the risk adjusted return ratio based on the selected risk measure.
             - 'MaxRet': Maximize the expected return of the portfolio.
                 
+        kelly : str, optional
+            Method used to calculate mean return. Posible values are False for
+            arithmetic mean return, "approx" for approximate mean logarithmic 
+            return using first and second moment and "exact" for mean logarithmic
+            return. The default is False.
         rf : float, optional
             Risk free rate, must be in the same period of assets returns.
             The default is 0.
@@ -974,19 +985,32 @@ class Portfolio(object):
         k = cv.Variable((1, 1))
         rf0 = rf
         n = returns.shape[0]
-        ret = mu @ w
+        gr = cv.Variable((n, 1))
 
         # MV Model Variables
 
         g = cv.Variable(nonneg=True)
-
-        try:
-            G = np.linalg.cholesky(sigma)
-        except:
-            G = sqrtm(sigma)
-
-        risk1 = g ** 2
+        G = sqrtm(sigma)
+        risk1 = g
         devconstraints = [cv.SOC(g, G.T @ w)]
+
+        # Return Variables
+
+        if model == "Classic":
+            if kelly == "exact":
+                if obj == "Sharpe":
+                    ret = 1 / n * cv.sum(gr) - rf0 * k
+                else:
+                    ret = 1 / n * cv.sum(cv.log(1 + returns @ w))
+            elif kelly == "approx":
+                if obj == "Sharpe":
+                    ret = mu @ w - 0.5 * cv.quad_over_lin(g, k)
+                else:
+                    ret = mu @ w - 0.5 * g ** 2
+            elif kelly == False:
+                ret = mu @ w
+        else:
+            ret = mu @ w
 
         # MAD Model Variables
 
@@ -1078,42 +1102,44 @@ class Portfolio(object):
 
         # Entropic Value at Risk Model Variables
 
-        t = cv.Variable((1, 1))
-        s = cv.Variable((1, 1), nonneg=True)
+        t1 = cv.Variable((1, 1))
+        s1 = cv.Variable((1, 1), nonneg=True)
         ui = cv.Variable((n, 1))
-        risk12 = t + s * np.log(1 / (alpha * n))
+        risk12 = t1 + s1 * np.log(1 / (alpha * n))
 
         if obj == "Sharpe":
-            evarconstraints = [cv.sum(ui) * 1000 <= s * 1000]
+            evarconstraints = [cv.sum(ui) * 1000 <= s1 * 1000]
             evarconstraints += [
                 cv.constraints.ExpCone(
-                    -X * 1000 - t * 1000, np.ones((n, 1)) @ s * 1000, ui * 1000
+                    -X * 1000 - t1 * 1000, np.ones((n, 1)) @ s1 * 1000, ui * 1000
                 )
             ]
         else:
-            evarconstraints = [cv.sum(ui) <= s]
-            evarconstraints += [cv.constraints.ExpCone(-X - t, np.ones((n, 1)) @ s, ui)]
+            evarconstraints = [cv.sum(ui) <= s1]
+            evarconstraints += [
+                cv.constraints.ExpCone(-X - t1, np.ones((n, 1)) @ s1, ui)
+            ]
 
         # Entropic Drawdown at Risk Model Variables
 
-        t1 = cv.Variable((1, 1))
-        s1 = cv.Variable((1, 1), nonneg=True)
+        t2 = cv.Variable((1, 1))
+        s2 = cv.Variable((1, 1), nonneg=True)
         uj = cv.Variable((n, 1))
-        risk13 = t1 + s1 * np.log(1 / (alpha * n))
+        risk13 = t2 + s2 * np.log(1 / (alpha * n))
 
         if obj == "Sharpe":
-            edarconstraints = [cv.sum(uj) * 1000 <= s1 * 1000]
+            edarconstraints = [cv.sum(uj) * 1000 <= s2 * 1000]
             edarconstraints += [
                 cv.constraints.ExpCone(
-                    U[1:] * 1000 - X1 * 1000 - t1 * 1000,
-                    np.ones((n, 1)) @ s1 * 1000,
+                    U[1:] * 1000 - X1 * 1000 - t2 * 1000,
+                    np.ones((n, 1)) @ s2 * 1000,
                     uj * 1000,
                 )
             ]
         else:
-            edarconstraints = [cv.sum(uj) <= s1]
+            edarconstraints = [cv.sum(uj) <= s2]
             edarconstraints += [
-                cv.constraints.ExpCone(U[1:] - X1 - t1, np.ones((n, 1)) @ s1, uj)
+                cv.constraints.ExpCone(U[1:] - X1 - t2, np.ones((n, 1)) @ s2, uj)
             ]
 
         # Tracking Error Model Variables
@@ -1127,28 +1153,22 @@ class Portfolio(object):
         # Problem aditional linear constraints
 
         if obj == "Sharpe":
-            constraints = [
-                cv.sum(w) == self.upperlng * k,
-                k >= 0,
-                mu @ w - rf0 * k == 1,
-            ]
+            constraints = [cv.sum(w) == self.budget * k, k * 1000 >= 0]
             if self.sht == False:
                 constraints += [w <= self.upperlng * k, w * 1000 >= 0]
             elif self.sht == True:
                 constraints += [
-                    w <= self.upperlng * k,
-                    w >= -self.uppersht * k,
-                    cv.sum(cv.neg(w)) <= self.uppersht * k,
+                    cv.sum(cv.pos(w)) * 1000 <= self.upperlng * k * 1000,
+                    cv.sum(cv.neg(w)) * 1000 <= self.uppersht * k * 1000,
                 ]
         else:
-            constraints = [cv.sum(w) == self.upperlng]
+            constraints = [cv.sum(w) == self.budget]
             if self.sht == False:
                 constraints += [w <= self.upperlng, w * 1000 >= 0]
             elif self.sht == True:
                 constraints += [
-                    w <= self.upperlng,
-                    w >= -self.uppersht,
-                    cv.sum(cv.neg(w)) <= self.uppersht,
+                    cv.sum(cv.pos(w)) * 1000 <= self.upperlng * 1000,
+                    cv.sum(cv.neg(w)) * 1000 <= self.uppersht * 1000,
                 ]
 
         if self.ainequality is not None and self.binequality is not None:
@@ -1355,7 +1375,24 @@ class Portfolio(object):
 
         # Defining objective function
         if obj == "Sharpe":
-            objective = cv.Minimize(risk * 1000)
+            if model == "Classic":
+                if kelly == "exact":
+                    constraints += [risk <= 1]
+                    constraints += [
+                        cv.constraints.ExpCone(gr, np.ones((n, 1)) @ k, k + returns @ w)
+                    ]
+                    objective = cv.Maximize(ret * 1000)
+                elif kelly == "approx":
+                    constraints += [risk <= 1]
+                    if rm != "MV":
+                        constraints += devconstraints
+                    objective = cv.Maximize(ret)
+                elif kelly == False:
+                    constraints += [mu @ w - rf0 * k == 1]
+                    objective = cv.Minimize(risk * 1000)
+            else:
+                constraints += [mu @ w - rf0 * k == 1]
+                objective = cv.Minimize(risk * 1000)
         elif obj == "MinRisk":
             objective = cv.Minimize(risk * 1000)
         elif obj == "Utility":
@@ -1378,15 +1415,19 @@ class Portfolio(object):
 
             if obj == "Sharpe":
                 weights = np.array(w.value / k.value, ndmin=2).T
-                if rm == "EVaR":
-                    self.z_EVaR = s.value / k.value
+                if rm == "EVaR" or self.upperEVaR is not None:
+                    self.z_EVaR = s1.value / k.value
+                if rm == "EDaR" or self.upperEDaR is not None:
+                    self.z_EDaR = s2.value / k.value
             else:
                 weights = np.array(w.value, ndmin=2).T
-                if rm == "EVaR":
-                    self.z_EVaR = s.value
+                if rm == "EVaR" or self.upperEVaR is not None:
+                    self.z_EVaR = s1.value
+                if rm == "EDaR" or self.upperEDaR is not None:
+                    self.z_EDaR = s2.value
 
             if self.sht == False:
-                weights = np.abs(weights) / np.sum(np.abs(weights))
+                weights = np.abs(weights) / np.sum(np.abs(weights)) * self.budget
 
             for j in self.assetslist:
                 portafolio[j].append(weights[0, self.assetslist.index(j)])
@@ -1410,7 +1451,7 @@ class Portfolio(object):
         
         .. math::
             \begin{aligned}
-            &\underset{w}{\min} & & R(w)\\
+            &\underset{w}{\min} & & \phi(w)\\
             &\text{s.t.} & & b \log(w) \geq c\\
             & & & w \geq 0 \\
             \end{aligned}
@@ -1503,12 +1544,7 @@ class Portfolio(object):
         # MV Model Variables
 
         g = cv.Variable(nonneg=True)
-
-        try:
-            G = np.linalg.cholesky(sigma)
-        except:
-            G = sqrtm(sigma)
-
+        G = sqrtm(sigma)
         risk1 = g ** 2
         devconstraints = [cv.SOC(g, G.T @ w)]
 
@@ -1574,28 +1610,28 @@ class Portfolio(object):
 
         # Entropic Value at Risk Model Variables
 
-        t = cv.Variable((1, 1))
-        s = cv.Variable((1, 1), nonneg=True)
+        t1 = cv.Variable((1, 1))
+        s1 = cv.Variable((1, 1), nonneg=True)
         ui = cv.Variable((n, 1))
-        risk12 = t + s * np.log(1 / (alpha * n))
-        evarconstraints = [cv.sum(ui) * 1000 <= s * 1000]
+        risk12 = t1 + s1 * np.log(1 / (alpha * n))
+        evarconstraints = [cv.sum(ui) * 1000 <= s1 * 1000]
         evarconstraints += [
             cv.constraints.ExpCone(
-                -X * 1000 - t * 1000, np.ones((n, 1)) @ s * 1000, ui * 1000
+                -X * 1000 - t1 * 1000, np.ones((n, 1)) @ s1 * 1000, ui * 1000
             )
         ]
 
         # Entropic Drawdown at Risk Model Variables
 
-        t1 = cv.Variable((1, 1))
-        s1 = cv.Variable((1, 1), nonneg=True)
+        t2 = cv.Variable((1, 1))
+        s2 = cv.Variable((1, 1), nonneg=True)
         uj = cv.Variable((n, 1))
-        risk13 = t1 + s1 * np.log(1 / (alpha * n))
-        edarconstraints = [cv.sum(uj) * 1000 <= s1 * 1000]
+        risk13 = t2 + s2 * np.log(1 / (alpha * n))
+        edarconstraints = [cv.sum(uj) * 1000 <= s2 * 1000]
         edarconstraints += [
             cv.constraints.ExpCone(
-                U[1:] * 1000 - X1 * 1000 - t1 * 1000,
-                np.ones((n, 1)) @ s1 * 1000,
+                U[1:] * 1000 - X1 * 1000 - t2 * 1000,
+                np.ones((n, 1)) @ s2 * 1000,
                 uj * 1000,
             )
         ]
@@ -1793,27 +1829,28 @@ class Portfolio(object):
             risk += k_sigma * cv.norm(sqrtm(cov_sigma) @ (cv.vec(X) + cv.vec(Z)))
             constraints += [M >> 0, Z >> 0]
         else:
-            try:
-                G = np.linalg.cholesky(sigma)
-            except:
-                G = sqrtm(sigma)
+            G = sqrtm(sigma)
             risk = g ** 2
             constraints += [cv.SOC(g, G.T @ w)]
 
         if obj == "Sharpe":
-            constraints += [cv.sum(w) == k, k >= 0]
+            constraints += [cv.sum(w) == self.budget * k, k >= 0]
             if self.sht == False:
                 constraints += [w <= k * self.upperlng, w >= 0]
             elif self.sht == True:
-                constraints += [w <= k * self.upperlng, w >= -k * self.uppersht]
-                constraints += [cv.sum(cv.neg(w)) <= k * self.uppersht]
+                constraints += [
+                    cv.sum(cv.pos(w)) <= self.upperlng * k,
+                    cv.sum(cv.neg(w)) <= self.uppersht * k,
+                ]
         else:
-            constraints += [cv.sum(w) == 1]
+            constraints += [cv.sum(w) == self.budget]
             if self.sht == False:
                 constraints += [w <= self.upperlng, w >= 0]
             if self.sht == True:
-                constraints += [w <= self.upperlng, w >= -self.uppersht]
-                constraints += [cv.sum(cv.neg(w)) <= self.uppersht]
+                constraints += [
+                    cv.sum(cv.pos(w)) <= self.upperlng,
+                    cv.sum(cv.neg(w)) <= self.uppersht,
+                ]
 
         # Tracking Error Model Variables
 
@@ -1887,8 +1924,13 @@ class Portfolio(object):
                 if w.value is not None:
                     break
 
-            weights = np.array(w.value, ndmin=2).T
-            weights = np.abs(weights) / np.sum(np.abs(weights))
+            if obj == "Sharpe":
+                weights = np.array(w.value / k.value, ndmin=2).T
+            else:
+                weights = np.array(w.value, ndmin=2).T
+
+            if self.sht == False:
+                weights = np.abs(weights) / np.sum(np.abs(weights)) * self.budget
 
             for j in self.assetslist:
                 portafolio[j].append(weights[0, self.assetslist.index(j)])
@@ -1904,7 +1946,7 @@ class Portfolio(object):
 
         return wc_optimum
 
-    def frontier_limits(self, model="Classic", rm="MV", rf=0, hist=True):
+    def frontier_limits(self, model="Classic", rm="MV", kelly=False, rf=0, hist=True):
         r"""
         Method that calculates the minimum risk and maximum return portfolios
         available with current assets and constraints.
@@ -1932,6 +1974,11 @@ class Portfolio(object):
             - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
+        kelly : str, optional
+            Method used to calculate mean return. Posible values are False for
+            arithmetic mean return, "approx" for approximate mean logarithmic 
+            return using first and second moment and "exact" for mean logarithmic
+            return. The default is False.
         rf : scalar, optional
             Risk free rate. The default is 0.
         hist : bool, optional
@@ -1959,10 +2006,10 @@ class Portfolio(object):
         """
 
         w_min = self.optimization(
-            model=model, rm=rm, obj="MinRisk", rf=rf, l=0, hist=hist
+            model=model, rm=rm, obj="MinRisk", kelly=kelly, rf=rf, l=0, hist=hist
         )
         w_max = self.optimization(
-            model=model, rm=rm, obj="MaxRet", rf=rf, l=0, hist=hist
+            model=model, rm=rm, obj="MaxRet", kelly=kelly, rf=rf, l=0, hist=hist
         )
 
         if w_min is not None and w_max is not None:
@@ -1972,7 +2019,9 @@ class Portfolio(object):
         else:
             raise NameError("The limits of the frontier can't be found")
 
-    def efficient_frontier(self, model="Classic", rm="MV", points=20, rf=0, hist=True):
+    def efficient_frontier(
+        self, model="Classic", rm="MV", kelly=False, points=20, rf=0, hist=True
+    ):
         r"""
         Method that calculates several portfolios in the efficient frontier
         of the selected risk measure, available with current assets and
@@ -2000,7 +2049,12 @@ class Portfolio(object):
             - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
             - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
-        
+
+        kelly : str, optional
+            Method used to calculate mean return. Posible values are False for
+            arithmetic mean return, "approx" for approximate mean logarithmic 
+            return using first and second moment and "exact" for mean logarithmic
+            return. The default is False.
         points : scalar, optional
             Number of point calculated from the efficient frontier.
             The default is 50.
@@ -2074,7 +2128,7 @@ class Portfolio(object):
 
         alpha = self.alpha
 
-        limits = self.frontier_limits(model=model, rm=rm, rf=rf, hist=hist)
+        limits = self.frontier_limits(model=model, rm=rm, kelly=kelly, rf=rf, hist=hist)
 
         w_min = np.array(limits.iloc[:, 0], ndmin=2).T
         w_max = np.array(limits.iloc[:, 1], ndmin=2).T
@@ -2166,12 +2220,24 @@ class Portfolio(object):
             try:
                 if n == 0:
                     w = self.optimization(
-                        model=model, rm=rm, obj="MinRisk", rf=rf, l=0, hist=hist
+                        model=model,
+                        rm=rm,
+                        obj="MinRisk",
+                        kelly=kelly,
+                        rf=rf,
+                        l=0,
+                        hist=hist,
                     )
                 else:
                     setattr(self, risk_lims[item], risks[i])
                     w = self.optimization(
-                        model=model, rm=rm, obj="MaxRet", rf=rf, l=0, hist=hist
+                        model=model,
+                        rm=rm,
+                        obj="MaxRet",
+                        kelly=kelly,
+                        rf=rf,
+                        l=0,
+                        hist=hist,
                     )
                 if w is not None:
                     n += 1

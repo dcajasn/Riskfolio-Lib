@@ -10,6 +10,7 @@ __all__ = [
     "plot_series",
     "plot_frontier",
     "plot_pie",
+    "plot_bar",
     "plot_frontier_area",
     "plot_risk_con",
     "plot_hist",
@@ -158,6 +159,7 @@ def plot_frontier(
     cov=None,
     returns=None,
     rm="MV",
+    kelly=False,
     rf=0,
     alpha=0.05,
     cmap="viridis",
@@ -205,6 +207,10 @@ def plot_frontier(
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
+    kelly : bool, optional
+        Method used to calculate mean return. Posible values are False for
+        arithmetic mean return and True for mean logarithmic return. The default
+        is False.
     rf : float, optional
         Risk free rate or minimum aceptable return. The default is 0.
     alpha : float, optional
@@ -310,7 +316,11 @@ def plot_frontier(
 
     mu_ = np.array(mu, ndmin=2)
 
-    ax.set_ylabel("Expected Return")
+    if kelly == False:
+        ax.set_ylabel("Expected Arithmetic Return")
+    elif kelly == True:
+        ax.set_ylabel("Expected Logarithmic Return")
+
     item = rmeasures.index(rm)
     x_label = rm_names[item] + " (" + rm + ")"
     ax.set_xlabel("Expected Risk - " + x_label)
@@ -328,7 +338,10 @@ def plot_frontier(
             weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha
         )
 
-        ret = mu_ @ weights
+        if kelly == False:
+            ret = mu_ @ weights
+        elif kelly == True:
+            ret = 1 / returns.shape[0] * np.sum(np.log(1 + returns @ weights))
         ret = ret.item() * t_factor
 
         if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
@@ -350,13 +363,14 @@ def plot_frontier(
             risk = rk.Sharpe_Risk(
                 weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha
             )
-            ret = mu_ @ weights
+            if kelly == False:
+                ret = mu_ @ weights
+            elif kelly == True:
+                ret = 1 / returns.shape[0] * np.sum(np.log(1 + returns @ weights))
             ret = ret.item() * t_factor
 
             if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
                 risk = risk * t_factor ** 0.5
-
-            ratio = (ret - rf) / risk
 
             X2.append(risk)
             Y2.append(ret)
@@ -406,7 +420,7 @@ def plot_pie(
     w : DataFrame of shape (n_assets, 1)
         Portfolio weights.
     title : str, optional
-        Title of the chart. The default is ''.
+        Title of the chart. The default is "".
     others : float, optional
         Percentage of others section. The default is 0.05.
     nrow : int, optional
@@ -543,6 +557,237 @@ def plot_pie(
             horizontalalignment=horizontalalignment,
             **kw
         )
+
+    fig = plt.gcf()
+    fig.tight_layout()
+
+    return ax
+
+
+def plot_bar(
+    w,
+    title="",
+    kind="v",
+    others=0.05,
+    nrow=25,
+    cpos="tab:green",
+    cneg="darkorange",
+    cothers="dodgerblue",
+    height=6,
+    width=10,
+    ax=None,
+):
+    r"""
+    Create a bar chart with portfolio weights.
+
+    Parameters
+    ----------
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
+    title : str, optional
+        Title of the chart. The default is "".
+    kind : str, optional
+        Kind of bar plot, "v" for vertical bars and "h" for horizontal bars.
+        The default is "v".
+    others : float, optional
+        Percentage of others section. The default is 0.05.
+    nrow : int, optional
+        Max number of bars that be plotted. The default is 25.
+    cpos : str, optional
+        Color for positives weights. The default is 'tab:green'.
+    cneg : str, optional
+        Color for negatives weights. The default is 'darkorange'.
+    cothers : str, optional
+        Color for others bar. The default is 'dodgerblue'.
+    height : float, optional
+        Height of the image in inches. The default is 10.
+    width : float, optional
+        Width of the image in inches. The default is 10.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax :  matplotlib axis.
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = plf.plot_bar(w, title='Portafolio', kind="v", others=0.05,
+                          nrow=25, height=6, width=10, ax=None)
+
+    .. image:: images/Bar_Chart.png
+
+
+    """
+
+    if not isinstance(w, pd.DataFrame):
+        raise ValueError("w must be a DataFrame")
+
+    if w.shape[1] > 1 and w.shape[0] == 0:
+        w = w.T
+    elif w.shape[1] > 1 and w.shape[0] > 0:
+        raise ValueError("w must be a column DataFrame")
+
+    if ax is None:
+        ax = plt.gca()
+        fig = plt.gcf()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+
+    labels = w.index.tolist()
+    sizes = w.iloc[:, 0].tolist()
+    abs_sizes = [np.absolute(s) for s in sizes]
+    sizes2 = pd.DataFrame([labels, abs_sizes, sizes]).T
+    sizes2.columns = ["labels", "abs_values", "values"]
+    sizes2 = sizes2.sort_values(by=["abs_values"], ascending=False)
+    sizes2.index = [i for i in range(0, len(labels))]
+    sizes3 = sizes2.cumsum()
+    sizes3["abs_values"] = sizes3["abs_values"] / sizes3["abs_values"].max()
+
+    l1 = sizes3[sizes3["abs_values"] >= 1 - others].index.tolist()
+    if len(l1) > 0:
+        l1 = l1[0]
+    else:
+        l1 = -1
+
+    l2 = sizes2[sizes2["abs_values"] < 0.01].index.tolist()
+    if len(l2) > 0:
+        l2 = l2[0]
+    else:
+        l2 = -1
+
+    if l1 > nrow:
+        a1 = sizes2["abs_values"].sum() - sizes2[sizes2.index <= l1]["abs_values"].sum()
+        a2 = sizes2["values"].sum() - sizes2[sizes2.index <= l1]["values"].sum()
+        item = pd.DataFrame(["Others", a1, a2]).T
+        item.columns = ["labels", "abs_values", "values"]
+        sizes2 = sizes2[sizes2.index <= l1]
+        sizes2 = sizes2.sort_values(by=["values"], ascending=False)
+        sizes2 = sizes2.append(item)
+    elif l2 > 0:
+        a1 = sizes2["abs_values"].sum() - sizes2[sizes2.index <= l2]["abs_values"].sum()
+        a2 = sizes2["values"].sum() - sizes2[sizes2.index <= l2]["values"].sum()
+        item = pd.DataFrame(["Others", a1, a2]).T
+        item.columns = ["labels", "abs_values", "values"]
+        sizes2 = sizes2[sizes2.index <= l2]
+        sizes2 = sizes2.sort_values(by=["values"], ascending=False)
+        sizes2 = sizes2.append(item)
+    else:
+        sizes2 = sizes2.sort_values(by=["values"], ascending=False)
+
+    sizes = sizes2["values"].tolist()
+    labels = sizes2["labels"].tolist()
+    sizes2 = ["{0:.1%}".format(i) for i in sizes]
+
+    if title == "":
+        title = "Portfolio Composition"
+
+    ax.set_title(title)
+
+    if kind == "v":
+        sizes = np.array(sizes)
+        labels = np.array(labels)
+        ax.bar(labels, np.where(sizes >= 0, sizes, 0), color=cpos, width=0.5)
+        ax.bar(labels, np.where(sizes < 0, sizes, 0), color=cneg, width=0.5)
+
+        if l1 > nrow:
+            ax.bar(
+                labels, np.where(labels == "Others", sizes, 0), color=cothers, width=0.5
+            )
+            b = "Others (Sum Abs < " + "{:.1%}".format(others) + ")"
+        elif l2 > 0:
+            ax.bar(
+                labels, np.where(labels == "Others", sizes, 0), color=cothers, width=0.5
+            )
+            b = "Others (Abs < " + "{:.1%}".format(0.01) + ")"
+
+        ticks_loc = ax.get_yticks().tolist()
+        ax.set_yticks(ax.get_yticks().tolist())
+        ax.set_yticklabels(["{:.2%}".format(x) for x in ticks_loc])
+        ax.set_xlim(-0.5, len(sizes) - 0.5)
+
+        r = plt.gcf().canvas.get_renderer()
+        transf = ax.transData.inverted()
+
+        for i, v in enumerate(sizes):
+            t = ax.text(i, v, sizes2[i], color="black")
+            bb = t.get_window_extent(renderer=r)
+            bb = bb.transformed(transf)
+            h_text = bb.height
+            x_text = bb.x0 - (bb.x1 - bb.x0) * 0.4
+            y_text = bb.y0
+            if v >= 0:
+                t.set_position((x_text, y_text + h_text * 0.8))
+            else:
+                t.set_position((x_text, y_text - h_text))
+
+    elif kind == "h":
+        sizes.reverse()
+        labels.reverse()
+        sizes2.reverse()
+        sizes = np.array(sizes)
+        labels = np.array(labels)
+        ax.barh(labels, np.where(sizes >= 0, sizes, 0), color=cpos, height=0.5)
+        ax.barh(labels, np.where(sizes < 0, sizes, 0), color=cneg, height=0.5)
+
+        if l1 > nrow:
+            ax.barh(
+                labels,
+                np.where(labels == "Others", sizes, 0),
+                color=cothers,
+                height=0.5,
+            )
+            b = "Others (Sum Abs < " + "{:.1%}".format(others) + ")"
+        elif l2 > 0:
+            ax.barh(
+                labels,
+                np.where(labels == "Others", sizes, 0),
+                color=cothers,
+                height=0.5,
+            )
+            b = "Others (Abs < " + "{:.1%}".format(0.01) + ")"
+        else:
+            b = None
+
+        ticks_loc = ax.get_xticks().tolist()
+        ax.set_xticks(ax.get_xticks().tolist())
+        ax.set_xticklabels(["{:.2%}".format(x) for x in ticks_loc])
+        ax.set_ylim(-0.5, len(sizes) - 0.5)
+
+        r = plt.gcf().canvas.get_renderer()
+        transf = ax.transData.inverted()
+
+        for i, v in enumerate(sizes):
+            t = ax.text(v, i, sizes2[i], color="black")
+            bb = t.get_window_extent(renderer=r)
+            bb = bb.transformed(transf)
+            w_text = bb.width
+            x_text = bb.x0
+            y_text = bb.y0
+            if v >= 0:
+                t.set_position((x_text + w_text * 0.15, y_text))
+            else:
+                t.set_position((x_text - w_text, y_text))
+
+    ax.grid(linestyle=":")
+
+    if b is None:
+        ax.legend(["Positive Weights", "Negative Weights"])
+    else:
+        ax.legend(["Positive Weights", "Negative Weights", b])
+
+    if kind == "v":
+        ax.axhline(y=0, xmin=0, xmax=1, color="gray", label=False)
+    elif kind == "h":
+        ax.axvline(x=0, ymin=0, ymax=1, color="gray", label=False)
 
     fig = plt.gcf()
     fig.tight_layout()
@@ -1199,8 +1444,11 @@ def plot_table(
         if i < 6 or indicators[i] == "" or rowLabels[i] in ["Skewness", "Kurtosis"]:
             ratios.append("")
         else:
-            ratio = (indicators[1] - MAR) / indicators[i]
-            ratios.append(ratio)
+            if indicators[i] == 0:
+                ratios.append("")
+            else:
+                ratio = (indicators[1] - MAR) / indicators[i]
+                ratios.append(ratio)
 
     for i in range(len(indicators)):
         if indicators[i] != "":

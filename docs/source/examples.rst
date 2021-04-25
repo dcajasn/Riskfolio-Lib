@@ -21,6 +21,8 @@ Portfolio Optimization Models
 * `Riskfolio-Lib with MOSEK for Real Applications (612 assets and 4943 observations) <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2017.ipynb>`_.
 * `Entropic Drawdown at Risk (EDaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2019.ipynb>`_.
 * `Portfolio Optimization with Constraints on Return and Risk Measures <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2021.ipynb>`_.
+* `Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2022.ipynb>`_.
+* `Portfolio Optimization with Dollar Neutral Constraint <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2023.ipynb>`_.
 
 
 Risk Factors Models
