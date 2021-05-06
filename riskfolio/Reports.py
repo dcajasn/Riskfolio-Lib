@@ -139,7 +139,14 @@ def jupyter_report(
     )
 
     ax[3] = plf.plot_risk_con(
-        w=w, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha, ax=ax[3]
+        w=w,
+        cov=cov,
+        returns=returns,
+        rm=rm,
+        rf=rf,
+        alpha=alpha,
+        t_factor=t_factor,
+        ax=ax[3],
     )
 
     ax[4] = plf.plot_hist(returns=returns, w=w, alpha=alpha, bins=50, ax=ax[4])
