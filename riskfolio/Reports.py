@@ -29,6 +29,8 @@ def jupyter_report(
     width=14,
     t_factor=252,
     ini_days=1,
+    days_per_year=252,
+    bins=50,
 ):
     r"""
     Create a matplotlib report with useful information to analyze risk and
@@ -88,7 +90,12 @@ def jupyter_report(
         It is used to calculate Compound Annual Growth Rate (CAGR). This value
         depend on assumptions used in t_factor, for example if data is monthly
         you can use 21 (252 days per year) or 30 (360 days per year). The
-        default is 1 for daily returns.        
+        default is 1 for daily returns.
+    days_per_year: float, optional
+        Days per year assumption. It is used to calculate Compound Annual
+        Growth Rate (CAGR). Default value is 252 trading days per year.
+    bins : float, optional
+        Number of bins of the histogram. The default is 50.
     ax : matplotlib axis of size (6,1), optional
         If provided, plot on this axis. The default is None.
 
@@ -126,7 +133,7 @@ def jupyter_report(
     )
 
     ax[0] = plf.plot_table(
-        returns, w, MAR=rf, alpha=alpha, t_factor=t_factor, ini_days=ini_days, ax=ax[0]
+        returns, w, MAR=rf, alpha=alpha, t_factor=t_factor, ini_days=ini_days, days_per_year=days_per_year, ax=ax[0]
     )
 
     ax[2] = plf.plot_pie(
@@ -149,7 +156,7 @@ def jupyter_report(
         ax=ax[3],
     )
 
-    ax[4] = plf.plot_hist(returns=returns, w=w, alpha=alpha, bins=50, ax=ax[4])
+    ax[4] = plf.plot_hist(returns=returns, w=w, alpha=alpha, bins=bins, ax=ax[4])
 
     ax[[1, 5]] = plf.plot_drawdown(nav=nav, w=w, alpha=alpha, ax=ax[[1, 5]])
 
@@ -164,7 +171,7 @@ def jupyter_report(
     return ax
 
 
-def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, ini_days=1, name="report"):
+def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, ini_days=1, days_per_year=252, name="report"):
     r"""
     Create an Excel report (with formulas) with useful information to analyze
     risk and profitability of investment portfolios.
@@ -196,7 +203,10 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, ini_days=1, name="r
         It is used to calculate Compound Annual Growth Rate (CAGR). This value
         depend on assumptions used in t_factor, for example if data is monthly
         you can use 21 (252 days per year) or 30 (360 days per year). The
-        default is 1 for daily returns.        
+        default is 1 for daily returns.
+    days_per_year: float, optional
+        Days per year assumption. It is used to calculate Compound Annual
+        Growth Rate (CAGR). Default value is 252 trading days per year.
     name : str, optional
         Name or name with path where the Excel report will be saved. If no
         path is provided the report will be saved in the same path of
@@ -376,7 +386,7 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, ini_days=1, name="r
         r_6 = xl_rowcol_to_cell(9, 1 + j)  # Alpha cell
         r_7 = xl_rowcol_to_cell(17, 1 + j)  # Value at Risk cell
         AVG = "=AVERAGE(Portfolios!" + r_2 + ") * " + str(t_factor) + ""
-        CUM = "{=PRODUCT(1 + Portfolios!" + r_2 + ")^(360/" + str(days) + ")-1}"
+        CUM = "{=PRODUCT(1 + Portfolios!" + r_2 + ")^(" + str(days_per_year) + "/" + str(days) + ")-1}"
         STDEV = "=STDEV(Portfolios!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
         MAD = "=AVERAGE(Absdev!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
         ALPHA = "=" + str(alpha)

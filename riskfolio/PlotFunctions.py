@@ -1291,7 +1291,7 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
 
 
 def plot_table(
-    returns, w, MAR=0, alpha=0.05, height=9, width=12, t_factor=252, ini_days=1, ax=None
+    returns, w, MAR=0, alpha=0.05, height=9, width=12, t_factor=252, ini_days=1, days_per_year=252, ax=None
 ):
     r"""
     Create a table with information about risk measures and risk adjusted
@@ -1328,6 +1328,9 @@ def plot_table(
         depend on assumptions used in t_factor, for example if data is monthly
         you can use 21 (252 days per year) or 30 (360 days per year). The
         default is 1 for daily returns.
+    days_per_year: float, optional
+        Days per year assumption. It is used to calculate Compound Annual
+        Growth Rate (CAGR). Default value is 252 trading days per year.
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
 
@@ -1410,7 +1413,7 @@ def plot_table(
     indicators = [
         "",
         (mu @ w).to_numpy().item() * t_factor,
-        np.power(np.prod(1 + X), 360 / days) - 1,
+        np.power(np.prod(1 + X), days_per_year / days) - 1,
         MAR,
         alpha,
         "",
