@@ -151,7 +151,7 @@ def jupyter_report(
 
     ax[4] = plf.plot_hist(returns=returns, w=w, alpha=alpha, bins=50, ax=ax[4])
 
-    ax[[1, 5]] = plf.plot_drawdown(nav=nav, w=w, alpha=0.05, ax=ax[[1, 5]])
+    ax[[1, 5]] = plf.plot_drawdown(nav=nav, w=w, alpha=alpha, ax=ax[[1, 5]])
 
     year = str(datetime.datetime.now().year)
 
