@@ -6,6 +6,16 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Version 0.3.0
+=============
+
+- Implement Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Parity (HERC).
+- Implement the function plot_clusters() and plot_dendrogram() that help us to identify clusters based on a distance correlation metric.
+- Implement the function assets_clusters() that help us to create asset classes based on hierarchical clusters.
+- Add an example that shows how to build Hierarchical Risk Parity portfolios.
+- Add an example that shows how to build Hierarchical Equal Risk Parity portfolios.
+
+
 Version 0.2.0
 =============
 
@@ -15,11 +25,13 @@ Version 0.2.0
 - Add an example that shows how to build Logarithmic Mean Risk (Kelly Criterion) portfolios.
 - Add an example that shows how to build dollar neutral portfolios.
 
+
 Version 0.1.5
 =============
 
 - Add the option to add a constraint on minimum portfolio return.
 - Add an example of how to add constraints on portfolio return and risk measures.
+
 
 Version 0.1.4
 =============
@@ -28,11 +40,13 @@ Version 0.1.4
 - Implement factors_views, a function that allows to design views on risk factors for Black Litterman with factors.
 - Repair some bugs.
 
+
 Version 0.1.2
 =============
 
 - Add Entropic Drawdown at Risk for Mean Risk Portfolio Optimization and Risk Parity Portfolio Optimization.
 - Repair some bugs.
+
 
 Version 0.1.1
 =============
@@ -40,6 +54,7 @@ Version 0.1.1
 - Repair some bugs in Portfolio related to Semi Variance and UCI.
 - Implement an option to annualize returns and risk in plot_frontier, Jupyter Notebook and Excel reports.
 - Add examples using Vectorbt for Backtesting and MOSEK for large scale problems.
+
 
 Version 0.1.0
 =============
@@ -49,6 +64,7 @@ Version 0.1.0
 - Implement plot_table, a function that resume some indicators of a portfolio.
 - Add Entropic Value at Risk for Mean Risk Portfolio Optimization and Risk Parity Portfolio Optimization.
 
+
 Version 0.0.7
 =============
 
@@ -57,6 +73,7 @@ Version 0.0.7
 - Add Ulcer Index for Mean Risk Portfolio Optimization and Risk Parity Portfolio Optimization.
 - Implement functions to calculate Ulcer Index.
 
+
 Version 0.0.6
 =============
 
@@ -64,11 +81,13 @@ Version 0.0.6
 - Implement bootstrapping methods to estimate box and elliptical uncertainty sets for Worst Case Optimization.
 - Implement Worst Case Mean Variance Portfolio Optimization using box and elliptical uncertainty sets.
 
+
 Version 0.0.5
 =============
 
 - Repair some bugs.
 - Implement Risk Parity Portfolio Optimization for 7 convex risk measures.
+
 
 Version 0.0.4
 =============

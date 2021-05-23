@@ -4,7 +4,11 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib import cm
 import scipy.stats as st
+import scipy.cluster.hierarchy as hr
+from scipy.spatial.distance import squareform
+from sklearn.metrics import pairwise_distances
 import riskfolio.RiskFunctions as rk
+import riskfolio.AuxFunctions as af
 
 __all__ = [
     "plot_series",
@@ -16,6 +20,8 @@ __all__ = [
     "plot_hist",
     "plot_drawdown",
     "plot_table",
+    "plot_clusters",
+    "plot_dendrogram",
 ]
 
 rm_names = [
@@ -1291,7 +1297,16 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
 
 
 def plot_table(
-    returns, w, MAR=0, alpha=0.05, height=9, width=12, t_factor=252, ini_days=1, days_per_year=252, ax=None
+    returns,
+    w,
+    MAR=0,
+    alpha=0.05,
+    height=9,
+    width=12,
+    t_factor=252,
+    ini_days=1,
+    days_per_year=252,
+    ax=None,
 ):
     r"""
     Create a table with information about risk measures and risk adjusted
@@ -1523,6 +1538,413 @@ def plot_table(
                 weight="normal", color="black", size="large"
             )
             cellDict[(j, i)].set_facecolor("white")
+
+    fig = plt.gcf()
+    fig.tight_layout()
+
+    return ax
+
+
+def plot_clusters(
+    returns,
+    correlation="pearson",
+    linkage="single",
+    k=10,
+    max_k=10,
+    leaf_order=True,
+    dendrogram=True,
+    cmap="viridis",
+    linecolor="fuchsia",
+    title="",
+    height=12,
+    width=12,
+    ax=None,
+):
+    r"""
+    Create a clustermap plot based on the selected correlation measure.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    correlation : str, optional
+        Correlation measure.
+    linkage : string, optional
+        Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+        The default is 'single'. Posible values are:
+
+        - 'single'.
+        - 'complete'.
+        - 'average'.
+        - 'weighted'.
+        - 'centroid'.
+        - 'median'.
+        - 'ward'.
+        
+    k : int, optional
+        Number of clusters. This value is took instead of the optimal number
+        of clusters calculated with the two difference gap statistic.
+        The default is None.
+    max_k : int, optional
+        Max number of clusters used by the two difference gap statistic
+        to find the optimal number of clusters. The default is 10.
+    leaf_order : bool, optional
+        Indicates if the cluster are ordered so that the distance between
+        successive leaves is minimal. The default is True.
+    dendrogram : bool, optional
+        Indicates if the plot has or not a dendrogram. The default is True.
+    cmap : str or cmap, optional
+        Colormap used to plot the pcolormesh plot. The default is 'viridis'.
+    linecolor : str, optional
+        Color used to identify the clusters in the pcolormesh plot.
+        The default is fuchsia'.
+    title : str, optional
+        Title of the chart. The default is "".
+    height : float, optional
+        Height of the image in inches. The default is 12.
+    width : float, optional
+        Width of the image in inches. The default is 12.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax : matplotlib axis
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = plf.plot_clusters(returns=Y, correlation='spearman',
+                               linkage='ward', k=None, max_k=10,
+                               leaf_order=True, dendrogram=True, ax=None)
+
+    .. image:: images/Assets_Clusters.png
+
+
+    """
+
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
+
+    if ax is None:
+        fig = plt.gcf()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+
+    labels = np.array(returns.columns.tolist())
+
+    # Correlation matrix from covariance matrix
+    if correlation in {"pearson", "spearman"}:
+        corr = returns.corr(method=correlation)
+        vmin, vmax = -1, 1
+    if correlation in {"abs_pearson", "abs_spearman"}:
+        corr = np.abs(returns.corr(method=correlation[4:]))
+        vmin, vmax = 0, 1
+    elif correlation == "distance":
+        corr = af.dcorr_matrix(returns)
+        vmin, vmax = 0, 1
+
+    # hierarchcial clustering
+    dist = np.sqrt((1 - corr).round(8) / 2)
+    dist = pd.DataFrame(dist, columns=corr.columns, index=corr.index)
+    dim = len(dist)
+    p_dist = squareform(dist, checks=False)
+    clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+    permutation = hr.leaves_list(clustering)
+    permutation = permutation.tolist()
+    ordered_corr = corr.to_numpy()[permutation, :][:, permutation]
+
+    if k is None:
+        k = af.two_diff_gap_stat(corr, dist, clustering, max_k)
+
+    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
+    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    for i, v in enumerate(clustering_inds):
+        clusters[v].append(i)
+
+    ax = fig.add_axes([0.3, 0.1, 0.6, 0.6])
+
+    im = ax.pcolormesh(ordered_corr, cmap=cmap, vmin=vmin, vmax=vmax)
+    ax.set_xticks(np.arange(corr.shape[0]) + 0.5, minor=False)
+    ax.set_yticks(np.arange(corr.shape[0]) + 0.5, minor=False)
+    ax.set_xticklabels(labels[permutation], rotation=90, ha="center")
+    ax.set_yticklabels(labels[permutation], va="center")
+    ax.yaxis.set_label_position("right")
+    ax.yaxis.tick_right()
+
+    for cluster_id, cluster in clusters.items():
+
+        amin = permutation.index(cluster[0])
+        xmin, xmax = amin, amin + len(cluster)
+        ymin, ymax = amin, amin + len(cluster)
+
+        for i in cluster:
+            a = permutation.index(i)
+            if a < amin:
+                xmin, xmax = a, a + len(cluster)
+                ymin, ymax = a, a + len(cluster)
+                amin = a
+
+        ax.axvline(
+            x=xmin, ymin=ymin / dim, ymax=(ymax) / dim, linewidth=4, color=linecolor
+        )
+        ax.axvline(
+            x=xmax, ymin=ymin / dim, ymax=(ymax) / dim, linewidth=4, color=linecolor
+        )
+        ax.axhline(
+            y=ymin, xmin=xmin / dim, xmax=(xmax) / dim, linewidth=4, color=linecolor
+        )
+        ax.axhline(
+            y=ymax, xmin=xmin / dim, xmax=(xmax) / dim, linewidth=4, color=linecolor
+        )
+
+    axcolor = fig.add_axes([1.02, 0.1, 0.02, 0.6])
+    plt.colorbar(im, cax=axcolor)
+
+    if dendrogram == True:
+
+        ax1 = fig.add_axes([0.3, 0.71, 0.6, 0.2])
+
+        root, nodes = hr.to_tree(clustering, rd=True)
+        nodes = nodes[::-1]
+        nodes = [i.dist for i in nodes[: k - 1]]
+        color_threshold = np.min(nodes)
+
+        hr.dendrogram(
+            clustering,
+            color_threshold=color_threshold,
+            above_threshold_color="grey",
+            ax=ax1,
+        )
+        ax1.set_xticklabels(labels[permutation], rotation=90, ha="center")
+
+        for coll in ax1.collections[:-1]:  # the last collection is the ungrouped level
+            xmin, xmax = np.inf, -np.inf
+            ymax = -np.inf
+            for p in coll.get_paths():
+                (x0, _), (x1, y1) = p.get_extents().get_points()
+                xmin = min(xmin, x0)
+                xmax = max(xmax, x1)
+                ymax = max(ymax, y1)
+            rec = plt.Rectangle(
+                (xmin - 4, 0),
+                xmax - xmin + 8,
+                ymax * 1.05,
+                facecolor=coll.get_color()[0],
+                alpha=0.2,
+                edgecolor="none",
+            )
+            ax1.add_patch(rec)
+
+        ax1.set_xticks([])
+        ax1.set_yticks([])
+
+        for i in {"right", "left", "top", "bottom"}:
+            side = ax1.spines[i]
+            side.set_visible(False)
+
+        ax2 = fig.add_axes([0.09, 0.1, 0.2, 0.6])
+
+        root, nodes = hr.to_tree(clustering, rd=True)
+        nodes = nodes[::-1]
+        nodes = [i.dist for i in nodes[: k - 1]]
+        color_threshold = np.min(nodes)
+
+        hr.dendrogram(
+            clustering,
+            color_threshold=color_threshold,
+            above_threshold_color="grey",
+            orientation="left",
+            ax=ax2,
+        )
+        ax2.set_xticklabels(labels[permutation], rotation=90, ha="center")
+
+        for coll in ax2.collections[:-1]:  # the last collection is the ungrouped level
+            ymin, ymax = np.inf, -np.inf
+            xmax = -np.inf
+            for p in coll.get_paths():
+                (_, y0), (x1, y1) = p.get_extents().get_points()
+                ymin = min(ymin, y0)
+                ymax = max(ymax, y1)
+                xmax = max(xmax, x1)
+            rec = plt.Rectangle(
+                (0, ymin - 4),
+                xmax * 1.05,
+                ymax - ymin + 8,
+                facecolor=coll.get_color()[0],
+                alpha=0.2,
+                edgecolor="none",
+            )
+            ax2.add_patch(rec)
+
+        ax2.set_xticks([])
+        ax2.set_yticks([])
+        ax2.set_yticklabels([])
+        for i in {"right", "left", "top", "bottom"}:
+            side = ax2.spines[i]
+            side.set_visible(False)
+
+    if title == "":
+        title = "Assets Clustermap"
+
+    ax1.set_title(title)
+
+    fig = plt.gcf()
+    fig.tight_layout()
+
+    return ax
+
+
+def plot_dendrogram(
+    returns,
+    correlation="pearson",
+    linkage="single",
+    k=10,
+    max_k=12,
+    leaf_order=True,
+    title="",
+    height=5,
+    width=12,
+    ax=None,
+):
+    r"""
+    Create a dendrogram of the selected assets.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    correlation : str, optional
+        Correlation measure.
+    linkage : string, optional
+        Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+        The default is 'single'. Posible values are:
+
+        - 'single'.
+        - 'complete'.
+        - 'average'.
+        - 'weighted'.
+        - 'centroid'.
+        - 'median'.
+        - 'ward'.
+        
+    k : int, optional
+        Number of clusters. This value is took instead of the optimal number
+        of clusters calculated with the two difference gap statistic.
+        The default is None.
+    max_k : int, optional
+        Max number of clusters used by the two difference gap statistic
+        to find the optimal number of clusters. The default is 10.
+    leaf_order : bool, optional
+        Indicates if the cluster are ordered so that the distance between
+        successive leaves is minimal. The default is True.
+    title : str, optional
+        Title of the chart. The default is "".
+    height : float, optional
+        Height of the image in inches. The default is 5.
+    width : float, optional
+        Width of the image in inches. The default is 12.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax : matplotlib axis
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = plf.plot_dendrogram(returns=Y, correlation='spearman',
+                                 linkage='ward', k=None, max_k=10,
+                                 leaf_order=True, ax=None)
+
+    .. image:: images/Assets_Dendrogram.png
+
+
+    """
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
+
+    if ax is None:
+        fig = plt.gcf()
+        ax = plt.gca()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+
+    labels = np.array(returns.columns.tolist())
+
+    # Correlation matrix from covariance matrix
+    if correlation in {"pearson", "spearman"}:
+        corr = returns.corr(method=correlation)
+    if correlation in {"abs_pearson", "abs_spearman"}:
+        corr = np.abs(returns.corr(method=correlation[4:]))
+    elif correlation == "distance":
+        corr = af.dcorr_matrix(returns)
+
+    # hierarchcial clustering
+    dist = np.sqrt((1 - corr).round(8) / 2)
+    dist = pd.DataFrame(dist, columns=corr.columns, index=corr.index)
+    p_dist = squareform(dist, checks=False)
+    clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+
+    permutation = hr.leaves_list(clustering)
+    permutation = permutation.tolist()
+
+    if k is None:
+        k = af.two_diff_gap_stat(corr, dist, clustering, max_k)
+
+    root, nodes = hr.to_tree(clustering, rd=True)
+    nodes = nodes[::-1]
+    nodes = [i.dist for i in nodes[: k - 1]]
+    color_threshold = np.min(nodes)
+
+    hr.dendrogram(
+        clustering, color_threshold=color_threshold, above_threshold_color="grey", ax=ax
+    )
+    ax.set_xticklabels(labels[permutation], rotation=90, ha="center")
+
+    for coll in ax.collections[:-1]:  # the last collection is the ungrouped level
+        xmin, xmax = np.inf, -np.inf
+        ymax = -np.inf
+        for p in coll.get_paths():
+            (x0, _), (x1, y1) = p.get_extents().get_points()
+            xmin = min(xmin, x0)
+            xmax = max(xmax, x1)
+            ymax = max(ymax, y1)
+        rec = plt.Rectangle(
+            (xmin - 4, 0),
+            xmax - xmin + 8,
+            ymax * 1.05,
+            facecolor=coll.get_color()[0],
+            alpha=0.2,
+            edgecolor="none",
+        )
+        ax.add_patch(rec)
+
+    ax.set_yticks([])
+    ax.set_yticklabels([])
+    for i in {"right", "left", "top", "bottom"}:
+        side = ax.spines[i]
+        side.set_visible(False)
+
+    if title == "":
+        title = "Assets Dendrogram"
+
+    ax.set_title(title)
 
     fig = plt.gcf()
     fig.tight_layout()

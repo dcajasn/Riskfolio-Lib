@@ -41,7 +41,7 @@ def MAD(X):
     Parameters
     ----------
     X : 1d-array
-        a returns series, must have Tx1 size.
+        Returns series, must have Tx1 size.
 
     Returns
     -------
@@ -1086,6 +1086,11 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
+        - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
+        - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
+        - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
+        - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
+        - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
 
     rf : float, optional
         Risk free rate. The default is 0.
@@ -1148,7 +1153,18 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         risk = EDaR_Abs(a, alpha=alpha)[0]
     elif rm == "UCI":
         risk = UCI_Abs(a)
-
+    elif rm == "MDD_Rel":
+        risk = MDD_Rel(a)
+    elif rm == "ADD_Rel":
+        risk = ADD_Rel(a)
+    elif rm == "DaR_Rel":
+        risk = DaR_Rel(a, alpha=alpha)
+    elif rm == "CDaR_Rel":
+        risk = CDaR_Rel(a, alpha=alpha)
+    elif rm == "EDaR_Rel":
+        risk = EDaR_Rel(a, alpha=alpha)[0]
+    elif rm == "UCI_Rel":
+        risk = UCI_Rel(a)
     value = risk
 
     return value
@@ -1203,7 +1219,12 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
-
+        - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
+        - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
+        - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
+        - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
+        - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
+            
     rf : float, optional
         Risk free rate. The default is 0.
     alpha : float, optional
@@ -1290,6 +1311,11 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
+        - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
+        - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
+        - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
+        - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
+        - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
 
     rf : float, optional
         Risk free rate. The default is 0.
@@ -1377,6 +1403,24 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         elif rm == "UCI":
             risk_1 = UCI_Abs(a_1)
             risk_2 = UCI_Abs(a_2)
+        elif rm == "MDD_Rel":
+            risk_1 = MDD_Rel(a_1)
+            risk_2 = MDD_Rel(a_2)
+        elif rm == "ADD_Rel":
+            risk_1 = ADD_Rel(a_1)
+            risk_2 = ADD_Rel(a_2)
+        elif rm == "DaR_Rel":
+            risk_1 = DaR_Rel(a_1, alpha=alpha)
+            risk_2 = DaR_Rel(a_2, alpha=alpha)
+        elif rm == "CDaR_Rel":
+            risk_1 = CDaR_Rel(a_1, alpha=alpha)
+            risk_2 = CDaR_Rel(a_2, alpha=alpha)
+        elif rm == "EDaR_Rel":
+            risk_1 = EDaR_Rel(a_1, alpha=alpha)[0]
+            risk_2 = EDaR_Rel(a_2, alpha=alpha)[0]
+        elif rm == "UCI_Rel":
+            risk_1 = UCI_Rel(a_1)
+            risk_2 = UCI_Rel(a_2)
 
         RC_i = (risk_1 - risk_2) / (2 * d_i) * w_[i, 0]
         RC.append(RC_i)

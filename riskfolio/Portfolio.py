@@ -11,7 +11,7 @@ import riskfolio.AuxFunctions as af
 class Portfolio(object):
     r"""
     Class that creates a portfolio object with all properties needed to
-    calculate optimum portfolios.
+    calculate optimal portfolios.
 
     Parameters
     ----------
@@ -34,7 +34,7 @@ class Portfolio(object):
         A dataframe that containts the returns of the factors.
         The default is None.
     alpha : float, optional
-        Significance level of CVaR and CDaR. The default is 0.01.
+        Significance level of CVaR and CDaR. The default is 0.05.
     kindbench : bool, optional
         True if the benchmark is a portfolio with detailed weights and False if
         the benchmark is an index. The default is True.
@@ -190,12 +190,12 @@ class Portfolio(object):
 
         # Solver params
 
-        self.solvers = [cv.ECOS, cv.SCS, cv.OSQP, cv.CVXOPT]
+        self.solvers = ["ECOS", "SCS", "OSQP", "CVXOPT"]
         self.sol_params = {
-            # cv.ECOS: {"max_iters": 500, "abstol": 1e-8},
-            # cv.SCS: {"max_iters": 2500, "eps": 1e-5},
-            # cv.OSQP: {"max_iter": 10000, "eps_abs": 1e-8},
-            # cv.CVXOPT: {"max_iters": 500, "abstol": 1e-8},
+            # 'ECOS': {"max_iters": 500, "abstol": 1e-8},
+            # 'SCS': {"max_iters": 2500, "eps": 1e-5},
+            # 'OSQP': {"max_iter": 10000, "eps_abs": 1e-8},
+            # 'CVXOPT': {"max_iters": 500, "abstol": 1e-8},
         }
 
     @property
@@ -847,7 +847,7 @@ class Portfolio(object):
         self, model="Classic", rm="MV", obj="Sharpe", kelly=False, rf=0, l=2, hist=True
     ):
         r"""
-        This method that calculates the optimum portfolio according to the
+        This method that calculates the optimal portfolio according to the
         optimization model selected by the user. The general problem that
         solves is:
         
@@ -869,7 +869,7 @@ class Portfolio(object):
         
         Parameters
         ----------
-        model : str can be 'Classic', 'BL' or 'FM'
+        model : str can be {'Classic', 'BL', 'FM' or 'BLFM'}
             The model used for optimize the portfolio.
             The default is 'Classic'. Posible values are:
 
@@ -931,7 +931,7 @@ class Portfolio(object):
         Returns
         -------
         w : DataFrame
-            The weights of optimum portfolio.
+            The weights of optimal portfolio.
 
         """
 
@@ -1436,12 +1436,12 @@ class Portfolio(object):
             pass
 
         try:
-            optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+            optimal = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
         except:
-            optimum = None
+            optimal = None
             print("The problem doesn't have a solution with actual input parameters")
 
-        return optimum
+        return optimal
 
     def rp_optimization(self, model="Classic", rm="MV", rf=0, b=None, hist=True):
         r"""
@@ -1505,7 +1505,7 @@ class Portfolio(object):
         Returns
         -------
         w : DataFrame
-            The weights of optimum portfolio.
+            The weights of optimal portfolio.
 
         """
 
@@ -1711,12 +1711,12 @@ class Portfolio(object):
             pass
 
         try:
-            rp_optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+            rp_optimal = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
         except:
-            rp_optimum = None
+            rp_optimal = None
             print("The problem doesn't have a solution with actual input parameters")
 
-        return rp_optimum
+        return rp_optimal
 
     def wc_optimization(self, obj="Sharpe", rf=0, l=2, Umu="box", Ucov="box"):
         r"""
@@ -1760,7 +1760,7 @@ class Portfolio(object):
         Returns
         -------
         w : DataFrame
-            The weights of optimum portfolio.
+            The weights of optimal portfolio.
 
         """
 
@@ -1939,12 +1939,12 @@ class Portfolio(object):
             pass
 
         try:
-            wc_optimum = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+            wc_optimal = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
         except:
-            wc_optimum = None
+            wc_optimal = None
             print("The problem doesn't have a solution with actual input parameters")
 
-        return wc_optimum
+        return wc_optimal
 
     def frontier_limits(self, model="Classic", rm="MV", kelly=False, rf=0, hist=True):
         r"""

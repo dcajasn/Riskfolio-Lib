@@ -37,29 +37,48 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Standard Deviation.
     * Semi Standard Deviation.
     * Mean Absolute Deviation (MAD).
-    * First Lower Partial Moment (Omega Ratio)
-    * Second Lower Partial Moment (Sortino Ratio)
+    * First Lower Partial Moment (Omega Ratio).
+    * Second Lower Partial Moment (Sortino Ratio).
     * Conditional Value at Risk (CVaR).
     * Entropic Value at Risk (EVaR).
-    * Worst Case Realization (Minimax Model)
-    * Maximum Drawdown (Calmar Ratio)
-    * Average Drawdown
-    * Conditional Drawdown at Risk (CDaR).
-    * Entropic Drawdown at Risk (EDaR).
-    * Ulcer Index.
+    * Worst Case Realization (Minimax Model).
+    * Maximum Drawdown (Calmar Ratio) for uncompounded cumulative returns.
+    * Average Drawdown for uncompounded cumulative returns.
+    * Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
+    * Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
+    * Ulcer Index for uncompounded cumulative returns.
 
-* Risk Parity Portfolio Optimization with 10 convex risk measures:
+* Vanilla Risk Parity Portfolio Optimization with 10 convex risk measures:
 
     * Standard Deviation.
     * Semi Standard Deviation.
     * Mean Absolute Deviation (MAD).
-    * First Lower Partial Moment (Omega Ratio)
-    * Second Lower Partial Moment (Sortino Ratio)
+    * First Lower Partial Moment (Omega Ratio).
+    * Second Lower Partial Moment (Sortino Ratio).
     * Conditional Value at Risk (CVaR).
     * Entropic Value at Risk (EVaR).
-    * Conditional Drawdown at Risk (CDaR).
-    * Entropic Drawdown at Risk (EDaR).
-    * Ulcer Index.
+    * Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
+    * Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
+    * Ulcer Index for uncompounded cumulative returns.
+
+* Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 22 risk measures:
+
+    * Standard Deviation.
+    * Variance.
+    * Semi Standard Deviation.
+    * Mean Absolute Deviation (MAD).
+    * First Lower Partial Moment (Omega Ratio).
+    * Second Lower Partial Moment (Sortino Ratio).
+    * Value at Risk (VaR).
+    * Conditional Value at Risk (CVaR).
+    * Entropic Value at Risk (EVaR).
+    * Worst Case Realization (Minimax Model).
+    * Maximum Drawdown (Calmar Ratio) for compounded and uncompounded cumulative returns.
+    * Average Drawdown for compounded and uncompounded cumulative returns.
+    * Drawdown at Risk (DaR) for compounded and uncompounded cumulative returns.
+    * Conditional Drawdown at Risk (CDaR) for compounded and uncompounded cumulative returns.
+    * Entropic Drawdown at Risk (EDaR) for compounded and uncompounded cumulative returns.
+    * Ulcer Index for compounded and uncompounded cumulative returns.
 
 * Worst Case Mean Variance Portfolio Optimization.
 * Portfolio optimization with Black Litterman model.
@@ -75,6 +94,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 * Tools to calculate risk measures.
 * Tools to calculate risk contributions per asset.
 * Tools to calculate uncertainty sets for mean vector and covariance matrix.
+* Tools to calculate assets clusters based on correlation metrics.
 * Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
 * Tools to visualizing portfolio properties and risk measures.
 * Tools to build reports on Jupyter Notebook and Excel. 
@@ -121,6 +141,4 @@ Riskfolio-Lib development takes place on Github: https://github.com/dcajasn/Risk
 The plan for this module is to add more functions that will be very useful
 to asset managers.
 
-* Add Hierarchical Equal Risk Contribution portfolio and other risk parity portfolios based on vanilla risk parity model.
-* Add functions to estimate Duration, Convexity, Key Rate Durations and Convexities of bonds without embedded options (for loadings matrix).
 * Add more functions based on suggestion of users.

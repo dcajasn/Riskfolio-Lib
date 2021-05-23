@@ -133,7 +133,14 @@ def jupyter_report(
     )
 
     ax[0] = plf.plot_table(
-        returns, w, MAR=rf, alpha=alpha, t_factor=t_factor, ini_days=ini_days, days_per_year=days_per_year, ax=ax[0]
+        returns,
+        w,
+        MAR=rf,
+        alpha=alpha,
+        t_factor=t_factor,
+        ini_days=ini_days,
+        days_per_year=days_per_year,
+        ax=ax[0],
     )
 
     ax[2] = plf.plot_pie(
@@ -171,7 +178,16 @@ def jupyter_report(
     return ax
 
 
-def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, ini_days=1, days_per_year=252, name="report"):
+def excel_report(
+    returns,
+    w,
+    rf=0,
+    alpha=0.05,
+    t_factor=252,
+    ini_days=1,
+    days_per_year=252,
+    name="report",
+):
     r"""
     Create an Excel report (with formulas) with useful information to analyze
     risk and profitability of investment portfolios.
@@ -386,7 +402,15 @@ def excel_report(returns, w, rf=0, alpha=0.05, t_factor=252, ini_days=1, days_pe
         r_6 = xl_rowcol_to_cell(9, 1 + j)  # Alpha cell
         r_7 = xl_rowcol_to_cell(17, 1 + j)  # Value at Risk cell
         AVG = "=AVERAGE(Portfolios!" + r_2 + ") * " + str(t_factor) + ""
-        CUM = "{=PRODUCT(1 + Portfolios!" + r_2 + ")^(" + str(days_per_year) + "/" + str(days) + ")-1}"
+        CUM = (
+            "{=PRODUCT(1 + Portfolios!"
+            + r_2
+            + ")^("
+            + str(days_per_year)
+            + "/"
+            + str(days)
+            + ")-1}"
+        )
         STDEV = "=STDEV(Portfolios!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
         MAD = "=AVERAGE(Absdev!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
         ALPHA = "=" + str(alpha)

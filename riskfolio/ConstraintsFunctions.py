@@ -1,5 +1,8 @@
 import numpy as np
 import pandas as pd
+import scipy.cluster.hierarchy as hr
+from scipy.spatial.distance import squareform
+import riskfolio.AuxFunctions as af
 
 
 def assets_constraints(constraints, asset_classes):
@@ -655,3 +658,105 @@ def factors_views(views, loadings, const=True):
     Q = np.array(Q, ndmin=2)
 
     return P, Q
+
+
+def assets_clusters(
+    returns, correlation="pearson", linkage="ward", k=None, max_k=10, leaf_order=True
+):
+    r"""
+    Create asset classes based on hierarchical clustering.
+    
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+
+    correlation : str can be {'pearson', 'spearman' or 'distance'}.
+        The correlation matrix used for create the clusters.
+        The default is 'pearson'. Posible values are:
+
+        - 'pearson': pearson correlation matrix.
+        - 'spearman': spearman correlation matrix.
+        - 'abs_pearson': absolute value pearson correlation matrix.
+        - 'abs_spearman': absolute value spearman correlation matrix.
+        - 'distance': distance correlation matrix.
+
+    linkage : string, optional
+        Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+        The default is 'single'. Posible values are:
+
+        - 'single'.
+        - 'complete'.
+        - 'average'.
+        - 'weighted'.
+        - 'centroid'.
+        - 'median'.
+        - 'ward'.
+    
+    k : int, optional
+        Number of clusters. This value is took instead of the optimal number
+        of clusters calculated with the two difference gap statistic.
+        The default is None.
+    max_k : int, optional
+        Max number of clusters used by the two difference gap statistic
+        to find the optimal number of clusters. The default is 10.
+    leaf_order : bool, optional
+        Indicates if the cluster are ordered so that the distance between
+        successive leaves is minimal. The default is True.
+    
+    Returns
+    -------
+    clusters : DataFrame
+        A dataframe with asset classes based on hierarchical clustering.
+            
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+
+    ::
+
+        clusters = cf.assets_clusters(returns, correlation='pearson', linkage='ward', k=None, max_k=10, leaf_order=True)
+
+
+    The clusters dataframe looks like this:
+
+    .. image:: images/clusters_df.png
+
+    """
+
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
+
+    # Correlation matrix from covariance matrix
+    if correlation in {"pearson", "spearman"}:
+        corr = returns.corr(method=correlation)
+    if correlation in {"abs_pearson", "abs_spearman"}:
+        corr = np.abs(returns.corr(method=correlation[4:]))
+    elif correlation == "distance":
+        corr = af.dcorr_matrix(returns)
+
+    # hierarchcial clustering
+    dist = np.sqrt((1 - corr).round(8) / 2)
+    dist = pd.DataFrame(dist, columns=corr.columns, index=corr.index)
+    p_dist = squareform(dist, checks=False)
+    clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+
+    if k is None:
+        # optimal number of clusters
+        k = af.two_diff_gap_stat(corr, dist, clustering, max_k)
+
+    clusters_inds = hr.fcluster(clustering, k, criterion="maxclust")
+
+    clusters = {"Assets": [], "Clusters": []}
+
+    for i, v in enumerate(clusters_inds):
+        clusters["Assets"].append(corr.columns.tolist()[i])
+        clusters["Clusters"].append("Cluster " + str(v))
+
+    clusters = pd.DataFrame(clusters)
+    clusters = clusters.sort_values(by=["Assets"])
+
+    return clusters

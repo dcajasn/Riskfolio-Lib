@@ -106,7 +106,7 @@ Risk Parity Portfolio Optimization
 ----------------------------------
 
 Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
-the general risk parity model :cite:`a-Roncalli`:
+the general vanilla risk parity model :cite:`a-Roncalli`:
 
 .. math::
     \begin{aligned}
