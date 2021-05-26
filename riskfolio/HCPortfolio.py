@@ -451,5 +451,6 @@ class HCPortfolio(object):
             )
 
         weights = weights.loc[self.assetslist].to_frame()
+        weights.columns = ["weights"]
 
         return weights

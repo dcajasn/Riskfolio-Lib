@@ -1794,7 +1794,10 @@ def plot_clusters(
     if title == "":
         title = "Assets Clustermap"
 
-    ax1.set_title(title)
+    if dendrogram == True:
+        ax1.set_title(title)
+    elif dendrogram == False:
+        ax.set_title(title)
 
     fig = plt.gcf()
     fig.tight_layout()
