@@ -14,6 +14,7 @@
 #
 import os
 import sys
+import sphinx_rtd_theme
 sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(1, os.path.abspath('../../riskfolio'))
 print(sys.path)
@@ -42,14 +43,12 @@ release = '0.3.0.1'
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
     'sphinxemoji.sphinxemoji',
@@ -57,7 +56,7 @@ extensions = [
 ]
 
 autodoc_member_order = 'bysource'
-#keep_warnings = True
+keep_warnings = True
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -125,7 +124,7 @@ html_extra_path = ['robots.txt']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Riskfolio-Lib-doc'
+htmlhelp_basename = 'RiskfolioLibdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
