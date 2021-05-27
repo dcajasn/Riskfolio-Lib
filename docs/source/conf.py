@@ -14,7 +14,6 @@
 #
 import os
 import sys
-import sphinx_rtd_theme
 sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(1, os.path.abspath('../../riskfolio'))
 print(sys.path)
@@ -47,7 +46,6 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
