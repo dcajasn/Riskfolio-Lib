@@ -36,25 +36,25 @@ release = '0.3.0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-#    'numpydoc',
-    'sphinx_rtd_theme',
-    'sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.autosummary',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-#    'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon',
-    'sphinxcontrib.bibtex',
-    'sphinxemoji.sphinxemoji',
+# #    'numpydoc',
+     'sphinx_rtd_theme',
+     'sphinx.ext.autodoc',
+#     'sphinx.ext.doctest',
+#     'sphinx.ext.autosummary',
+     'sphinx.ext.intersphinx',
+     'sphinx.ext.todo',
+#     'sphinx.ext.coverage',
+     'sphinx.ext.mathjax',
+#     'sphinx.ext.ifconfig',
+     'sphinx.ext.viewcode',
+# #    'sphinx.ext.githubpages',
+     'sphinx.ext.napoleon',
+     'sphinxcontrib.bibtex',
+     'sphinxemoji.sphinxemoji',
 ]
 
 autodoc_member_order = 'bysource'
-autosummary_generate = True
+# autosummary_generate = True
 keep_warnings = True
 
 # Add any paths that contain templates here, relative to this directory.
