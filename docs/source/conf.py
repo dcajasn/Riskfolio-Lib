@@ -14,6 +14,7 @@
 #
 import os
 import sys
+import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(1, os.path.abspath('../../riskfolio'))
@@ -41,6 +42,7 @@ needs_sphinx = '3.5'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx_rtd_theme',
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.autosummary',
