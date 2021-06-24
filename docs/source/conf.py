@@ -16,6 +16,8 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(1, os.path.abspath('../../riskfolio'))
+print(sys.path)
+
 
 # -- Project information -----------------------------------------------------
 
@@ -41,18 +43,22 @@ release = '0.3.0.1'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
+    'sphinx.ext.autosummary',
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
+    'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
     'sphinxemoji.sphinxemoji',
+    'sphinx_sitemap',
 ]
 
 autodoc_member_order = 'bysource'
+autosummary_generate = True
 keep_warnings = True
 
 # Add any paths that contain templates here, relative to this directory.
@@ -62,7 +68,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 #source_suffix = ['.rst', '.bib']
-source_suffix = ['.rst']
+source_suffix = '.rst'
 bibtex_bibfiles = ['biblio.bib']
 
 
@@ -116,8 +122,8 @@ html_static_path = ['_static']
 
 html_search_language = 'en'
 
-# sitemap_filename = 'sitemap.xml'
-# html_extra_path = ['robots.txt']
+sitemap_filename = 'sitemap.xml'
+html_extra_path = ['robots.txt']
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
