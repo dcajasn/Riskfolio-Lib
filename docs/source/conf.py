@@ -53,7 +53,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
     'sphinxemoji.sphinxemoji',
-    'sphinx_sitemap',
+    # 'sphinx_sitemap',
 ]
 
 autodoc_member_order = 'bysource'
@@ -120,8 +120,8 @@ html_static_path = ['_static']
 
 html_search_language = 'en'
 
-sitemap_filename = 'sitemap.xml'
-html_extra_path = ['robots.txt']
+# sitemap_filename = 'sitemap.xml'
+# html_extra_path = ['robots.txt']
 
 
 # -- Options for HTMLHelp output ---------------------------------------------
