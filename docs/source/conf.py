@@ -50,7 +50,6 @@ extensions = [
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
     'sphinxemoji.sphinxemoji',
-    'sphinx_sitemap',
 ]
 
 autodoc_member_order = 'bysource'
@@ -79,7 +78,7 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'alabaster'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -87,9 +86,6 @@ html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
 html_search_language = 'en'
-
-sitemap_filename = 'sitemap.xml'
-html_extra_path = ['robots.txt']
 
 # -- Extension configuration -------------------------------------------------
 
