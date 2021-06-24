@@ -16,8 +16,6 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(1, os.path.abspath('../../riskfolio'))
-print(sys.path)
-
 
 # -- Project information -----------------------------------------------------
 
@@ -49,11 +47,9 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
     'sphinxcontrib.bibtex',
     'sphinxemoji.sphinxemoji',
-    # 'sphinx_sitemap',
 ]
 
 autodoc_member_order = 'bysource'
@@ -66,7 +62,7 @@ templates_path = ['_templates']
 # You can specify multiple suffix as a list of string:
 #
 #source_suffix = ['.rst', '.bib']
-source_suffix = '.rst'
+source_suffix = ['.rst']
 bibtex_bibfiles = ['biblio.bib']
 
 
