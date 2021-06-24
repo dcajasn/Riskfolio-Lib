@@ -41,6 +41,7 @@ extensions = [
      'sphinx.ext.autodoc',
 #     'sphinx.ext.doctest',
      'sphinx.ext.autosummary',
+#     'sphinx_autopackagesummary',
      'sphinx.ext.intersphinx',
      'sphinx.ext.todo',
 #     'sphinx.ext.coverage',

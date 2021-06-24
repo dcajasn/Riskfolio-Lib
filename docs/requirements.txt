@@ -1,11 +1,10 @@
-sphinx==3.5
+sphinx==3.5.1
 numpydoc
-sphinx-autopackagesummary
-sphinxcontrib-napoleon
-sphinx-rtd-theme
-sphinxcontrib-bibtex
-sphinxemoji
-sphinx-sitemap
+sphinxcontrib-napoleon==0.7
+sphinx_rtd_theme==0.5.2
+sphinxcontrib-bibtex==2.2.1
+sphinxemoji==0.1.8
+sphinx-sitemap==2.2.0
 RinohType
 numpy
 scipy
