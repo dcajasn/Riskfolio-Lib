@@ -1,4 +1,4 @@
-Sphinx
+sphinx>=3.5
 numpydoc
 sphinx-autopackagesummary
 sphinxcontrib-napoleon
