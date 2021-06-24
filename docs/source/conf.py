@@ -86,7 +86,7 @@ language = None
 exclude_patterns = []
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+pygments_style = 'sphinx'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -118,6 +118,8 @@ html_static_path = ['_static']
 #
 # html_sidebars = {}
 
+html_search_language = 'en'
+
 sitemap_filename = 'sitemap.xml'
 html_extra_path = ['robots.txt']
 
@@ -130,39 +132,38 @@ htmlhelp_basename = 'RiskfolioLibdoc'
 
 # -- Options for LaTeX output ------------------------------------------------
 
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    #'papersize': 'a4paper',
+# latex_elements = {
+#     # The paper size ('letterpaper' or 'a4paper').
+#     #
+#     #'papersize': 'a4paper',
 
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-    #'pointsize': '11pt',
+#     # The font size ('10pt', '11pt' or '12pt').
+#     #
+#     #'pointsize': '11pt',
 
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
+#     # Additional stuff for the LaTeX preamble.
+#     #
+#     # 'preamble': '',
 
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
-}
+#     # Latex figure (float) alignment
+#     #
+#     # 'figure_align': 'htbp',
+# }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
-latex_documents = [
-    (master_doc, 'Riskfolio.tex', 'Riskfolio-Lib Documentation',
-     'Dany Cajas', 'manual'),
-]
+# latex_documents = [
+#     (master_doc, 'Riskfolio.tex', 'Riskfolio-Lib Documentation',
+#      'Dany Cajas', 'manual'),]
 
 # -- Options for manual page output ------------------------------------------
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'Riskfolio', 'Riskfolio-Lib Documentation',
-     [author], 1)]
+# man_pages = [
+#     (master_doc, 'Riskfolio', 'Riskfolio-Lib Documentation',
+#      [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -170,15 +171,15 @@ man_pages = [
 # Grouping the document tree into Texinfo files. List of tuples
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
-texinfo_documents = [
-    (master_doc, 'Riskfolio', 'Riskfolio-Lib Documentation',
-     author, 'Riskfolio', 'Quantitative Strategic Asset Allocation, Easy for Everyone.', 'Miscellaneous'),]
+# texinfo_documents = [
+#     (master_doc, 'Riskfolio', 'Riskfolio-Lib Documentation',
+#      author, 'Riskfolio', 'Quantitative Strategic Asset Allocation, Easy for Everyone.', 'Miscellaneous'),]
 
 
 # -- Options for Epub output -------------------------------------------------
 
 # Bibliographic Dublin Core info.
-epub_title = project
+# epub_title = project
 
 # The unique identifier of the text. This can be a ISBN number
 # or the project homepage.
@@ -190,7 +191,7 @@ epub_title = project
 # epub_uid = ''
 
 # A list of files that should not be packed into the epub file.
-epub_exclude_files = ['search.html']
+# epub_exclude_files = ['search.html']
 
 
 # -- Extension configuration -------------------------------------------------
