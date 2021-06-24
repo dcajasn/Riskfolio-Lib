@@ -3,6 +3,7 @@ version: 2
 
 # Build documentation in the docs/ directory with Sphinx
 sphinx:
+  builder: html
   configuration: docs/source/conf.py
 
 # Build documentation with MkDocs
@@ -17,5 +18,5 @@ sphinx:
 python:
   version: 3.7
   install:
-    - requirements: requirements.txt
     - requirements: docs/requirements.txt
+    - requirements: requirements.txt
