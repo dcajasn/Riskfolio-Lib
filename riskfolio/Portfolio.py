@@ -26,12 +26,25 @@ class Portfolio(object):
         positions (negative weights). The default is 0.2.
     upperlng : float, optional
         Indicate the maximum value of the sum of long positions (positive
-        weights). The default is 1.
+        weights). When sht=True, the difference between upperlng and uppersht
+        must be equal to the budget (upperlng - uppersht = budget)
+        The default is 1.
     budget : float, optional
-        Indicate the maximum value of the sum of positions (positive
+        Indicate the maximum value of the sum of long positions (positive
         weights) and short positions (negative weights). The default is 1.
+    nea : int, optional
+        Indicate the minimum number of effective assets (NEA) used in
+        portfolio. This value is the inverse of Herfindahl-Hirschman index of
+        portfolio's weights. The default is None.
+    card : int, optional
+        Indicate the maximum number of assets used in portfolio. It requires
+        a solver that supports Mixed Integer Programs (MIP), see `Solvers <https://www.cvxpy.org/tutorial/advanced/index.html#solve-method-options>`_ for more details.
+        This constraint is based on :cite:`a-YUE2014949`. The default is None.
     factors : DataFrame, optional
         A dataframe that containts the returns of the factors.
+        The default is None.
+    B : DataFrame, optional
+        A dataframe that containts the loadings matrix.
         The default is None.
     alpha : float, optional
         Significance level of CVaR and CDaR. The default is 0.05.
@@ -103,7 +116,10 @@ class Portfolio(object):
         uppersht=0.2,
         upperlng=1,
         budget=1,
+        nea=None,
+        card=None,
         factors=None,
+        B=None,
         alpha=0.05,
         kindbench=True,
         allowTO=False,
@@ -137,6 +153,8 @@ class Portfolio(object):
         self.uppersht = uppersht
         self.upperlng = upperlng
         self.budget = budget
+        self.nea = nea
+        self.card = card
         self._factors = factors
         self.alpha = alpha
         self.kindbench = kindbench
@@ -167,6 +185,9 @@ class Portfolio(object):
 
         self.mu = None
         self.cov = None
+        self.mu_f = None
+        self.cov_f = None
+        self._B = None
         self.mu_fm = None
         self.cov_fm = None
         self.mu_bl = None
@@ -187,6 +208,13 @@ class Portfolio(object):
         self.d_mu = None
         self.k_mu = None
         self.k_sigma = None
+
+        # Optimal portfolios
+        self.optimal = None
+        self.rp_optimal = None
+        self.wc_optimal = None
+        self.limits = None
+        self.frontier = None
 
         # Solver params
 
@@ -221,6 +249,8 @@ class Portfolio(object):
     def assetslist(self):
         if self._returns is not None and isinstance(self._returns, pd.DataFrame):
             return self._returns.columns.tolist()
+        elif self._returns is None:
+            return None
 
     @property
     def numassets(self):
@@ -241,6 +271,25 @@ class Portfolio(object):
             raise NameError("factors must be a DataFrame")
 
     @property
+    def factorslist(self):
+        if self._factors is not None and isinstance(self._factors, pd.DataFrame):
+            return self._factors.columns.tolist()
+        elif self._factors is None:
+            return None
+
+    @property
+    def B(self):
+        return self._B
+
+    @B.setter
+    def B(self, value):
+        a = value
+        if a is not None and isinstance(a, pd.DataFrame):
+            self._B = a
+        else:
+            raise NameError("loadings matrix must be a DataFrame")
+
+    @property
     def benchweights(self):
         n = self.numassets
         if self._benchweights is not None:
@@ -249,7 +298,7 @@ class Portfolio(object):
             else:
                 raise NameError("Weights must have a size of shape (n_assets,1)")
         else:
-            a = np.array(np.ones([n, 1]) / n, ndmin=2)
+            a = np.array(np.ones((n, 1)) / n)
         return a
 
     @benchweights.setter
@@ -262,7 +311,7 @@ class Portfolio(object):
             else:
                 raise NameError("Weights must have a size of shape (n_assets,1)")
         else:
-            a = np.array(np.ones([n, 1]) / n, ndmin=2)
+            a = np.array(np.ones((n, 1)) / n)
         self._benchweights = a
 
     @property
@@ -319,14 +368,14 @@ class Portfolio(object):
         method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
             The method used to estimate the expected returns.
             The default value is 'hist'.
-    
+
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
             The method used to estimate the covariance matrix:
-            The default is 'hist'. 
-            
+            The default is 'hist'.
+
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -390,14 +439,14 @@ class Portfolio(object):
         method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
             The method used to estimate the expected returns.
             The default value is 'hist'.
-    
+
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
             The method used to estimate the covariance matrix:
-            The default is 'hist'. 
-            
+            The default is 'hist'.
+
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -460,14 +509,14 @@ class Portfolio(object):
         method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
             The method used to estimate the expected returns.
             The default value is 'hist'.
-    
+
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
             The method used to estimate the covariance matrix:
-            The default is 'hist'. 
-            
+            The default is 'hist'.
+
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -487,6 +536,23 @@ class Portfolio(object):
         """
         X = self.factors
         Y = self.returns
+
+        mu_f = pe.mean_vector(self.returns, method=method_mu, **kwargs)
+        cov_f = pe.covar_matrix(self.returns, method=method_cov, **kwargs)
+
+        self.mu_f = mu_f
+        self.cov_f = cov_f
+
+        value = af.is_pos_def(self.cov_f, threshold=1e-8)
+        if value == False:
+            try:
+                self.cov = af.cov_fix(self.cov, method="clipped", threshold=1e-5)
+                value = af.is_pos_def(self.cov, threshold=1e-8)
+                if value == False:
+                    print("You must convert self.cov to a positive definite matrix")
+            except:
+                print("You must convert self.cov to a positive definite matrix")
+
         mu, cov, returns, nav = pe.risk_factors(
             X, Y, method_mu=method_mu, method_cov=method_cov, **kwargs
         )
@@ -559,20 +625,20 @@ class Portfolio(object):
             The default is False.
         diag : bool, optional
             Indicate if we use the diagonal matrix to calculate covariance matrix
-            of factor model, only useful when we work with a factor model based on 
+            of factor model, only useful when we work with a factor model based on
             a regresion model (only equity portfolio).
             The default is False.
         method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
             The method used to estimate the expected returns.
             The default value is 'hist'.
-    
+
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
             The method used to estimate the covariance matrix:
-            The default is 'hist'. 
-            
+            The default is 'hist'.
+
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -606,15 +672,20 @@ class Portfolio(object):
             delta = delta.item()
 
         if B is None:
-            B = pe.loadings_matrix(X=F, Y=X, **kwargs_1)
-            const = True
+            if self.B is None:
+                self.B = pe.loadings_matrix(X=F, Y=X, **kwargs_1)
+                const = True
+            elif self.B is not None:
+                pass
+        elif B is not None:
+            self.B = B
 
         if flavor == "BLB":
             if isinstance(kwargs_1, dict):
                 mu, cov, w = pe.black_litterman_bayesian(
                     X=X,
                     F=F,
-                    B=B,
+                    B=self.B,
                     P_f=P_f,
                     Q_f=Q_f,
                     delta=delta,
@@ -630,7 +701,7 @@ class Portfolio(object):
                 mu, cov, w = pe.black_litterman_bayesian(
                     X=X,
                     F=F,
-                    B=B,
+                    B=self.B,
                     P_f=P_f,
                     Q_f=Q_f,
                     delta=delta,
@@ -648,7 +719,7 @@ class Portfolio(object):
                     X=X,
                     w=w,
                     F=F,
-                    B=B,
+                    B=self.B,
                     P=P,
                     Q=Q,
                     P_f=P_f,
@@ -666,7 +737,7 @@ class Portfolio(object):
                     X=X,
                     w=w,
                     F=F,
-                    B=B,
+                    B=self.B,
                     P=P,
                     Q=Q,
                     P_f=P_f,
@@ -1142,34 +1213,69 @@ class Portfolio(object):
                 cv.constraints.ExpCone(U[1:] - X1 - t2, np.ones((n, 1)) @ s2, uj)
             ]
 
-        # Tracking Error Model Variables
+        # Cardinal Boolean Variables
 
-        c = np.array(self.benchweights, ndmin=2)
-        if self.kindbench == True:
-            bench = returns @ c
-        elif self.kindbench == False:
-            bench = np.array(self.benchindex, ndmin=2)
+        if self.card is not None:
+            if obj == "Sharpe":
+                e = cv.Variable((mu.shape[1], 1), boolean=True)
+                e1 = cv.Variable((mu.shape[1], 1))
+            else:
+                e = cv.Variable((mu.shape[1], 1), boolean=True)
 
-        # Problem aditional linear constraints
+        # Problem Weight Constraints
 
         if obj == "Sharpe":
             constraints = [cv.sum(w) == self.budget * k, k * 1000 >= 0]
             if self.sht == False:
                 constraints += [w <= self.upperlng * k, w * 1000 >= 0]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        e1 <= k,
+                        e1 >= 0,
+                        e1 <= 100000 * e,
+                        e1 >= k - 100000 * (1 - e),
+                        w <= self.upperlng * e1,
+                    ]
             elif self.sht == True:
                 constraints += [
                     cv.sum(cv.pos(w)) * 1000 <= self.upperlng * k * 1000,
                     cv.sum(cv.neg(w)) * 1000 <= self.uppersht * k * 1000,
                 ]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        e1 <= k,
+                        e1 >= 0,
+                        e1 <= 100000 * e,
+                        e1 >= k - 100000 * (1 - e),
+                        w >= -self.uppersht * e1,
+                        w <= self.upperlng * e1,
+                    ]
+
         else:
             constraints = [cv.sum(w) == self.budget]
             if self.sht == False:
                 constraints += [w <= self.upperlng, w * 1000 >= 0]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        w <= self.upperlng * e,
+                    ]
+
             elif self.sht == True:
                 constraints += [
                     cv.sum(cv.pos(w)) * 1000 <= self.upperlng * 1000,
                     cv.sum(cv.neg(w)) * 1000 <= self.uppersht * 1000,
                 ]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        w >= -self.uppersht * e,
+                        w <= self.upperlng * e,
+                    ]
+
+        # Problem Linear Constraints
 
         if self.ainequality is not None and self.binequality is not None:
             A = np.array(self.ainequality, ndmin=2) * 1000
@@ -1178,6 +1284,22 @@ class Portfolio(object):
                 constraints += [A @ w - B @ k >= 0]
             else:
                 constraints += [A @ w - B >= 0]
+
+        # Number of Effective Assets Constraints
+
+        if self.nea is not None:
+            if obj == "Sharpe":
+                constraints += [cv.norm(w, "fro") <= 1 / self.nea ** 0.5 * k]
+            else:
+                constraints += [cv.norm(w, "fro") <= 1 / self.nea ** 0.5]
+
+        # Tracking Error Model Variables
+
+        c = np.array(self.benchweights, ndmin=2)
+        if self.kindbench == True:
+            bench = returns @ c
+        elif self.kindbench == False:
+            bench = np.array(self.benchindex, ndmin=2)
 
         # Tracking error Constraints
 
@@ -1436,12 +1558,14 @@ class Portfolio(object):
             pass
 
         try:
-            optimal = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+            self.optimal = pd.DataFrame(
+                portafolio, index=["weights"], dtype=np.float64
+            ).T
         except:
-            optimal = None
+            self.optimal = None
             print("The problem doesn't have a solution with actual input parameters")
 
-        return optimal
+        return self.optimal
 
     def rp_optimization(self, model="Classic", rm="MV", rf=0, b=None, hist=True):
         r"""
@@ -1711,12 +1835,14 @@ class Portfolio(object):
             pass
 
         try:
-            rp_optimal = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+            self.rp_optimal = pd.DataFrame(
+                portafolio, index=["weights"], dtype=np.float64
+            ).T
         except:
-            rp_optimal = None
+            self.rp_optimal = None
             print("The problem doesn't have a solution with actual input parameters")
 
-        return rp_optimal
+        return self.rp_optimal
 
     def wc_optimization(self, obj="Sharpe", rf=0, l=2, Umu="box", Ucov="box"):
         r"""
@@ -1833,24 +1959,75 @@ class Portfolio(object):
             risk = g ** 2
             constraints += [cv.SOC(g, G.T @ w)]
 
+        # Cardinal Boolean Variables
+
+        if self.card is not None:
+            if obj == "Sharpe":
+                e = cv.Variable((mu.shape[1], 1), boolean=True)
+                e1 = cv.Variable((mu.shape[1], 1))
+            else:
+                e = cv.Variable((mu.shape[1], 1), boolean=True)
+
+        # Problem Weight Constraints
+
         if obj == "Sharpe":
-            constraints += [cv.sum(w) == self.budget * k, k >= 0]
+            constraints = [cv.sum(w) == self.budget * k, k * 1000 >= 0]
             if self.sht == False:
-                constraints += [w <= k * self.upperlng, w >= 0]
+                constraints += [w <= self.upperlng * k, w * 1000 >= 0]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        e1 <= k,
+                        e1 >= 0,
+                        e1 <= 100000 * e,
+                        e1 >= k - 100000 * (1 - e),
+                        w <= self.upperlng * e1,
+                    ]
             elif self.sht == True:
                 constraints += [
-                    cv.sum(cv.pos(w)) <= self.upperlng * k,
-                    cv.sum(cv.neg(w)) <= self.uppersht * k,
+                    cv.sum(cv.pos(w)) * 1000 <= self.upperlng * k * 1000,
+                    cv.sum(cv.neg(w)) * 1000 <= self.uppersht * k * 1000,
                 ]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        e1 <= k,
+                        e1 >= 0,
+                        e1 <= 100000 * e,
+                        e1 >= k - 100000 * (1 - e),
+                        w >= -self.uppersht * e1,
+                        w <= self.upperlng * e1,
+                    ]
+
         else:
-            constraints += [cv.sum(w) == self.budget]
+            constraints = [cv.sum(w) == self.budget]
             if self.sht == False:
-                constraints += [w <= self.upperlng, w >= 0]
-            if self.sht == True:
+                constraints += [w <= self.upperlng, w * 1000 >= 0]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        w <= self.upperlng * e,
+                    ]
+
+            elif self.sht == True:
                 constraints += [
-                    cv.sum(cv.pos(w)) <= self.upperlng,
-                    cv.sum(cv.neg(w)) <= self.uppersht,
+                    cv.sum(cv.pos(w)) * 1000 <= self.upperlng * 1000,
+                    cv.sum(cv.neg(w)) * 1000 <= self.uppersht * 1000,
                 ]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        w >= -self.uppersht * e,
+                        w <= self.upperlng * e,
+                    ]
+
+        # Number of effective assets constraints
+
+        if self.nea is not None:
+            if obj == "Sharpe":
+                constraints += [cv.sum_squares(w) * 1000 <= 1 / self.nea * k * 1000]
+            else:
+                constraints += [cv.sum_squares(w) * 1000 <= 1 / self.nea * 1000]
 
         # Tracking Error Model Variables
 
@@ -1939,12 +2116,14 @@ class Portfolio(object):
             pass
 
         try:
-            wc_optimal = pd.DataFrame(portafolio, index=["weights"], dtype=np.float64).T
+            self.wc_optimal = pd.DataFrame(
+                portafolio, index=["weights"], dtype=np.float64
+            ).T
         except:
-            wc_optimal = None
+            self.wc_optimal = None
             print("The problem doesn't have a solution with actual input parameters")
 
-        return wc_optimal
+        return self.wc_optimal
 
     def frontier_limits(self, model="Classic", rm="MV", kelly=False, rf=0, hist=True):
         r"""
@@ -1976,14 +2155,14 @@ class Portfolio(object):
 
         kelly : str, optional
             Method used to calculate mean return. Posible values are False for
-            arithmetic mean return, "approx" for approximate mean logarithmic 
+            arithmetic mean return, "approx" for approximate mean logarithmic
             return using first and second moment and "exact" for mean logarithmic
             return. The default is False.
         rf : scalar, optional
             Risk free rate. The default is 0.
         hist : bool, optional
             Indicate what kind of returns are used to calculate risk measures
-            that depends on scenarios (All except 'MV' risk measure). 
+            that depends on scenarios (All except 'MV' risk measure).
             If model = 'BL', True means historical covariance and returns and
             False Black Litterman covariance and historical returns.
             If model = 'FM', True means historical covariance and returns and
@@ -2013,9 +2192,9 @@ class Portfolio(object):
         )
 
         if w_min is not None and w_max is not None:
-            limits = pd.concat([w_min, w_max], axis=1)
-            limits.columns = ["w_min", "w_max"]
-            return limits
+            self.limits = pd.concat([w_min, w_max], axis=1)
+            self.limits.columns = ["w_min", "w_max"]
+            return self.limits
         else:
             raise NameError("The limits of the frontier can't be found")
 
@@ -2052,7 +2231,7 @@ class Portfolio(object):
 
         kelly : str, optional
             Method used to calculate mean return. Posible values are False for
-            arithmetic mean return, "approx" for approximate mean logarithmic 
+            arithmetic mean return, "approx" for approximate mean logarithmic
             return using first and second moment and "exact" for mean logarithmic
             return. The default is False.
         points : scalar, optional
@@ -2246,10 +2425,10 @@ class Portfolio(object):
                 pass
 
         setattr(self, risk_lims[item], None)
-        frontier = pd.concat(frontier, axis=1)
-        frontier.columns = list(range(n))
+        self.frontier = pd.concat(frontier, axis=1)
+        self.frontier.columns = list(range(n))
 
-        return frontier
+        return self.frontier
 
     def reset_risk_constraints(self):
         r"""
@@ -2323,8 +2502,12 @@ class Portfolio(object):
         self.sht = False
         self.uppersht = 0.2
         self.upperlng = 1
+        self.budget = 1
+        self.nea = None
+        self.card = None
         self._factors = None
-        self.alpha = 0.01
+        self.B = None
+        self.alpha = 0.05
         self.kindbench = True
         self.benchindex = None
         self._benchweights = None

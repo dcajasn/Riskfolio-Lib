@@ -69,8 +69,8 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         n_features is the number of features.
     method : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
         The method used to estimate the covariance matrix:
-        The default is 'hist'. 
-            
+        The default is 'hist'.
+
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -133,7 +133,8 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
 def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
     r"""
     Select the variables that estimate the best model using stepwise
-    forward regression.
+    forward regression. In case none of the variables has a p-value lower
+    than threshold, the algorithm will select the variable with lowest p-value.
 
     Parameters
     ----------
@@ -182,6 +183,7 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
     sic = 1e10
     r2 = -1e10
     r2_a = -1e10
+    pvalues = None
 
     if criterion == "pvalue":
         value = 0
@@ -195,21 +197,49 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
                 X1 = sm.add_constant(X1)
                 results = sm.OLS(y, X1).fit()
                 new_pvalues = results.pvalues
-                cond_1 = new_pvalues[new_pvalues.index != "const"].max()
+                new_pvalues = new_pvalues[new_pvalues.index != "const"]
+                cond_1 = new_pvalues.max()
                 if best_pvalue > new_pvalues[i] and cond_1 <= threshold:
+                    best_pvalue = results.pvalues[i]
+                    new_feature = i
+                    pvalues = new_pvalues.copy()
+
+            if pvalues is not None:
+                value = pvalues[pvalues.index != "const"].max()
+
+            if new_feature is None:
+                break
+            else:
+                included.append(new_feature)
+
+            if verbose:
+                print("Add {} with p-value {:.6}".format(new_feature, best_pvalue))
+
+        # This part is how to deal when there isn't an asset with pvalue lower than threshold
+        if len(included) == 0:
+            excluded = list(set(X.columns) - set(included))
+            best_pvalue = 999999
+            new_feature = None
+            for i in excluded:
+                factors = included + [i]
+                X1 = X[factors]
+                X1 = sm.add_constant(X1)
+                results = sm.OLS(y, X1).fit()
+                new_pvalues = results.pvalues
+                new_pvalues = new_pvalues[new_pvalues.index != "const"]
+                if best_pvalue > new_pvalues[i]:
                     best_pvalue = results.pvalues[i]
                     new_feature = i
                     pvalues = new_pvalues.copy()
 
             value = pvalues[pvalues.index != "const"].max()
 
-            if new_feature is None:
-                break
-
             included.append(new_feature)
 
             if verbose:
-                print("Add {} with p-value {:.6}".format(new_feature, best_pvalue))
+                print(
+                    "Add {} with p-value {:.6}".format(pvalues.idxmax(), pvalues.max())
+                )
 
     else:
         excluded = X.columns.tolist()
@@ -275,7 +305,8 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
 def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
     r"""
     Select the variables that estimate the best model using stepwise
-    backward regression.
+    backward regression. In case none of the variables has a p-value lower
+    than threshold, the algorithm will select the variable with lowest p-value.
 
     Parameters
     ----------
@@ -339,6 +370,8 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
             results = sm.OLS(y, X1).fit()
             pvalues = results.pvalues
             pvalues = pvalues[pvalues.index != "const"]
+            if pvalues.shape[0] == 0:
+                break
             excluded = ["const", pvalues.idxmax()]
             if verbose and pvalues.max() > threshold:
                 print(
@@ -346,6 +379,33 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
                 )
 
         included = pvalues.index.tolist()
+
+        # This part is how to deal when there isn't an asset with pvalue lower than threshold
+        if len(included) == 0:
+            excluded = list(set(X.columns) - set(included))
+            best_pvalue = 999999
+            new_feature = None
+            for i in excluded:
+                factors = included + [i]
+                X1 = X[factors]
+                X1 = sm.add_constant(X1)
+                results = sm.OLS(y, X1).fit()
+                new_pvalues = results.pvalues
+                new_pvalues = results.pvalues
+                new_pvalues = new_pvalues[new_pvalues.index != "const"]
+                if best_pvalue > new_pvalues[i]:
+                    best_pvalue = results.pvalues[i]
+                    new_feature = i
+                    pvalues = new_pvalues.copy()
+
+            value = pvalues[pvalues.index != "const"].max()
+
+            included.append(new_feature)
+
+            if verbose:
+                print(
+                    "Add {} with p-value {:.6}".format(pvalues.idxmax(), pvalues.max())
+                )
 
     else:
         included.remove("const")

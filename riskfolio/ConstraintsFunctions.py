@@ -665,7 +665,7 @@ def assets_clusters(
 ):
     r"""
     Create asset classes based on hierarchical clustering.
-    
+
     Parameters
     ----------
     returns : DataFrame
@@ -692,7 +692,7 @@ def assets_clusters(
         - 'centroid'.
         - 'median'.
         - 'ward'.
-    
+
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
         of clusters calculated with the two difference gap statistic.
@@ -703,12 +703,12 @@ def assets_clusters(
     leaf_order : bool, optional
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
-    
+
     Returns
     -------
     clusters : DataFrame
         A dataframe with asset classes based on hierarchical clustering.
-            
+
     Raises
     ------
         ValueError when the value cannot be calculated.

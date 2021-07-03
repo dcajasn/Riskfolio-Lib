@@ -380,7 +380,7 @@ def EVaR_Hist(X, alpha=0.05):
     -------
     (value, z) : tuple
         EVaR of a returns series and value of z that minimize EVaR.
-        
+
     """
 
     a = np.array(X, ndmin=2)
@@ -1224,7 +1224,7 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
         - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
         - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
-            
+
     rf : float, optional
         Risk free rate. The default is 0.
     alpha : float, optional

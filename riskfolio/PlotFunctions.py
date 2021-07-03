@@ -1580,7 +1580,7 @@ def plot_clusters(
         - 'centroid'.
         - 'median'.
         - 'ward'.
-        
+
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
         of clusters calculated with the two difference gap statistic.
@@ -1837,7 +1837,7 @@ def plot_dendrogram(
         - 'centroid'.
         - 'median'.
         - 'ward'.
-        
+
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
         of clusters calculated with the two difference gap statistic.

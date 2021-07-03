@@ -87,6 +87,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 * Portfolio optimization with Augmented Black Litterman model.
 * Portfolio optimization with constraints on tracking error and turnover.
 * Portfolio optimization with short positions and leveraged portfolios.
+* Portfolio optimization with constraints on number of assets and number of effective assets.
 * Tools to build efficient frontier for 13 risk measures.
 * Tools to build linear constraints on assets, asset classes and risk factors.
 * Tools to build views on assets and asset classes.

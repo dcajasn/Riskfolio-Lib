@@ -284,7 +284,7 @@ def two_diff_gap_stat(corr, dist, clusters, max_k=10):
     max_k : int, optional
         Max number of clusters used by the two difference gap statistic
         to find the optimal number of clusters. The default is 10.
-        
+
     Returns
     -------
     k : int
@@ -323,6 +323,154 @@ def two_diff_gap_stat(corr, dist, clusters, max_k=10):
     limit_k = int(min(max_k, np.sqrt(n)))
     gaps = W_list.shift(2) + W_list - 2 * W_list.shift(1)
     gaps = gaps[0:limit_k]
-    k = int(gaps.idxmax() + 2)
+    if gaps.isna().all():
+        k = len(gaps)
+    else:
+        k = int(gaps.idxmax() + 2)
 
     return k
+
+
+def round_values(data, decimals=4, wider=False):
+    """
+    This function help us to round values to values close or away from zero.
+
+    Parameters
+    ----------
+    data : np.ndarray, pd.Series or pd.DataFrame
+        Data that are going to be rounded.
+    decimals : integer
+        Number of decimals to round.
+    wider : float
+        False if round to values close to zero, True if round to values away
+        from zero.
+
+    Returns
+    -------
+    value : np.ndarray, pd.Series or pd.DataFrame
+        Data rounded using selected method.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    """
+
+    if wider == True:
+        value = np.where(
+            data >= 0,
+            np.ceil(data * 10 ** decimals) / 10 ** decimals,
+            np.floor(data * 10 ** decimals) / 10 ** decimals,
+        )
+    elif wider == False:
+        value = np.where(
+            data >= 0,
+            np.floor(data * 10 ** decimals) / 10 ** decimals,
+            np.ceil(data * 10 ** decimals) / 10 ** decimals,
+        )
+
+    if isinstance(data, pd.DataFrame):
+        value = pd.DataFrame(value, columns=data.columns, index=data.index)
+    if isinstance(data, pd.Series):
+        value = pd.Series(value, index=data.index)
+
+    return value
+
+
+def weights_discretizetion(weights, prices, capital=1000000):
+    """
+    This function help us to find the number of shares that must be bought or
+    sold to achieve portfolio weights according the prices of assets and the
+    invested capital.
+
+    Parameters
+    ----------
+    weights : pd.Series or pd.DataFrame
+        Vector of weights of size n_assets x 1.
+    prices : pd.Series or pd.DataFrame
+        Vector of prices of size n_assets x 1.
+    capital : float
+        Capital invested.
+
+    Returns
+    -------
+    n_shares : pd.DataFrame
+        Number of shares that must be bought or sold to achieve portfolio
+        weights.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    """
+
+    if isinstance(weights, pd.Series):
+        w = weights.to_frame().copy()
+    elif isinstance(weights, pd.DataFrame):
+        if weights.shape[0] == 1:
+            w = weights.T.copy()
+        elif weights.shape[1] == 1:
+            w = weights.copy()
+            pass
+        else:
+            raise ValueError("weights must have size n_assets x 1")
+    else:
+        raise ValueError("weights must be DataFrame")
+
+    if isinstance(prices, pd.Series):
+        p = prices.to_frame().copy()
+    elif isinstance(prices, pd.DataFrame):
+        if prices.shape[0] == 1:
+            p = prices.T.copy()
+        elif prices.shape[1] == 1:
+            p = prices.copy()
+            pass
+        else:
+            raise ValueError("prices must have size n_assets x 1")
+    else:
+        raise ValueError("prices must be DataFrame")
+
+    w.columns = [0]
+    p.columns = [0]
+
+    n_shares = round_values(capital * w / p, decimals=0, wider=False)
+
+    excedent = [capital + 1, capital]
+    i = 1
+    while excedent[i] < excedent[i - 1]:
+        new_capital = (n_shares.T @ p).iloc[0, 0]
+        excedent.append(capital - new_capital)
+        new_shares = round_values(excedent[-1] * w / p, 0)
+        n_shares += new_shares
+        i += 1
+
+    n_shares_1 = capital * w / p
+
+    excedent = capital - (n_shares.T @ p).iloc[0, 0]
+    i = 1
+
+    d_shares = np.abs(n_shares_1) - np.abs(n_shares)
+    d_shares = np.where(d_shares > 0, n_shares_1 - n_shares, 0)
+    d_shares = round_values(d_shares, decimals=0, wider=True)
+    d_shares = pd.DataFrame(d_shares, columns=w.columns, index=w.index)
+
+    df = pd.concat([p, d_shares], axis=1)
+    df.columns = [0, 1]
+    df[2] = df.index.tolist()
+    df.index = range(len(df))
+    df = df[df[1] != 0]
+    df = df.sort_values(by=0, ascending=True)
+    df.index = range(len(df))
+    df[3] = df[0] * df[1]
+    df[3] = df[3].cumsum()
+    row = df[1][df[3] <= excedent].index[-1]
+    df[1].iloc[row + 1 :] = 0
+    df = pd.DataFrame(df[1].to_numpy(), index=df[2].to_numpy(), columns=[0])
+
+    n_shares.loc[df.index.tolist()] = n_shares.loc[df.index.tolist()] + df
+
+    excedent = capital - (n_shares.T @ p).iloc[0, 0]
+
+    return n_shares

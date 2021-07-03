@@ -1,11 +1,10 @@
-import sys
 import numpy as np
 import pandas as pd
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
 import riskfolio.RiskFunctions as rk
 import riskfolio.AuxFunctions as af
-import riskfolio.Portfolio as pf
+import riskfolio.ParamsEstimation as pe
 
 
 class HCPortfolio(object):
@@ -30,16 +29,6 @@ class HCPortfolio(object):
         self.cov = None
         self.corr = None
         self.corr_sorted = None
-
-        # Solver params
-
-        self.solvers = ["ECOS", "SCS", "OSQP", "CVXOPT"]
-        self.sol_params = {
-            # 'ECOS': {"max_iters": 500, "abstol": 1e-8},
-            # 'SCS': {"max_iters": 2500, "eps": 1e-5},
-            # 'OSQP': {"max_iter": 10000, "eps_abs": 1e-8},
-            # 'CVXOPT': {"max_iters": 500, "abstol": 1e-8},
-        }
 
     @property
     def returns(self):
@@ -207,7 +196,9 @@ class HCPortfolio(object):
         return weight
 
     # compute HRP weight allocation through cluster-based bisection
-    def _hierarchical_recursive_bisection(self, Z, rm="MV", rf=0, linkage="ward"):
+    def _hierarchical_recursive_bisection(
+        self, Z, rm="MV", rf=0, linkage="ward", model="HERC"
+    ):
 
         # Transform linkage to tree and reverse order
         root, nodes = hr.to_tree(Z, rd=True)
@@ -312,10 +303,20 @@ class HCPortfolio(object):
             cluster = clustered_assets.loc[clustered_assets == i]
             cluster_cov = self.cov.loc[cluster.index, cluster.index]
             cluster_returns = self.returns.loc[:, cluster.index]
-            cluster_weights = pd.Series(
-                self._naive_risk(cluster_returns, cluster_cov, rm=rm, rf=rf).flatten(),
-                index=cluster_cov.index,
-            )
+            if model == "HERC":
+                cluster_weights = pd.Series(
+                    self._naive_risk(
+                        cluster_returns, cluster_cov, rm=rm, rf=rf
+                    ).flatten(),
+                    index=cluster_cov.index,
+                )
+            elif model == "HERC2":
+                cluster_weights = pd.Series(
+                    self._naive_risk(
+                        cluster_returns, cluster_cov, rm="equal", rf=rf
+                    ).flatten(),
+                    index=cluster_cov.index,
+                )
             weight.loc[cluster_weights.index] *= cluster_weights
 
         return weight
@@ -325,25 +326,28 @@ class HCPortfolio(object):
         self,
         model="HRP",
         correlation="pearson",
+        covariance="hist",
         rm="MV",
         rf=0,
         linkage="single",
         k=None,
         max_k=10,
         leaf_order=True,
+        d=0.94,
     ):
         r"""
         This method calculates the optimal portfolio according to the
         optimization model selected by the user.
-        
+
         Parameters
         ----------
-        model : str can be {'HRP' or 'HERC'}
+        model : str can be {'HRP', 'HERC' or 'HERC2'}
             The hierarchical cluster portfolio model used for optimize the
             portfolio. The default is 'HRP'. Posible values are:
 
             - 'HRP': Hierarchical Risk Parity.
             - 'HERC': Hierarchical Equal Risk Contribution.
+            - 'HERC2': HERC but splitting weights equally within clusters.
 
         correlation : str can be {'pearson', 'spearman' or 'distance'}.
             The correlation matrix used for create the clusters.
@@ -355,10 +359,22 @@ class HCPortfolio(object):
             - 'abs_spearman': absolute value spearman correlation matrix.
             - 'distance': distance correlation matrix.
 
+        covariance : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+            The method used to estimate the covariance matrix:
+            The default is 'hist'.
+
+            - 'hist': use historical estimates.
+            - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ledoit': use the Ledoit and Wolf Shrinkage method.
+            - 'oas': use the Oracle Approximation Shrinkage method.
+            - 'shrunk': use the basic Shrunk Covariance method.
+
         rm : str, optional
             The risk measure used to optimze the portfolio.
             The default is 'MV'. Posible values are:
-            
+
+            - 'equal': Equally weighted.
             - 'vol': Standard Deviation.
             - 'MV': Variance.
             - 'MAD': Mean Absolute Deviation.
@@ -381,7 +397,7 @@ class HCPortfolio(object):
             - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
             - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
             - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
-                
+
         rf : float, optional
             Risk free rate, must be in the same period of assets returns.
             The default is 0.
@@ -396,7 +412,7 @@ class HCPortfolio(object):
             - 'centroid'.
             - 'median'.
             - 'ward'.
-        
+
         k : int, optional
             Number of clusters. This value is took instead of the optimal number
             of clusters calculated with the two difference gap statistic.
@@ -404,7 +420,13 @@ class HCPortfolio(object):
         max_k : int, optional
             Max number of clusters used by the two difference gap statistic
             to find the optimal number of clusters. The default is 10.
-        
+        leaf_order : bool, optional
+            Indicates if the cluster are ordered so that the distance between
+            successive leaves is minimal. The default is True.
+        d : scalar
+            The smoothing factor of ewma methods.
+            The default is 0.94.
+
         Returns
         -------
         w : DataFrame
@@ -413,20 +435,21 @@ class HCPortfolio(object):
         """
 
         # Correlation matrix from covariance matrix
-        self.cov = self.returns.cov()
+        self.cov = pe.covar_matrix(self.returns, method=covariance, d=0.94)
+
         if correlation in {"pearson", "spearman"}:
-            self.corr = self.returns.corr(method=correlation)
+            self.corr = self.returns.corr(method=correlation).astype(float)
         if correlation in {"abs_pearson", "abs_spearman"}:
-            self.corr = np.abs(self.returns.corr(method=correlation[4:]))
+            self.corr = np.abs(self.returns.corr(method=correlation[4:])).astype(float)
         elif correlation == "distance":
-            self.corr = af.dcorr_matrix(self.returns)
+            self.corr = af.dcorr_matrix(self.returns).astype(float)
 
         # Step-1: Tree clustering
         if model == "HRP":
             self.clusters = self._hierarchical_clustering_hrp(
                 linkage, leaf_order=leaf_order
             )
-        elif model == "HERC":
+        elif model in ["HERC", "HERC2"]:
             self.clusters, self.k = self._hierarchical_clustering_herc(
                 linkage, max_k, leaf_order=leaf_order
             )
@@ -445,9 +468,9 @@ class HCPortfolio(object):
         # Step-3: Recursive bisection
         if model == "HRP":
             weights = self._recursive_bisection(self.sort_order, rm=rm, rf=rf)
-        elif model == "HERC":
+        elif model in ["HERC", "HERC2"]:
             weights = self._hierarchical_recursive_bisection(
-                self.clusters, rm=rm, rf=rf, linkage=linkage
+                self.clusters, rm=rm, rf=rf, linkage=linkage, model=model
             )
 
         weights = weights.loc[self.assetslist].to_frame()
