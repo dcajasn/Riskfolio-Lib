@@ -124,6 +124,7 @@ Installation requires:
 * [statsmodels](https://www.statsmodels.org/) >= 0.10.1
 * [arch](https://bashtage.github.io/arch/) >= 4.15
 * [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 1.3.7
+* [networkx](https://networkx.org) >= 2.5.1
 
 
 ## Installation

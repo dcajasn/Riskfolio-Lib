@@ -54,3 +54,4 @@ Riskfolio-Lib has the following dependencies:
 * statsmodels>=0.10.1
 * arch>=4.15
 * xlsxwriter>=1.3.7
+* networkx>=2.5.1
