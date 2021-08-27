@@ -1,13 +1,25 @@
+""""""  #
+"""
+Copyright (c) 2020-2021, Dany Cajas
+All rights reserved.
+This work is licensed under BSD 3-Clause "New" or "Revised" License.
+License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+"""
+
 import numpy as np
 import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 from scipy import linalg as LA
 from statsmodels.stats.correlation_tools import cov_nearest
 from scipy.sparse import csr_matrix
 from scipy.spatial.distance import pdist, squareform
 import scipy.cluster.hierarchy as hr
+import scipy.stats as st
+from sklearn.metrics import mutual_info_score
 
 ###############################################################################
-# Some Aditional Functions
+# Aditional Matrix Functions
 ###############################################################################
 
 
@@ -17,8 +29,9 @@ def is_pos_def(cov, threshold=1e-8):
 
     Parameters
     ----------
-    cov : nd-array of shape (n_features, n_features)
-        Features covariance matrix, where n_features is the number of features.
+    cov : ndarray
+        Features covariance matrix of shape (n_features, n_features), where
+        n_features is the number of features.
 
     Returns
     -------
@@ -43,12 +56,13 @@ def correl_matrix(cov):
 
     Parameters
     ----------
-    cov : nd-array of shape (n_features, n_features)
-        Assets covariance matrix, where n_features is the number of features.
+    cov : ndarray
+        Assets covariance matrix of shape n_features x n_features, where
+        n_features is the number of features.
 
     Returns
     -------
-    corr : nd-array
+    corr : ndarray
         A correlation matrix.
 
     Raises
@@ -80,8 +94,9 @@ def cov_fix(cov, method="clipped", **kwargs):
 
     Parameters
     ----------
-    cov : nd-array of shape (n_features, n_features)
-        Features covariance matrix, where n_features is the number of features.
+    cov : ndarray
+        Features covariance matrix of shape n_features x n_features, where
+        n_features is the number of features.
     method : str
         The default value is 'clipped', see more in `cov_nearest <https://www.statsmodels.org/stable/generated/statsmodels.stats.correlation_tools.cov_nearest.html>`_.
     **kwargs
@@ -118,12 +133,13 @@ def cov_returns(cov, seed=0):
 
     Parameters
     ----------
-    cov : nd-array of shape (n_features, n_features)
-        Assets covariance matrix, where n_features is the number of features.
+    cov : ndarray
+        Assets covariance matrix of shape n_features x n_features, where
+        n_features is the number of features.
 
     Returns
     -------
-    a : nd-array
+    a : ndarray
         A matrix of returns that have a covariance matrix cov.
 
     Raises
@@ -156,12 +172,13 @@ def commutation_matrix(cov):
 
     Parameters
     ----------
-    cov : nd-array of shape (n_features, n_features)
-        Assets covariance matrix, where n_features is the number of features.
+    cov : ndarray
+        Assets covariance matrix of shape n_features x n_features, where
+        n_features is the number of features.
 
     Returns
     -------
-    K : nd-array
+    K : ndarray
         The commutation matrix of the covariance matrix cov.
 
     Raises
@@ -179,16 +196,21 @@ def commutation_matrix(cov):
     return K
 
 
+###############################################################################
+# Aditional Codependence Functions
+###############################################################################
+
+
 def dcorr(X, Y):
     r"""
     Calculate the distance correlation between two variables :cite:`d-Szekely`.
 
     Parameters
     ----------
-    X : 1d-array of shape (n_sample, 1)
-        Returns series, must have Tx1 size.
-    Y : 1d-array of shape (n_sample, 1)
-        Returns series, must have Tx1 size.
+    X : 1d-array
+        Returns series, must have of shape n_sample x 1.
+    Y : 1d-array
+        Returns series, must have of shape n_sample x 1.
 
     Returns
     -------
@@ -235,12 +257,13 @@ def dcorr_matrix(X):
 
     Parameters
     ----------
-    X : 2d-array of shape (n_sample, n_features)
-        Returns series, must have Txn size.
+    X : ndarray or
+        Returns series of shape n_sample x n_features.
+
     Returns
     -------
-    corr : 2d-array of shape (n_features, n_features)
-        The distance correlation matrix of n variables.
+    corr : ndarray
+        The distance correlation matrix of shape n_features x n_features.
 
     Raises
     ------
@@ -250,14 +273,17 @@ def dcorr_matrix(X):
     flag = False
     if isinstance(X, pd.DataFrame):
         cols = X.columns.tolist()
+        X1 = X.to_numpy()
         flag = True
+    else:
+        X1 = X.copy()
 
-    n = X.shape[1]
+    n = X1.shape[1]
     corr = np.ones((n, n))
     indices = np.triu_indices(n, 1)
 
     for i, j in zip(indices[0], indices[1]):
-        corr[i, j] = dcorr(X.iloc[:, i], X.iloc[:, j])
+        corr[i, j] = dcorr(X1[:, i], X1[:, j])
         corr[j, i] = corr[i, j]
 
     if flag:
@@ -268,17 +294,267 @@ def dcorr_matrix(X):
     return corr
 
 
-def two_diff_gap_stat(corr, dist, clusters, max_k=10):
+def numBins(n_samples, corr=None):
+    r"""
+    Calculate the optimal number of bins for discretization of mutual
+    information and variation of information.
+
+    Parameters
+    ----------
+    n_samples : integer
+        Number of samples.
+
+    corr : float, optional
+        Correlation coefficient of variables. The default value is None.
+
+    Returns
+    -------
+    bins : int
+        The optimal number of bins.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    # univariate case
+    if corr is None:
+        z = (
+            8 + 324 * n_samples + 12 * (36 * n_samples + 729 * n_samples ** 2) ** 0.5
+        ) ** (1 / 3)
+        b = np.round(z / 6 + 2 / (3 * z) + 1 / 3)
+    # bivariate case
+    else:
+        b = np.round(
+            2 ** -0.5 * (1 + (1 + 24 * n_samples / (1 - corr ** 2)) ** 0.5) ** 0.5
+        )
+
+    bins = np.int32(b)
+
+    return bins
+
+
+def mutual_info_matrix(X, bins=None, normalize=True):
+    r"""
+    Calculate the mutual information matrix of n variables.
+
+    Parameters
+    ----------
+    X : ndarray
+        Returns series of shape n_sample x n_features.
+
+    Returns
+    -------
+    corr : ndarray
+        The mutual information matrix of shape n_features x n_features.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    flag = False
+    if isinstance(X, pd.DataFrame):
+        cols = X.columns.tolist()
+        X1 = X.to_numpy()
+        flag = True
+    else:
+        X1 = X.copy()
+
+    m = X1.shape[0]
+    n = X1.shape[1]
+    mat = np.zeros((n, n))
+    indices = np.triu_indices(n, 1)
+
+    for i, j in zip(indices[0], indices[1]):
+        if bins is None:
+            corr = np.corrcoef(X1[:, i], X1[:, j])[0, 1]
+            bins = numBins(m, corr)
+        cXY = np.histogram2d(X1[:, i], X1[:, j], bins)[0]
+        hX = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
+        hY = st.entropy(np.histogram(X1[:, j], bins)[0])  # marginal
+        iXY = mutual_info_score(None, None, contingency=cXY)  # mutual information
+        if normalize == True:
+            iXY = iXY / np.min([hX, hY])  # normalized mutual information
+            # hXY = hX + hY - iXY # joint
+            # hX_Y = hXY - hY # conditional
+            # hY_X = hXY - hX # conditional
+
+        mat[i, j] = iXY
+        mat[j, i] = mat[i, j]
+
+    for i in range(0, n):
+        if bins is None:
+            corr = np.corrcoef(X1[:, i], X1[:, i])[0, 1]
+            bins = numBins(m, corr)
+        cXY = np.histogram2d(X1[:, i], X1[:, i], bins)[0]
+        hX = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
+        hY = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
+        iXY = mutual_info_score(None, None, contingency=cXY)  # mutual information
+        if normalize == True:
+            iXY = iXY / np.min([hX, hY])  # normalized mutual information
+
+        mat[i, i] = iXY
+
+    mat = np.clip(mat, a_min=0, a_max=np.inf)
+
+    if flag:
+        mat = pd.DataFrame(mat, index=cols, columns=cols)
+    else:
+        mat = pd.DataFrame(mat)
+
+    return mat
+
+
+def var_info_matrix(X, bins=None, normalize=True):
+    r"""
+    Calculate the variation of information matrix of n variables.
+
+    Parameters
+    ----------
+    X : ndarray
+        Returns series of shape n_sample x n_features.
+
+    Returns
+    -------
+    corr : ndarray
+        The mutual information matrix of shape n_features x n_features.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    flag = False
+    if isinstance(X, pd.DataFrame):
+        cols = X.columns.tolist()
+        X1 = X.to_numpy()
+        flag = True
+    else:
+        X1 = X.copy()
+
+    m = X1.shape[0]
+    n = X1.shape[1]
+    mat = np.zeros((n, n))
+    indices = np.triu_indices(n, 1)
+
+    for i, j in zip(indices[0], indices[1]):
+        if bins is None:
+            corr = np.corrcoef(X1[:, i], X1[:, j])[0, 1]
+            bins = numBins(m, corr)
+        cXY = np.histogram2d(X1[:, i], X1[:, j], bins)[0]
+        hX = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
+        hY = st.entropy(np.histogram(X1[:, j], bins)[0])  # marginal
+        iXY = mutual_info_score(None, None, contingency=cXY)  # mutual information
+        vXY = hX + hY - 2 * iXY  # variation of information
+        if normalize == True:
+            hXY = hX + hY - iXY  # joint
+            vXY = vXY / hXY  # normalized variation of information
+
+        mat[i, j] = vXY
+        mat[j, i] = mat[i, j]
+
+    for i in range(0, n):
+        if bins is None:
+            corr = np.corrcoef(X1[:, i], X1[:, i])[0, 1]
+            bins = numBins(m, corr)
+        cXY = np.histogram2d(X1[:, i], X1[:, i], bins)[0]
+        hX = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
+        hY = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
+        iXY = mutual_info_score(None, None, contingency=cXY)  # mutual information
+        vXY = hX + hY - 2 * iXY  # variation of information
+        if normalize == True:
+            hXY = hX + hY - iXY  # joint
+            vXY = vXY / hXY  # normalized variation of information
+
+        mat[i, i] = vXY
+
+    mat = np.clip(mat, a_min=0, a_max=np.inf)
+
+    if flag:
+        mat = pd.DataFrame(mat, index=cols, columns=cols)
+    else:
+        mat = pd.DataFrame(mat)
+
+    return mat
+
+
+def ltdi_matrix(X, alpha=0.05):
+    r"""
+    Calculate the lower tail dependence index matrix using the empirical
+    approach.
+
+    Parameters
+    ----------
+    X : ndarray
+        Returns series of shape n_sample x n_features.
+
+    Returns
+    -------
+    corr : ndarray
+        The lower tail dependence index matrix of shape n_features x
+        n_features.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+
+    flag = False
+    if isinstance(X, pd.DataFrame):
+        cols = X.columns.tolist()
+        X1 = X.to_numpy()
+        flag = True
+    else:
+        X1 = X.copy()
+
+    m = X1.shape[0]
+    n = X1.shape[1]
+    k = np.int(np.ceil(m * alpha))
+    mat = np.ones((n, n))
+
+    if k > 0:
+        indices = np.triu_indices(n, 1)
+
+        for i, j in zip(indices[0], indices[1]):
+            u = np.sort(X1[:, i])[k - 1]
+            v = np.sort(X1[:, j])[k - 1]
+            ltd = (
+                np.sum(np.where(np.logical_and(X1[:, i] <= u, X1[:, j] <= v), 1, 0)) / k
+            )
+
+            mat[i, j] = ltd
+            mat[j, i] = mat[i, j]
+
+        for i in range(0, n):
+            u = np.sort(X1[:, i])[k - 1]
+            v = np.sort(X1[:, i])[k - 1]
+            ltd = (
+                np.sum(np.where(np.logical_and(X1[:, i] <= u, X1[:, i] <= v), 1, 0)) / k
+            )
+
+            mat[i, i] = ltd
+
+    if flag:
+        mat = pd.DataFrame(mat, index=cols, columns=cols)
+    else:
+        mat = pd.DataFrame(mat)
+
+    return mat
+
+
+def two_diff_gap_stat(codep, dist, clusters, max_k=10):
     r"""
     Calculate the optimal number of clusters based on the two difference gap
     statistic :cite:`d-twogap`.
 
     Parameters
     ----------
-    corr : DataFrame
-        A correlation matrix.
+    codep : DataFrame
+        A codependence matrix.
     dist : str, optional
-        A distance measure based on the correlation matrix.
+        A distance measure based on the codependence matrix.
     clusters : string, optional
         The hierarchical clustering encoded as a linkage matrix, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
     max_k : int, optional
@@ -296,7 +572,7 @@ def two_diff_gap_stat(corr, dist, clusters, max_k=10):
 
     """
     # cluster levels over from 1 to N-1 clusters
-    cluster_lvls = pd.DataFrame(hr.cut_tree(clusters), index=corr.columns)
+    cluster_lvls = pd.DataFrame(hr.cut_tree(clusters), index=codep.columns)
     num_k = cluster_lvls.columns  # save column with number of clusters
     cluster_lvls = cluster_lvls.iloc[:, ::-1]  # reverse order to start with 1 cluster
     cluster_lvls.columns = num_k  # set columns to number of cluster
@@ -319,7 +595,7 @@ def two_diff_gap_stat(corr, dist, clusters, max_k=10):
         W_list.append(W_k)
 
     W_list = pd.Series(W_list)
-    n = corr.shape[0]
+    n = codep.shape[0]
     limit_k = int(min(max_k, np.sqrt(n)))
     gaps = W_list.shift(2) + W_list - 2 * W_list.shift(1)
     gaps = gaps[0:limit_k]
@@ -329,6 +605,11 @@ def two_diff_gap_stat(corr, dist, clusters, max_k=10):
         k = int(gaps.idxmax() + 2)
 
     return k
+
+
+###############################################################################
+# Other Aditional Functions
+###############################################################################
 
 
 def round_values(data, decimals=4, wider=False):
@@ -378,7 +659,9 @@ def round_values(data, decimals=4, wider=False):
     return value
 
 
-def weights_discretizetion(weights, prices, capital=1000000):
+def weights_discretizetion(
+    weights, prices, capital=1000000, w_decimal=6, ascending=False
+):
     """
     This function help us to find the number of shares that must be bought or
     sold to achieve portfolio weights according the prices of assets and the
@@ -390,8 +673,14 @@ def weights_discretizetion(weights, prices, capital=1000000):
         Vector of weights of size n_assets x 1.
     prices : pd.Series or pd.DataFrame
         Vector of prices of size n_assets x 1.
-    capital : float
-        Capital invested.
+    capital : float, optional
+        Capital invested. The default value is 1000000.
+    w_decimal : int, optional
+        Number of decimals use to round the portfolio weights. The default
+        value is 6.
+    ascending : bool, optional
+        If True assigns excess capital to assets with lower weights, else,
+        to assets with higher weights. The default value is True.
 
     Returns
     -------
@@ -435,6 +724,10 @@ def weights_discretizetion(weights, prices, capital=1000000):
     w.columns = [0]
     p.columns = [0]
 
+    total = w.sum().item()
+    w = round_values(w, decimals=w_decimal, wider=False)
+    w.loc[w.idxmin().tolist()] = w.loc[w.idxmin().tolist()] + (total - w.sum()).item()
+
     n_shares = round_values(capital * w / p, decimals=0, wider=False)
 
     excedent = [capital + 1, capital]
@@ -456,21 +749,64 @@ def weights_discretizetion(weights, prices, capital=1000000):
     d_shares = round_values(d_shares, decimals=0, wider=True)
     d_shares = pd.DataFrame(d_shares, columns=w.columns, index=w.index)
 
-    df = pd.concat([p, d_shares], axis=1)
-    df.columns = [0, 1]
-    df[2] = df.index.tolist()
-    df.index = range(len(df))
-    df = df[df[1] != 0]
-    df = df.sort_values(by=0, ascending=True)
-    df.index = range(len(df))
-    df[3] = df[0] * df[1]
-    df[3] = df[3].cumsum()
-    row = df[1][df[3] <= excedent].index[-1]
-    df[1].iloc[row + 1 :] = 0
-    df = pd.DataFrame(df[1].to_numpy(), index=df[2].to_numpy(), columns=[0])
-
-    n_shares.loc[df.index.tolist()] = n_shares.loc[df.index.tolist()] + df
+    n_shares_1 = capital * w / p
 
     excedent = capital - (n_shares.T @ p).iloc[0, 0]
 
+    d_shares = np.abs(n_shares_1) - np.abs(n_shares)
+    d_shares = np.where(d_shares > 0, n_shares_1 - n_shares, 0)
+    d_shares = round_values(d_shares, decimals=0, wider=True)
+    d_shares = pd.DataFrame(d_shares, columns=w.columns, index=w.index)
+
+    order = w.sort_values(by=0, ascending=ascending).index.tolist()
+    d_list = d_shares[d_shares[0] == 1].index.tolist()
+
+    for i in order:
+        if i in d_list:
+            new_shares = round_values(excedent / p.loc[i, 0], 0).item()
+            if new_shares > 0:
+                n_shares.loc[i] += new_shares
+                excedent = capital - (n_shares.T @ p).iloc[0, 0]
+
     return n_shares
+
+
+def color_list(k):
+    r"""
+    This function creates a list of colors.
+
+    Parameters
+    ----------
+    k : int
+        Number of colors.
+
+    Returns
+    -------
+    colors : list
+        A list of colors.
+    """
+
+    colors = []
+
+    if k <= 10:
+        for i in range(10):
+            colors.append(mpl.colors.rgb2hex(plt.get_cmap("tab10").colors[i]))
+    elif k <= 20:
+        for i in range(20):
+            colors.append(mpl.colors.rgb2hex(plt.get_cmap("tab20").colors[i]))
+    elif k <= 40:
+        for i in range(20):
+            colors.append(mpl.colors.rgb2hex(plt.get_cmap("tab20").colors[i]))
+        for i in range(20):
+            colors.append(mpl.colors.rgb2hex(plt.get_cmap("tab20b").colors[i]))
+    else:
+        for i in range(20):
+            colors.append(mpl.colors.rgb2hex(plt.get_cmap("tab20").colors[i]))
+        for i in range(20):
+            colors.append(mpl.colors.rgb2hex(plt.get_cmap("tab20b").colors[i]))
+        for i in range(20):
+            colors.append(mpl.colors.rgb2hex(plt.get_cmap("tab20c").colors[i]))
+        if k / 60 > 1:
+            colors = colors * int(np.ceil(k / 60))
+
+    return colors

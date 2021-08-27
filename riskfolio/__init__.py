@@ -1,1 +1,19 @@
-__version__ = "0.4.0"
+""""""  #
+"""
+Copyright (c) 2020-2021, Dany Cajas
+All rights reserved.
+This work is licensed under BSD 3-Clause "New" or "Revised" License.
+License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+"""
+
+from .Portfolio import *
+from .HCPortfolio import *
+from .PlotFunctions import *
+from .ParamsEstimation import *
+from .ConstraintsFunctions import *
+from .RiskFunctions import *
+from .Reports import *
+from .AuxFunctions import *
+from .DBHT import *
+
+__version__ = "1.0.0"

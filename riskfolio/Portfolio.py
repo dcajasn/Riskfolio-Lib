@@ -1,3 +1,11 @@
+""""""  #
+"""
+Copyright (c) 2020-2021, Dany Cajas
+All rights reserved.
+This work is licensed under BSD 3-Clause "New" or "Revised" License.
+License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+"""
+
 import numpy as np
 import pandas as pd
 import cvxpy as cv
@@ -358,7 +366,7 @@ class Portfolio(object):
                 raise NameError("The matrix binequality must have one column")
         self._binequality = a
 
-    def assets_stats(self, method_mu="hist", method_cov="hist", **kwargs):
+    def assets_stats(self, method_mu="hist", method_cov="hist", d=0.94, **kwargs):
         r"""
         Calculate the inputs that will be used by the optimization method when
         we select the input model='Classic'.
@@ -372,6 +380,7 @@ class Portfolio(object):
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+
         method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
             The method used to estimate the covariance matrix:
             The default is 'hist'.
@@ -382,6 +391,7 @@ class Portfolio(object):
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
+
         **kwargs : dict
             All aditional parameters of mean_vector and covar_matrix functions.
 
@@ -392,7 +402,7 @@ class Portfolio(object):
 
         """
 
-        self.mu = pe.mean_vector(self.returns, method=method_mu, **kwargs)
+        self.mu = pe.mean_vector(self.returns, method=method_mu, d=d)
         self.cov = pe.covar_matrix(self.returns, method=method_cov, **kwargs)
         value = af.is_pos_def(self.cov, threshold=1e-8)
         if value == False:
@@ -443,6 +453,7 @@ class Portfolio(object):
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+
         method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
             The method used to estimate the covariance matrix:
             The default is 'hist'.
@@ -453,8 +464,9 @@ class Portfolio(object):
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
+
         **kwargs : dict
-            Other variables related to the mean and covariance estimation.
+            Other variables related to the covariance estimation.
 
         See Also
         --------
@@ -499,7 +511,15 @@ class Portfolio(object):
             except:
                 print("You must convert self.cov_bl to a positive definite matrix")
 
-    def factors_stats(self, method_mu="hist", method_cov="hist", **kwargs):
+    def factors_stats(
+        self,
+        method_mu="hist",
+        method_cov="hist",
+        d=0.94,
+        B=None,
+        dict_cov={},
+        dict_risk={},
+    ):
         r"""
         Calculate the inputs that will be used by the optimization method when
         we select the input model='FM'.
@@ -513,6 +533,7 @@ class Portfolio(object):
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+
         method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
             The method used to estimate the covariance matrix:
             The default is 'hist'.
@@ -523,8 +544,11 @@ class Portfolio(object):
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
-        **kwargs : dict
-            All aditional parameters of risk_factors function.
+
+        dict_cov : dict
+            Other variables related to the covariance estimation.
+        dict_risk : dict
+            Other variables related of risk_factors function.
 
         See Also
         --------
@@ -537,8 +561,8 @@ class Portfolio(object):
         X = self.factors
         Y = self.returns
 
-        mu_f = pe.mean_vector(self.returns, method=method_mu, **kwargs)
-        cov_f = pe.covar_matrix(self.returns, method=method_cov, **kwargs)
+        mu_f = pe.mean_vector(self.returns, method=method_mu, d=d)
+        cov_f = pe.covar_matrix(self.returns, method=method_cov, d=d, **dict_cov)
 
         self.mu_f = mu_f
         self.cov_f = cov_f
@@ -554,7 +578,7 @@ class Portfolio(object):
                 print("You must convert self.cov to a positive definite matrix")
 
         mu, cov, returns, nav = pe.risk_factors(
-            X, Y, method_mu=method_mu, method_cov=method_cov, **kwargs
+            X, Y, B=B, method_mu=method_mu, method_cov=method_cov, **dict_risk
         )
 
         self.mu_fm = mu
@@ -635,6 +659,7 @@ class Portfolio(object):
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+
         method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
             The method used to estimate the covariance matrix:
             The default is 'hist'.
@@ -645,6 +670,7 @@ class Portfolio(object):
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
+
         kwargs_1 : dict
             Other variables related to the loadings matrix estimation.
         kwargs_2 : dict
@@ -816,6 +842,7 @@ class Portfolio(object):
         dcov : scalar
             Percentage used by delta method to increase and decrease the covariance matrix in box constraints.
             The default is 0.1.
+
         See Also
         --------
         riskfolio.ParamsEstimation.bootstrapping
@@ -1062,7 +1089,7 @@ class Portfolio(object):
 
         g = cv.Variable(nonneg=True)
         G = sqrtm(sigma)
-        risk1 = g
+        risk1 = g ** 2
         devconstraints = [cv.SOC(g, G.T @ w)]
 
         # Return Variables
@@ -1917,6 +1944,8 @@ class Portfolio(object):
 
         constraints = []
 
+        # Uncertainty Sets for Mean Vector
+
         if Umu == "box":
             if obj == "Sharpe":
                 constraints += [mu @ w - d_mu @ cv.abs(w) - rf0 * k >= 1]
@@ -1925,15 +1954,17 @@ class Portfolio(object):
         elif Umu == "ellip":
             if obj == "Sharpe":
                 constraints += [
-                    mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w) - rf0 * k >= 1
+                    mu @ w - k_mu * cv.pnorm(sqrtm(cov_mu) @ w, 2) - rf0 * k >= 1
                 ]
             else:
-                ret = mu @ w - k_mu * cv.norm(sqrtm(cov_mu) @ w)
+                ret = mu @ w - k_mu * cv.pnorm(sqrtm(cov_mu) @ w, 2)
         else:
             if obj == "Sharpe":
                 constraints += [mu @ w - rf0 * k >= 1]
             else:
                 ret = mu @ w
+
+        # Uncertainty Sets for Covariance Matrix
 
         if Ucov == "box":
             M1 = cv.vstack([Au - Al, w.T])
@@ -1952,7 +1983,7 @@ class Portfolio(object):
                 M2 = cv.vstack([w, np.ones((1, 1))])
             M = cv.hstack([M1, M2])
             risk = cv.trace(sigma @ (X + Z))
-            risk += k_sigma * cv.norm(sqrtm(cov_sigma) @ (cv.vec(X) + cv.vec(Z)))
+            risk += k_sigma * cv.pnorm(sqrtm(cov_sigma) @ (cv.vec(X) + cv.vec(Z)), 2)
             constraints += [M >> 0, Z >> 0]
         else:
             G = sqrtm(sigma)
@@ -1971,9 +2002,9 @@ class Portfolio(object):
         # Problem Weight Constraints
 
         if obj == "Sharpe":
-            constraints = [cv.sum(w) == self.budget * k, k * 1000 >= 0]
+            constraints += [cv.sum(w) == self.budget * k, k >= 0]
             if self.sht == False:
-                constraints += [w <= self.upperlng * k, w * 1000 >= 0]
+                constraints += [w <= self.upperlng * k, w >= 0]
                 if self.card is not None:
                     constraints += [
                         cv.sum(e) <= self.card,
@@ -2000,9 +2031,9 @@ class Portfolio(object):
                     ]
 
         else:
-            constraints = [cv.sum(w) == self.budget]
+            constraints += [cv.sum(w) == self.budget]
             if self.sht == False:
-                constraints += [w <= self.upperlng, w * 1000 >= 0]
+                constraints += [w <= self.upperlng, w >= 0]
                 if self.card is not None:
                     constraints += [
                         cv.sum(e) <= self.card,
@@ -2051,11 +2082,11 @@ class Portfolio(object):
 
         if obj == "Sharpe":
             if self.allowTE == True:
-                TE_1 = cv.norm(returns @ w - bench @ k, "fro") / cv.sqrt(n - 1)
+                TE_1 = cv.norm(returns @ w - bench @ k, "fro") / np.sqrt(n - 1)
                 constraints += [TE_1 <= self.TE * k]
         else:
             if self.allowTE == True:
-                TE_1 = cv.norm(returns @ w - bench, "fro") / cv.sqrt(n - 1)
+                TE_1 = cv.norm(returns @ w - bench, "fro") / np.sqrt(n - 1)
                 constraints += [TE_1 <= self.TE]
 
         # Turnover Constraints

@@ -48,12 +48,14 @@ Hierarchical Clustering Portfolio Optimization
 * `Hierarchical Risk Parity (HRP) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2024.ipynb>`_.
 * `Hierarchical Equal Risk Contribution (HERC) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2025.ipynb>`_.
 * `Hierarchical Equal Risk Contribution with equally weights within clusters (HERC2) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2027.ipynb>`_.
+* `Hierarchical Clustering and Networks <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2028.ipynb>`_.
+* `Hierarchical Risk Parity with Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2029.ipynb>`_.
 
 
 Backtesting
 -----------
 * `Multi Assets Algorithmic Trading Backtesting with transaction cost and slippage using Backtrader <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%205.ipynb>`_.
-* `Multi Assets Algorithmic Trading Backtesting with Vectorbt <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2018.ipynb>`_.
+* `Multi Assets Algorithmic Trading Backtesting with Vectorbt <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2018.ipynb>`_ (vectorbt=0.16.1).
 
 
 Excel and Reporting

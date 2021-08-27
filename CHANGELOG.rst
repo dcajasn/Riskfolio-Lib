@@ -6,10 +6,21 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Version 1.0.0
+=============
+
+- Redesigns of Riskfolio-Lib interface (Only import riskfolio for all functions).
+- Implements Hierarchical Risk Parity (HRP) model with constraints on assets' weights.
+- Implements a function that helps to build constraints for the HRP model.
+- Implements the Direct Bubble Hierarchical Tree (DBHT) linkage method for HRP and HERC models.
+- Implements a function that plots relationship among assets in a network using Minimum Spanning Tree (MST) and Planar Maximally Filtered Graph (PMFG).
+- Add two new codependence measures: mutual information and lower tail dependence index.
+
+
 Version 0.4.0
 =============
 
-- Implements Hierarchical Equal Risk Parity with equally weights within clusters (HERC2).
+- Implements Hierarchical Equal Risk Contribution with equally weights within clusters (HERC2).
 - Implements a function that help us to discretize portfolio weights into number of shares given an investment amount.
 - Implements the option to select the method to estimate covariance in HRP, HERC and HERC2.
 - Add the option to add constraints on the number of assets and the number of effective assets.

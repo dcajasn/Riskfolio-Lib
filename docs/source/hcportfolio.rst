@@ -14,7 +14,7 @@ Hierarchical Clustering Portfolio Optimization
 
 Riskfolio-Lib allows to calculate the new machine learning asset allocation models. The available models are:
 
-- Hierarchical Risk Parity (HRP) :cite:`c-Prado1`, :cite:`c-Sjostrand`.
+- Hierarchical Risk Parity (HRP) :cite:`c-Prado1`, :cite:`c-Sjostrand`, :cite:`c-Pfitzinger`.
 - Hierarchical Equal Risk Contribution (HERC) :cite:`c-Raffinot2`, :cite:`c-Sjostrand`.
 
 In both cases we have the option to use the following 22 risk measures to calculate HRP and HERC portfolios using naive risk parity:

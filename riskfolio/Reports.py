@@ -1,3 +1,11 @@
+""""""  #
+"""
+Copyright (c) 2020-2021, Dany Cajas
+All rights reserved.
+This work is licensed under BSD 3-Clause "New" or "Revised" License.
+License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+"""
+
 import pandas as pd
 import matplotlib.pyplot as plt
 from xlsxwriter.utility import xl_range_abs, xl_range, xl_rowcol_to_cell, xl_col_to_name

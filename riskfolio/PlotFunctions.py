@@ -1,3 +1,11 @@
+""""""  #
+"""
+Copyright (c) 2020-2021, Dany Cajas
+All rights reserved.
+This work is licensed under BSD 3-Clause "New" or "Revised" License.
+License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+"""
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,9 +14,10 @@ from matplotlib import cm
 import scipy.stats as st
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
-from sklearn.metrics import pairwise_distances
+import networkx as nx
 import riskfolio.RiskFunctions as rk
 import riskfolio.AuxFunctions as af
+import riskfolio.DBHT as db
 
 __all__ = [
     "plot_series",
@@ -22,6 +31,7 @@ __all__ = [
     "plot_table",
     "plot_clusters",
     "plot_dendrogram",
+    "plot_network",
 ]
 
 rm_names = [
@@ -95,7 +105,8 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     -------
     ::
 
-        ax = plf.plot_series(returns=Y, w=ws, cmap='tab20', height=6, width=10, ax=None)
+        ax = rp.plot_series(returns=Y, w=ws, cmap='tab20', height=6, width=10,
+                            ax=None)
 
     .. image:: images/Port_Series.png
 
@@ -273,7 +284,7 @@ def plot_frontier(
         cov = port.cov
         returns = port.returns
 
-        ax = plf.plot_frontier(w_frontier=ws, mu=mu, cov=cov, returns=returns,
+        ax = rp.plot_frontier(w_frontier=ws, mu=mu, cov=cov, returns=returns,
                                rm=rm, rf=0, alpha=0.05, cmap='viridis', w=w1,
                                label=label, marker='*', s=16, c='r',
                                height=6, width=10, t_factor=252, ax=None)
@@ -455,8 +466,8 @@ def plot_pie(
     -------
     ::
 
-        ax = plf.plot_pie(w=w1, title='Portafolio', height=6, width=10,
-                          cmap="tab20", ax=None)
+        ax = rp.plot_pie(w=w1, title='Portafolio', height=6, width=10,
+                         cmap="tab20", ax=None)
 
     .. image:: images/Pie_Chart.png
 
@@ -626,8 +637,8 @@ def plot_bar(
     -------
     ::
 
-        ax = plf.plot_bar(w, title='Portafolio', kind="v", others=0.05,
-                          nrow=25, height=6, width=10, ax=None)
+        ax = rp.plot_bar(w, title='Portafolio', kind="v", others=0.05,
+                         nrow=25, height=6, width=10, ax=None)
 
     .. image:: images/Bar_Chart.png
 
@@ -835,8 +846,8 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
     -------
     ::
 
-        ax = plf.plot_frontier_area(w_frontier=ws, cmap="tab20", height=6,
-                                    width=10, ax=None)
+        ax = rp.plot_frontier_area(w_frontier=ws, cmap="tab20", height=6,
+                                   width=10, ax=None)
 
     .. image:: images/Area_Frontier.png
 
@@ -968,9 +979,9 @@ def plot_risk_con(
     -------
     ::
 
-        ax = plf.plot_risk_con(w=w2, cov=cov, returns=returns, rm=rm,
-                               rf=0, alpha=0.05, color="tab:blue", height=6,
-                               width=10, t_factor=252, ax=None)
+        ax = rp.plot_risk_con(w=w2, cov=cov, returns=returns, rm=rm,
+                              rf=0, alpha=0.05, color="tab:blue", height=6,
+                              width=10, t_factor=252, ax=None)
 
     .. image:: images/Risk_Con.png
 
@@ -1047,8 +1058,8 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
     -------
     ::
 
-        ax = plf.plot_hist(returns=Y, w=w1, alpha=0.05, bins=50, height=6,
-                           width=10, ax=None)
+        ax = rp.plot_hist(returns=Y, w=w1, alpha=0.05, bins=50, height=6,
+                          width=10, ax=None)
 
     .. image:: images/Histogram.png
 
@@ -1188,7 +1199,7 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
 
         nav=port.nav
 
-        ax = plf.plot_drawdown(nav=nav, w=w1, alpha=0.05, height=8, width=10, ax=None)
+        ax = rp.plot_drawdown(nav=nav, w=w1, alpha=0.05, height=8, width=10, ax=None)
 
     .. image:: images/Drawdown.png
 
@@ -1363,7 +1374,7 @@ def plot_table(
     -------
     ::
 
-        ax = plf.plot_table(returns=Y, w=w1, MAR=0, alpha=0.05, ax=None)
+        ax = rp.plot_table(returns=Y, w=w1, MAR=0, alpha=0.05, ax=None)
 
     .. image:: images/Port_Table.png
 
@@ -1547,10 +1558,11 @@ def plot_table(
 
 def plot_clusters(
     returns,
-    correlation="pearson",
+    codependence="pearson",
     linkage="single",
-    k=10,
+    k=None,
     max_k=10,
+    alpha_tail=0.05,
     leaf_order=True,
     dendrogram=True,
     cmap="viridis",
@@ -1561,14 +1573,24 @@ def plot_clusters(
     ax=None,
 ):
     r"""
-    Create a clustermap plot based on the selected correlation measure.
+    Create a clustermap plot based on the selected codependence measure.
 
     Parameters
     ----------
     returns : DataFrame
         Assets returns.
-    correlation : str, optional
-        Correlation measure.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info' or 'tail'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Posible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
         The default is 'single'. Posible values are:
@@ -1580,6 +1602,7 @@ def plot_clusters(
         - 'centroid'.
         - 'median'.
         - 'ward'.
+        - 'DBHT': Direct Bubble Hierarchical Tree.
 
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
@@ -1588,6 +1611,8 @@ def plot_clusters(
     max_k : int, optional
         Max number of clusters used by the two difference gap statistic
         to find the optimal number of clusters. The default is 10.
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
     leaf_order : bool, optional
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
@@ -1621,9 +1646,9 @@ def plot_clusters(
     -------
     ::
 
-        ax = plf.plot_clusters(returns=Y, correlation='spearman',
-                               linkage='ward', k=None, max_k=10,
-                               leaf_order=True, dendrogram=True, ax=None)
+        ax = rp.plot_clusters(returns=Y, correlation='spearman',
+                              linkage='ward', k=None, max_k=10,
+                              leaf_order=True, dendrogram=True, ax=None)
 
     .. image:: images/Assets_Clusters.png
 
@@ -1640,29 +1665,51 @@ def plot_clusters(
 
     labels = np.array(returns.columns.tolist())
 
-    # Correlation matrix from covariance matrix
-    if correlation in {"pearson", "spearman"}:
-        corr = returns.corr(method=correlation)
+    vmin, vmax = 0, 1
+    # Calculating codependence matrix and distance metric
+    if codependence in {"pearson", "spearman"}:
+        codep = returns.corr(method=codependence)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
         vmin, vmax = -1, 1
-    if correlation in {"abs_pearson", "abs_spearman"}:
-        corr = np.abs(returns.corr(method=correlation[4:]))
-        vmin, vmax = 0, 1
-    elif correlation == "distance":
-        corr = af.dcorr_matrix(returns)
-        vmin, vmax = 0, 1
+    elif codependence in {"abs_pearson", "abs_spearman"}:
+        codep = np.abs(returns.corr(method=codependence[4:]))
+        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
+    elif codependence in {"distance"}:
+        codep = af.dcorr_matrix(returns).astype(float)
+        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
+    elif codependence in {"mutual_info"}:
+        codep = af.mutual_info_matrix(returns).astype(float)
+        dist = af.var_info_matrix(returns).astype(float)
+    elif codependence in {"tail"}:
+        codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
+        dist = -np.log(codep)
 
-    # hierarchcial clustering
-    dist = np.sqrt((1 - corr).round(8) / 2)
-    dist = pd.DataFrame(dist, columns=corr.columns, index=corr.index)
+    # Hierarchcial clustering
+    dist = dist.to_numpy()
+    dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
     dim = len(dist)
-    p_dist = squareform(dist, checks=False)
-    clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+    if linkage == "DBHT":
+        # different choices for D, S give different outputs!
+        D = dist.to_numpy()  # dissimilatity matrix
+        if codependence in {"pearson", "spearman"}:
+            S = (1 - dist ** 2).to_numpy()
+        else:
+            S = codep.to_numpy()  # similarity matrix
+        (_, _, _, _, _, clustering) = db.DBHTs(
+            D, S, leaf_order=leaf_order
+        )  # DBHT clustering
+    else:
+        p_dist = squareform(dist, checks=False)
+        clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+
+    # Ordering clusterings
     permutation = hr.leaves_list(clustering)
     permutation = permutation.tolist()
-    ordered_corr = corr.to_numpy()[permutation, :][:, permutation]
+    ordered_codep = codep.to_numpy()[permutation, :][:, permutation]
 
+    # optimal number of clusters
     if k is None:
-        k = af.two_diff_gap_stat(corr, dist, clustering, max_k)
+        k = af.two_diff_gap_stat(codep, dist, clustering, max_k)
 
     clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
     clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
@@ -1671,9 +1718,9 @@ def plot_clusters(
 
     ax = fig.add_axes([0.3, 0.1, 0.6, 0.6])
 
-    im = ax.pcolormesh(ordered_corr, cmap=cmap, vmin=vmin, vmax=vmax)
-    ax.set_xticks(np.arange(corr.shape[0]) + 0.5, minor=False)
-    ax.set_yticks(np.arange(corr.shape[0]) + 0.5, minor=False)
+    im = ax.pcolormesh(ordered_codep, cmap=cmap, vmin=vmin, vmax=vmax)
+    ax.set_xticks(np.arange(codep.shape[0]) + 0.5, minor=False)
+    ax.set_yticks(np.arange(codep.shape[0]) + 0.5, minor=False)
     ax.set_xticklabels(labels[permutation], rotation=90, ha="center")
     ax.set_yticklabels(labels[permutation], va="center")
     ax.yaxis.set_label_position("right")
@@ -1713,18 +1760,24 @@ def plot_clusters(
         ax1 = fig.add_axes([0.3, 0.71, 0.6, 0.2])
 
         root, nodes = hr.to_tree(clustering, rd=True)
-        nodes = nodes[::-1]
-        nodes = [i.dist for i in nodes[: k - 1]]
+        nodes = [i.dist for i in nodes]
+        nodes.sort()
+        nodes = nodes[::-1][: k - 1]
         color_threshold = np.min(nodes)
 
+        colors = af.color_list(k)
+
+        hr.set_link_color_palette(colors)
         hr.dendrogram(
             clustering,
             color_threshold=color_threshold,
             above_threshold_color="grey",
             ax=ax1,
         )
+        hr.set_link_color_palette(None)
         ax1.set_xticklabels(labels[permutation], rotation=90, ha="center")
 
+        i = 0
         for coll in ax1.collections[:-1]:  # the last collection is the ungrouped level
             xmin, xmax = np.inf, -np.inf
             ymax = -np.inf
@@ -1737,11 +1790,12 @@ def plot_clusters(
                 (xmin - 4, 0),
                 xmax - xmin + 8,
                 ymax * 1.05,
-                facecolor=coll.get_color()[0],
+                facecolor=colors[i],  # coll.get_color()[0],
                 alpha=0.2,
                 edgecolor="none",
             )
             ax1.add_patch(rec)
+            i += 1
 
         ax1.set_xticks([])
         ax1.set_yticks([])
@@ -1752,11 +1806,7 @@ def plot_clusters(
 
         ax2 = fig.add_axes([0.09, 0.1, 0.2, 0.6])
 
-        root, nodes = hr.to_tree(clustering, rd=True)
-        nodes = nodes[::-1]
-        nodes = [i.dist for i in nodes[: k - 1]]
-        color_threshold = np.min(nodes)
-
+        hr.set_link_color_palette(colors)
         hr.dendrogram(
             clustering,
             color_threshold=color_threshold,
@@ -1764,8 +1814,10 @@ def plot_clusters(
             orientation="left",
             ax=ax2,
         )
+        hr.set_link_color_palette(None)
         ax2.set_xticklabels(labels[permutation], rotation=90, ha="center")
 
+        i = 0
         for coll in ax2.collections[:-1]:  # the last collection is the ungrouped level
             ymin, ymax = np.inf, -np.inf
             xmax = -np.inf
@@ -1778,11 +1830,12 @@ def plot_clusters(
                 (0, ymin - 4),
                 xmax * 1.05,
                 ymax - ymin + 8,
-                facecolor=coll.get_color()[0],
+                facecolor=colors[i],  # coll.get_color()[0],
                 alpha=0.2,
                 edgecolor="none",
             )
             ax2.add_patch(rec)
+            i += 1
 
         ax2.set_xticks([])
         ax2.set_yticks([])
@@ -1792,7 +1845,13 @@ def plot_clusters(
             side.set_visible(False)
 
     if title == "":
-        title = "Assets Clustermap"
+        title = (
+            "Assets Clustermap ("
+            + codependence.capitalize()
+            + " & "
+            + linkage
+            + " linkage)"
+        )
 
     if dendrogram == True:
         ax1.set_title(title)
@@ -1807,10 +1866,11 @@ def plot_clusters(
 
 def plot_dendrogram(
     returns,
-    correlation="pearson",
+    codependence="pearson",
     linkage="single",
-    k=10,
-    max_k=12,
+    k=None,
+    max_k=10,
+    alpha_tail=0.05,
     leaf_order=True,
     title="",
     height=5,
@@ -1818,14 +1878,24 @@ def plot_dendrogram(
     ax=None,
 ):
     r"""
-    Create a dendrogram of the selected assets.
+    Create a dendrogram based on the selected codependence measure.
 
     Parameters
     ----------
     returns : DataFrame
         Assets returns.
-    correlation : str, optional
-        Correlation measure.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info' or 'tail'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Posible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
         The default is 'single'. Posible values are:
@@ -1837,6 +1907,7 @@ def plot_dendrogram(
         - 'centroid'.
         - 'median'.
         - 'ward'.
+        - 'DBHT': Direct Bubble Hierarchical Tree.
 
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
@@ -1845,6 +1916,8 @@ def plot_dendrogram(
     max_k : int, optional
         Max number of clusters used by the two difference gap statistic
         to find the optimal number of clusters. The default is 10.
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
     leaf_order : bool, optional
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
@@ -1871,9 +1944,9 @@ def plot_dendrogram(
     -------
     ::
 
-        ax = plf.plot_dendrogram(returns=Y, correlation='spearman',
-                                 linkage='ward', k=None, max_k=10,
-                                 leaf_order=True, ax=None)
+        ax = rp.plot_dendrogram(returns=Y, correlation='spearman',
+                                linkage='ward', k=None, max_k=10,
+                                leaf_order=True, ax=None)
 
     .. image:: images/Assets_Dendrogram.png
 
@@ -1890,36 +1963,65 @@ def plot_dendrogram(
 
     labels = np.array(returns.columns.tolist())
 
-    # Correlation matrix from covariance matrix
-    if correlation in {"pearson", "spearman"}:
-        corr = returns.corr(method=correlation)
-    if correlation in {"abs_pearson", "abs_spearman"}:
-        corr = np.abs(returns.corr(method=correlation[4:]))
-    elif correlation == "distance":
-        corr = af.dcorr_matrix(returns)
+    # Calculating codependence matrix and distance metric
+    if codependence in {"pearson", "spearman"}:
+        codep = returns.corr(method=codependence)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    elif codependence in {"abs_pearson", "abs_spearman"}:
+        codep = np.abs(returns.corr(method=codependence[4:]))
+        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
+    elif codependence in {"distance"}:
+        codep = af.dcorr_matrix(returns).astype(float)
+        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
+    elif codependence in {"mutual_info"}:
+        codep = af.mutual_info_matrix(returns).astype(float)
+        dist = af.var_info_matrix(returns).astype(float)
+    elif codependence in {"tail"}:
+        codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
+        dist = -np.log(codep)
 
-    # hierarchcial clustering
-    dist = np.sqrt((1 - corr).round(8) / 2)
-    dist = pd.DataFrame(dist, columns=corr.columns, index=corr.index)
-    p_dist = squareform(dist, checks=False)
-    clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+    # Hierarchcial clustering
+    dist = dist.to_numpy()
+    dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
+    if linkage == "DBHT":
+        # different choices for D, S give different outputs!
+        D = dist.to_numpy()  # dissimilatity matrix
+        if codependence in {"pearson", "spearman"}:
+            S = (1 - dist ** 2).to_numpy()
+        else:
+            S = codep.copy().to_numpy()  # similarity matrix
+        (_, _, _, _, _, clustering) = db.DBHTs(
+            D, S, leaf_order=leaf_order
+        )  # DBHT clustering
+    else:
+        p_dist = squareform(dist, checks=False)
+        clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
 
+    # Ordering clusterings
     permutation = hr.leaves_list(clustering)
     permutation = permutation.tolist()
 
+    # optimal number of clusters
     if k is None:
-        k = af.two_diff_gap_stat(corr, dist, clustering, max_k)
+        k = af.two_diff_gap_stat(codep, dist, clustering, max_k)
 
     root, nodes = hr.to_tree(clustering, rd=True)
-    nodes = nodes[::-1]
-    nodes = [i.dist for i in nodes[: k - 1]]
+    nodes = [i.dist for i in nodes]
+    nodes.sort()
+    nodes = nodes[::-1][: k - 1]
     color_threshold = np.min(nodes)
 
+    colors = af.color_list(k)  # color list
+
+    hr.set_link_color_palette(colors)
     hr.dendrogram(
         clustering, color_threshold=color_threshold, above_threshold_color="grey", ax=ax
     )
+    hr.set_link_color_palette(None)
+
     ax.set_xticklabels(labels[permutation], rotation=90, ha="center")
 
+    i = 0
     for coll in ax.collections[:-1]:  # the last collection is the ungrouped level
         xmin, xmax = np.inf, -np.inf
         ymax = -np.inf
@@ -1932,11 +2034,12 @@ def plot_dendrogram(
             (xmin - 4, 0),
             xmax - xmin + 8,
             ymax * 1.05,
-            facecolor=coll.get_color()[0],
+            facecolor=colors[i],  # coll.get_color()[0],
             alpha=0.2,
             edgecolor="none",
         )
         ax.add_patch(rec)
+        i += 1
 
     ax.set_yticks([])
     ax.set_yticklabels([])
@@ -1945,7 +2048,261 @@ def plot_dendrogram(
         side.set_visible(False)
 
     if title == "":
-        title = "Assets Dendrogram"
+        title = (
+            "Assets Dendrogram ("
+            + codependence.capitalize()
+            + " & "
+            + linkage
+            + " linkage)"
+        )
+
+    ax.set_title(title)
+
+    fig = plt.gcf()
+    fig.tight_layout()
+
+    return ax
+
+
+def plot_network(
+    returns,
+    codependence="pearson",
+    linkage="single",
+    k=None,
+    max_k=10,
+    alpha_tail=0.05,
+    leaf_order=True,
+    kind="spring",
+    seed=0,
+    node_labels=True,
+    node_size=1400,
+    node_alpha=0.7,
+    font_size=10,
+    title="",
+    height=8,
+    width=10,
+    ax=None,
+):
+    r"""
+    Create a network plot. The Planar Maximally Filtered Graph (PMFG) for DBHT
+    linkage and Minimum Spanning Tree (MST) for other linkage methods.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info' or 'tail'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Posible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{pearson}_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{spearman}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+
+    linkage : string, optional
+        Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+        The default is 'single'. Posible values are:
+
+        - 'single'.
+        - 'complete'.
+        - 'average'.
+        - 'weighted'.
+        - 'centroid'.
+        - 'median'.
+        - 'ward'.
+        - 'DBHT': Direct Bubble Hierarchical Tree.
+
+    k : int, optional
+        Number of clusters. This value is took instead of the optimal number
+        of clusters calculated with the two difference gap statistic.
+        The default is None.
+    max_k : int, optional
+        Max number of clusters used by the two difference gap statistic
+        to find the optimal number of clusters. The default is 10.
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    leaf_order : bool, optional
+        Indicates if the cluster are ordered so that the distance between
+        successive leaves is minimal. The default is True.
+    kind : str, optional
+        Kind of networkx layout. The default value is 'spring'. Posible values
+        are:
+
+        - 'spring': networkx spring_layout.
+        - 'planar'. networkx planar_layout.
+        - 'circular'. networkx circular_layout.
+        - 'kamada'. networkx kamada_kawai_layout. Only available for positive codependence metrics. Not pearson or spearman except when linkage is DBHT.
+
+    seed : int, optional
+        Seed for networkx spring layout. The default value is 0.
+    node_labels : bool, optional
+        Specify if node lables are visible. The default value is True.
+    node_size : float, optional
+        Size of the nodes. The default value is 1600.
+    node_alpha : float, optional
+        Alpha parameter or transparency of nodes. The default value is 0.7.
+    font_size : float, optional
+        Font size of node labels. The default value is 12.
+    title : str, optional
+        Title of the chart. The default is "".
+    height : float, optional
+        Height of the image in inches. The default is 5.
+    width : float, optional
+        Width of the image in inches. The default is 12.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax : matplotlib axis
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = rp.plot_network(returns=Y, codependence="pearson",
+                             linkage="ward", k=None, max_k=10,
+                             alpha_tail=0.05, leaf_order=True,
+                             kind='spring', ax=None)
+
+
+    .. image:: images/Assets_Network.png
+
+
+    """
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
+
+    if ax is None:
+        fig = plt.gcf()
+        ax = plt.gca()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+
+    labels = np.array(returns.columns.tolist())
+
+    # Calculating codependence matrix and distance metric
+    if codependence in {"pearson", "spearman"}:
+        codep = returns.corr(method=codependence)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    elif codependence in {"abs_pearson", "abs_spearman"}:
+        codep = np.abs(returns.corr(method=codependence[4:]))
+        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
+    elif codependence in {"distance"}:
+        codep = af.dcorr_matrix(returns).astype(float)
+        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
+    elif codependence in {"mutual_info"}:
+        codep = af.mutual_info_matrix(returns).astype(float)
+        dist = af.var_info_matrix(returns).astype(float)
+    elif codependence in {"tail"}:
+        codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
+        dist = -np.log(codep)
+
+    # Hierarchcial clustering
+    dist = dist.to_numpy()
+    dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
+    if linkage == "DBHT":
+        # different choices for D, S give different outputs!
+        D = dist.to_numpy()  # dissimilatity matrix
+        if codependence in {"pearson", "spearman"}:
+            S = (1 - dist ** 2).to_numpy()
+        else:
+            S = codep.copy().to_numpy()  # similarity matrix
+        (_, Rpm, _, _, _, clustering) = db.DBHTs(
+            D, S, leaf_order=leaf_order
+        )  # DBHT clustering
+        MAdj = pd.DataFrame(Rpm, index=labels, columns=labels)
+        G = nx.from_pandas_adjacency(MAdj)
+    else:
+        p_dist = squareform(dist, checks=False)
+        clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+        T = nx.from_pandas_adjacency(codep)  # create a graph G from a numpy matrix
+        G = nx.minimum_spanning_tree(T)
+
+    # optimal number of clusters
+    if k is None:
+        k = af.two_diff_gap_stat(codep, dist, clustering, max_k)
+
+    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
+    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    for i, v in enumerate(clustering_inds):
+        clusters[v].append(labels[i])
+
+    # Layout options
+    node_options = {
+        "node_size": node_size,
+        "alpha": node_alpha,
+    }
+    font_options = {
+        "font_size": font_size,
+        "font_color": "k",
+    }
+
+    label_options = {"ec": "k", "fc": "white", "alpha": 0.7}
+
+    if kind == "spring":
+        pos = nx.spring_layout(G, seed=seed)
+    elif kind == "planar":
+        pos = nx.planar_layout(G)
+    elif kind == "circular":
+        pos = nx.circular_layout(G)
+    elif kind == "kamada":
+        if codependence in {"pearson", "spearman"} and linkage != "DBHT":
+            raise NameError(
+                "kamada layout only works with positive codependence measures except when linkage is DBHT."
+            )
+        pos = nx.kamada_kawai_layout(G)
+
+    # Plotting
+    nx.draw_networkx_edges(G, pos=pos, ax=ax, edge_color="grey")
+
+    if node_labels == True:
+        nx.draw_networkx_labels(G, pos=pos, ax=ax, bbox=label_options, **font_options)
+
+    colors = af.color_list(k)
+
+    for i, color in zip(clusters.keys(), colors):
+        nx.draw_networkx_nodes(
+            G, pos=pos, nodelist=clusters[i], node_color=color, ax=ax, **node_options
+        )
+
+    ax.set_yticks([])
+    ax.set_yticklabels([])
+    for i in {"right", "left", "top", "bottom"}:
+        side = ax.spines[i]
+        side.set_visible(False)
+
+    if title == "":
+        if linkage == "DBHT":
+            title = (
+                "Planar Maximally Filtered Graph ("
+                + codependence.capitalize()
+                + ", "
+                + linkage
+                + " linkage & "
+                + kind
+                + " layout)"
+            )
+        else:
+            title = (
+                "Minimun Spanning Tree ("
+                + codependence.capitalize()
+                + ", "
+                + linkage
+                + " linkage & "
+                + kind
+                + " layout)"
+            )
 
     ax.set_title(title)
 

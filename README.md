@@ -95,7 +95,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 * Tools to calculate risk measures.
 * Tools to calculate risk contributions per asset.
 * Tools to calculate uncertainty sets for mean vector and covariance matrix.
-* Tools to calculate assets clusters based on correlation metrics.
+* Tools to calculate assets clusters based on codependence metrics.
 * Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
 * Tools to visualizing portfolio properties and risk measures.
 * Tools to build reports on Jupyter Notebook and Excel. 

@@ -11,8 +11,8 @@ Plot Functions
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
-This section containts some functions that allows us to create charts that 
-helps us to analyze quickly the properties of our optimum portfolios.
+This module has functions that allows us to create charts that 
+helps us to analyze quickly the properties of our optimal portfolios.
 
 The following example construct the portfolios and the efficient frontier that
 will be plot using the functions of this module.
@@ -25,11 +25,8 @@ Example
     import numpy as np
     import pandas as pd
     import yfinance as yf
-    import riskfolio.Portfolio as pf
-    import riskfolio.PlotFunctions as plf 
-    
-    yf.pdr_override()
-    
+    import riskfolio as rp
+        
     # Date range
     start = '2016-01-01'
     end = '2019-12-30'
@@ -49,7 +46,7 @@ Example
     Y = assets
     
     # Creating the Portfolio Object
-    port = pf.Portfolio(returns=Y)
+    port = rp.Portfolio(returns=Y)
     
     # To display dataframes values in percentage format
     pd.options.display.float_format = '{:.4%}'.format

@@ -12,7 +12,7 @@ URL = 'https://github.com/dcajasn/Riskfolio-Lib'
 LICENSE = 'BSD (3-clause)'
 KEYWORDS = 'finance, portfolio, optimization, quant, asset, allocation, investing'
 DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
-VERSION = '0.4.0'
+VERSION = '1.0.0'
 PYTHON_REQUIRES = ">=3.7"
 
 INSTALL_REQUIRES = [
@@ -25,6 +25,7 @@ INSTALL_REQUIRES = [
     'statsmodels>=0.10.1',
     'arch>=4.15',
     'xlsxwriter>=1.3.7',
+    'networkx>=2.5.1',
 ]
 
 

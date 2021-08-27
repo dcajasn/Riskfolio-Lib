@@ -1,3 +1,11 @@
+""""""  #
+"""
+Copyright (c) 2020-2021, Dany Cajas
+All rights reserved.
+This work is licensed under BSD 3-Clause "New" or "Revised" License.
+License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+"""
+
 import numpy as np
 from scipy.optimize import minimize
 from scipy.optimize import Bounds

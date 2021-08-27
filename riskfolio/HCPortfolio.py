@@ -1,3 +1,11 @@
+""""""  #
+"""
+Copyright (c) 2020-2021, Dany Cajas
+All rights reserved.
+This work is licensed under BSD 3-Clause "New" or "Revised" License.
+License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+"""
+
 import numpy as np
 import pandas as pd
 import scipy.cluster.hierarchy as hr
@@ -5,6 +13,7 @@ from scipy.spatial.distance import squareform
 import riskfolio.RiskFunctions as rk
 import riskfolio.AuxFunctions as af
 import riskfolio.ParamsEstimation as pe
+import riskfolio.DBHT as db
 
 
 class HCPortfolio(object):
@@ -19,16 +28,22 @@ class HCPortfolio(object):
         The default is None.
     alpha : float, optional
         Significance level of CVaR, EVaR, CDaR and EDaR. The default is 0.05.
+    w_max : Series, optional
+        Upper bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
+    w_min : Series, optional
+        Lower bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
     """
 
-    def __init__(self, returns=None, alpha=0.05):
+    def __init__(self, returns=None, alpha=0.05, w_max=None, w_min=None):
         self._returns = returns
         self.alpha = alpha
         self.asset_order = None
         self.clusters = None
         self.cov = None
-        self.corr = None
-        self.corr_sorted = None
+        self.codep = None
+        self.codep_sorted = None
+        self.w_max = w_max
+        self.w_min = w_min
 
     @property
     def returns(self):
@@ -83,29 +98,49 @@ class HCPortfolio(object):
 
         return weight
 
-    # create hierarchical clustering
-    def _hierarchical_clustering_hrp(self, linkage="single", leaf_order=True):
+    # Create hierarchical clustering
+    def _hierarchical_clustering(
+        self,
+        model="HRP",
+        linkage="ward",
+        codependence="pearson",
+        max_k=10,
+        leaf_order=True,
+    ):
 
-        # hierarchcial clustering
-        dist = np.sqrt(
-            np.clip((1.0 - self.corr) / 2.0, a_min=0.0, a_max=1.0)
-        ).to_numpy()
-        p_dist = squareform(dist, checks=False)
-        clusters = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+        # Calculating distance
+        if codependence in {"pearson", "spearman"}:
+            dist = np.sqrt(np.clip((1 - self.codep) / 2, a_min=0.0, a_max=1.0))
+        elif codependence in {"abs_pearson", "abs_spearman", "distance"}:
+            dist = np.sqrt(np.clip((1 - self.codep), a_min=0.0, a_max=1.0))
+        elif codependence in {"mutual_info"}:
+            dist = af.var_info_matrix(self.returns).astype(float)
+        elif codependence in {"tail"}:
+            dist = -np.log(af.ltdi_matrix(self.returns, alpha=self.alpha).astype(float))
 
-        return clusters
+        # Hierarchcial clustering
+        dist = dist.to_numpy()
+        dist = pd.DataFrame(dist, columns=self.codep.columns, index=self.codep.index)
+        if linkage == "DBHT":
+            # different choices for D, S give different outputs!
+            D = dist.to_numpy()  # dissimilatity matrix
+            if codependence in {"pearson", "spearman"}:
+                codep = 1 - dist ** 2
+                S = codep.to_numpy()  # similarity matrix
+            else:
+                S = self.codep.to_numpy()  # similarity matrix
+            (_, _, _, _, _, clustering) = db.DBHTs(
+                D, S, leaf_order=leaf_order
+            )  # DBHT clustering
+        else:
+            p_dist = squareform(dist, checks=False)
+            clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
 
-    # create hierarchical clustering
-    def _hierarchical_clustering_herc(self, linkage="ward", max_k=10, leaf_order=True):
-
-        # hierarchcial clustering
-        dist = np.sqrt((1 - self.corr).round(8) / 2)
-        dist = pd.DataFrame(dist, columns=self.corr.columns, index=self.corr.index)
-        p_dist = squareform(dist, checks=False)
-        clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
-
-        # optimal number of clusters
-        k = af.two_diff_gap_stat(self.corr, dist, clustering, max_k)
+        if model in ["HERC", "HERC2"]:
+            # optimal number of clusters
+            k = af.two_diff_gap_stat(self.codep, dist, clustering, max_k)
+        else:
+            k = None
 
         return clustering, k
 
@@ -115,6 +150,15 @@ class HCPortfolio(object):
 
     # compute HRP weight allocation through recursive bisection
     def _recursive_bisection(self, sort_order, rm="MV", rf=0):
+
+        if isinstance(self.w_max, pd.Series) and isinstance(self.w_min, pd.Series):
+            if (self.w_max.all() >= self.w_min.all()).item():
+                flag = True
+            else:
+                raise NameError("All upper bounds must be higher than lower bounds")
+        else:
+            flag = False
+
         weight = pd.Series(1, index=sort_order)  # set initial weights to 1
         items = [sort_order]
 
@@ -187,9 +231,30 @@ class HCPortfolio(object):
                         right_risk = np.power(right_risk, 2)
 
                 # Allocate weight to clusters
-                alpha = 1 - left_risk / (left_risk + right_risk)
-                weight[left_cluster] *= alpha  # weight 1
-                weight[right_cluster] *= 1 - alpha  # weight 2
+                alpha_1 = 1 - left_risk / (left_risk + right_risk)
+
+                # Weights constraints
+                if flag:
+                    a1 = np.sum(self.w_max[left_cluster]) / weight[left_cluster[0]]
+                    a2 = np.max(
+                        [
+                            np.sum(self.w_min[left_cluster]) / weight[left_cluster[0]],
+                            alpha_1,
+                        ]
+                    )
+                    alpha_1 = np.min([a1, a2])
+                    a1 = np.sum(self.w_max[right_cluster]) / weight[right_cluster[0]]
+                    a2 = np.max(
+                        [
+                            np.sum(self.w_min[right_cluster])
+                            / weight[right_cluster[0]],
+                            1 - alpha_1,
+                        ]
+                    )
+                    alpha_1 = 1 - np.min([a1, a2])
+
+                weight[left_cluster] *= alpha_1  # weight 1
+                weight[right_cluster] *= 1 - alpha_1  # weight 2
 
         weight.index = self.asset_order
 
@@ -202,12 +267,18 @@ class HCPortfolio(object):
 
         # Transform linkage to tree and reverse order
         root, nodes = hr.to_tree(Z, rd=True)
-        nodes = nodes[::-1]
+        nodes = np.array(nodes)
+        nodes_1 = np.array([i.dist for i in nodes])
+        idx = np.argsort(nodes_1)
+        nodes = nodes[idx][::-1].tolist()
+
         weight = pd.Series(1, index=self.cov.index)  # Set initial weights to 1
 
-        clusters_inds = hr.fcluster(Z, self.k, criterion="maxclust")
-        clusters = {i: [] for i in range(min(clusters_inds), max(clusters_inds) + 1)}
-        for i, v in enumerate(clusters_inds):
+        clustering_inds = hr.fcluster(Z, self.k, criterion="maxclust")
+        clusters = {
+            i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)
+        }
+        for i, v in enumerate(clustering_inds):
             clusters[v].append(i)
 
         # Loop through k clusters
@@ -222,7 +293,7 @@ class HCPortfolio(object):
 
                 # Allocate weight to clusters
                 if rm == "equal":
-                    w_1 = 0.5
+                    alpha_1 = 0.5
 
                 else:
                     for j in clusters.keys():
@@ -257,7 +328,7 @@ class HCPortfolio(object):
 
                             left_risk += left_risk_
 
-                        if set(clusters[j]).issubset(right_set):
+                        elif set(clusters[j]).issubset(right_set):
                             # Right cluster
                             right_cov = self.cov.iloc[clusters[j], clusters[j]]
                             right_returns = self.returns.iloc[:, clusters[j]]
@@ -288,10 +359,10 @@ class HCPortfolio(object):
 
                             right_risk += right_risk_
 
-                    w_1 = 1 - left_risk / (left_risk + right_risk)
+                    alpha_1 = 1 - left_risk / (left_risk + right_risk)
 
-                weight[left] *= w_1  # weight 1
-                weight[right] *= 1 - w_1  # weight 2
+                weight[left] *= alpha_1  # weight 1
+                weight[right] *= 1 - alpha_1  # weight 2
 
         # Get constituents of k clusters
         clustered_assets = pd.Series(
@@ -325,13 +396,14 @@ class HCPortfolio(object):
     def optimization(
         self,
         model="HRP",
-        correlation="pearson",
+        codependence="pearson",
         covariance="hist",
         rm="MV",
         rf=0,
         linkage="single",
         k=None,
         max_k=10,
+        alpha_tail=0.05,
         leaf_order=True,
         d=0.94,
     ):
@@ -341,7 +413,7 @@ class HCPortfolio(object):
 
         Parameters
         ----------
-        model : str can be {'HRP', 'HERC' or 'HERC2'}
+        model : str, can be {'HRP', 'HERC' or 'HERC2'}
             The hierarchical cluster portfolio model used for optimize the
             portfolio. The default is 'HRP'. Posible values are:
 
@@ -349,15 +421,17 @@ class HCPortfolio(object):
             - 'HERC': Hierarchical Equal Risk Contribution.
             - 'HERC2': HERC but splitting weights equally within clusters.
 
-        correlation : str can be {'pearson', 'spearman' or 'distance'}.
-            The correlation matrix used for create the clusters.
-            The default is 'pearson'. Posible values are:
+        codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info' or 'tail'}
+            The codependence or similarity matrix used to build the distance
+            metric and clusters. The default is 'pearson'. Posible values are:
 
-            - 'pearson': pearson correlation matrix.
-            - 'spearman': spearman correlation matrix.
-            - 'abs_pearson': absolute value pearson correlation matrix.
-            - 'abs_spearman': absolute value spearman correlation matrix.
-            - 'distance': distance correlation matrix.
+            - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+            - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+            - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{pearson}_{i,j}|)}`.
+            - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{spearman}_{i,j}|)}`.
+            - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+            - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+            - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
 
         covariance : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
             The method used to estimate the covariance matrix:
@@ -412,6 +486,7 @@ class HCPortfolio(object):
             - 'centroid'.
             - 'median'.
             - 'ward'.
+            - 'DBHT': Direct Bubble Hierarchical Tree.
 
         k : int, optional
             Number of clusters. This value is took instead of the optimal number
@@ -420,6 +495,8 @@ class HCPortfolio(object):
         max_k : int, optional
             Max number of clusters used by the two difference gap statistic
             to find the optimal number of clusters. The default is 10.
+        alpha_tail : float, optional
+            Significance level for lower tail dependence index. The default is 0.05.
         leaf_order : bool, optional
             Indicates if the cluster are ordered so that the distance between
             successive leaves is minimal. The default is True.
@@ -434,36 +511,44 @@ class HCPortfolio(object):
 
         """
 
-        # Correlation matrix from covariance matrix
+        # Covariance matrix
         self.cov = pe.covar_matrix(self.returns, method=covariance, d=0.94)
 
-        if correlation in {"pearson", "spearman"}:
-            self.corr = self.returns.corr(method=correlation).astype(float)
-        if correlation in {"abs_pearson", "abs_spearman"}:
-            self.corr = np.abs(self.returns.corr(method=correlation[4:])).astype(float)
-        elif correlation == "distance":
-            self.corr = af.dcorr_matrix(self.returns).astype(float)
+        # Codependence matrix
+        if codependence in {"pearson", "spearman"}:
+            self.codep = self.returns.corr(method=codependence).astype(float)
+        elif codependence in {"abs_pearson", "abs_spearman"}:
+            self.codep = np.abs(self.returns.corr(method=codependence[4:])).astype(
+                float
+            )
+        elif codependence in {"distance"}:
+            self.codep = af.dcorr_matrix(self.returns).astype(float)
+        elif codependence in {"mutual_info"}:
+            self.codep = af.mutual_info_matrix(self.returns).astype(float)
+        elif codependence in {"tail"}:
+            self.codep = af.ltdi_matrix(self.returns, alpha=self.alpha).astype(float)
 
         # Step-1: Tree clustering
-        if model == "HRP":
-            self.clusters = self._hierarchical_clustering_hrp(
-                linkage, leaf_order=leaf_order
-            )
-        elif model in ["HERC", "HERC2"]:
-            self.clusters, self.k = self._hierarchical_clustering_herc(
-                linkage, max_k, leaf_order=leaf_order
-            )
-            if k is not None:
-                self.k = int(k)
+        self.clusters, self.k = self._hierarchical_clustering(
+            model, linkage, codependence, max_k, leaf_order=leaf_order
+        )
+        if k is not None:
+            self.k = int(k)
 
         # Step-2: Seriation (Quasi-Diagnalization)
         self.sort_order = self._seriation(self.clusters)
         asset_order = self.assetslist
         asset_order[:] = [self.assetslist[i] for i in self.sort_order]
-        self.asset_order = asset_order
-        self.corr_sorted = self.corr.reindex(
+        self.asset_order = asset_order.copy()
+        self.codep_sorted = self.codep.reindex(
             index=self.asset_order, columns=self.asset_order
         )
+
+        if isinstance(self.w_max, pd.Series) and isinstance(self.w_min, pd.Series):
+            self.w_max = self.w_max.reindex(index=self.asset_order)
+            self.w_max.index = self.sort_order
+            self.w_min = self.w_min.reindex(index=self.asset_order)
+            self.w_min.index = self.sort_order
 
         # Step-3: Recursive bisection
         if model == "HRP":
@@ -472,6 +557,12 @@ class HCPortfolio(object):
             weights = self._hierarchical_recursive_bisection(
                 self.clusters, rm=rm, rf=rf, linkage=linkage, model=model
             )
+
+        if isinstance(self.w_max, pd.Series) and isinstance(self.w_min, pd.Series):
+            self.w_max = self.w_max.sort_index()
+            self.w_max.index = self.assetslist
+            self.w_min = self.w_min.sort_index()
+            self.w_max.index = self.assetslist
 
         weights = weights.loc[self.assetslist].to_frame()
         weights.columns = ["weights"]

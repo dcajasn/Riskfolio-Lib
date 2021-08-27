@@ -1,3 +1,11 @@
+""""""  #
+"""
+Copyright (c) 2020-2021, Dany Cajas
+All rights reserved.
+This work is licensed under BSD 3-Clause "New" or "Revised" License.
+License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+"""
+
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
@@ -1394,8 +1402,6 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=3000, window=3, seed=0):
     elif window <= 1:
         raise ValueError("block must be greather than 1")
 
-    rs = np.random.RandomState(seed)
-
     cols = X.columns.tolist()
     cols_2 = [i + "-" + j for i in cols for j in cols]
     m = len(cols)
@@ -1403,11 +1409,11 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=3000, window=3, seed=0):
     covs = np.zeros((n_sim, m, m))
 
     if kind == "stationary":
-        gen = bs.StationaryBootstrap(window, X, random_state=rs)
+        gen = bs.StationaryBootstrap(window, X, seed=seed)
     elif kind == "circular":
-        gen = bs.CircularBlockBootstrap(window, X, random_state=rs)
+        gen = bs.CircularBlockBootstrap(window, X, seed=seed)
     elif kind == "moving":
-        gen = bs.MovingBlockBootstrap(window, X, random_state=rs)
+        gen = bs.MovingBlockBootstrap(window, X, seed=seed)
     else:
         raise ValueError("kind only can be 'stationary', 'circular' or 'moving'")
 

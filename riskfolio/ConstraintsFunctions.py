@@ -1,8 +1,17 @@
+""""""  #
+"""
+Copyright (c) 2020-2021, Dany Cajas
+All rights reserved.
+This work is licensed under BSD 3-Clause "New" or "Revised" License.
+License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+"""
+
 import numpy as np
 import pandas as pd
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
 import riskfolio.AuxFunctions as af
+import riskfolio.DBHT as db
 
 
 def assets_constraints(constraints, asset_classes):
@@ -50,7 +59,7 @@ def assets_constraints(constraints, asset_classes):
     --------
     ::
 
-        import riskfolio.ConstraintsFunctions as cf
+        import riskfolio as rp
 
         asset_classes = {'Assets': ['FB', 'GOOGL', 'NTFX', 'BAC', 'WFC', 'TLT', 'SHV'],
                          'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
@@ -88,7 +97,7 @@ def assets_constraints(constraints, asset_classes):
 
     ::
 
-        A, B = cf.assets_constraints(constraints, asset_classes)
+        A, B = rp.assets_constraints(constraints, asset_classes)
 
 
     The matrixes A and B looks like this (all constraints were converted to a linear
@@ -329,7 +338,7 @@ def factors_constraints(constraints, loadings):
 
     ::
 
-        C, D = cf.factors_constraints(constraints, loadings)
+        C, D = rp.factors_constraints(constraints, loadings)
 
 
     The matrixes C and D looks like this (all constraints were converted to a linear
@@ -448,7 +457,7 @@ def assets_views(views, asset_classes):
 
     ::
 
-        P, Q = cf.assets_views(views, asset_classes)
+        P, Q = rp.assets_views(views, asset_classes)
 
 
     The matrixes P and Q looks like this:
@@ -614,7 +623,7 @@ def factors_views(views, loadings, const=True):
 
     ::
 
-        P, Q = cf.factors_views(factorsviews, loadings, const=True)
+        P, Q = rp.factors_views(factorsviews, loadings, const=True)
 
 
     The matrixes P and Q looks like this:
@@ -661,7 +670,13 @@ def factors_views(views, loadings, const=True):
 
 
 def assets_clusters(
-    returns, correlation="pearson", linkage="ward", k=None, max_k=10, leaf_order=True
+    returns,
+    codependence="pearson",
+    linkage="ward",
+    k=None,
+    max_k=10,
+    alpha_tail=0.05,
+    leaf_order=True,
 ):
     r"""
     Create asset classes based on hierarchical clustering.
@@ -670,16 +685,17 @@ def assets_clusters(
     ----------
     returns : DataFrame
         Assets returns.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info' or 'tail'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Posible values are:
 
-    correlation : str can be {'pearson', 'spearman' or 'distance'}.
-        The correlation matrix used for create the clusters.
-        The default is 'pearson'. Posible values are:
-
-        - 'pearson': pearson correlation matrix.
-        - 'spearman': spearman correlation matrix.
-        - 'abs_pearson': absolute value pearson correlation matrix.
-        - 'abs_spearman': absolute value spearman correlation matrix.
-        - 'distance': distance correlation matrix.
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{pearson}_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{spearman}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
@@ -692,6 +708,7 @@ def assets_clusters(
         - 'centroid'.
         - 'median'.
         - 'ward'.
+        - 'DBHT'. Direct Bubble Hierarchical Tree.
 
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
@@ -700,6 +717,8 @@ def assets_clusters(
     max_k : int, optional
         Max number of clusters used by the two difference gap statistic
         to find the optimal number of clusters. The default is 10.
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
     leaf_order : bool, optional
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
@@ -718,7 +737,9 @@ def assets_clusters(
 
     ::
 
-        clusters = cf.assets_clusters(returns, correlation='pearson', linkage='ward', k=None, max_k=10, leaf_order=True)
+        clusters = rp.assets_clusters(returns, codependence='pearson',
+                                      linkage='ward', k=None, max_k=10,
+                                      alpha_tail=0.05, leaf_order=True)
 
 
     The clusters dataframe looks like this:
@@ -730,33 +751,202 @@ def assets_clusters(
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
 
-    # Correlation matrix from covariance matrix
-    if correlation in {"pearson", "spearman"}:
-        corr = returns.corr(method=correlation)
-    if correlation in {"abs_pearson", "abs_spearman"}:
-        corr = np.abs(returns.corr(method=correlation[4:]))
-    elif correlation == "distance":
-        corr = af.dcorr_matrix(returns)
+    # Calculating codependence matrix and distance metric
+    if codependence in {"pearson", "spearman"}:
+        codep = returns.corr(method=codependence)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    elif codependence in {"abs_pearson", "abs_spearman"}:
+        codep = np.abs(returns.corr(method=codependence[4:]))
+        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
+    elif codependence in {"distance"}:
+        codep = af.dcorr_matrix(returns).astype(float)
+        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
+    elif codependence in {"mutual_info"}:
+        codep = af.mutual_info_matrix(returns).astype(float)
+        dist = af.var_info_matrix(returns).astype(float)
+    elif codependence in {"tail"}:
+        codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
+        dist = -np.log(codep)
 
-    # hierarchcial clustering
-    dist = np.sqrt((1 - corr).round(8) / 2)
-    dist = pd.DataFrame(dist, columns=corr.columns, index=corr.index)
-    p_dist = squareform(dist, checks=False)
-    clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+    # Hierarchcial clustering
+    dist = dist.to_numpy()
+    dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
+    if linkage == "DBHT":
+        # different choices for D, S give different outputs!
+        D = dist.to_numpy()  # dissimilatity matrix
+        if codependence in {"pearson", "spearman"}:
+            S = (1 - dist ** 2).to_numpy()
+        else:
+            S = codep.copy().to_numpy()  # similarity matrix
+        (_, _, _, _, _, clustering) = db.DBHTs(
+            D, S, leaf_order=leaf_order
+        )  # DBHT clustering
+    else:
+        p_dist = squareform(dist, checks=False)
+        clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
 
+    # Optimal number of clusters
     if k is None:
-        # optimal number of clusters
-        k = af.two_diff_gap_stat(corr, dist, clustering, max_k)
+        k = af.two_diff_gap_stat(codep, dist, clustering, max_k)
 
+    # Building clusters
     clusters_inds = hr.fcluster(clustering, k, criterion="maxclust")
 
     clusters = {"Assets": [], "Clusters": []}
 
     for i, v in enumerate(clusters_inds):
-        clusters["Assets"].append(corr.columns.tolist()[i])
+        clusters["Assets"].append(codep.columns.tolist()[i])
         clusters["Clusters"].append("Cluster " + str(v))
 
     clusters = pd.DataFrame(clusters)
     clusters = clusters.sort_values(by=["Assets"])
 
     return clusters
+
+
+def hrp_constraints(constraints, asset_classes):
+    r"""
+    Create the upper and lower bounds constraints for hierarchical risk parity
+    model.
+
+    Parameters
+    ----------
+    constraints : DataFrame of shape (n_constraints, n_fields)
+        Constraints matrix, where n_constraints is the number of constraints
+        and n_fields is the number of fields of constraints matrix, the fields
+        are:
+
+        - Disabled: (bool) indicates if the constraint is enable.
+        - Type: (str) can be: 'Assets', All Assets' and 'Each asset in a class'.
+        - Position: (str) the name of the asset or asset class of the constraint.
+        - Sign: (str) can be '>=' or '<='.
+        - Weight: (scalar) is the maximum or minimum weight of the absolute constraint.
+
+    asset_classes : DataFrame of shape (n_assets, n_cols)
+        Asset's classes matrix, where n_assets is the number of assets and
+        n_cols is the number of columns of the matrix where the first column
+        is the asset list and the next columns are the different asset's
+        classes sets.
+
+    Returns
+    -------
+    w_max : pd.Series
+        The upper bound of hierarchical risk parity weights constraints.
+
+    w_min : pd.Series
+        The lower bound of hierarchical risk parity weights constraints.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    ::
+
+        asset_classes = {'Assets': ['FB', 'GOOGL', 'NTFX', 'BAC', 'WFC', 'TLT', 'SHV'],
+                         'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
+                                     'Fixed Income', 'Fixed Income'],
+                         'Class 2': ['Technology', 'Technology', 'Technology',
+                                     'Financial', 'Financial', 'Treasury', 'Treasury'],}
+
+        asset_classes = pd.DataFrame(asset_classes)
+        asset_classes = asset_classes.sort_values(by=['Assets'])
+
+        constraints = {'Disabled': [False, False, False, False, False, False],
+                       'Type': ['Assets', 'Assets', 'All Assets', 'All Assets',
+                                'Each asset in a class', 'Each asset in a class'],
+                       'Set': ['', '', '', '','Class 1', 'Class 2'],
+                       'Position': ['BAC', 'FB', '', '', 'Equity', 'Treasury'],
+                       'Sign': ['>=', '<=', '<=', '>=', '<=', '<='],
+                       'Weight': [0.02, 0.085, 0.09, 0.01, 0.07, 0.06]}
+
+        constraints = pd.DataFrame(constraints)
+
+    The constraint looks like this:
+
+    .. image:: images/HRPConstraints.png
+
+    It is easier to construct the constraints in excel and then upload to a
+    dataframe.
+
+    To create the pd.Series w_max and w_min we use the following command:
+
+    ::
+
+        w_max, w_min = rp.hrp_constraints(constraints, asset_classes)
+
+
+    The pd.Series w_max and w_min looks like this (all constraints were
+    merged to a single upper bound for each asset):
+
+    .. image:: images/HRP_Bounds.png
+
+    """
+
+    if not isinstance(constraints, pd.DataFrame) and not isinstance(
+        asset_classes, pd.DataFrame
+    ):
+        raise ValueError("constraints and asset_classes must be DataFrames")
+
+    if constraints.shape[1] != 6:
+        raise ValueError("constraints must have ten columns")
+
+    n = len(constraints)
+    data = constraints.fillna("").copy()
+    assetslist = asset_classes.iloc[:, 0].values.tolist()
+
+    w_max = pd.Series(1, index=assetslist)
+    w_min = pd.Series(0, index=assetslist)
+
+    for i in range(0, n):
+        if data.loc[i, "Disabled"] == False:
+            if data.loc[i, "Type"] == "Assets":
+                assets = data.loc[i, "Position"]
+                if data.loc[i, "Sign"] == ">=":
+                    if w_min.loc[assets] <= data.loc[i, "Weight"]:
+                        w_min.loc[assets] = data.loc[i, "Weight"]
+                elif data.loc[i, "Sign"] == "<=":
+                    if w_max.loc[assets] >= data.loc[i, "Weight"]:
+                        w_max.loc[assets] = data.loc[i, "Weight"]
+            elif data.loc[i, "Type"] == "All Assets":
+                if data.loc[i, "Sign"] == ">=":
+                    if w_min[w_min <= data.loc[i, "Weight"]].shape[0] != 0:
+                        w_min[w_min <= data.loc[i, "Weight"]] = data.loc[i, "Weight"]
+                elif data.loc[i, "Sign"] == "<=":
+                    if w_max[w_max >= data.loc[i, "Weight"]].shape[0] != 0:
+                        w_max[w_max >= data.loc[i, "Weight"]] = data.loc[i, "Weight"]
+            elif data.loc[i, "Type"] == "Each asset in a class":
+                label_0 = asset_classes.columns.tolist()[0]
+                label_1 = data.loc[i, "Set"]
+                label_2 = data.loc[i, "Position"]
+                assets = asset_classes[[label_0, label_1]][
+                    asset_classes[label_1] == label_2
+                ]
+                assets = assets["Assets"].tolist()
+                if data.loc[i, "Sign"] == ">=":
+                    if (
+                        w_min.loc[assets][
+                            w_min.loc[assets] <= data.loc[i, "Weight"]
+                        ].shape[0]
+                        != 0
+                    ):
+                        w_min.loc[assets] = np.where(
+                            w_min.loc[assets] <= data.loc[i, "Weight"],
+                            data.loc[i, "Weight"],
+                            w_min.loc[assets],
+                        )
+                elif data.loc[i, "Sign"] == "<=":
+                    if (
+                        w_max.loc[assets][
+                            w_max.loc[assets] >= data.loc[i, "Weight"]
+                        ].shape[0]
+                        != 0
+                    ):
+                        w_max.loc[assets] = np.where(
+                            w_max.loc[assets] >= data.loc[i, "Weight"],
+                            data.loc[i, "Weight"],
+                            w_max.loc[assets],
+                        )
+
+    return w_max, w_min
