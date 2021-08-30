@@ -57,7 +57,7 @@ def DBHTs(D, S, leaf_order=True):
     Apm = Rpm.copy()
     Apm[Apm != 0] = D[Apm != 0].copy()
     (Dpm, _) = distance_wei(Apm)
-    (H1, Hb, Mb, CliqList, Sb) = CliqHierarchyTree2s(Rpm, "uniqueroot")
+    (H1, Hb, Mb, CliqList, Sb) = CliqHierarchyTree2s(Rpm, method1="uniqueroot")
     del H1, Sb
     Mb = Mb[0 : CliqList.shape[0], :]
     Mv = np.empty((Rpm.shape[0], 0))
@@ -231,7 +231,8 @@ def distance_wei(L):
             S[V] = False  # distance u->V is now permanent
             L1[:, V] = 0  # no in-edges as already shortest
             for v in V.tolist():
-                T = np.ravel(np.argwhere(L1[v, :]))  # neighbours of shortest nodes
+                # T = np.ravel(np.argwhere(L1[v, :]))  # neighbours of shortest nodes
+                (_, T, _) = sp.find(L1[v, :])  # neighbours of shortest nodes
                 d = np.min(
                     np.vstack(
                         (D[np.ix_([u], T)], D[np.ix_([u], [v])] + L1[np.ix_([v], T)])
@@ -254,9 +255,8 @@ def distance_wei(L):
                 minD = np.min(D[u, S])
                 minD = np.array([minD])
 
-            if minD.shape[0] == 0 or np.isinf(
-                minD
-            ):  # isempty: all nodes reached; isinf: some nodes cannot be reached
+            if minD.shape[0] == 0 or np.isinf(minD):
+                # isempty: all nodes reached; isinf: some nodes cannot be reached
                 break
             V = np.ravel(np.argwhere(D[u, :] == minD))
 
@@ -332,10 +332,10 @@ def CliqHierarchyTree2s(Apm, method1):
 
         M[indx_s, n] = 1
         # del Indicator, InsideCliq, count, T, Temp, cliq_vec, IndxNot, InsideCliq
+        del T, cliq_vec, IndxNot
 
     Pred = BuildHierarchy(M)
-    Root = np.argwhere(Pred == 0)
-
+    Root = np.argwhere(Pred == -1)
     # for n=1:length(Root);
     #     Components{n}=find(M(:,Root(n))==1);
     # end
@@ -344,12 +344,12 @@ def CliqHierarchyTree2s(Apm, method1):
     if method1.lower() == "uniqueroot":
 
         if len(Root) > 1:
-            Pred = np.append(Pred[:], 0)
+            Pred = np.append(Pred[:], -1)
             Pred[Root] = len(Pred) - 1
 
         H = np.zeros((Nc + 1, Nc + 1))
         for n in range(0, len(Pred)):
-            if Pred[n] != 0:
+            if Pred[n] != -1:
                 H[n, np.int32(Pred[n])] = 1
 
         H = H + H.T
@@ -359,7 +359,7 @@ def CliqHierarchyTree2s(Apm, method1):
             Adj = AdjCliq(A, CliqList, Root)
         H = np.zeros((Nc, Nc))
         for n in range(0, len(Pred)):
-            if Pred[n] != 0:
+            if Pred[n] != -1:
                 H[n, np.int32(Pred[n])] = 1
         if (Pred.shape[0] == 0) != 1:
             H = H + H.T
@@ -382,9 +382,10 @@ def CliqHierarchyTree2s(Apm, method1):
 
 
 def BuildHierarchy(M):
-    Pred = np.zeros(M.shape[1])
+    Pred = -1 * np.ones(M.shape[1])
     for n in range(0, M.shape[1]):
-        Children = np.argwhere(np.ravel(M[:, n]) == 1)
+        # Children = np.argwhere(np.ravel(M[:, n]) == 1)
+        (_, Children, _) = sp.find(M[:, n] == 1)
         ChildrenSum = np.sum(M[Children, :], axis=0)
         Parents = np.argwhere(np.ravel(ChildrenSum) == len(Children))
         Parents = Parents[Parents != n]
@@ -397,7 +398,7 @@ def BuildHierarchy(M):
                 Pred = np.empty(0)
                 break
         else:
-            Pred[n] = 0
+            Pred[n] = -1
 
     return Pred
 
@@ -408,7 +409,7 @@ def FindDisjoint(Adj, Cliq):
     T = np.zeros(N)
     IndxTotal = np.arange(0, N)
     IndxNot = np.argwhere(
-        (IndxTotal != Cliq[0]) & (IndxTotal != Cliq[1]) & (IndxTotal != Cliq[2])
+        np.logical_and(IndxTotal != Cliq[0], IndxTotal != Cliq[1], IndxTotal != Cliq[2])
     )
     Temp[np.int32(Cliq), :] = 0
     Temp[:, np.int32(Cliq)] = 0
@@ -428,8 +429,6 @@ def FindDisjoint(Adj, Cliq):
 
 def AdjCliq(A, CliqList, CliqRoot):
     Nc = CliqList.shape[0]
-    # print(CliqList.shape)
-    # print(CliqRoot.shape)
     CliqList_temp = np.int32(CliqList.copy())
     CliqRoot_temp = np.int32(np.ravel(CliqRoot))
     N = A.shape[0]
@@ -437,9 +436,6 @@ def AdjCliq(A, CliqList, CliqRoot):
     Indicator = np.zeros((N, 1))
     for n in range(0, len(CliqRoot_temp)):
         Indicator[CliqList_temp[CliqRoot_temp[n], :]] = 1
-        # print(Indicator[CliqList_temp[CliqRoot_temp,0]])
-        # print(Indicator[CliqList_temp[CliqRoot_temp,1]])
-        # print(Indicator[CliqList_temp[CliqRoot_temp,2]])
         Indi = np.hstack(
             (
                 Indicator[CliqList_temp[CliqRoot_temp, 0], 0],
@@ -457,7 +453,7 @@ def AdjCliq(A, CliqList, CliqRoot):
 
 def BubbleHierarchy(Pred, Sb, A, CliqList):
     Nc = Pred.shape[0]
-    Root = np.argwhere(Pred == 0)
+    Root = np.argwhere(Pred == -1)
     CliqCount = np.zeros(Nc)
     CliqCount[Root] = 1
     Mb = np.empty((Nc, 0))
@@ -472,10 +468,11 @@ def BubbleHierarchy(Pred, Sb, A, CliqList):
         NxtRoot = np.empty((0, 1))
 
         for n in range(0, len(Root)):
-            DirectChild = np.ravel(np.argwhere(Pred == Root[n]))
-            TempVec = np.zeros(Nc)
-            TempVec[np.append(DirectChild, np.int32(Root[n]))] = 1
-            Mb = np.hstack((Mb, TempVec.reshape(-1, 1)))
+            # DirectChild = np.ravel(np.argwhere(Pred == Root[n]))
+            (_, DirectChild, _) = sp.find(Pred == Root[n])
+            TempVec = np.zeros((Nc, 1))
+            TempVec[np.append(DirectChild, np.int32(Root[n])), 0] = 1
+            Mb = np.hstack((Mb, TempVec))
             CliqCount[DirectChild] = 1
 
             for m in range(0, len(DirectChild)):
@@ -536,7 +533,8 @@ def clique3(A):
         i = r[n]
         j = c[n]
         a = A[i, :] * A[j, :]
-        indx = np.ravel(np.argwhere(a != 0))
+        # indx = np.ravel(np.argwhere(a != 0))
+        (_, indx, _) = sp.find(a != 0)
         K3[n] = indx
         N3[n] = len(indx)
 
@@ -612,7 +610,8 @@ def breadth(CIJ, source):
     # keep going until the entire graph is explored
     while (Q.shape[0] == 0) == 0:
         u = Q[0]
-        ns = np.argwhere(CIJ[u, :])
+        # ns = np.argwhere(CIJ[u, :])
+        (_, ns, _) = sp.find(CIJ[u, :])
         for v in ns:
             # this allows the 'source' distance to itself to be recorded
             if distance[v].all() == 0:
@@ -623,7 +622,7 @@ def breadth(CIJ, source):
                 branch[v] = u
                 Q = np.hstack((Q, v))
 
-        Q = Q[1:]
+        Q = Q[1 : len(Q)]
         color[u] = black
 
     return (distance, branch)
@@ -666,7 +665,8 @@ def BubbleCluster8s(Rpm, Dpm, Hb, Mb, Mv, CliqList):
         Rpm, Hb, Mb, Mv, CliqList
     )  # Assign directions on the bubble tree
     N = Rpm.shape[0]  # Number of vertices in the PMFG
-    indx = np.ravel(np.argwhere(Sep == 1))  # Look for the converging bubbles
+    # indx = np.ravel(np.argwhere(Sep == 1))  # Look for the converging bubbles
+    (_, indx, _) = sp.find(Sep == 1)  # Look for the converging bubbles
     Adjv = np.empty((0, 0))
     if len(indx) > 1:
         Adjv = np.zeros(
@@ -762,21 +762,12 @@ def DirectHb(Rpm, Hb, Mb, Mv, CliqList):
 
     Hb_temp = 1 * (Hb != 0)
     (r, c, _) = sp.find(sp.triu(sp.csr_matrix(Hb_temp)) != 0)
-
     CliqEdge = np.empty((0, 3))
     for n in range(0, len(r)):
-        CliqEdge = np.vstack(
-            (
-                CliqEdge,
-                np.hstack(
-                    (
-                        r[n].reshape(1, -1),
-                        c[n].reshape(1, -1),
-                        np.argwhere((Mb[:, r[n]] != 0) & (Mb[:, c[n]] != 0)),
-                    )
-                ),
-            )
-        )
+        data = np.argwhere(np.logical_and(Mb[:, r[n]] != 0, Mb[:, c[n]] != 0))
+        if data.shape[0] != 0:
+            data = np.hstack((r[n].reshape(1, -1), c[n].reshape(1, -1), data))
+            CliqEdge = np.vstack((CliqEdge, data))
 
     del r, c
 
@@ -814,7 +805,8 @@ def DirectHb(Rpm, Hb, Mb, Mv, CliqList):
         del vleft, vright, vo, Temp, bleft, bright, right, left
 
     Sep = np.double((np.sum(Hc.T, axis=0) == 0))
-    Sep[(np.sum(Hc, axis=0) == 0) & (kb > 1)] = 2
+    # Sep[(np.sum(Hc, axis=0) == 0) & (kb > 1)] = 2
+    Sep[np.logical_and(np.sum(Hc, axis=0) == 0, kb > 1)] = 2
 
     return (Hc, Sep)
 
