@@ -1562,7 +1562,7 @@ def plot_clusters(
     linkage="ward",
     k=None,
     max_k=10,
-    bins_info='KN',
+    bins_info="KN",
     alpha_tail=0.05,
     leaf_order=True,
     dendrogram=True,
@@ -1615,13 +1615,13 @@ def plot_clusters(
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
         value is 'KN'. Posible values are:
-            
+
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
         - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
         - 'HGR': Hacine-Gharbi and Ravier' choice method.
         - int: integer value choice by user.
-        
+
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
     leaf_order : bool, optional
@@ -1881,7 +1881,7 @@ def plot_dendrogram(
     linkage="ward",
     k=None,
     max_k=10,
-    bins_info='KN',
+    bins_info="KN",
     alpha_tail=0.05,
     leaf_order=True,
     title="",
@@ -1931,13 +1931,13 @@ def plot_dendrogram(
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
         value is 'KN'. Posible values are:
-            
+
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
         - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
         - 'HGR': Hacine-Gharbi and Ravier' choice method.
         - int: integer value choice by user.
-        
+
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
     leaf_order : bool, optional
@@ -2092,7 +2092,7 @@ def plot_network(
     linkage="ward",
     k=None,
     max_k=10,
-    bins_info='KN',
+    bins_info="KN",
     alpha_tail=0.05,
     leaf_order=True,
     kind="spring",
@@ -2149,13 +2149,13 @@ def plot_network(
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
         value is 'KN'. Posible values are:
-            
+
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
         - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
         - 'HGR': Hacine-Gharbi and Ravier' choice method.
         - int: integer value choice by user.
-            
+
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
     leaf_order : bool, optional

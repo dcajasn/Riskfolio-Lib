@@ -335,7 +335,7 @@ def numBins(n_samples, corr=None):
     return bins
 
 
-def mutual_info_matrix(X, bins_info='KN', normalize=True):
+def mutual_info_matrix(X, bins_info="KN", normalize=True):
     r"""
     Calculate the mutual information matrix of n variables.
 
@@ -346,13 +346,13 @@ def mutual_info_matrix(X, bins_info='KN', normalize=True):
     bins_info: int or str
         Number of bins used to calculate mutual information. The default
         value is 'KN'. Posible values are:
-            
+
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
         - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
         - 'HGR': Hacine-Gharbi and Ravier' choice method.
         - int: integer value choice by user.
-        
+
     normalize: bool
         If normalize variation of information. The default value is True.
 
@@ -380,31 +380,33 @@ def mutual_info_matrix(X, bins_info='KN', normalize=True):
     indices = np.triu_indices(n)
 
     for i, j in zip(indices[0], indices[1]):
-        if bins_info == 'KN':
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/knuth_bin_width(X1[:, i])
+        if bins_info == "KN":
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / knuth_bin_width(X1[:, i])
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/knuth_bin_width(X1[:, j])            
-                bins = np.int32(np.round(np.maximum(k1,k2)))
-        elif bins_info == 'FD':
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/freedman_bin_width(X1[:, i])
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / knuth_bin_width(X1[:, j])
+                bins = np.int32(np.round(np.maximum(k1, k2)))
+        elif bins_info == "FD":
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / freedman_bin_width(X1[:, i])
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/freedman_bin_width(X1[:, j])            
-                bins = np.int32(np.round(np.maximum(k1,k2)))
-        elif bins_info == 'SC':
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/scott_bin_width(X1[:, i])
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / freedman_bin_width(
+                    X1[:, j]
+                )
+                bins = np.int32(np.round(np.maximum(k1, k2)))
+        elif bins_info == "SC":
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / scott_bin_width(X1[:, i])
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/scott_bin_width(X1[:, j])            
-                bins = np.int32(np.round(np.maximum(k1,k2)))
-        elif bins_info == 'HGR':
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / scott_bin_width(X1[:, j])
+                bins = np.int32(np.round(np.maximum(k1, k2)))
+        elif bins_info == "HGR":
             corr = np.corrcoef(X1[:, i], X1[:, j])[0, 1]
             if corr == 1:
                 bins = numBins(m, None)
             else:
                 bins = numBins(m, corr)
-        elif isinstance(bins_info,np.int32) or isinstance(bins_info,int):
+        elif isinstance(bins_info, np.int32) or isinstance(bins_info, int):
             bins = bins_info
 
         cXY = np.histogram2d(X1[:, i], X1[:, j], bins)[0]
@@ -420,7 +422,7 @@ def mutual_info_matrix(X, bins_info='KN', normalize=True):
         mat[i, j] = iXY
         mat[j, i] = mat[i, j]
 
-    mat = np.clip(np.round(mat,8), a_min=0.0, a_max=np.inf)
+    mat = np.clip(np.round(mat, 8), a_min=0.0, a_max=np.inf)
 
     if flag:
         mat = pd.DataFrame(mat, index=cols, columns=cols)
@@ -430,7 +432,7 @@ def mutual_info_matrix(X, bins_info='KN', normalize=True):
     return mat
 
 
-def var_info_matrix(X, bins_info='KN', normalize=True):
+def var_info_matrix(X, bins_info="KN", normalize=True):
     r"""
     Calculate the variation of information matrix of n variables.
 
@@ -441,13 +443,13 @@ def var_info_matrix(X, bins_info='KN', normalize=True):
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
         value is 'KN'. Posible values are:
-            
+
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
         - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
         - 'HGR': Hacine-Gharbi and Ravier' choice method.
         - int: integer value choice by user.
-        
+
     normalize: bool
         If normalize variation of information. The default value is True.
 
@@ -475,33 +477,35 @@ def var_info_matrix(X, bins_info='KN', normalize=True):
     indices = np.triu_indices(n)
 
     for i, j in zip(indices[0], indices[1]):
-        if bins_info == 'KN':
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/knuth_bin_width(X1[:, i])
+        if bins_info == "KN":
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / knuth_bin_width(X1[:, i])
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/knuth_bin_width(X1[:, j])            
-                bins = np.int32(np.round(np.maximum(k1,k2)))
-        elif bins_info == 'FD':
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/freedman_bin_width(X1[:, i])
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / knuth_bin_width(X1[:, j])
+                bins = np.int32(np.round(np.maximum(k1, k2)))
+        elif bins_info == "FD":
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / freedman_bin_width(X1[:, i])
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/freedman_bin_width(X1[:, j])            
-                bins = np.int32(np.round(np.maximum(k1,k2)))
-        elif bins_info == 'SC':
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/scott_bin_width(X1[:, i])
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / freedman_bin_width(
+                    X1[:, j]
+                )
+                bins = np.int32(np.round(np.maximum(k1, k2)))
+        elif bins_info == "SC":
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / scott_bin_width(X1[:, i])
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/scott_bin_width(X1[:, j])            
-                bins = np.int32(np.round(np.maximum(k1,k2)))
-        elif bins_info == 'HGR':
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / scott_bin_width(X1[:, j])
+                bins = np.int32(np.round(np.maximum(k1, k2)))
+        elif bins_info == "HGR":
             corr = np.corrcoef(X1[:, i], X1[:, j])[0, 1]
             if corr == 1:
                 bins = numBins(m, None)
             else:
                 bins = numBins(m, corr)
-        elif isinstance(bins_info,np.int32) or isinstance(bins_info,int):
+        elif isinstance(bins_info, np.int32) or isinstance(bins_info, int):
             bins = bins_info
-                
+
         cXY = np.histogram2d(X1[:, i], X1[:, j], bins)[0]
         hX = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
         hY = st.entropy(np.histogram(X1[:, j], bins)[0])  # marginal
@@ -514,7 +518,7 @@ def var_info_matrix(X, bins_info='KN', normalize=True):
         mat[i, j] = vXY
         mat[j, i] = mat[i, j]
 
-    mat = np.clip(np.round(mat,8), a_min=0.0, a_max=np.inf)
+    mat = np.clip(np.round(mat, 8), a_min=0.0, a_max=np.inf)
 
     if flag:
         mat = pd.DataFrame(mat, index=cols, columns=cols)
@@ -584,7 +588,7 @@ def ltdi_matrix(X, alpha=0.05):
 
             mat[i, i] = ltd
 
-    mat = np.round(mat,8)
+    mat = np.round(mat, 8)
     if flag:
         mat = pd.DataFrame(mat, index=cols, columns=cols)
     else:

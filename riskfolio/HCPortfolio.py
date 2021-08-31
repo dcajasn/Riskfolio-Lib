@@ -34,13 +34,15 @@ class HCPortfolio(object):
         Lower bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
     """
 
-    def __init__(self,
-                 returns=None,
-                 alpha=0.05,
-                 w_max=None,
-                 w_min=None,
-                 alpha_tail=0.05,
-                 bins_info=None):
+    def __init__(
+        self,
+        returns=None,
+        alpha=0.05,
+        w_max=None,
+        w_min=None,
+        alpha_tail=0.05,
+        bins_info=None,
+    ):
         self._returns = returns
         self.alpha = alpha
         self.alpha_tail = alpha_tail
@@ -411,7 +413,7 @@ class HCPortfolio(object):
         linkage="single",
         k=None,
         max_k=10,
-        bins_info='KN',
+        bins_info="KN",
         alpha_tail=0.05,
         leaf_order=True,
         d=0.94,
@@ -507,13 +509,13 @@ class HCPortfolio(object):
         bins_info: int or str
             Number of bins used to calculate variation of information. The default
             value is 'KN'. Posible values are:
-                
+
             - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
             - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
             - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
             - 'HGR': Hacine-Gharbi and Ravier' choice method.
             - int: integer value choice by user.
-        
+
         alpha_tail : float, optional
             Significance level for lower tail dependence index. The default is 0.05.
         leaf_order : bool, optional
@@ -545,9 +547,13 @@ class HCPortfolio(object):
         elif codependence in {"distance"}:
             self.codep = af.dcorr_matrix(self.returns).astype(float)
         elif codependence in {"mutual_info"}:
-            self.codep = af.mutual_info_matrix(self.returns, self.bins_info).astype(float)
+            self.codep = af.mutual_info_matrix(self.returns, self.bins_info).astype(
+                float
+            )
         elif codependence in {"tail"}:
-            self.codep = af.ltdi_matrix(self.returns, alpha=self.alpha_tail).astype(float)
+            self.codep = af.ltdi_matrix(self.returns, alpha=self.alpha_tail).astype(
+                float
+            )
 
         # Step-1: Tree clustering
         self.clusters, self.k = self._hierarchical_clustering(

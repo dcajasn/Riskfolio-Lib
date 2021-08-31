@@ -675,7 +675,7 @@ def assets_clusters(
     linkage="ward",
     k=None,
     max_k=10,
-    bins_info='KN',
+    bins_info="KN",
     alpha_tail=0.05,
     leaf_order=True,
 ):
@@ -721,7 +721,7 @@ def assets_clusters(
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
         value is 'KN'. Posible values are:
-            
+
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
         - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
@@ -761,7 +761,7 @@ def assets_clusters(
 
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
-        
+
     # Calculating codependence matrix and distance metric
     if codependence in {"pearson", "spearman"}:
         codep = returns.corr(method=codependence)
@@ -803,7 +803,7 @@ def assets_clusters(
     # Building clusters
     clusters_inds = hr.fcluster(clustering, k, criterion="maxclust")
     labels = np.array(returns.columns.tolist())
-    
+
     clusters = {"Assets": [], "Clusters": []}
 
     for i, v in enumerate(clusters_inds):

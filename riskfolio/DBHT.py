@@ -324,16 +324,16 @@ def CliqHierarchyTree2s(Apm, method1):
         else:
             indx_s = np.vstack((indx1, indx0))
             del indx1, indx2
-    
+
         if (indx_s.shape[0] == 0) == 1:
             Sb[n] = 0
         else:
             Sb[n] = len(indx_s) - 3  # -3
-        
+
         M[indx_s, n] = 1
         # del Indicator, InsideCliq, count, T, Temp, cliq_vec, IndxNot, InsideCliq
         del T, cliq_vec, IndxNot
-    
+
     Pred = BuildHierarchy(M)
     Root = np.argwhere(Pred == -1)
     # for n=1:length(Root);
@@ -417,8 +417,8 @@ def FindDisjoint(Adj, Cliq):
     (d, _) = breadth(Temp, IndxNot[0])
     d[np.isinf(d)] = -1
     d[IndxNot[0]] = 0
-    Indx1 = (d == -1)
-    Indx2 = (d != -1)
+    Indx1 = d == -1
+    Indx2 = d != -1
     T[Indx1] = 1
     T[Indx2] = 2
     T[np.int32(Cliq)] = 0
@@ -459,7 +459,7 @@ def BubbleHierarchy(Pred, Sb, A, CliqList):
     Mb = np.empty((Nc, 0))
 
     if len(Root) > 1:
-        TempVec = np.zeros((Nc,1))
+        TempVec = np.zeros((Nc, 1))
         TempVec[Root] = 1
         Mb = np.hstack((Mb, TempVec))
         del TempVec
@@ -469,9 +469,9 @@ def BubbleHierarchy(Pred, Sb, A, CliqList):
 
         for n in range(0, len(Root)):
             # DirectChild = np.ravel(np.argwhere(Pred == Root[n]))
-            (_, DirectChild, _) = sp.find(Pred == Root[n])      
-            TempVec = np.zeros((Nc,1))
-            TempVec[np.append(DirectChild, np.int32(Root[n])),0] = 1
+            (_, DirectChild, _) = sp.find(Pred == Root[n])
+            TempVec = np.zeros((Nc, 1))
+            TempVec[np.append(DirectChild, np.int32(Root[n])), 0] = 1
             Mb = np.hstack((Mb, TempVec))
             CliqCount[DirectChild] = 1
 
@@ -488,7 +488,7 @@ def BubbleHierarchy(Pred, Sb, A, CliqList):
 
     # if sum(IdentifyJoint==0)==0;
     for n in range(0, Nb):
-        Indx = (Mb[:, n] == 1)
+        Indx = Mb[:, n] == 1
         JointSum = np.sum(Mb[Indx, :], axis=0)
         Neigh = JointSum >= 1
         H[n, Neigh] = 1
@@ -622,7 +622,7 @@ def breadth(CIJ, source):
                 branch[v] = u
                 Q = np.hstack((Q, v))
 
-        Q = Q[1:len(Q)]
+        Q = Q[1 : len(Q)]
         color[u] = black
 
     return (distance, branch)
@@ -666,7 +666,7 @@ def BubbleCluster8s(Rpm, Dpm, Hb, Mb, Mv, CliqList):
     )  # Assign directions on the bubble tree
     N = Rpm.shape[0]  # Number of vertices in the PMFG
     # indx = np.ravel(np.argwhere(Sep == 1))  # Look for the converging bubbles
-    (_, indx, _) = sp.find(Sep == 1) # Look for the converging bubbles
+    (_, indx, _) = sp.find(Sep == 1)  # Look for the converging bubbles
     Adjv = np.empty((0, 0))
     if len(indx) > 1:
         Adjv = np.zeros(
@@ -764,9 +764,9 @@ def DirectHb(Rpm, Hb, Mb, Mv, CliqList):
     (r, c, _) = sp.find(sp.triu(sp.csr_matrix(Hb_temp)) != 0)
     CliqEdge = np.empty((0, 3))
     for n in range(0, len(r)):
-        data = np.argwhere(np.logical_and(Mb[:,r[n]] != 0, Mb[:,c[n]] != 0))
+        data = np.argwhere(np.logical_and(Mb[:, r[n]] != 0, Mb[:, c[n]] != 0))
         if data.shape[0] != 0:
-            data = np.hstack((r[n].reshape(1,-1), c[n].reshape(1,-1), data))
+            data = np.hstack((r[n].reshape(1, -1), c[n].reshape(1, -1), data))
             CliqEdge = np.vstack((CliqEdge, data))
 
     del r, c
