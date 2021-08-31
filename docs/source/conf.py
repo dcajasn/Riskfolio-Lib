@@ -27,7 +27,7 @@ author = 'Dany Cajas'
 # The short X.Y version
 version = 'latest'
 # The full version, including alpha/beta/rc tags
-release = '1.0.1'
+release = '1.0.2'
 
 
 # -- General configuration ---------------------------------------------------
@@ -106,6 +106,8 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
     'arch': ('https://bashtage.github.io/arch/', None),
     'xlsxwriter': ('https://xlsxwriter.readthedocs.io', None),
+    'networkx': ('https://networkx.org', None),
+    'astropy': ('https://www.astropy.org', None),
 }
 
 # -- Options for todo extension ----------------------------------------------

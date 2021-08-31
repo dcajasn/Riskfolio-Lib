@@ -125,7 +125,7 @@ Installation requires:
 * [arch](https://bashtage.github.io/arch/) >= 4.15
 * [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 1.3.7
 * [networkx](https://networkx.org) >= 2.5.1
-
+* [astropy](https://www.astropy.org) >= 4.3.1
 
 ## Installation
 

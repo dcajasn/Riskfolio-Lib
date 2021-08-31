@@ -55,3 +55,4 @@ Riskfolio-Lib has the following dependencies:
 * arch>=4.15
 * xlsxwriter>=1.3.7
 * networkx>=2.5.1
+* astropy>=4.3.1 (if there are problems check `astropy installation instructions <https://www.astropy.org>`_)

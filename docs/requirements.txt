@@ -16,3 +16,4 @@ statsmodels
 arch
 XlsxWriter
 networkx
+astropy

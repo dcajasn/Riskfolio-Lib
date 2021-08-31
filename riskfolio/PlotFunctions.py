@@ -1559,9 +1559,10 @@ def plot_table(
 def plot_clusters(
     returns,
     codependence="pearson",
-    linkage="single",
+    linkage="ward",
     k=None,
     max_k=10,
+    bins_info='KN',
     alpha_tail=0.05,
     leaf_order=True,
     dendrogram=True,
@@ -1593,7 +1594,7 @@ def plot_clusters(
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
-        The default is 'single'. Posible values are:
+        The default is 'ward'. Posible values are:
 
         - 'single'.
         - 'complete'.
@@ -1611,6 +1612,16 @@ def plot_clusters(
     max_k : int, optional
         Max number of clusters used by the two difference gap statistic
         to find the optimal number of clusters. The default is 10.
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Posible values are:
+            
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+        
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
     leaf_order : bool, optional
@@ -1678,8 +1689,8 @@ def plot_clusters(
         codep = af.dcorr_matrix(returns).astype(float)
         dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
     elif codependence in {"mutual_info"}:
-        codep = af.mutual_info_matrix(returns).astype(float)
-        dist = af.var_info_matrix(returns).astype(float)
+        codep = af.mutual_info_matrix(returns, bins_info).astype(float)
+        dist = af.var_info_matrix(returns, bins_info).astype(float)
     elif codependence in {"tail"}:
         codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
         dist = -np.log(codep)
@@ -1867,9 +1878,10 @@ def plot_clusters(
 def plot_dendrogram(
     returns,
     codependence="pearson",
-    linkage="single",
+    linkage="ward",
     k=None,
     max_k=10,
+    bins_info='KN',
     alpha_tail=0.05,
     leaf_order=True,
     title="",
@@ -1898,7 +1910,7 @@ def plot_dendrogram(
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
-        The default is 'single'. Posible values are:
+        The default is 'ward'. Posible values are:
 
         - 'single'.
         - 'complete'.
@@ -1916,6 +1928,16 @@ def plot_dendrogram(
     max_k : int, optional
         Max number of clusters used by the two difference gap statistic
         to find the optimal number of clusters. The default is 10.
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Posible values are:
+            
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+        
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
     leaf_order : bool, optional
@@ -1974,8 +1996,8 @@ def plot_dendrogram(
         codep = af.dcorr_matrix(returns).astype(float)
         dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
     elif codependence in {"mutual_info"}:
-        codep = af.mutual_info_matrix(returns).astype(float)
-        dist = af.var_info_matrix(returns).astype(float)
+        codep = af.mutual_info_matrix(returns, bins_info).astype(float)
+        dist = af.var_info_matrix(returns, bins_info).astype(float)
     elif codependence in {"tail"}:
         codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
         dist = -np.log(codep)
@@ -2067,9 +2089,10 @@ def plot_dendrogram(
 def plot_network(
     returns,
     codependence="pearson",
-    linkage="single",
+    linkage="ward",
     k=None,
     max_k=10,
+    bins_info='KN',
     alpha_tail=0.05,
     leaf_order=True,
     kind="spring",
@@ -2105,7 +2128,7 @@ def plot_network(
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
-        The default is 'single'. Posible values are:
+        The default is 'ward'. Posible values are:
 
         - 'single'.
         - 'complete'.
@@ -2123,6 +2146,16 @@ def plot_network(
     max_k : int, optional
         Max number of clusters used by the two difference gap statistic
         to find the optimal number of clusters. The default is 10.
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Posible values are:
+            
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+            
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
     leaf_order : bool, optional
@@ -2202,8 +2235,8 @@ def plot_network(
         codep = af.dcorr_matrix(returns).astype(float)
         dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
     elif codependence in {"mutual_info"}:
-        codep = af.mutual_info_matrix(returns).astype(float)
-        dist = af.var_info_matrix(returns).astype(float)
+        codep = af.mutual_info_matrix(returns, bins_info).astype(float)
+        dist = af.var_info_matrix(returns, bins_info).astype(float)
     elif codependence in {"tail"}:
         codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
         dist = -np.log(codep)

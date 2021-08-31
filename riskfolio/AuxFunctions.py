@@ -17,6 +17,7 @@ from scipy.spatial.distance import pdist, squareform
 import scipy.cluster.hierarchy as hr
 import scipy.stats as st
 from sklearn.metrics import mutual_info_score
+from astropy.stats import knuth_bin_width, freedman_bin_width, scott_bin_width
 
 ###############################################################################
 # Aditional Matrix Functions
@@ -334,7 +335,7 @@ def numBins(n_samples, corr=None):
     return bins
 
 
-def mutual_info_matrix(X, bins=None, normalize=True):
+def mutual_info_matrix(X, bins_info='KN', normalize=True):
     r"""
     Calculate the mutual information matrix of n variables.
 
@@ -342,6 +343,18 @@ def mutual_info_matrix(X, bins=None, normalize=True):
     ----------
     X : ndarray
         Returns series of shape n_sample x n_features.
+    bins_info: int or str
+        Number of bins used to calculate mutual information. The default
+        value is 'KN'. Posible values are:
+            
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+        
+    normalize: bool
+        If normalize variation of information. The default value is True.
 
     Returns
     -------
@@ -364,12 +377,36 @@ def mutual_info_matrix(X, bins=None, normalize=True):
     m = X1.shape[0]
     n = X1.shape[1]
     mat = np.zeros((n, n))
-    indices = np.triu_indices(n, 1)
+    indices = np.triu_indices(n)
 
     for i, j in zip(indices[0], indices[1]):
-        if bins is None:
+        if bins_info == 'KN':
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/knuth_bin_width(X1[:, i])
+            bins = np.int32(np.round(k1))
+            if i != j:
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/knuth_bin_width(X1[:, j])            
+                bins = np.int32(np.round(np.maximum(k1,k2)))
+        elif bins_info == 'FD':
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/freedman_bin_width(X1[:, i])
+            bins = np.int32(np.round(k1))
+            if i != j:
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/freedman_bin_width(X1[:, j])            
+                bins = np.int32(np.round(np.maximum(k1,k2)))
+        elif bins_info == 'SC':
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/scott_bin_width(X1[:, i])
+            bins = np.int32(np.round(k1))
+            if i != j:
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/scott_bin_width(X1[:, j])            
+                bins = np.int32(np.round(np.maximum(k1,k2)))
+        elif bins_info == 'HGR':
             corr = np.corrcoef(X1[:, i], X1[:, j])[0, 1]
-            bins = numBins(m, corr)
+            if corr == 1:
+                bins = numBins(m, None)
+            else:
+                bins = numBins(m, corr)
+        elif isinstance(bins_info,np.int32) or isinstance(bins_info,int):
+            bins = bins_info
+
         cXY = np.histogram2d(X1[:, i], X1[:, j], bins)[0]
         hX = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
         hY = st.entropy(np.histogram(X1[:, j], bins)[0])  # marginal
@@ -383,20 +420,7 @@ def mutual_info_matrix(X, bins=None, normalize=True):
         mat[i, j] = iXY
         mat[j, i] = mat[i, j]
 
-    for i in range(0, n):
-        if bins is None:
-            corr = np.corrcoef(X1[:, i], X1[:, i])[0, 1]
-            bins = numBins(m, corr)
-        cXY = np.histogram2d(X1[:, i], X1[:, i], bins)[0]
-        hX = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
-        hY = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
-        iXY = mutual_info_score(None, None, contingency=cXY)  # mutual information
-        if normalize == True:
-            iXY = iXY / np.min([hX, hY])  # normalized mutual information
-
-        mat[i, i] = iXY
-
-    mat = np.clip(mat, a_min=0, a_max=np.inf)
+    mat = np.clip(np.round(mat,8), a_min=0.0, a_max=np.inf)
 
     if flag:
         mat = pd.DataFrame(mat, index=cols, columns=cols)
@@ -406,7 +430,7 @@ def mutual_info_matrix(X, bins=None, normalize=True):
     return mat
 
 
-def var_info_matrix(X, bins=None, normalize=True):
+def var_info_matrix(X, bins_info='KN', normalize=True):
     r"""
     Calculate the variation of information matrix of n variables.
 
@@ -414,6 +438,18 @@ def var_info_matrix(X, bins=None, normalize=True):
     ----------
     X : ndarray
         Returns series of shape n_sample x n_features.
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Posible values are:
+            
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+        
+    normalize: bool
+        If normalize variation of information. The default value is True.
 
     Returns
     -------
@@ -436,12 +472,36 @@ def var_info_matrix(X, bins=None, normalize=True):
     m = X1.shape[0]
     n = X1.shape[1]
     mat = np.zeros((n, n))
-    indices = np.triu_indices(n, 1)
+    indices = np.triu_indices(n)
 
     for i, j in zip(indices[0], indices[1]):
-        if bins is None:
+        if bins_info == 'KN':
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/knuth_bin_width(X1[:, i])
+            bins = np.int32(np.round(k1))
+            if i != j:
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/knuth_bin_width(X1[:, j])            
+                bins = np.int32(np.round(np.maximum(k1,k2)))
+        elif bins_info == 'FD':
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/freedman_bin_width(X1[:, i])
+            bins = np.int32(np.round(k1))
+            if i != j:
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/freedman_bin_width(X1[:, j])            
+                bins = np.int32(np.round(np.maximum(k1,k2)))
+        elif bins_info == 'SC':
+            k1 = (np.max(X1[:, i]) - np.min(X1[:, i]))/scott_bin_width(X1[:, i])
+            bins = np.int32(np.round(k1))
+            if i != j:
+                k2 = (np.max(X1[:, j]) - np.min(X1[:, j]))/scott_bin_width(X1[:, j])            
+                bins = np.int32(np.round(np.maximum(k1,k2)))
+        elif bins_info == 'HGR':
             corr = np.corrcoef(X1[:, i], X1[:, j])[0, 1]
-            bins = numBins(m, corr)
+            if corr == 1:
+                bins = numBins(m, None)
+            else:
+                bins = numBins(m, corr)
+        elif isinstance(bins_info,np.int32) or isinstance(bins_info,int):
+            bins = bins_info
+                
         cXY = np.histogram2d(X1[:, i], X1[:, j], bins)[0]
         hX = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
         hY = st.entropy(np.histogram(X1[:, j], bins)[0])  # marginal
@@ -454,22 +514,7 @@ def var_info_matrix(X, bins=None, normalize=True):
         mat[i, j] = vXY
         mat[j, i] = mat[i, j]
 
-    for i in range(0, n):
-        if bins is None:
-            corr = np.corrcoef(X1[:, i], X1[:, i])[0, 1]
-            bins = numBins(m, corr)
-        cXY = np.histogram2d(X1[:, i], X1[:, i], bins)[0]
-        hX = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
-        hY = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
-        iXY = mutual_info_score(None, None, contingency=cXY)  # mutual information
-        vXY = hX + hY - 2 * iXY  # variation of information
-        if normalize == True:
-            hXY = hX + hY - iXY  # joint
-            vXY = vXY / hXY  # normalized variation of information
-
-        mat[i, i] = vXY
-
-    mat = np.clip(mat, a_min=0, a_max=np.inf)
+    mat = np.clip(np.round(mat,8), a_min=0.0, a_max=np.inf)
 
     if flag:
         mat = pd.DataFrame(mat, index=cols, columns=cols)
@@ -488,6 +533,9 @@ def ltdi_matrix(X, alpha=0.05):
     ----------
     X : ndarray
         Returns series of shape n_sample x n_features.
+    alpha : float, optional
+        Significance level for lower tail dependence index.
+        The default is 0.05.
 
     Returns
     -------
@@ -515,7 +563,7 @@ def ltdi_matrix(X, alpha=0.05):
     mat = np.ones((n, n))
 
     if k > 0:
-        indices = np.triu_indices(n, 1)
+        indices = np.triu_indices(n)
 
         for i, j in zip(indices[0], indices[1]):
             u = np.sort(X1[:, i])[k - 1]
@@ -536,6 +584,7 @@ def ltdi_matrix(X, alpha=0.05):
 
             mat[i, i] = ltd
 
+    mat = np.round(mat,8)
     if flag:
         mat = pd.DataFrame(mat, index=cols, columns=cols)
     else:
@@ -588,8 +637,9 @@ def two_diff_gap_stat(codep, dist, clusters, max_k=10):
             # Based on correlation distance
             cluster_dist = dist.loc[cluster.index, cluster.index]  # get distance
             cluster_pdist = squareform(cluster_dist, checks=False)
-            D = np.nan_to_num(cluster_pdist.mean())
-            D_list.append(D)  # append to list
+            if cluster_pdist.shape[0] != 0:
+                D = np.nan_to_num(cluster_pdist.mean())
+                D_list.append(D)  # append to list
 
         W_k = np.sum(D_list)
         W_list.append(W_k)

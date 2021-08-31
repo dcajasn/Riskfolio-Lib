@@ -34,9 +34,17 @@ class HCPortfolio(object):
         Lower bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
     """
 
-    def __init__(self, returns=None, alpha=0.05, w_max=None, w_min=None):
+    def __init__(self,
+                 returns=None,
+                 alpha=0.05,
+                 w_max=None,
+                 w_min=None,
+                 alpha_tail=0.05,
+                 bins_info=None):
         self._returns = returns
         self.alpha = alpha
+        self.alpha_tail = alpha_tail
+        self.bins_info = bins_info
         self.asset_order = None
         self.clusters = None
         self.cov = None
@@ -114,9 +122,9 @@ class HCPortfolio(object):
         elif codependence in {"abs_pearson", "abs_spearman", "distance"}:
             dist = np.sqrt(np.clip((1 - self.codep), a_min=0.0, a_max=1.0))
         elif codependence in {"mutual_info"}:
-            dist = af.var_info_matrix(self.returns).astype(float)
+            dist = af.var_info_matrix(self.returns, self.bins_info).astype(float)
         elif codependence in {"tail"}:
-            dist = -np.log(af.ltdi_matrix(self.returns, alpha=self.alpha).astype(float))
+            dist = -np.log(self.codep).astype(float)
 
         # Hierarchcial clustering
         dist = dist.to_numpy()
@@ -403,6 +411,7 @@ class HCPortfolio(object):
         linkage="single",
         k=None,
         max_k=10,
+        bins_info='KN',
         alpha_tail=0.05,
         leaf_order=True,
         d=0.94,
@@ -495,6 +504,16 @@ class HCPortfolio(object):
         max_k : int, optional
             Max number of clusters used by the two difference gap statistic
             to find the optimal number of clusters. The default is 10.
+        bins_info: int or str
+            Number of bins used to calculate variation of information. The default
+            value is 'KN'. Posible values are:
+                
+            - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+            - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+            - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+            - 'HGR': Hacine-Gharbi and Ravier' choice method.
+            - int: integer value choice by user.
+        
         alpha_tail : float, optional
             Significance level for lower tail dependence index. The default is 0.05.
         leaf_order : bool, optional
@@ -513,6 +532,8 @@ class HCPortfolio(object):
 
         # Covariance matrix
         self.cov = pe.covar_matrix(self.returns, method=covariance, d=0.94)
+        self.alpha_tail = alpha_tail
+        self.bins_info = bins_info
 
         # Codependence matrix
         if codependence in {"pearson", "spearman"}:
@@ -524,9 +545,9 @@ class HCPortfolio(object):
         elif codependence in {"distance"}:
             self.codep = af.dcorr_matrix(self.returns).astype(float)
         elif codependence in {"mutual_info"}:
-            self.codep = af.mutual_info_matrix(self.returns).astype(float)
+            self.codep = af.mutual_info_matrix(self.returns, self.bins_info).astype(float)
         elif codependence in {"tail"}:
-            self.codep = af.ltdi_matrix(self.returns, alpha=self.alpha).astype(float)
+            self.codep = af.ltdi_matrix(self.returns, alpha=self.alpha_tail).astype(float)
 
         # Step-1: Tree clustering
         self.clusters, self.k = self._hierarchical_clustering(
