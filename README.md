@@ -145,15 +145,14 @@ The latest stable release (and older versions) can be installed from PyPI:
 
 If you use Riskfolio-Lib for published work, please use the following BibTeX entrie:
 
-::
-
+```
     @misc{riskfolio,
           author = {Dany Cajas},
           title = {Riskfolio-Lib (2.0.0)},
           year  = {2021},
           url   = {https://github.com/dcajasn/Riskfolio-Lib},
           }
-
+```
  
 ## Development
 
