@@ -23,8 +23,7 @@ Example
     import numpy as np
     import pandas as pd
     import yfinance as yf
-    import riskfolio.Portfolio as pf
-    import riskfolio.Reports as rp
+    import riskfolio as rp
     
     yf.pdr_override()
     
@@ -47,7 +46,7 @@ Example
     Y = assets
     
     # Creating the Portfolio Object
-    port = pf.Portfolio(returns=Y)
+    port = rp.Portfolio(returns=Y)
     
     # To display dataframes values in percentage format
     pd.options.display.float_format = '{:.4%}'.format

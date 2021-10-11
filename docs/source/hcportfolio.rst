@@ -16,8 +16,9 @@ Riskfolio-Lib allows to calculate the new machine learning asset allocation mode
 
 - Hierarchical Risk Parity (HRP) :cite:`c-Prado1`, :cite:`c-Sjostrand`, :cite:`c-Pfitzinger`.
 - Hierarchical Equal Risk Contribution (HERC) :cite:`c-Raffinot2`, :cite:`c-Sjostrand`.
+- Nested Clustered Optimization (NCO) :cite:`c-Prado2`, :cite:`c-Sjostrand`.
 
-In both cases we have the option to use the following 22 risk measures to calculate HRP and HERC portfolios using naive risk parity:
+In the first two cases we have the option to use the following 22 risk measures to calculate HRP and HERC portfolios using naive risk parity:
 
 - Standard Deviation.
 - Variance.
@@ -35,6 +36,13 @@ In both cases we have the option to use the following 22 risk measures to calcul
 - Conditional Drawdown at Risk (CDaR) for compounded and uncompounded cumulative returns.
 - Entropic Drawdown at Risk (EDaR) for compounded and uncompounded cumulative returns.
 - Ulcer Index for compounded and uncompounded cumulative returns.
+
+For the NCO model we have the option to use four objective functions with the available risk measures to each objective:
+
+- Minimize the selected risk measure.
+- Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
+- Maximize the risk adjusted return ratio based on the selected risk measure.
+- Equally risk contribution portfolio of the selected risk measure.
 
 
 Module Methods

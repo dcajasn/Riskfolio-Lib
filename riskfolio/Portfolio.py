@@ -1596,14 +1596,17 @@ class Portfolio(object):
 
     def rp_optimization(self, model="Classic", rm="MV", rf=0, b=None, hist=True):
         r"""
-        This method that calculates the risk parity portfolio according to the
-        optimization model selected by the user. The general problem that
-        solves is:
+        This method that calculates the risk parity portfolio using the risk
+        budgeting approach :cite:`a-Roncalli` :cite:`a-RichardRoncalli`,
+        according to the optimization model selected by the user. The general
+        problem that solves is:
         
         .. math::
             \begin{aligned}
             &\underset{w}{\min} & & \phi(w)\\
             &\text{s.t.} & & b \log(w) \geq c\\
+            & & & \mu w \geq \overline{\mu} \\
+            & & & Aw \geq B \\
             & & & w \geq 0 \\
             \end{aligned}
         
@@ -1611,9 +1614,15 @@ class Portfolio(object):
         
         :math:`w` are the weights of the portfolio.
         
-        :math:`R(w)` is the risk measure.
+        :math:`\mu`: is the vector of expected returns.
     
         :math:`b` is a vector of risk constraints.
+        
+        :math:`Aw \geq B`: is a set of linear constraints.
+        
+        :math:`\phi(w)`: is a risk measure.
+        
+        :math:`c`: is an arbitrary constant.
         
         Parameters
         ----------
@@ -1650,8 +1659,8 @@ class Portfolio(object):
             Indicate what kind of returns are used to calculate risk measures
             that depends on scenarios (All except 'MV' risk measure). 
             If model = 'FM', True means historical covariance and returns and
-            False Risk Factor model for covariance and returns. The default is
-            True.
+            False means Risk Factor model for covariance and returns. The
+            default is True.
             
         Returns
         -------
@@ -1689,8 +1698,11 @@ class Portfolio(object):
 
         returns = np.array(returns, ndmin=2)
         w = cv.Variable((mu.shape[1], 1))
+        k = cv.Variable((1, 1))
         rf0 = rf
         n = returns.shape[0]
+        ret = mu @ w
+        constraints = []
 
         # MV Model Variables
 
@@ -1724,7 +1736,7 @@ class Portfolio(object):
         # Lower Partial Moment Variables
 
         lpm = cv.Variable((returns.shape[0], 1))
-        lpmconstraints = [lpm >= 0, lpm >= rf0 - X]
+        lpmconstraints = [lpm >= 0, lpm >= rf0 * k - X]
 
         # First Lower Partial Moment (Omega) Model Variables
 
@@ -1736,13 +1748,13 @@ class Portfolio(object):
 
         # Drawdown Model Variables
 
-        X1 = 1 + nav @ w
+        X1 = k + nav @ w
         U = cv.Variable((nav.shape[0] + 1, 1))
         ddconstraints = [
             U[1:] * 1000 >= X1 * 1000,
             U[1:] * 1000 >= U[:-1] * 1000,
-            U[1:] * 1000 >= 1 * 1000,
-            U[0] * 1000 == 1 * 1000,
+            U[1:] * 1000 >= 1 * 1000 * k,
+            U[0] * 1000 == 1 * 1000 * k,
         ]
 
         # Conditional Drawdown Model Variables
@@ -1787,9 +1799,19 @@ class Portfolio(object):
             )
         ]
 
-        # Defining risk function
+        # Problem Linear Constraints
 
-        constraints = []
+        if self.ainequality is not None and self.binequality is not None:
+            A = np.array(self.ainequality, ndmin=2) * 1000
+            B = np.array(self.binequality, ndmin=2) * 1000
+            constraints += [A @ w - B @ k >= 0]
+            
+        # Problem Return Constraint
+        
+        if self.lowerret is not None:
+            constraints += [ret >= self.lowerret * k]
+
+        # Defining risk function
 
         if rm == "MV":
             risk = risk1
@@ -1824,6 +1846,13 @@ class Portfolio(object):
             constraints += ddconstraints
             constraints += edarconstraints
 
+        # Risk budgeting constraint
+        
+        constraints += [b @ cv.log(w) >= 1,
+                        w * 1000 >= 0,
+                        cv.sum(w) == k,
+                        ]
+
         # Frontier Variables
 
         portafolio = {}
@@ -1837,7 +1866,208 @@ class Portfolio(object):
 
         objective = cv.Minimize(risk * 1000)
 
-        constraints += [b @ cv.log(w) * 1000 >= 1 * 1000, w * 1000 >= 0]
+        try:
+            prob = cv.Problem(objective, constraints)
+            for solver in self.solvers:
+                try:
+                    if len(self.sol_params) == 0:
+                        prob.solve(solver=solver)
+                    else:
+                        prob.solve(solver=solver, **self.sol_params[solver])
+                except:
+                    pass
+                if w.value is not None:
+                    break
+
+            weights = np.array(w.value, ndmin=2).T
+            weights = np.abs(weights) / np.sum(np.abs(weights))
+
+            for j in self.assetslist:
+                portafolio[j].append(weights[0, self.assetslist.index(j)])
+
+        except:
+            pass
+
+        try:
+            self.rp_optimal = pd.DataFrame(
+                portafolio, index=["weights"], dtype=np.float64
+            ).T
+        except:
+            self.rp_optimal = None
+            print("The problem doesn't have a solution with actual input parameters")
+
+        return self.rp_optimal
+
+    
+    def rrp_optimization(self, model="Classic", version='A', l=1, b=None, hist=True):
+        r"""
+        This method that calculates the relaxed risk parity portfolio according
+        to the optimization model and version selected by the user
+        :cite:`a-RichardRoncalli`. The general problem that solves is:
+        
+        .. math::
+            \begin{aligned}
+            &\underset{w}{\min} & & \psi - \gamma & \\
+            &\text{s.t.} & & \zeta = \Sigma w \\
+            & & & w^{T} \Sigma w \leq N \left ( \psi^{2} - \rho^{2} \right ) & \\
+            & & & w_{i} \zeta_{i} \geq \gamma^{2} & \forall i=1 , \ldots , N \\
+            & & & \lambda x^{T} \Theta x \leq \rho^{2} & \\
+            & & & \mu w \geq \overline{\mu} & \\
+            & & & Aw \geq B & \\
+            & & & \sum^{N}_{i=1} w_{i} = 1 & \\
+            & & & \psi, \gamma, \rho, w  \geq 0 & \\
+            \end{aligned}
+        
+        Where:
+    
+        :math:`w`: is the vector of weights of the optimum portfolio.
+        
+        :math:`\mu`: is the vector of expected returns.
+        
+        :math:`\Sigma`: is the covariance matrix of assets returns.
+        
+        :math:`\psi`: is the average risk of the portfolio.
+        
+        :math:`\gamma`: is the lower bound of each asset risk constribution.
+        
+        :math:`\zeta_{i}`: is the marginal risk of asset :math:`i`.
+        
+        :math:`\rho`: is a regularization variable.
+        
+        :math:`\lambda`: is a penalty parameter of :math:`\rho`.
+        
+        :math:`\Theta = \text{diag}(\Sigma)`
+        
+        :math:`Aw \geq B`: is a set of linear constraints.
+        
+        Parameters
+        ----------
+        model : str can be 'Classic' or 'FM'
+            The model used for optimize the portfolio.
+            The default is 'Classic'. Posible values are:
+
+            - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
+            - 'FM': use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.
+            
+        version : str can be 'A', 'B' or 'C'
+            Relaxed risk parity model version proposed in :cite:`a-RichardRoncalli`.
+            The default is 'A'. Posible values are:
+                
+            - 'A': without regularization and penalization constraints.
+            - 'B': with regularization constraint but without penalization constraint.
+            - 'C': with regularization and penalization constraints.
+            
+        l : float, optional
+            The penalization factor of penalization constraints. Only used with
+            version 'C'. The default is 1.
+        b : float, optional
+            The vector of risk constraints per asset.
+            The default is 1/n (number of assets).
+        hist : bool, optional
+            Indicate what kind of covariance matrix is used. 
+            If model = 'FM', True means historical covariance and
+            False means Risk Factor model for covariance. The default is
+            True.
+            
+        Returns
+        -------
+        w : DataFrame
+            The weights of optimal portfolio.
+
+        """
+
+        # General model Variables
+
+        mu = None
+        sigma = None
+        returns = None
+        if model == "Classic":
+            mu = np.array(self.mu, ndmin=2)
+            sigma = np.array(self.cov, ndmin=2)
+            returns = np.array(self.returns, ndmin=2)
+            nav = np.array(self.nav, ndmin=2)
+        elif model == "FM":
+            mu = np.array(self.mu_fm, ndmin=2)
+            if hist == False:
+                sigma = np.array(self.cov_fm, ndmin=2)
+                returns = np.array(self.returns_fm, ndmin=2)
+                nav = np.array(self.nav_fm, ndmin=2)
+            elif hist == True:
+                sigma = np.array(self.cov, ndmin=2)
+                returns = np.array(self.returns, ndmin=2)
+                nav = np.array(self.nav, ndmin=2)
+
+        # General Model Variables
+
+        if b is None:
+            b = np.ones((1, mu.shape[1]))
+            b = b / mu.shape[1]
+
+        returns = np.array(returns, ndmin=2)
+        w = cv.Variable((mu.shape[1], 1))
+        n = returns.shape[1]
+        ret = mu @ w
+
+        # RRP Model Variables
+
+        G = sqrtm(sigma)
+        Theta = np.diag(np.sqrt(np.diag(sigma)))
+        psi = cv.Variable(nonneg=True)
+        rho = cv.Variable(nonneg=True)
+        gamma = cv.Variable(nonneg=True)
+        zeta = cv.Variable((mu.shape[1], 1))
+        risk = psi - gamma
+
+        # General Model Constraints
+        
+        constraints = []
+        constraints += [zeta == sigma @ w,
+                        cv.sum(w) == 1,
+                        gamma >= 0,
+                        psi >= 0,
+                        zeta >= 0,
+                        w >= 0]
+
+        for i in range(mu.shape[1]):
+            constraints += [cv.SOC(w[i,0] + zeta[i,0], cv.vstack([2 * gamma, w[i,0] - zeta[i,0]]))]
+        
+        # Specific Model Constraints
+
+        if version == 'A':
+            constraints += [cv.SOC(n**0.5 * psi, G.T @ w)]
+        elif version == 'B':
+            constraints += [cv.SOC(2 * n**0.5 * psi, cv.vstack([2 * G.T @ w, -2 * n**0.5 * rho * np.ones((1,1))]))]
+            constraints += [cv.SOC(rho, G.T @ w)]
+            constraints += [rho >= 0]
+        elif version == 'C':
+            constraints += [cv.SOC(2 * n**0.5 * psi, cv.vstack([2 * G.T @ w, -2 * n**0.5 * rho * np.ones((1,1))]))]
+            constraints += [cv.SOC(rho, l**0.5 * Theta.T @ w)]
+            constraints += [rho >= 0]
+                       
+        # Problem Linear Constraints
+
+        if self.ainequality is not None and self.binequality is not None:
+            A = np.array(self.ainequality, ndmin=2) * 1000
+            B = np.array(self.binequality, ndmin=2) * 1000
+            constraints += [A @ w - B >= 0]
+            
+        # Problem Return Constraint
+        
+        if self.lowerret is not None:
+            constraints += [ret >= self.lowerret]
+
+        # Frontier Variables
+
+        portafolio = {}
+
+        for i in self.assetslist:
+            portafolio.update({i: []})
+
+        # Optimization Process
+
+        # Defining objective function
+
+        objective = cv.Minimize(risk * 1000)
 
         try:
             prob = cv.Problem(objective, constraints)

@@ -6,6 +6,14 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Version 2.0.0
+=============
+
+- Implement Nested Clustered Optimization (NCO) model with four objective functions.
+- Implements the Relaxed Risk Parity model.
+- Implements the Risk Budgeting approach for Risk Parity Portfolios with constraints.
+- Adds the option to use custom covariance in Hierarchical Clustering Portfolios.
+
 Version 1.0.0
 =============
 
@@ -14,7 +22,7 @@ Version 1.0.0
 - Implements a function that helps to build constraints for the HRP model.
 - Implements the Direct Bubble Hierarchical Tree (DBHT) linkage method for HRP and HERC models.
 - Implements a function that plots relationship among assets in a network using Minimum Spanning Tree (MST) and Planar Maximally Filtered Graph (PMFG).
-- Add two new codependence measures: mutual information and lower tail dependence index.
+- Adds two new codependence measures: mutual information and lower tail dependence index.
 
 
 Version 0.4.0
@@ -23,11 +31,11 @@ Version 0.4.0
 - Implements Hierarchical Equal Risk Contribution with equally weights within clusters (HERC2).
 - Implements a function that help us to discretize portfolio weights into number of shares given an investment amount.
 - Implements the option to select the method to estimate covariance in HRP, HERC and HERC2.
-- Add the option to add constraints on the number of assets and the number of effective assets.
-- Fix an error in two_diff_gap_stat() when number of assets is too small.
-- Fix an error on forward_regression() and backward_regression() when there is no significant feature in regression modes using p-value criterion.
-- Add an example that shows how to build HERC2 portfolios.
-- Add an example that shows how to build constraints on the number of assets and number of effective assets.
+- Adds the option to add constraints on the number of assets and the number of effective assets.
+- Fixes an error in two_diff_gap_stat() when number of assets is too small.
+- Fixes an error on forward_regression() and backward_regression() when there is no significant feature in regression modes using p-value criterion.
+- Adds an example that shows how to build HERC2 portfolios.
+- Adds an example that shows how to build constraints on the number of assets and number of effective assets.
 
 
 Version 0.3.0
@@ -36,8 +44,8 @@ Version 0.3.0
 - Implements Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Parity (HERC).
 - Implements the function plot_clusters() and plot_dendrogram() that help us to identify clusters based on a distance correlation metric.
 - Implements the function assets_clusters() that help us to create asset classes based on hierarchical clusters.
-- Add an example that shows how to build Hierarchical Risk Parity portfolios.
-- Add an example that shows how to build Hierarchical Equal Risk Parity portfolios.
+- Adds an example that shows how to build Hierarchical Risk Parity portfolios.
+- Adds an example that shows how to build Hierarchical Equal Risk Parity portfolios.
 
 
 Version 0.2.0
@@ -45,22 +53,22 @@ Version 0.2.0
 
 - Implements Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization models.
 - Implements the function plot_bar() that help us to plot portfolios with negative weights.
-- Add the option to build dollar neutral portfolios.
-- Add an example that shows how to build Logarithmic Mean Risk (Kelly Criterion) portfolios.
-- Add an example that shows how to build dollar neutral portfolios.
+- Adds the option to build dollar neutral portfolios.
+- Adds an example that shows how to build Logarithmic Mean Risk (Kelly Criterion) portfolios.
+- Adds an example that shows how to build dollar neutral portfolios.
 
 
 Version 0.1.5
 =============
 
-- Add the option to add a constraint on minimum portfolio return.
-- Add an example of how to add constraints on portfolio return and risk measures.
+- Adds the option to add a constraint on minimum portfolio return.
+- Adds an example of how to add constraints on portfolio return and risk measures.
 
 
 Version 0.1.4
 =============
 
-- Add Black Litterman with factors in two flavors: Black Litterman Bayesian model and Augmented Black Litterman model.
+- Adds Black Litterman with factors in two flavors: Black Litterman Bayesian model and Augmented Black Litterman model.
 - Implements factors_views, a function that allows to design views on risk factors for Black Litterman with factors.
 - Repairs some bugs.
 
@@ -68,7 +76,7 @@ Version 0.1.4
 Version 0.1.2
 =============
 
-- Add Entropic Drawdown at Risk for Mean Risk Portfolio Optimization and Risk Parity Portfolio Optimization.
+- Adds Entropic Drawdown at Risk for Mean Risk Portfolio Optimization and Risk Parity Portfolio Optimization.
 - Repairs some bugs.
 
 
@@ -77,7 +85,7 @@ Version 0.1.1
 
 - Repairs some bugs in Portfolio related to Semi Variance and UCI.
 - Implements an option to annualize returns and risk in plot_frontier, Jupyter Notebook and Excel reports.
-- Add examples using Vectorbt for Backtesting and MOSEK for large scale problems.
+- Adds examples using Vectorbt for Backtesting and MOSEK for large scale problems.
 
 
 Version 0.1.0
@@ -86,7 +94,7 @@ Version 0.1.0
 - Repairs some bugs in RiskFunctions.
 - Implements the Reports module that helps to build reports on Jupyter Notebook and Excel.
 - Implements plot_table, a function that resume some indicators of a portfolio.
-- Add Entropic Value at Risk for Mean Risk Portfolio Optimization and Risk Parity Portfolio Optimization.
+- Adds Entropic Value at Risk for Mean Risk Portfolio Optimization and Risk Parity Portfolio Optimization.
 
 
 Version 0.0.7
@@ -94,7 +102,7 @@ Version 0.0.7
 
 - Implements normal assumption method to estimate box and elliptical uncertainty sets for Worst Case Optimization.
 - Implements elliptical uncertainty sets for covariance matrix.
-- Add Ulcer Index for Mean Risk Portfolio Optimization and Risk Parity Portfolio Optimization.
+- Adds Ulcer Index for Mean Risk Portfolio Optimization and Risk Parity Portfolio Optimization.
 - Implements functions to calculate Ulcer Index.
 
 
@@ -119,7 +127,7 @@ Version 0.0.4
 - Repairs some bugs.
 - Update to make it compatible with cvxpy >=1.1.0
 - Implements Principal Component Regression for loadings matrix estimation.
-- Add Akaike information criterion, Schwarz information criterion, R squared and adjusted R squared feature selection criterions in stepwise regression.
+- Adds Akaike information criterion, Schwarz information criterion, R squared and adjusted R squared feature selection criterions in stepwise regression.
 
 
 Version 0.0.3

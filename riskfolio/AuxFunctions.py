@@ -588,7 +588,8 @@ def ltdi_matrix(X, alpha=0.05):
 
             mat[i, i] = ltd
 
-    mat = np.round(mat, 8)
+    mat = np.clip(np.round(mat, 8), a_min=1.0e-8, a_max=1)
+    
     if flag:
         mat = pd.DataFrame(mat, index=cols, columns=cols)
     else:
@@ -734,7 +735,7 @@ def weights_discretizetion(
         value is 6.
     ascending : bool, optional
         If True assigns excess capital to assets with lower weights, else,
-        to assets with higher weights. The default value is True.
+        to assets with higher weights. The default value is False.
 
     Returns
     -------

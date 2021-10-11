@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
+import riskfolio as rp
 import riskfolio.RiskFunctions as rk
 import riskfolio.AuxFunctions as af
 import riskfolio.ParamsEstimation as pe
@@ -50,6 +51,7 @@ class HCPortfolio(object):
         self.asset_order = None
         self.clusters = None
         self.cov = None
+        self.mu = None
         self.codep = None
         self.codep_sorted = None
         self.w_max = w_max
@@ -108,6 +110,38 @@ class HCPortfolio(object):
 
         return weight
 
+    # get optimal weights
+    def _opt_w(self, returns, mu, cov, obj="MinRisk", rm="MV", rf=0, l=2):
+        if returns.shape[1] == 1:
+            weight = np.array([1]).reshape(-1, 1)
+        else:
+            if obj in {"MinRisk", "Utility", "Sharpe"}:
+                port = rp.Portfolio(returns=returns)
+                port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
+                port.cov = cov
+                if mu is not None:
+                    port.mu = mu
+                weight = port.optimization(model="Classic",
+                                           rm=rm,
+                                           obj=obj,
+                                           rf=rf,
+                                           l=l,
+                                           hist=True).to_numpy()
+            elif obj in {"ERC"}:
+                port = rp.Portfolio(returns=returns)
+                port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
+                port.cov = cov
+                weight = port.rp_optimization(model="Classic",
+                                              rm=rm,
+                                              rf=rf,
+                                              b=None,
+                                              hist=True).to_numpy()
+
+        weight = weight.reshape(-1, 1)
+
+        return weight
+
+
     # Create hierarchical clustering
     def _hierarchical_clustering(
         self,
@@ -119,7 +153,7 @@ class HCPortfolio(object):
     ):
 
         # Calculating distance
-        if codependence in {"pearson", "spearman"}:
+        if codependence in {"pearson", "spearman", "custom_cov"}:
             dist = np.sqrt(np.clip((1 - self.codep) / 2, a_min=0.0, a_max=1.0))
         elif codependence in {"abs_pearson", "abs_spearman", "distance"}:
             dist = np.sqrt(np.clip((1 - self.codep), a_min=0.0, a_max=1.0))
@@ -134,7 +168,7 @@ class HCPortfolio(object):
         if linkage == "DBHT":
             # different choices for D, S give different outputs!
             D = dist.to_numpy()  # dissimilatity matrix
-            if codependence in {"pearson", "spearman"}:
+            if codependence in {"pearson", "spearman", "custom_cov"}:
                 codep = 1 - dist ** 2
                 S = codep.to_numpy()  # similarity matrix
             else:
@@ -146,7 +180,7 @@ class HCPortfolio(object):
             p_dist = squareform(dist, checks=False)
             clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
 
-        if model in ["HERC", "HERC2"]:
+        if model in {"HERC", "HERC2", "NCO"}:
             # optimal number of clusters
             k = af.two_diff_gap_stat(self.codep, dist, clustering, max_k)
         else:
@@ -378,7 +412,6 @@ class HCPortfolio(object):
         clustered_assets = pd.Series(
             hr.cut_tree(Z, n_clusters=self.k).flatten(), index=self.cov.index
         )
-
         # Multiply within-cluster weight with inter-cluster weight
         for i in range(self.k):
             cluster = clustered_assets.loc[clustered_assets == i]
@@ -402,14 +435,73 @@ class HCPortfolio(object):
 
         return weight
 
+    # compute intra-cluster weights
+    def _intra_weights(self, Z, obj="MinRisk", rm="MV", rf=0, l=2):
+        # Get constituents of k clusters
+        clustered_assets = pd.Series(
+            hr.cut_tree(Z, n_clusters=self.k).flatten(), index=self.cov.index
+        )
+        
+        # get covariance matrices for each cluster
+        intra_weights = pd.DataFrame(index=clustered_assets.index)
+        for i in range(self.k):
+            cluster = clustered_assets.loc[clustered_assets == i]
+            if self.mu is not None:
+                cluster_mu = self.mu.loc[:, cluster.index]
+            else:
+                cluster_mu = None
+            cluster_cov = self.cov.loc[cluster.index, cluster.index]
+            cluster_returns = self.returns.loc[:, cluster.index]
+            weights = pd.Series(self._opt_w(cluster_returns,
+                                            cluster_mu,
+                                            cluster_cov,
+                                            obj=obj,
+                                            rm=rm,
+                                            rf=rf,
+                                            l=l).flatten(),
+                                index=cluster_cov.index)
+            intra_weights[i] = weights
+        
+        intra_weights = intra_weights.fillna(0) 
+        return intra_weights
+
+    def _inter_weights(self, intra_weights, obj="MinRisk", rm="MV", rf=0, l=2):
+        # inter-cluster mean vector
+        if self.mu is not None:
+            tot_mu = self.mu @ intra_weights
+        else:
+            tot_mu = None
+        # inter-cluster covariance matrix
+        tot_cov = intra_weights.T.dot(np.dot(self.cov, intra_weights))
+        # inter-cluster returns matrix
+        tot_ret = self.returns @ intra_weights
+        
+        # inter-cluster weights
+        inter_weights = pd.Series(self._opt_w(tot_ret,
+                                              tot_mu,
+                                              tot_cov,
+                                              obj=obj,
+                                              rm=rm,
+                                              rf=rf,
+                                              l=l).flatten(),
+                                  index=intra_weights.columns)
+        # determine the weight on each cluster by multiplying the intra-cluster weight with the inter-cluster weight
+        weights = intra_weights.mul(inter_weights, axis=1).sum(axis=1).sort_index()
+        return weights
+
+
     # Allocate weights
     def optimization(
         self,
         model="HRP",
         codependence="pearson",
         covariance="hist",
+        obj="MinRisk",
         rm="MV",
         rf=0,
+        l=2,
+        custom_cov=None,
+        custom_mu=None,
         linkage="single",
         k=None,
         max_k=10,
@@ -431,8 +523,9 @@ class HCPortfolio(object):
             - 'HRP': Hierarchical Risk Parity.
             - 'HERC': Hierarchical Equal Risk Contribution.
             - 'HERC2': HERC but splitting weights equally within clusters.
+            - 'NCO': Nested Clustered Optimization.
 
-        codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info' or 'tail'}
+        codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
             The codependence or similarity matrix used to build the distance
             metric and clusters. The default is 'pearson'. Posible values are:
 
@@ -443,8 +536,9 @@ class HCPortfolio(object):
             - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
             - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
             - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+            - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
 
-        covariance : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+        covariance : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas', 'shrunk' or 'custom_cov'}
             The method used to estimate the covariance matrix:
             The default is 'hist'.
 
@@ -454,9 +548,20 @@ class HCPortfolio(object):
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
+            - 'custom_cov': use custom covariance matrix.
+
+        obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'ERC'}.
+            Objective function used by the NCO model.
+            The default is 'MinRisk'. Posible values are:
+
+            - 'MinRisk': Minimize the selected risk measure.
+            - 'Utility': Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
+            - 'Sharpe': Maximize the risk adjusted return ratio based on the selected risk measure.
+            - 'ERC': Equally risk contribution portfolio of the selected risk measure.
 
         rm : str, optional
-            The risk measure used to optimze the portfolio.
+            The risk measure used to optimze the portfolio. If model is 'NCO', 
+            the risk measures available depends on the objective functon.
             The default is 'MV'. Posible values are:
 
             - 'equal': Equally weighted.
@@ -486,6 +591,15 @@ class HCPortfolio(object):
         rf : float, optional
             Risk free rate, must be in the same period of assets returns.
             The default is 0.
+        l : scalar, optional
+            Risk aversion factor of the 'Utility' objective function.
+            The default is 2.
+        custom_cov : DataFrame or None, optional
+            Custom covariance matrix, used when codependence or covariance
+            parameters have value 'custom_cov'. The default is None.
+        custom_mu : DataFrame or None, optional
+            Custom mean vector when NCO objective is 'Utility' or 'Sharpe'.
+            The default is None.
         linkage : string, optional
             Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
             The default is 'single'. Posible values are:
@@ -533,7 +647,25 @@ class HCPortfolio(object):
         """
 
         # Covariance matrix
-        self.cov = pe.covar_matrix(self.returns, method=covariance, d=0.94)
+        if covariance == 'custom_cov':
+            self.cov = custom_cov.copy()
+        else:
+            self.cov = pe.covar_matrix(self.returns, method=covariance, d=0.94)
+        
+        # Custom mean vector
+        if custom_mu is not None:
+            if isinstance(custom_mu, pd.Series) == True:
+                self.mu = custom_mu.to_frame().T
+            elif isinstance(custom_mu, pd.DataFrame) == True:
+                if custom_mu.shape[0]>1 and custom_mu.shape[1]==1:
+                    self.mu = custom_mu.T
+                elif custom_mu.shape[0]==1 and custom_mu.shape[1]>1:
+                    self.mu = custom_mu
+                else:
+                    raise NameError("custom_mu must be a column DataFrame")
+            else:
+                raise NameError("custom_mu must be a column DataFrame or Series")
+                
         self.alpha_tail = alpha_tail
         self.bins_info = bins_info
 
@@ -554,6 +686,8 @@ class HCPortfolio(object):
             self.codep = af.ltdi_matrix(self.returns, alpha=self.alpha_tail).astype(
                 float
             )
+        elif codependence in {"custom_cov"}:
+            self.codep = af.correl_matrix(custom_cov).astype(float)
 
         # Step-1: Tree clustering
         self.clusters, self.k = self._hierarchical_clustering(
@@ -579,11 +713,31 @@ class HCPortfolio(object):
 
         # Step-3: Recursive bisection
         if model == "HRP":
-            weights = self._recursive_bisection(self.sort_order, rm=rm, rf=rf)
+            # Recursive bisection
+            weights = self._recursive_bisection(self.sort_order,
+                                                rm=rm,
+                                                rf=rf)
         elif model in ["HERC", "HERC2"]:
-            weights = self._hierarchical_recursive_bisection(
-                self.clusters, rm=rm, rf=rf, linkage=linkage, model=model
-            )
+            # Cluster-based Recursive bisection
+            weights = self._hierarchical_recursive_bisection(self.clusters,
+                                                             rm=rm,
+                                                             rf=rf,
+                                                             linkage=linkage,
+                                                             model=model)
+        elif model == "NCO":
+            # Step-3.1: Determine intra-cluster weights
+            intra_weights = self._intra_weights(self.clusters,
+                                                obj=obj,
+                                                rm=rm,
+                                                rf=rf,
+                                                l=l)
+    
+            # Step-3.2: Determine inter-cluster weights and multiply with 􏰁→ intra-cluster weights
+            weights = self._inter_weights(intra_weights,
+                                          obj=obj,
+                                          rm=rm,
+                                          rf=rf,
+                                          l=l)
 
         if isinstance(self.w_max, pd.Series) and isinstance(self.w_min, pd.Series):
             self.w_max = self.w_max.sort_index()

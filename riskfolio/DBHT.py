@@ -101,7 +101,7 @@ def PMFG_T2s(W):
     N = W.shape[0]
     if N < 9:
         print("W Matrix too small \n")
-    if W.any() < 0:
+    if np.any(W < 0):
         print("W Matrix has negative elements! \n")
 
     A = np.zeros((N, N))  # ininzialize adjacency matrix

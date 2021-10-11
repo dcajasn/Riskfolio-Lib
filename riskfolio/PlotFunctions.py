@@ -1558,6 +1558,7 @@ def plot_table(
 
 def plot_clusters(
     returns,
+    custom_cov=None,
     codependence="pearson",
     linkage="ward",
     k=None,
@@ -1580,7 +1581,10 @@ def plot_clusters(
     ----------
     returns : DataFrame
         Assets returns.
-    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info' or 'tail'}
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
         The codependence or similarity matrix used to build the distance
         metric and clusters. The default is 'pearson'. Posible values are:
 
@@ -1591,6 +1595,7 @@ def plot_clusters(
         - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
         - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
         - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
@@ -1694,7 +1699,10 @@ def plot_clusters(
     elif codependence in {"tail"}:
         codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
         dist = -np.log(codep)
-
+    elif codependence in {"custom_cov"}:
+        codep = af.correl_matrix(custom_cov).astype(float)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+        
     # Hierarchcial clustering
     dist = dist.to_numpy()
     dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
@@ -1702,7 +1710,7 @@ def plot_clusters(
     if linkage == "DBHT":
         # different choices for D, S give different outputs!
         D = dist.to_numpy()  # dissimilatity matrix
-        if codependence in {"pearson", "spearman"}:
+        if codependence in {"pearson", "spearman", "custom_cov"}:
             S = (1 - dist ** 2).to_numpy()
         else:
             S = codep.to_numpy()  # similarity matrix
@@ -1877,6 +1885,7 @@ def plot_clusters(
 
 def plot_dendrogram(
     returns,
+    custom_cov=None,
     codependence="pearson",
     linkage="ward",
     k=None,
@@ -1896,7 +1905,10 @@ def plot_dendrogram(
     ----------
     returns : DataFrame
         Assets returns.
-    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info' or 'tail'}
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
         The codependence or similarity matrix used to build the distance
         metric and clusters. The default is 'pearson'. Posible values are:
 
@@ -1907,6 +1919,7 @@ def plot_dendrogram(
         - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
         - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
         - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
@@ -2001,14 +2014,17 @@ def plot_dendrogram(
     elif codependence in {"tail"}:
         codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
         dist = -np.log(codep)
-
+    elif codependence in {"custom_cov"}:
+        codep = af.correl_matrix(custom_cov).astype(float)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+        
     # Hierarchcial clustering
     dist = dist.to_numpy()
     dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
     if linkage == "DBHT":
         # different choices for D, S give different outputs!
         D = dist.to_numpy()  # dissimilatity matrix
-        if codependence in {"pearson", "spearman"}:
+        if codependence in {"pearson", "spearman", "custom_cov"}:
             S = (1 - dist ** 2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix
@@ -2088,6 +2104,7 @@ def plot_dendrogram(
 
 def plot_network(
     returns,
+    custom_cov=None,
     codependence="pearson",
     linkage="ward",
     k=None,
@@ -2114,7 +2131,10 @@ def plot_network(
     ----------
     returns : DataFrame
         Assets returns.
-    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info' or 'tail'}
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
         The codependence or similarity matrix used to build the distance
         metric and clusters. The default is 'pearson'. Posible values are:
 
@@ -2125,6 +2145,7 @@ def plot_network(
         - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
         - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
         - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
@@ -2240,6 +2261,9 @@ def plot_network(
     elif codependence in {"tail"}:
         codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
         dist = -np.log(codep)
+    elif codependence in {"custom_cov"}:
+        codep = af.correl_matrix(custom_cov).astype(float)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
 
     # Hierarchcial clustering
     dist = dist.to_numpy()
@@ -2247,7 +2271,7 @@ def plot_network(
     if linkage == "DBHT":
         # different choices for D, S give different outputs!
         D = dist.to_numpy()  # dissimilatity matrix
-        if codependence in {"pearson", "spearman"}:
+        if codependence in {"pearson", "spearman", "custom_cov"}:
             S = (1 - dist ** 2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix

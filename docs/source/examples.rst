@@ -8,17 +8,17 @@ Examples
 
 The following examples are available:
 
-Portfolio Optimization Models
------------------------------
+Return Risk Portfolio Optimization Models
+-----------------------------------------
 * `Mean Risk Portfolio Optimization using historical estimates <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%201.ipynb>`_.
 * `Mean Risk Portfolio Optimization using custom estimates (mean and covariance) <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%206.ipynb>`_.
-* `Vanilla Risk Parity Portfolio Optimization using historical estimates <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2010.ipynb>`_.
-* `Worst Case Mean Variance Portfolio Optimization using box and elliptical uncertainty sets <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2012.ipynb>`_.
 * `Ulcer Index Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2014.ipynb>`_.
 * `Entropic Value at Risk (EVaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2015.ipynb>`_.
 * `Riskfolio-Lib with MOSEK for Real Applications (612 assets and 4943 observations) <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2017.ipynb>`_.
 * `Entropic Drawdown at Risk (EDaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2019.ipynb>`_.
 * `Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2022.ipynb>`_.
+* `Worst Case Mean Variance Portfolio Optimization using box and elliptical uncertainty sets <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2012.ipynb>`_.
+
 
 Special Constraints
 -------------------
@@ -43,6 +43,13 @@ Black Litterman Models
 * `Mean Risk Portfolio Optimization using Black Litterman with Factors model (Black Litterman Bayesian and Augmented Black Litterman) <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2020.ipynb>`_.
 
 
+Risk Parity Models
+-------------------
+* `Vanilla Risk Parity Portfolio Optimization using historical estimates <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2010.ipynb>`_.
+* `Relaxed Risk Parity Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2032.ipynb>`_.
+* `Risk Parity with Constraints using the Risk Budgeting Approach <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2033.ipynb>`_.
+
+
 Hierarchical Clustering Portfolio Optimization
 ----------------------------------------------
 * `Hierarchical Risk Parity (HRP) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2024.ipynb>`_.
@@ -50,6 +57,8 @@ Hierarchical Clustering Portfolio Optimization
 * `Hierarchical Equal Risk Contribution with equally weights within clusters (HERC2) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2027.ipynb>`_.
 * `Hierarchical Clustering and Networks <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2028.ipynb>`_.
 * `Hierarchical Risk Parity with Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2029.ipynb>`_.
+* `Nested Clustered Optimization (NCO) <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2030.ipynb>`_.
+* `Hierarchical Portfolios with Custom Covariance <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2031.ipynb>`_.
 
 
 Backtesting

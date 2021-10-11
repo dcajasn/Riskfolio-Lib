@@ -106,12 +106,14 @@ Risk Parity Portfolio Optimization
 ----------------------------------
 
 Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
-the general vanilla risk parity model :cite:`a-Roncalli`:
+the general vanilla risk parity model :cite:`a-Roncalli` :cite:`a-RichardRoncalli`:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\min} & & \phi(w)\\
-    &\text{s.t.} & & b \log(w) \geq c\\
+    &\underset{w}{\min} & & \phi(w) \\
+    &\text{s.t.} & & b \log(w) \geq c \\
+    & & & \mu w \geq \overline{\mu} \\
+    & & & Aw \geq B \\
     & & & w \geq 0 \\
     \end{aligned}
 
@@ -120,7 +122,11 @@ Where:
     
 :math:`w`: is the vector of weights of the optimum portfolio.
 
+:math:`\mu`: is the vector of expected returns.
+
 :math:`b`: is a vector of risk contribution constraints.
+
+:math:`Aw \geq B`: is a set of linear constraints.
 
 :math:`\phi(w)`: are 10 available risk measures. The available risk
 measures are:
@@ -137,6 +143,50 @@ measures are:
 - Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
 
 :math:`c`: is an arbitrary constant.
+
+
+Relaxed Risk Parity Portfolio Optimization
+------------------------------------------
+
+Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
+the relaxed risk parity model :cite:`a-GambetaKwon`:
+
+.. math::
+    \begin{aligned}
+    &\underset{w}{\min} & & \psi - \gamma & \\
+    &\text{s.t.} & & \zeta = \Sigma w \\
+    & & & w^{T} \Sigma w \leq N \left ( \psi^{2} - \rho^{2} \right ) & \\
+    & & & w_{i} \zeta_{i} \geq \gamma^{2} & \forall i=1 , \ldots , N \\
+    & & & \lambda x^{T} \Theta x \leq \rho^{2} & \\
+    & & & \mu w \geq \overline{\mu} & \\
+    & & & Aw \geq B & \\
+    & & & \sum^{N}_{i=1} w_{i} = 1 & \\
+    & & & \psi, \gamma, \rho, w  \geq 0 & \\
+    \end{aligned}
+
+
+Where:
+    
+:math:`w`: is the vector of weights of the optimum portfolio.
+
+:math:`\mu`: is the vector of expected returns.
+
+:math:`\Sigma`: is the covariance matrix of assets returns.
+
+:math:`\psi`: is the average risk of the portfolio.
+
+:math:`\gamma`: is the lower bound of each asset risk constribution.
+
+:math:`\zeta_{i}`: is the marginal risk of asset :math:`i`.
+
+:math:`\rho`: is a regularization variable.
+
+:math:`\lambda`: is a penalty parameter of :math:`\rho`.
+
+:math:`\Theta = \text{diag}(\Sigma)`
+
+:math:`Aw \geq B`: is a set of linear constraints.
+
 
 Worst Case Mean Variance Portfolio Optimization
 -----------------------------------------------

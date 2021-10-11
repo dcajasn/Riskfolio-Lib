@@ -66,7 +66,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
     - Ulcer Index for uncompounded cumulative returns.
 
-- Vanilla Risk Parity Portfolio Optimization with 10 convex risk measures:
+- Risk Parity Portfolio Optimization with 10 convex risk measures:
 
     - Standard Deviation.
     - Semi Standard Deviation.
@@ -98,7 +98,15 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Entropic Drawdown at Risk (EDaR) for compounded and uncompounded cumulative returns.
     - Ulcer Index for compounded and uncompounded cumulative returns.
 
+- Nested Clustered Optimization (NCO) with four objective functions and the available risk measures to each objective:
+
+    - Minimum Risk.
+    - Maximum Return.
+    - Maximum Utility Function.
+    - Equal Risk Contribution.
+
 - Worst Case Mean Variance Portfolio Optimization.
+- Relaxed Risk Parity Portfolio Optimization.
 - Portfolio optimization with Black Litterman model.
 - Portfolio optimization with Risk Factors model.
 - Portfolio optimization with Black Litterman Bayesian model.
@@ -119,6 +127,19 @@ Some of key functionalities that Riskfolio-Lib offers:
 - Tools to build reports on Jupyter Notebook and Excel. 
 - Option to use commercial optimization solver like MOSEK or GUROBI for large scale problems.
 
+Citing
+======
+
+If you use Riskfolio-Lib for published work, please use the following BibTeX entrie:
+
+::
+
+    @misc{riskfolio,
+          author = {Dany Cajas},
+          title = {Riskfolio-Lib (2.0.0)},
+          year  = {2021},
+          url   = {https://github.com/dcajasn/Riskfolio-Lib},
+          }
 
 Contents
 ========
