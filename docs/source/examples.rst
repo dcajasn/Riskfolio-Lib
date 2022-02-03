@@ -63,8 +63,8 @@ Hierarchical Clustering Portfolio Optimization
 
 Backtesting
 -----------
-* `Multi Assets Algorithmic Trading Backtesting with transaction cost and slippage using Backtrader <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%205.ipynb>`_.
-* `Multi Assets Algorithmic Trading Backtesting with Vectorbt <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2018.ipynb>`_ (vectorbt=0.16.1).
+* `Multi Assets Algorithmic Trading Backtesting with transaction cost and slippage using Backtrader <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%205.ipynb>`_ (matplotlib=3.2.2 for compatibility with backtrader=1.9.76.123).
+* `Multi Assets Algorithmic Trading Backtesting with Vectorbt <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2018.ipynb>`_ (vectorbt=0.23.0).
 
 
 Excel and Reporting
