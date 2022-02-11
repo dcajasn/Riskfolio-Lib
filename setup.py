@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 Dany Cajas
+# Copyright (C) 2020-2022 Dany Cajas
 
 DESCRIPTION = "Portfolio Optimization and Quantitative Strategic Asset Allocation in Python"
 
@@ -12,7 +12,7 @@ URL = 'https://github.com/dcajasn/Riskfolio-Lib'
 LICENSE = 'BSD (3-clause)'
 KEYWORDS = 'finance, portfolio, optimization, quant, asset, allocation, investing'
 DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
-VERSION = '2.0.0'
+VERSION = '2.0.1'
 PYTHON_REQUIRES = ">=3.7"
 
 INSTALL_REQUIRES = [

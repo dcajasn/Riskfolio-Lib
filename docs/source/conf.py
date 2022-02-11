@@ -21,13 +21,13 @@ sys.path.insert(1, os.path.abspath('../../riskfolio'))
 # -- Project information -----------------------------------------------------
 
 project = 'Riskfolio-Lib'
-copyright = '2020-2021, Dany Cajas'
+copyright = '2020-2022, Dany Cajas'
 author = 'Dany Cajas'
 
 # The short X.Y version
 version = 'latest'
 # The full version, including alpha/beta/rc tags
-release = '2.0.0'
+release = '2.0.1'
 
 
 # -- General configuration ---------------------------------------------------

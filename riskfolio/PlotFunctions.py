@@ -1,6 +1,6 @@
 """"""  #
 """
-Copyright (c) 2020-2021, Dany Cajas
+Copyright (c) 2020-2022, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -124,11 +124,13 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
         raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if ax is None:
-        ax = plt.gca()
         fig = plt.gcf()
+        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
-
+    else:
+        fig = ax.get_figure()
+        
     ax.grid(linestyle=":")
     title = "Historical Compounded Cumulative Returns"
     ax.set_title(title)
@@ -164,8 +166,10 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     ax.set_yticklabels(["{:3.2f}".format(x) for x in ticks_loc])
     ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -326,10 +330,12 @@ def plot_frontier(
             raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if ax is None:
-        ax = plt.gca()
         fig = plt.gcf()
+        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
 
     mu_ = np.array(mu, ndmin=2)
 
@@ -420,8 +426,10 @@ def plot_frontier(
     colorbar = ax.figure.colorbar(ax1)
     colorbar.set_label("Risk Adjusted Return Ratio")
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -483,10 +491,12 @@ def plot_pie(
         raise ValueError("w must be a column DataFrame")
 
     if ax is None:
-        ax = plt.gca()
         fig = plt.gcf()
+        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
 
     labels = w.index.tolist()
     sizes = w.iloc[:, 0].tolist()
@@ -575,8 +585,10 @@ def plot_pie(
             **kw
         )
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -654,10 +666,12 @@ def plot_bar(
         raise ValueError("w must be a column DataFrame")
 
     if ax is None:
-        ax = plt.gca()
         fig = plt.gcf()
+        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
 
     labels = w.index.tolist()
     sizes = w.iloc[:, 0].tolist()
@@ -806,8 +820,10 @@ def plot_bar(
     elif kind == "h":
         ax.axvline(x=0, ymin=0, ymax=1, color="gray", label=False)
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -858,10 +874,12 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
         raise ValueError("w must be a DataFrame")
 
     if ax is None:
-        ax = plt.gca()
         fig = plt.gcf()
+        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
 
     ax.set_title("Efficient Frontier's Assets Structure")
     labels = w_frontier.index.tolist()
@@ -891,8 +909,10 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
 
     ax.legend(labels, loc="center left", bbox_to_anchor=(1, 0.5), ncol=n)
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -992,10 +1012,12 @@ def plot_risk_con(
         raise ValueError("w must be a DataFrame")
 
     if ax is None:
-        ax = plt.gca()
         fig = plt.gcf()
+        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
 
     item = rmeasures.index(rm)
     title = "Risk (" + rm_names[item] + ") Contribution per Asset"
@@ -1017,8 +1039,10 @@ def plot_risk_con(
     ax.set_yticklabels(["{:3.4%}".format(x) for x in ticks_loc])
     ax.grid(linestyle=":")
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -1083,10 +1107,12 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
         raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if ax is None:
-        ax = plt.gca()
         fig = plt.gcf()
+        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
 
     a = np.array(returns, ndmin=2) @ np.array(w, ndmin=2)
     ax.set_title("Portfolio Returns Histogram")
@@ -1157,8 +1183,10 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
     ax.grid(linestyle=":")
     ax.set_ylabel("Probability Density")
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -1228,6 +1256,8 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
         ax = ax.flatten()
         fig.set_figwidth(width)
         fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
 
     index = nav.index.tolist()
 
@@ -1301,8 +1331,10 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
         i.grid(linestyle=":")
         j = j + 1
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -1392,10 +1424,12 @@ def plot_table(
         raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if ax is None:
-        ax = plt.gca()
         fig = plt.gcf()
+        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
+    else:
+        fig = ax.gcf()
 
     mu = returns.mean()
     cov = returns.cov()
@@ -1550,8 +1584,10 @@ def plot_table(
             )
             cellDict[(j, i)].set_facecolor("white")
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -1877,8 +1913,10 @@ def plot_clusters(
     elif dendrogram == False:
         ax.set_title(title)
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -1995,6 +2033,8 @@ def plot_dendrogram(
         ax = plt.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
+    else:
+        fig = ax.gcf()
 
     labels = np.array(returns.columns.tolist())
 
@@ -2096,8 +2136,10 @@ def plot_dendrogram(
 
     ax.set_title(title)
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
 
@@ -2239,10 +2281,12 @@ def plot_network(
 
     if ax is None:
         fig = plt.gcf()
-        ax = plt.gca()
+        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
-
+    else:
+        fig = ax.gcf()
+        
     labels = np.array(returns.columns.tolist())
 
     # Calculating codependence matrix and distance metric
@@ -2363,7 +2407,9 @@ def plot_network(
 
     ax.set_title(title)
 
-    fig = plt.gcf()
-    fig.tight_layout()
+    try:
+        fig.tight_layout()
+    except:
+        pass
 
     return ax
