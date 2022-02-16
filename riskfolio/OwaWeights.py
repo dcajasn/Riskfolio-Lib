@@ -8,6 +8,7 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 
 import numpy as np
 
+
 def owa_gmd(T):
     r"""
     Calculate the OWA weights to calculate the Gini mean difference (GMD)
@@ -23,12 +24,12 @@ def owa_gmd(T):
     value : 1d-array
         An OWA weights vector of size Tx1.
     """
-    
+
     w_ = []
-    for i in range(1,T+1):
-        w_.append(2*i - 1 - T)
-    w_ = 2 * np.array(w_) / (T * (T-1))
-    w_ = w_.reshape(-1,1)
+    for i in range(1, T + 1):
+        w_.append(2 * i - 1 - T)
+    w_ = 2 * np.array(w_) / (T * (T - 1))
+    w_ = w_.reshape(-1, 1)
 
     return w_
 
@@ -50,12 +51,12 @@ def owa_cvar(T, alpha=0.05):
     value : 1d-array
         An OWA weights vector of size Tx1.
     """
-    
-    k = int(np.ceil(T * alpha))-1
-    w_ = np.zeros((T,1))
-    w_[:k,:] = -1/(T * alpha)
-    w_[k,:] = -1 - np.sum(w_[:k,:])
-    
+
+    k = int(np.ceil(T * alpha)) - 1
+    w_ = np.zeros((T, 1))
+    w_[:k, :] = -1 / (T * alpha)
+    w_[k, :] = -1 - np.sum(w_[:k, :])
+
     return w_
 
 
@@ -78,10 +79,10 @@ def owa_wcvar(T, alphas, weights):
     value : 1d-array
         An OWA weights vector of size Tx1.
     """
-    
+
     w_ = 0
     for i, j in zip(alphas, weights):
-        w_ += owa_cvar(T, i) * j    
+        w_ += owa_cvar(T, i) * j
 
     return w_
 
@@ -104,12 +105,12 @@ def owa_tg(T, alpha=0.05, a_sim=100):
     value : 1d-array
         A OWA weights vector of size Tx1.
     """
-    
+
     alphas = np.linspace(alpha, 0.0001, a_sim)[::-1]
-    w_ = [(alphas[1]-0)*alphas[0]/alphas[-1]**2]
-    for i in range(1, len(alphas)-1):
-        w_.append((alphas[i+1]-alphas[i-1])*alphas[i]/alphas[-1]**2)
-    w_.append((alphas[-1]-alphas[-2])/alphas[-1])
+    w_ = [(alphas[1] - 0) * alphas[0] / alphas[-1] ** 2]
+    for i in range(1, len(alphas) - 1):
+        w_.append((alphas[i + 1] - alphas[i - 1]) * alphas[i] / alphas[-1] ** 2)
+    w_.append((alphas[-1] - alphas[-2]) / alphas[-1])
     w_ = owa_wcvar(T, alphas, w_)
 
     return w_
@@ -130,8 +131,8 @@ def owa_wr(T):
         A OWA weights vector of size Tx1.
     """
 
-    w_ = np.zeros((T,1))
-    w_[0,:] = -1
+    w_ = np.zeros((T, 1))
+    w_[0, :] = -1
 
     return w_
 
@@ -151,9 +152,9 @@ def owa_rg(T):
         A OWA weights vector of size Tx1.
     """
 
-    w_ = np.zeros((T,1))
-    w_[0,:] = -1
-    w_[-1,:] = 1
+    w_ = np.zeros((T, 1))
+    w_[0, :] = -1
+    w_[-1, :] = 1
 
     return w_
 
@@ -177,12 +178,12 @@ def owa_cvrg(T, alpha=0.05, beta=None):
     value : 1d-array
         A OWA weights vector of size Tx1.
     """
-    
+
     if beta is None:
         beta = alpha
-        
+
     w_ = owa_cvar(T, alpha) - owa_cvar(T, beta)[::-1]
-    
+
     return w_
 
 
@@ -214,7 +215,7 @@ def owa_wcvrg(T, alphas, weights_a, betas=None, weights_b=None):
     if betas is None or weights_b is None:
         betas = alphas
         weights_b = weights_a
-        
+
     w_ = owa_wcvar(T, alphas, weights_a) - owa_wcvar(T, betas, weights_b)[::-1]
 
     return w_
@@ -245,12 +246,12 @@ def owa_tgrg(T, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     value : 1d-array
         A OWA weights vector of size Tx1.
     """
-    
+
     if beta is None:
         beta = alpha
     if b_sim is None:
         b_sim = a_sim
-    
+
     w_ = owa_tg(T, alpha, a_sim) - owa_tg(T, beta, b_sim)[::-1]
-    
+
     return w_

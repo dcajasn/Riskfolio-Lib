@@ -77,10 +77,10 @@ def DBHTs(D, S, leaf_order=True):
 
 def j_LoGo(S, separators, cliques):
     r"""
-    computes sparse inverse covariance, J, from a clique tree made of cliques 
+    computes sparse inverse covariance, J, from a clique tree made of cliques
     and separators. For more information see: :cite:`d-jLogo`.
 
-    
+
     Parameters
     ----------
     S : ndarray
@@ -89,37 +89,37 @@ def j_LoGo(S, separators, cliques):
         It is the list of separators.
     clique : nd-array
         It is the list of cliques.
-    
+
     Returns
     -------
     JLogo : nd-array
         Inverse covariance.
-    
+
     Notes
     -----
-    separators and cliques can be the outputs of TMFG function 
-    
+    separators and cliques can be the outputs of TMFG function
+
     """
     N = S.shape[0]
-    if isinstance(separators,dict) == False:
+    if isinstance(separators, dict) == False:
         separators_temp = {}
         for i in range(len(separators)):
-            separators_temp[i] = separators[i,:]
+            separators_temp[i] = separators[i, :]
 
-    if isinstance(cliques,dict) == False:
+    if isinstance(cliques, dict) == False:
         cliques_temp = {}
         for i in range(len(cliques)):
-            cliques_temp[i] = cliques[i,:]
-            
-    Jlogo = np.zeros((N,N))
+            cliques_temp[i] = cliques[i, :]
+
+    Jlogo = np.zeros((N, N))
     for i in cliques_temp.keys():
         v = np.int32(cliques_temp[i])
-        Jlogo[np.ix_(v,v)] = Jlogo[np.ix_(v,v)] + np.linalg.inv(S[np.ix_(v,v)])
+        Jlogo[np.ix_(v, v)] = Jlogo[np.ix_(v, v)] + np.linalg.inv(S[np.ix_(v, v)])
 
     for i in separators_temp.keys():
         v = np.int32(separators_temp[i])
-        Jlogo[np.ix_(v,v)] = Jlogo[np.ix_(v,v)] - np.linalg.inv(S[np.ix_(v,v)]);
-    
+        Jlogo[np.ix_(v, v)] = Jlogo[np.ix_(v, v)] - np.linalg.inv(S[np.ix_(v, v)])
+
     return Jlogo
 
 
@@ -161,7 +161,9 @@ def PMFG_T2s(W, nargout=3):
     A = np.zeros((N, N))  # ininzialize adjacency matrix
     in_v = -1 * np.ones(N, dtype=np.int32)  # ininzialize list of inserted vertices
     tri = np.zeros((2 * N - 4, 3))  # ininzialize list of triangles
-    separators = np.zeros((N - 4, 3))  # ininzialize list of 3-cliques (non face-triangles)
+    separators = np.zeros(
+        (N - 4, 3)
+    )  # ininzialize list of 3-cliques (non face-triangles)
     # find 3 vertices with largest strength
     s = np.sum(W * (W > np.mean(W)), axis=1)
     j = np.int32(np.argsort(s)[::-1].reshape(-1))
@@ -224,19 +226,21 @@ def PMFG_T2s(W, nargout=3):
     A = W * ((A + A.T) == 1)
 
     if nargout > 3:
-        cliques = np.vstack((in_v[0:4].reshape(1,-1), np.hstack((separators, in_v[4:].reshape(-1,1)))))
+        cliques = np.vstack(
+            (in_v[0:4].reshape(1, -1), np.hstack((separators, in_v[4:].reshape(-1, 1))))
+        )
     else:
         cliques = None
 
     # computes 4-clique tree (note this may include incomplete cliques!)
     if nargout > 4:
-        cliqueTree = np.zeros((cliques.shape[0],cliques.shape[0]))
+        cliqueTree = np.zeros((cliques.shape[0], cliques.shape[0]))
         for i in range(0, cliques.shape[0]):
             ss = np.zeros(cliques.shape[0], 1)
-            for k in range(0,3):
-                ss = ss + np.sum((cliques[i,k]==cliques), axis=1)
+            for k in range(0, 3):
+                ss = ss + np.sum((cliques[i, k] == cliques), axis=1)
 
-            cliqueTree[i, ss==2] = 1
+            cliqueTree[i, ss == 2] = 1
     else:
         cliqueTree = None
 

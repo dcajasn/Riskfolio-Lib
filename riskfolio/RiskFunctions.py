@@ -1080,7 +1080,7 @@ def GMD(X):
     T = a.shape[0]
     w_ = owa.owa_gmd(T)
     value = (w_.T @ np.sort(a, axis=0)).item()
-    
+
     return value
 
 
@@ -1118,8 +1118,9 @@ def TG(X, alpha=0.05, a_sim=100):
     T = a.shape[0]
     w_ = owa.owa_tg(T, alpha, a_sim)
     value = (w_.T @ np.sort(a, axis=0)).item()
-    
+
     return value
+
 
 def RG(X):
     r"""
@@ -1151,8 +1152,9 @@ def RG(X):
     T = a.shape[0]
     w_ = owa.owa_rg(T)
     value = (w_.T @ np.sort(a, axis=0)).item()
-    
+
     return value
+
 
 def CVRG(X, alpha=0.05, beta=None):
     r"""
@@ -1189,8 +1191,9 @@ def CVRG(X, alpha=0.05, beta=None):
     T = a.shape[0]
     w_ = owa.owa_cvrg(T, alpha=alpha, beta=beta)
     value = (w_.T @ np.sort(a, axis=0)).item()
-    
+
     return value
+
 
 def TGRG(X, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     r"""
@@ -1232,15 +1235,26 @@ def TGRG(X, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     T = a.shape[0]
     w_ = owa.owa_tgrg(T, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
     value = (w_.T @ np.sort(a, axis=0)).item()
-    
+
     return value
+
 
 ###############################################################################
 # Risk Adjusted Return Ratios
 ###############################################################################
 
 
-def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_sim=100, beta=None, b_sim=None):
+def Sharpe_Risk(
+    w,
+    cov=None,
+    returns=None,
+    rm="MV",
+    rf=0,
+    alpha=0.05,
+    a_sim=100,
+    beta=None,
+    b_sim=None,
+):
     r"""
     Calculate the risk measure available on the Sharpe function.
 
@@ -1380,7 +1394,18 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_sim=100,
     return value
 
 
-def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_sim=100, beta=None, b_sim=None):
+def Sharpe(
+    w,
+    mu,
+    cov=None,
+    returns=None,
+    rm="MV",
+    rf=0,
+    alpha=0.05,
+    a_sim=100,
+    beta=None,
+    b_sim=None,
+):
     r"""
     Calculate the Risk Adjusted Return Ratio from a portfolio returns series.
 
@@ -1489,7 +1514,17 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_sim=100, 
     ret = mu_ @ w_
     ret = ret.item()
 
-    risk = Sharpe_Risk(w, cov=cov_, returns=returns_, rm=rm, rf=rf, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+    risk = Sharpe_Risk(
+        w,
+        cov=cov_,
+        returns=returns_,
+        rm=rm,
+        rf=rf,
+        alpha=alpha,
+        a_sim=a_sim,
+        beta=beta,
+        b_sim=b_sim,
+    )
 
     value = (ret - rf) / risk
 
@@ -1501,7 +1536,17 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_sim=100, 
 ###############################################################################
 
 
-def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_sim=100, beta=None, b_sim=None):
+def Risk_Contribution(
+    w,
+    cov=None,
+    returns=None,
+    rm="MV",
+    rf=0,
+    alpha=0.05,
+    a_sim=100,
+    beta=None,
+    b_sim=None,
+):
     r"""
     Calculate the risk contribution for each asset based on the risk measure
     selected.
@@ -1558,7 +1603,7 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_si
     b_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
-        
+
     Raises
     ------
     ValueError
@@ -1629,7 +1674,7 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_si
             risk_2 = WR(a_2)
         elif rm == "RG":
             risk_1 = RG(a_1)
-            risk_2 = RG(a_2)  
+            risk_2 = RG(a_2)
         elif rm == "CVRG":
             risk_1 = CVRG(a_1, alpha=alpha, beta=beta)
             risk_2 = CVRG(a_2, alpha=alpha, beta=beta)

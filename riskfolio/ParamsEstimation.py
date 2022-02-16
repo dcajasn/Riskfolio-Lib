@@ -97,7 +97,7 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
     **kwargs:
         Other variables related to covariance estimation. See
         `Scikit Learn <https://scikit-learn.org/stable/modules/covariance.html>`_
-        and chapter 2 of :cite:`b-MLforAM` for more details. 
+        and chapter 2 of :cite:`b-MLforAM` for more details.
 
     Returns
     -------
@@ -146,13 +146,13 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         S = np.cov(X.T)
         R = np.corrcoef(X.T)
         D = np.sqrt(np.clip((1 - R) / 2, a_min=0.0, a_max=1.0))
-        (_, _, separators, cliques, _) = db.PMFG_T2s(1 - D**2, nargout=4)
+        (_, _, separators, cliques, _) = db.PMFG_T2s(1 - D ** 2, nargout=4)
         cov = db.j_LoGo(S, separators, cliques)
         cov = np.linalg.inv(cov)
     elif method in ["fixed", "spectral", "shrink"]:
         cov = np.cov(X.T)
         T, N = X.shape
-        q = T/N
+        q = T / N
         cov = af.denoiseCov(cov, q, kind=method, **kwargs)
 
     cov = pd.DataFrame(np.array(cov, ndmin=2), columns=assets, index=assets)
@@ -182,7 +182,7 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
         - 'SIC': select the features based on lowest Schwarz Information Criterion.
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
-        
+
     thresholdt : scalar, optional
         Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.

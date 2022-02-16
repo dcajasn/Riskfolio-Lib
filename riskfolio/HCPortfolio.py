@@ -107,11 +107,27 @@ class HCPortfolio(object):
                 w = pd.DataFrame(w, columns=["weights"], index=assets)
                 if rm == "vol":
                     risk = rk.Sharpe_Risk(
-                        w, cov=cov, returns=returns, rm="MV", rf=rf, alpha=self.alpha, a_sim=self.a_sim, beta=self.beta, b_sim=self.b_sim
+                        w,
+                        cov=cov,
+                        returns=returns,
+                        rm="MV",
+                        rf=rf,
+                        alpha=self.alpha,
+                        a_sim=self.a_sim,
+                        beta=self.beta,
+                        b_sim=self.b_sim,
                     )
                 else:
                     risk = rk.Sharpe_Risk(
-                        w, cov=cov, returns=returns, rm=rm, rf=rf, alpha=self.alpha, a_sim=self.a_sim, beta=self.beta, b_sim=self.b_sim
+                        w,
+                        cov=cov,
+                        returns=returns,
+                        rm=rm,
+                        rf=rf,
+                        alpha=self.alpha,
+                        a_sim=self.a_sim,
+                        beta=self.beta,
+                        b_sim=self.b_sim,
                     )
                 inv_risk[k, 0] = risk
 
@@ -136,26 +152,20 @@ class HCPortfolio(object):
                 port.cov = cov
                 if mu is not None:
                     port.mu = mu
-                weight = port.optimization(model="Classic",
-                                           rm=rm,
-                                           obj=obj,
-                                           rf=rf,
-                                           l=l,
-                                           hist=True).to_numpy()
+                weight = port.optimization(
+                    model="Classic", rm=rm, obj=obj, rf=rf, l=l, hist=True
+                ).to_numpy()
             elif obj in {"ERC"}:
                 port = rp.Portfolio(returns=returns)
                 port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
                 port.cov = cov
-                weight = port.rp_optimization(model="Classic",
-                                              rm=rm,
-                                              rf=rf,
-                                              b=None,
-                                              hist=True).to_numpy()
+                weight = port.rp_optimization(
+                    model="Classic", rm=rm, rf=rf, b=None, hist=True
+                ).to_numpy()
 
         weight = weight.reshape(-1, 1)
 
         return weight
-
 
     # Create hierarchical clustering
     def _hierarchical_clustering(
@@ -252,7 +262,7 @@ class HCPortfolio(object):
                         alpha=self.alpha,
                         a_sim=self.a_sim,
                         beta=self.beta,
-                        b_sim=self.b_sim
+                        b_sim=self.b_sim,
                     )
                 else:
                     left_risk = rk.Sharpe_Risk(
@@ -264,7 +274,7 @@ class HCPortfolio(object):
                         alpha=self.alpha,
                         a_sim=self.a_sim,
                         beta=self.beta,
-                        b_sim=self.b_sim
+                        b_sim=self.b_sim,
                     )
                     if rm == "MV":
                         left_risk = np.power(left_risk, 2)
@@ -284,7 +294,7 @@ class HCPortfolio(object):
                         alpha=self.alpha,
                         a_sim=self.a_sim,
                         beta=self.beta,
-                        b_sim=self.b_sim
+                        b_sim=self.b_sim,
                     )
                 else:
                     right_risk = rk.Sharpe_Risk(
@@ -296,7 +306,7 @@ class HCPortfolio(object):
                         alpha=self.alpha,
                         a_sim=self.a_sim,
                         beta=self.beta,
-                        b_sim=self.b_sim
+                        b_sim=self.b_sim,
                     )
                     if rm == "MV":
                         right_risk = np.power(right_risk, 2)
@@ -386,7 +396,7 @@ class HCPortfolio(object):
                                     alpha=self.alpha,
                                     a_sim=self.a_sim,
                                     beta=self.beta,
-                                    b_sim=self.b_sim
+                                    b_sim=self.b_sim,
                                 )
                             else:
                                 left_risk_ = rk.Sharpe_Risk(
@@ -398,7 +408,7 @@ class HCPortfolio(object):
                                     alpha=self.alpha,
                                     a_sim=self.a_sim,
                                     beta=self.beta,
-                                    b_sim=self.b_sim
+                                    b_sim=self.b_sim,
                                 )
                                 if rm == "MV":
                                     left_risk_ = np.power(left_risk_, 2)
@@ -423,7 +433,7 @@ class HCPortfolio(object):
                                     alpha=self.alpha,
                                     a_sim=self.a_sim,
                                     beta=self.beta,
-                                    b_sim=self.b_sim
+                                    b_sim=self.b_sim,
                                 )
                             else:
                                 right_risk_ = rk.Sharpe_Risk(
@@ -435,7 +445,7 @@ class HCPortfolio(object):
                                     alpha=self.alpha,
                                     a_sim=self.a_sim,
                                     beta=self.beta,
-                                    b_sim=self.b_sim
+                                    b_sim=self.b_sim,
                                 )
                                 if rm == "MV":
                                     right_risk_ = np.power(right_risk_, 2)
@@ -480,7 +490,7 @@ class HCPortfolio(object):
         clustered_assets = pd.Series(
             hr.cut_tree(Z, n_clusters=self.k).flatten(), index=self.cov.index
         )
-        
+
         # get covariance matrices for each cluster
         intra_weights = pd.DataFrame(index=clustered_assets.index)
         for i in range(self.k):
@@ -491,17 +501,15 @@ class HCPortfolio(object):
                 cluster_mu = None
             cluster_cov = self.cov.loc[cluster.index, cluster.index]
             cluster_returns = self.returns.loc[:, cluster.index]
-            weights = pd.Series(self._opt_w(cluster_returns,
-                                            cluster_mu,
-                                            cluster_cov,
-                                            obj=obj,
-                                            rm=rm,
-                                            rf=rf,
-                                            l=l).flatten(),
-                                index=cluster_cov.index)
+            weights = pd.Series(
+                self._opt_w(
+                    cluster_returns, cluster_mu, cluster_cov, obj=obj, rm=rm, rf=rf, l=l
+                ).flatten(),
+                index=cluster_cov.index,
+            )
             intra_weights[i] = weights
-        
-        intra_weights = intra_weights.fillna(0) 
+
+        intra_weights = intra_weights.fillna(0)
         return intra_weights
 
     def _inter_weights(self, intra_weights, obj="MinRisk", rm="MV", rf=0, l=2):
@@ -514,20 +522,15 @@ class HCPortfolio(object):
         tot_cov = intra_weights.T.dot(np.dot(self.cov, intra_weights))
         # inter-cluster returns matrix
         tot_ret = self.returns @ intra_weights
-        
+
         # inter-cluster weights
-        inter_weights = pd.Series(self._opt_w(tot_ret,
-                                              tot_mu,
-                                              tot_cov,
-                                              obj=obj,
-                                              rm=rm,
-                                              rf=rf,
-                                              l=l).flatten(),
-                                  index=intra_weights.columns)
+        inter_weights = pd.Series(
+            self._opt_w(tot_ret, tot_mu, tot_cov, obj=obj, rm=rm, rf=rf, l=l).flatten(),
+            index=intra_weights.columns,
+        )
         # determine the weight on each cluster by multiplying the intra-cluster weight with the inter-cluster weight
         weights = intra_weights.mul(inter_weights, axis=1).sum(axis=1).sort_index()
         return weights
-
 
     # Allocate weights
     def optimization(
@@ -581,7 +584,7 @@ class HCPortfolio(object):
         covariance : str, optional
             The method used to estimate the covariance matrix:
             The default is 'hist'. Posible values are:
-    
+
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -594,7 +597,7 @@ class HCPortfolio(object):
             - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`c-MLforAM`.
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`c-MLforAM`.
             - 'custom_cov': use custom covariance matrix.
-        
+
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'ERC'}.
             Objective function used by the NCO model.
             The default is 'MinRisk'. Posible values are:
@@ -605,7 +608,7 @@ class HCPortfolio(object):
             - 'ERC': Equally risk contribution portfolio of the selected risk measure.
 
         rm : str, optional
-            The risk measure used to optimze the portfolio. If model is 'NCO', 
+            The risk measure used to optimze the portfolio. If model is 'NCO',
             the risk measures available depends on the objective functon.
             The default is 'MV'. Posible values are:
 
@@ -690,8 +693,8 @@ class HCPortfolio(object):
         **kwargs:
             Other variables related to covariance estimation. See
             `Scikit Learn <https://scikit-learn.org/stable/modules/covariance.html>`_
-            and chapter 2 of :cite:`d-MLforAM` for more details. 
-        
+            and chapter 2 of :cite:`d-MLforAM` for more details.
+
         Returns
         -------
         w : DataFrame
@@ -700,25 +703,27 @@ class HCPortfolio(object):
         """
 
         # Covariance matrix
-        if covariance == 'custom_cov':
+        if covariance == "custom_cov":
             self.cov = custom_cov.copy()
         else:
-            self.cov = pe.covar_matrix(self.returns, method=covariance, d=0.94, **kwargs)
-        
+            self.cov = pe.covar_matrix(
+                self.returns, method=covariance, d=0.94, **kwargs
+            )
+
         # Custom mean vector
         if custom_mu is not None:
             if isinstance(custom_mu, pd.Series) == True:
                 self.mu = custom_mu.to_frame().T
             elif isinstance(custom_mu, pd.DataFrame) == True:
-                if custom_mu.shape[0]>1 and custom_mu.shape[1]==1:
+                if custom_mu.shape[0] > 1 and custom_mu.shape[1] == 1:
                     self.mu = custom_mu.T
-                elif custom_mu.shape[0]==1 and custom_mu.shape[1]>1:
+                elif custom_mu.shape[0] == 1 and custom_mu.shape[1] > 1:
                     self.mu = custom_mu
                 else:
                     raise NameError("custom_mu must be a column DataFrame")
             else:
                 raise NameError("custom_mu must be a column DataFrame or Series")
-                
+
         self.alpha_tail = alpha_tail
         self.bins_info = bins_info
 
@@ -767,30 +772,20 @@ class HCPortfolio(object):
         # Step-3: Recursive bisection
         if model == "HRP":
             # Recursive bisection
-            weights = self._recursive_bisection(self.sort_order,
-                                                rm=rm,
-                                                rf=rf)
+            weights = self._recursive_bisection(self.sort_order, rm=rm, rf=rf)
         elif model in ["HERC", "HERC2"]:
             # Cluster-based Recursive bisection
-            weights = self._hierarchical_recursive_bisection(self.clusters,
-                                                             rm=rm,
-                                                             rf=rf,
-                                                             linkage=linkage,
-                                                             model=model)
+            weights = self._hierarchical_recursive_bisection(
+                self.clusters, rm=rm, rf=rf, linkage=linkage, model=model
+            )
         elif model == "NCO":
             # Step-3.1: Determine intra-cluster weights
-            intra_weights = self._intra_weights(self.clusters,
-                                                obj=obj,
-                                                rm=rm,
-                                                rf=rf,
-                                                l=l)
-    
+            intra_weights = self._intra_weights(
+                self.clusters, obj=obj, rm=rm, rf=rf, l=l
+            )
+
             # Step-3.2: Determine inter-cluster weights and multiply with 􏰁→ intra-cluster weights
-            weights = self._inter_weights(intra_weights,
-                                          obj=obj,
-                                          rm=rm,
-                                          rf=rf,
-                                          l=l)
+            weights = self._inter_weights(intra_weights, obj=obj, rm=rm, rf=rf, l=l)
 
         if isinstance(self.w_max, pd.Series) and isinstance(self.w_min, pd.Series):
             self.w_max = self.w_max.sort_index()

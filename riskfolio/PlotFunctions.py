@@ -143,7 +143,7 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
-        
+
     ax.grid(linestyle=":")
     title = "Historical Compounded Cumulative Returns"
     ax.set_title(title)
@@ -183,7 +183,7 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
         fig.tight_layout()
     except:
         pass
-    
+
     return ax
 
 
@@ -196,7 +196,7 @@ def plot_frontier(
     kelly=False,
     rf=0,
     alpha=0.05,
-    a_sim=100,    
+    a_sim=100,
     beta=None,
     b_sim=None,
     cmap="viridis",
@@ -368,7 +368,7 @@ def plot_frontier(
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
-        
+
     mu_ = np.array(mu, ndmin=2)
 
     if kelly == False:
@@ -390,7 +390,15 @@ def plot_frontier(
     for i in range(w_frontier.shape[1]):
         weights = np.array(w_frontier.iloc[:, i], ndmin=2).T
         risk = rk.Sharpe_Risk(
-            weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim
+            weights,
+            cov=cov,
+            returns=returns,
+            rm=rm,
+            rf=rf,
+            alpha=alpha,
+            a_sim=a_sim,
+            beta=beta,
+            b_sim=b_sim,
         )
 
         if kelly == False:
@@ -416,7 +424,15 @@ def plot_frontier(
         for i in range(w.shape[1]):
             weights = np.array(w.iloc[:, i], ndmin=2).T
             risk = rk.Sharpe_Risk(
-                weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim
+                weights,
+                cov=cov,
+                returns=returns,
+                rm=rm,
+                rf=rf,
+                alpha=alpha,
+                a_sim=a_sim,
+                beta=beta,
+                b_sim=b_sim,
             )
             if kelly == False:
                 ret = mu_ @ weights
@@ -462,7 +478,7 @@ def plot_frontier(
         fig.tight_layout()
     except:
         pass
-    
+
     return ax
 
 
@@ -529,7 +545,7 @@ def plot_pie(
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
-        
+
     labels = w.index.tolist()
     sizes = w.iloc[:, 0].tolist()
     abs_sizes = [np.absolute(s) for s in sizes]
@@ -621,7 +637,7 @@ def plot_pie(
         fig.tight_layout()
     except:
         pass
-    
+
     return ax
 
 
@@ -704,7 +720,7 @@ def plot_bar(
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
-        
+
     labels = w.index.tolist()
     sizes = w.iloc[:, 0].tolist()
     abs_sizes = [np.absolute(s) for s in sizes]
@@ -912,7 +928,7 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
-        
+
     ax.set_title("Efficient Frontier's Assets Structure")
     labels = w_frontier.index.tolist()
 
@@ -1063,7 +1079,7 @@ def plot_risk_con(
         beta = alpha
     if b_sim is None:
         b_sim = a_sim
-    
+
     if ax is None:
         fig = plt.gcf()
         ax = fig.gca()
@@ -1078,7 +1094,17 @@ def plot_risk_con(
 
     X = w.index.tolist()
 
-    RC = rk.Risk_Contribution(w, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+    RC = rk.Risk_Contribution(
+        w,
+        cov=cov,
+        returns=returns,
+        rm=rm,
+        rf=rf,
+        alpha=alpha,
+        a_sim=a_sim,
+        beta=beta,
+        b_sim=b_sim,
+    )
 
     if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
         RC = RC * t_factor ** 0.5
@@ -1086,8 +1112,8 @@ def plot_risk_con(
     ax.bar(X, RC, alpha=0.7, color=color, edgecolor="black")
 
     ax.set_xlim(-0.5, len(X) - 0.5)
-    ax.tick_params(axis='x', labelrotation=90)
-    
+    ax.tick_params(axis="x", labelrotation=90)
+
     ticks_loc = ax.get_yticks().tolist()
     ax.set_yticks(ax.get_yticks())
     ax.set_yticklabels(["{:3.4%}".format(x) for x in ticks_loc])
@@ -1206,13 +1232,25 @@ def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax
         "{0:.2%}".format((1 - alpha))
         + " Confidence CVaR: "
         + "{0:.2%}".format(risk[5]),
-        "{0:.2%}".format((1 - alpha)) + " Confidence Tail Gini: " + "{0:.2%}".format(risk[6]),
+        "{0:.2%}".format((1 - alpha))
+        + " Confidence Tail Gini: "
+        + "{0:.2%}".format(risk[6]),
         "{0:.2%}".format((1 - alpha))
         + " Confidence EVaR: "
         + "{0:.2%}".format(risk[7]),
         "Worst Realization: " + "{0:.2%}".format(risk[8]),
     ]
-    color = ["b", "r", "fuchsia", "navy", "darkorange", "limegreen", "mediumvioletred", "dodgerblue", "darkgrey"]
+    color = [
+        "b",
+        "r",
+        "fuchsia",
+        "navy",
+        "darkorange",
+        "limegreen",
+        "mediumvioletred",
+        "dodgerblue",
+        "darkgrey",
+    ]
 
     for i, j, k in zip(risk, label, color):
         ax.axvline(x=i, color=k, linestyle="-", label=j)
@@ -1233,8 +1271,8 @@ def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax
         + "$%",
     )
 
-    ax.plot([], [], ' ', label=label[8])
-    
+    ax.plot([], [], " ", label=label[8])
+
     factor = (np.max(a) - np.min(a)) / bins
 
     ax.xaxis.set_major_locator(plt.AutoLocator())
@@ -1256,7 +1294,18 @@ def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax
     return ax
 
 
-def plot_range(returns, w, alpha=0.05, a_sim=100, beta=None, b_sim=None, bins=50, height=6, width=10, ax=None):
+def plot_range(
+    returns,
+    w,
+    alpha=0.05,
+    a_sim=100,
+    beta=None,
+    b_sim=None,
+    bins=50,
+    height=6,
+    width=10,
+    ax=None,
+):
     r"""
     Create a histogram of portfolio returns with the range risk measures.
 
@@ -1340,60 +1389,86 @@ def plot_range(returns, w, alpha=0.05, a_sim=100, beta=None, b_sim=None, bins=50
     a = np.array(returns, ndmin=2) @ np.array(w, ndmin=2)
     ax.set_title("Portfolio Returns Range")
 
-    df = dict(risk = ['Range', 'Tail Gini Range', 'CVaR Range'],
-              lower = [],
-              upper = [],
-              )
-    
-    df['lower'].append(np.min(a))
-    df['lower'].append(-rk.TG(a, alpha=alpha, a_sim=a_sim))
-    df['lower'].append(-rk.CVaR_Hist(a, alpha=alpha))
-    df['upper'].append(-np.min(-a))
-    df['upper'].append(rk.TG(-a, alpha=beta, a_sim=b_sim))
-    df['upper'].append(rk.CVaR_Hist(-a, alpha=beta))
+    df = dict(
+        risk=["Range", "Tail Gini Range", "CVaR Range"],
+        lower=[],
+        upper=[],
+    )
+
+    df["lower"].append(np.min(a))
+    df["lower"].append(-rk.TG(a, alpha=alpha, a_sim=a_sim))
+    df["lower"].append(-rk.CVaR_Hist(a, alpha=alpha))
+    df["upper"].append(-np.min(-a))
+    df["upper"].append(rk.TG(-a, alpha=beta, a_sim=b_sim))
+    df["upper"].append(rk.CVaR_Hist(-a, alpha=beta))
     df = pd.DataFrame(df)
-    df.set_index('risk', inplace=True)
-    
+    df.set_index("risk", inplace=True)
+
     # Func to draw line segment
-    def newline(p1, p2, color='black'):
+    def newline(p1, p2, color="black"):
         ax = fig.gca()
-        l = mlines.Line2D([p1[0],p2[0]], [p1[1],p2[1]], color=color)
+        l = mlines.Line2D([p1[0], p2[0]], [p1[1], p2[1]], color=color)
         ax.add_line(l)
         return l
-    
-    n, _, _ = ax.hist(
-            a, bins=bins, density=True, color="darkgrey", alpha=0.3
-        )
-    
-    risk = [rk.RG(a),
-            rk.CVRG(a, alpha=alpha, beta=beta),
-            rk.TGRG(a, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim),
-            ]
-    
+
+    n, _, _ = ax.hist(a, bins=bins, density=True, color="darkgrey", alpha=0.3)
+
+    risk = [
+        rk.RG(a),
+        rk.CVRG(a, alpha=alpha, beta=beta),
+        rk.TGRG(a, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim),
+    ]
+
     label = [
         "Range :" + "{0:.2%}".format(risk[0]),
-        "Tail Gini Range (" + "{0:.1%}".format((1 - alpha)) + ", " +  "{0:.1%}".format((1 - beta)) + "): " + "{0:.2%}".format(risk[1]),
-        "CVaR Range ("+ "{0:.1%}".format((1 - alpha)) + ", " +  "{0:.1%}".format((1 - beta)) + "): " + "{0:.2%}".format(risk[2]),
+        "Tail Gini Range ("
+        + "{0:.1%}".format((1 - alpha))
+        + ", "
+        + "{0:.1%}".format((1 - beta))
+        + "): "
+        + "{0:.2%}".format(risk[1]),
+        "CVaR Range ("
+        + "{0:.1%}".format((1 - alpha))
+        + ", "
+        + "{0:.1%}".format((1 - beta))
+        + "): "
+        + "{0:.2%}".format(risk[2]),
     ]
-    
+
     colors = ["dodgerblue", "fuchsia", "limegreen"]
-    
+
     y_max = np.ceil(n.max())
-    
+
     j = 1
     for i in df.index:
-        x1 = df.loc[i,'lower']
-        x2 = df.loc[i,'upper']
-        y1 = j * y_max/4
-        ax.vlines(x=x1, ymin=0, ymax=y1, color=colors[j-1], alpha=1, linewidth=1, linestyles='dashed')
-        ax.vlines(x=x2, ymin=0, ymax=y1, color=colors[j-1], alpha=1, linewidth=1, linestyles='dashed')
-        ax.scatter(y=y1, x=x1, s=50, color=colors[j-1], alpha=1, label=label[j-1])
-        ax.scatter(y=y1, x=x2, s=50, color=colors[j-1], alpha=1)
-        newline([x1, y1], [x2, y1], color=colors[j-1])
+        x1 = df.loc[i, "lower"]
+        x2 = df.loc[i, "upper"]
+        y1 = j * y_max / 4
+        ax.vlines(
+            x=x1,
+            ymin=0,
+            ymax=y1,
+            color=colors[j - 1],
+            alpha=1,
+            linewidth=1,
+            linestyles="dashed",
+        )
+        ax.vlines(
+            x=x2,
+            ymin=0,
+            ymax=y1,
+            color=colors[j - 1],
+            alpha=1,
+            linewidth=1,
+            linestyles="dashed",
+        )
+        ax.scatter(y=y1, x=x1, s=50, color=colors[j - 1], alpha=1, label=label[j - 1])
+        ax.scatter(y=y1, x=x2, s=50, color=colors[j - 1], alpha=1)
+        newline([x1, y1], [x2, y1], color=colors[j - 1])
         j += 1
-    
+
     ax.set(ylim=(0, y_max))
-    
+
     factor = (np.max(a) - np.min(a)) / bins
     ax.xaxis.set_major_locator(plt.AutoLocator())
     ticks_loc = ax.get_xticks().tolist()
@@ -1939,7 +2014,7 @@ def plot_clusters(
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
-        
+
     labels = np.array(returns.columns.tolist())
 
     vmin, vmax = 0, 1
@@ -1963,7 +2038,7 @@ def plot_clusters(
     elif codependence in {"custom_cov"}:
         codep = af.cov2corr(custom_cov).astype(float)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-        
+
     # Hierarchcial clustering
     dist = dist.to_numpy()
     dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
@@ -2008,18 +2083,18 @@ def plot_clusters(
 
     if linecolor is not None:
         for cluster_id, cluster in clusters.items():
-    
+
             amin = permutation.index(cluster[0])
             xmin, xmax = amin, amin + len(cluster)
             ymin, ymax = amin, amin + len(cluster)
-    
+
             for i in cluster:
                 a = permutation.index(i)
                 if a < amin:
                     xmin, xmax = a, a + len(cluster)
                     ymin, ymax = a, a + len(cluster)
                     amin = a
-    
+
             ax.axvline(
                 x=xmin, ymin=ymin / dim, ymax=(ymax) / dim, linewidth=4, color=linecolor
             )
@@ -2138,7 +2213,7 @@ def plot_clusters(
         ax1.set_title(title)
     elif dendrogram == False:
         ax.set_title(title)
-    
+
     try:
         fig.tight_layout()
     except:
@@ -2283,7 +2358,7 @@ def plot_dendrogram(
     elif codependence in {"custom_cov"}:
         codep = af.cov2corr(custom_cov).astype(float)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-        
+
     # Hierarchcial clustering
     dist = dist.to_numpy()
     dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
