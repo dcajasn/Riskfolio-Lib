@@ -166,7 +166,7 @@ Installation requires:
 - [pandas](https://pandas.pydata.org/) >= 1.0.0
 - [matplotlib](https://matplotlib.org/) >= 3.3.0
 - [cvxpy](https://www.cvxpy.org/) >= 1.0.15
-- [scikit-learn](https://scikit-learn.org/stable/) >= 0.22.0
+- [scikit-learn](https://scikit-learn.org/stable/) >= 1.0.0
 - [statsmodels](https://www.statsmodels.org/) >= 0.10.1
 - [arch](https://bashtage.github.io/arch/) >= 4.15
 - [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 1.3.7
