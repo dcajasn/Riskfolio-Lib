@@ -2704,7 +2704,6 @@ class Portfolio(object):
             - 'MinRisk': Minimize the selected risk measure.
             - 'Utility': Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
             - 'Sharpe': Maximize the risk adjusted return ratio based on the selected risk measure.
-            - 'MaxRet': Maximize the expected return of the portfolio.
             
         owa_w : 1darray, optional
             The owa weight used to define the owa risk measure.
