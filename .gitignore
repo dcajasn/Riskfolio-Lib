@@ -1,0 +1,12 @@
+.DS_Store
+*.pyc
+__pycache__/
+/riskfolio/__pycache__
+/dist
+/build
+/Riskfolio_Lib.egg-info
+/docs/build
+/examples/.ipynb_checkpoints
+/tests
+/conda-recipe
+/docs/.DS_Store
