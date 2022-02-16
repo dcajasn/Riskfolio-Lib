@@ -14,6 +14,7 @@ from scipy.linalg import sqrtm
 import riskfolio.RiskFunctions as rk
 import riskfolio.ParamsEstimation as pe
 import riskfolio.AuxFunctions as af
+import riskfolio.OwaWeights as owa
 
 
 class Portfolio(object):
@@ -86,6 +87,8 @@ class Portfolio(object):
         Constraint on max level of standard deviation. The default is None.
     uppermad : float, optional
         Constraint on max level of MAD. The default is None.
+    uppergmd : float, optional
+        Constraint on max level of GMD. The default is None.
     uppersdev : float, optional
         Constraint on max level of semi standard deviation. The default is None.
     upperflpm : float, optional
@@ -96,10 +99,18 @@ class Portfolio(object):
         The default is None.
     upperCVaR : float, optional
         Constraint on max level of CVaR. The default is None.
+    uppertg : float, optional
+        Constraint on max level of Tail Gini. The default is None.
     upperEVaR : float, optional
         Constraint on max level of EVaR. The default is None.
     upperwr : float, optional
         Constraint on max level of worst realization. The default is None.
+    upperrg : float, optional
+        Constraint on max level of range. The default is None.
+    uppercvrg : float, optional
+        Constraint on max level of CVaR range. The default is None.
+    uppertgrg : float, optional
+        Constraint on max level of Tail Gini range. The default is None.
     uppermdd : float, optional
         Constraint on max level of maximum drawdown of uncompounded cumulative
         returns. The default is None.
@@ -129,6 +140,9 @@ class Portfolio(object):
         factors=None,
         B=None,
         alpha=0.05,
+        a_sim=100,
+        beta=None,
+        b_sim=None,
         kindbench=True,
         allowTO=False,
         turnover=0.05,
@@ -152,6 +166,11 @@ class Portfolio(object):
         upperCDaR=None,
         upperEDaR=None,
         upperuci=None,
+        uppergmd=None,
+        uppertg=None,
+        upperrg=None,
+        uppercvrg=None,
+        uppertgrg=None,
     ):
 
         # Optimization Models Options
@@ -165,6 +184,9 @@ class Portfolio(object):
         self.card = card
         self._factors = factors
         self.alpha = alpha
+        self.a_sim = a_sim
+        self.beta = beta
+        self.b_sim = b_sim
         self.kindbench = kindbench
         self.benchindex = benchindex
         self._benchweights = benchweights
@@ -184,6 +206,12 @@ class Portfolio(object):
         self.upperflpm = upperflpm
         self.upperslpm = upperslpm
         self.upperuci = upperuci
+        self.uppergmd = uppergmd
+        self.uppertg = uppertg
+        self.upperrg = upperrg
+        self.uppercvrg = uppercvrg
+        self.uppertgrg = uppertgrg
+
         self.allowTO = allowTO
         self.turnover = turnover
         self.allowTE = allowTE
@@ -373,24 +401,29 @@ class Portfolio(object):
 
         Parameters
         ----------
-        method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+        method_mu : str, optional
             The method used to estimate the expected returns.
-            The default value is 'hist'.
+            The default value is 'hist'. Posible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
 
-        method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+        method_cov : str, optional
             The method used to estimate the covariance matrix:
-            The default is 'hist'.
-
+            The default is 'hist'. Posible values are:
+    
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
+            - 'gl': use the basic Graphical Lasso Covariance method.
+            - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`a-jLogo`.
+            - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`a-MLforAM`.
+            - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
+            - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
 
         **kwargs : dict
             All aditional parameters of mean_vector and covar_matrix functions.
@@ -446,24 +479,29 @@ class Portfolio(object):
         eq: bool, optional
             Indicates if use equilibrum or historical excess returns.
             The default is True.
-        method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+        method_mu : str, optional
             The method used to estimate the expected returns.
-            The default value is 'hist'.
+            The default value is 'hist'. Posible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
 
-        method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+        method_cov : str, optional
             The method used to estimate the covariance matrix:
-            The default is 'hist'.
-
+            The default is 'hist'. Posible values are:
+    
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
+            - 'gl': use the basic Graphical Lasso Covariance method.
+            - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`a-jLogo`.
+            - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`a-MLforAM`.
+            - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
+            - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
 
         **kwargs : dict
             Other variables related to the covariance estimation.
@@ -526,24 +564,29 @@ class Portfolio(object):
 
         Parameters
         ----------
-        method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+        method_mu : str, optional
             The method used to estimate the expected returns.
-            The default value is 'hist'.
+            The default value is 'hist'. Posible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
 
-        method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+        method_cov : str, optional
             The method used to estimate the covariance matrix:
-            The default is 'hist'.
-
+            The default is 'hist'. Posible values are:
+    
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
+            - 'gl': use the basic Graphical Lasso Covariance method.
+            - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`a-jLogo`.
+            - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`a-MLforAM`.
+            - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
+            - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
 
         dict_cov : dict
             Other variables related to the covariance estimation.
@@ -652,24 +695,29 @@ class Portfolio(object):
             of factor model, only useful when we work with a factor model based on
             a regresion model (only equity portfolio).
             The default is False.
-        method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+        method_mu : str, optional
             The method used to estimate the expected returns.
-            The default value is 'hist'.
+            The default value is 'hist'. Posible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
 
-        method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+        method_cov : str, optional
             The method used to estimate the covariance matrix:
-            The default is 'hist'.
-
+            The default is 'hist'. Posible values are:
+    
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
+            - 'gl': use the basic Graphical Lasso Covariance method.
+            - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`a-jLogo`.
+            - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`a-MLforAM`.
+            - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
+            - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
 
         kwargs_1 : dict
             Other variables related to the loadings matrix estimation.
@@ -951,7 +999,7 @@ class Portfolio(object):
         
         .. math::
             \begin{align}
-            &\underset{x}{\text{optimize}} & & F(w)\\
+            &\underset{w}{\text{optimize}} & & F(w)\\
             &\text{s. t.} & & Aw \geq B\\
             & & & \phi_{i}(w) \leq c_{i}\\
             \end{align}
@@ -982,12 +1030,17 @@ class Portfolio(object):
             
             - 'MV': Standard Deviation.
             - 'MAD': Mean Absolute Deviation.
+            - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
+            - 'TG': Tail Gini.
             - 'EVaR': Entropic Value at Risk.
-            - 'WR': Worst Realization (Minimax)
+            - 'WR': Worst Realization (Minimax).
+            - 'RG': Range of returns.
+            - 'CVRG': CVaR range of returns.
+            - 'TGRG': Tail Gini range of returns.
             - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
             - 'ADD': Average Drawdown of uncompounded cumulative returns.
             - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
@@ -1240,6 +1293,80 @@ class Portfolio(object):
                 cv.constraints.ExpCone(U[1:] - X1 - t2, np.ones((n, 1)) @ s2, uj)
             ]
 
+        # Gini Mean Difference Model Variables
+        
+        owamodel = False
+        a1 = cv.Variable((n,1))
+        b1 = cv.Variable((n,1))
+        y = cv.Variable((n,1))
+        risk14 = cv.sum(a1 + b1)
+    
+        owaconstraints = [returns @ w == y]
+        gmdconstraints = []
+        gmd_w = owa.owa_gmd(n)/2
+        
+        for i in range(n):
+            gmdconstraints += [a1[i] + b1 >= cv.multiply(gmd_w[i], y)]
+            
+        # Tail Gini Model Variables
+
+        a2 = cv.Variable((n,1))
+        b2 = cv.Variable((n,1))
+        risk15 = cv.sum(a2 + b2)
+        a_sim = self.a_sim
+
+        tgconstraints = []
+        tg_w = owa.owa_tg(n, alpha=alpha)
+        
+        for i in range(n):
+            tgconstraints += [a2[i] + b2 >= cv.multiply(tg_w[i], y)]      
+            
+        # Range Model Variables
+
+        a3 = cv.Variable((n,1))
+        b3 = cv.Variable((n,1))
+        risk16 = cv.sum(a3 + b3)
+    
+        rgconstraints = []
+        rg_w = owa.owa_rg(n)
+        
+        for i in range(n):
+            rgconstraints += [a3[i] + b3>= cv.multiply(rg_w[i], y)]
+
+        # CVaR Range Model Variables
+
+        a4 = cv.Variable((n,1))
+        b4 = cv.Variable((n,1))
+        risk17 = cv.sum(a4 + b4)
+
+        if self.beta is None:
+            beta = alpha
+        else:
+            beta = self.beta
+            
+        cvrgconstraints = []
+        cvrg_w = owa.owa_cvrg(n, alpha=alpha, beta=beta)
+        
+        for i in range(n):
+            cvrgconstraints += [a4[i] + b4>= cv.multiply(cvrg_w[i], y)]
+
+        # Tail Gini Range Model Variables
+    
+        a5 = cv.Variable((n,1))
+        b5 = cv.Variable((n,1))
+        risk18 = cv.sum(a5 + b5)
+
+        if self.b_sim is None:
+            b_sim = a_sim
+        else:
+            b_sim = self.b_sim
+        
+        tgrgconstraints = []
+        tgrg_w = owa.owa_tgrg(n, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+        
+        for i in range(n):
+            tgrgconstraints += [a5[i] + b5>= cv.multiply(tgrg_w[i], y)]
+            
         # Cardinal Boolean Variables
 
         if self.card is not None:
@@ -1452,6 +1579,46 @@ class Portfolio(object):
             else:
                 constraints += [risk13 <= self.upperEDaR]
             constraints += edarconstraints
+            
+        if self.uppergmd is not None:
+            if obj == "Sharpe":
+                constraints += [risk14 <= self.uppergmd * k/2]
+            else:
+                constraints += [risk14 <= self.uppergmd/2]
+            constraints += gmdconstraints            
+            owamodel = True
+
+        if self.uppertg is not None:
+            if obj == "Sharpe":
+                constraints += [risk15 <= self.uppertg * k]
+            else:
+                constraints += [risk15 <= self.uppertg]
+            constraints += tgconstraints            
+            owamodel = True
+            
+        if self.upperrg is not None:
+            if obj == "Sharpe":
+                constraints += [risk16 <= self.upperrg * k]
+            else:
+                constraints += [risk16 <= self.upperrg]
+            constraints += rgconstraints            
+            owamodel = True
+
+        if self.uppercvrg is not None:
+            if obj == "Sharpe":
+                constraints += [risk17 <= self.uppercvrg * k]
+            else:
+                constraints += [risk17 <= self.uppercvrg]
+            constraints += cvrgconstraints            
+            owamodel = True
+
+        if self.uppertgrg is not None:
+            if obj == "Sharpe":
+                constraints += [risk18 <= self.uppertgrg * k]
+            else:
+                constraints += [risk18 <= self.uppertgrg]
+            constraints += tgrgconstraints            
+            owamodel = True
 
         # Defining risk function
 
@@ -1505,14 +1672,41 @@ class Portfolio(object):
             drawdown = True
             if self.upperEDaR is None:
                 constraints += edarconstraints
-
+        elif rm == "GMD":
+            risk = risk14
+            owamodel = True
+            if self.uppergmd is None:
+                constraints += gmdconstraints 
+        elif rm == "TG":
+            risk = risk15
+            owamodel = True
+            if self.uppertg is None:
+                constraints += tgconstraints                 
+        elif rm == "RG":
+            risk = risk16
+            owamodel = True
+            if self.upperrg is None:
+                constraints += rgconstraints 
+        elif rm == "CVRG":
+            risk = risk17
+            owamodel = True
+            if self.uppertgrg is None:
+                constraints += cvrgconstraints 
+        elif rm == "TGRG":
+            risk = risk18
+            owamodel = True
+            if self.uppertg is None:
+                constraints += tgrgconstraints
+                
         if madmodel == True:
             constraints += madconstraints
         if lpmmodel == True:
             constraints += lpmconstraints
         if drawdown == True:
             constraints += ddconstraints
-
+        if owamodel == True:
+            constraints += owaconstraints
+            
         # Frontier Variables
 
         portafolio = {}
@@ -1639,11 +1833,15 @@ class Portfolio(object):
             
             - 'MV': Standard Deviation.
             - 'MAD': Mean Absolute Deviation.
+            - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
+            - 'TG': Tail Gini.
             - 'EVaR': Entropic Value at Risk.
+            - 'CVRG': CVaR range of returns.
+            - 'TGRG': Tail Gini range of returns.
             - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
             - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
@@ -1799,6 +1997,67 @@ class Portfolio(object):
             )
         ]
 
+        # Gini Mean Difference Model Variables
+
+        a1 = cv.Variable((n,1))
+        b1 = cv.Variable((n,1))
+        y = cv.Variable((n,1))
+        risk14 = cv.sum(a1 + b1)
+    
+        owaconstraints = [returns @ w == y]
+        gmdconstraints = []
+        gmd_w = owa.owa_gmd(n)/2
+        
+        for i in range(n):
+            gmdconstraints += [a1[i] + b1 >= cv.multiply(gmd_w[i], y)] 
+
+        # Tail Gini Model Variables
+
+        a2 = cv.Variable((n,1))
+        b2 = cv.Variable((n,1))
+        risk15 = cv.sum(a2 + b2)
+        a_sim = self.a_sim
+
+        tgconstraints = []
+        tg_w = owa.owa_tg(n, alpha=alpha, a_sim=a_sim)
+        
+        for i in range(n):
+            tgconstraints += [a2[i] + b2 >= cv.multiply(tg_w[i], y)]      
+
+        # CVaR Range Model Variables
+
+        a4 = cv.Variable((n,1))
+        b4 = cv.Variable((n,1))
+        risk17 = cv.sum(a4 + b4)
+
+        if self.beta is None:
+            beta = alpha
+        else:
+            beta = self.beta
+            
+        cvrgconstraints = []
+        cvrg_w = owa.owa_cvrg(n, alpha=alpha, beta=beta)
+        
+        for i in range(n):
+            cvrgconstraints += [a4[i] + b4>= cv.multiply(cvrg_w[i], y)]
+
+        # Tail Gini Range Model Variables
+
+        a5 = cv.Variable((n,1))
+        b5 = cv.Variable((n,1))
+        risk18 = cv.sum(a5 + b5)
+
+        if self.b_sim is None:
+            b_sim = a_sim
+        else:
+            b_sim = self.b_sim
+        
+        tgrgconstraints = []
+        tgrg_w = owa.owa_tgrg(n, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+        
+        for i in range(n):
+            tgrgconstraints += [a5[i] + b5>= cv.multiply(tgrg_w[i], y)]
+
         # Problem Linear Constraints
 
         if self.ainequality is not None and self.binequality is not None:
@@ -1845,6 +2104,22 @@ class Portfolio(object):
             risk = risk13
             constraints += ddconstraints
             constraints += edarconstraints
+        elif rm == "GMD":
+            risk = risk14
+            constraints += owaconstraints
+            constraints += gmdconstraints
+        elif rm == "TG":
+            risk = risk15
+            constraints += owaconstraints
+            constraints += tgconstraints                 
+        elif rm == "CVRG":
+            risk = risk17
+            constraints += owaconstraints
+            constraints += cvrgconstraints 
+        elif rm == "TGRG":
+            risk = risk18
+            constraints += owaconstraints
+            constraints += tgrgconstraints
 
         # Risk budgeting constraint
         
@@ -2386,6 +2661,293 @@ class Portfolio(object):
 
         return self.wc_optimal
 
+    def owa_optimization(
+        self, obj="Sharpe", owa_w=None, kelly=False, rf=0, l=2
+    ):
+        r"""
+        This method that calculates the owa optimal portfolio according to the
+        weight vector given by the user. The general problem that
+        solves is:
+        
+        .. math::
+            \begin{align}
+            &\underset{w}{\text{optimize}} & & F(w)\\
+            &\text{s. t.} & & Aw \geq B\\
+            \end{align}
+        
+        Where:
+            
+        :math:`F(w)` is the objective function based on an owa risk measure.
+    
+        :math:`Aw \geq B` is a set of linear constraints.
+        
+        Parameters
+        ----------
+        obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
+            Objective function of the optimization model.
+            The default is 'Sharpe'. Posible values are:
+
+            - 'MinRisk': Minimize the selected risk measure.
+            - 'Utility': Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
+            - 'Sharpe': Maximize the risk adjusted return ratio based on the selected risk measure.
+            - 'MaxRet': Maximize the expected return of the portfolio.
+            
+        owa_w : 1darray, optional
+            The owa weight used to define the owa risk measure.
+            The default is 'MV'. Posible values are:
+        kelly : str, optional
+            Method used to calculate mean return. Posible values are False for
+            arithmetic mean return, "approx" for approximate mean logarithmic 
+            return using first and second moment and "exact" for mean logarithmic
+            return. The default is False.
+        rf : float, optional
+            Risk free rate, must be in the same period of assets returns.
+            The default is 0.
+        l : scalar, optional
+            Risk aversion factor of the 'Utility' objective function.
+            The default is 2.
+
+        Returns
+        -------
+        w : DataFrame
+            The weights of optimal portfolio.
+
+        """
+
+        # General model Variables
+
+        mu = self.mu.to_numpy()
+        sigma = self.cov.to_numpy()
+        returns = self.returns.to_numpy()
+        w = cv.Variable((mu.shape[1], 1))
+        k = cv.Variable((1, 1))
+        rf0 = rf
+        n = returns.shape[0]
+        gr = cv.Variable((n, 1))
+
+        # MV Model Variables (for approx log returns)
+
+        g = cv.Variable(nonneg=True)
+        G = sqrtm(sigma)
+        devconstraints = [cv.SOC(g, G.T @ w)]
+        
+        # Return Variables
+
+        if kelly == "exact":
+            if obj == "Sharpe":
+                ret = 1 / n * cv.sum(gr) - rf0 * k
+            else:
+                ret = 1 / n * cv.sum(cv.log(1 + returns @ w))
+        elif kelly == "approx":
+            if obj == "Sharpe":
+                ret = mu @ w - 0.5 * cv.quad_over_lin(g, k)
+            else:
+                ret = mu @ w - 0.5 * g ** 2
+        elif kelly == False:
+            ret = mu @ w
+
+        # OWA Model Variables
+        
+        a = cv.Variable((n,1))
+        b = cv.Variable((n,1))
+        y = cv.Variable((n,1))
+        risk = cv.sum(a + b)
+        
+        constraints = []
+        constraints += [returns @ w == y]
+        if owa_w is None:
+            owa_w = owa.owa_gmd(n)/2
+        
+        for i in range(n):
+            constraints += [a[i] + b >= cv.multiply(owa_w[i], y)]
+            
+        # Cardinal Boolean Variables
+
+        if self.card is not None:
+            if obj == "Sharpe":
+                e = cv.Variable((mu.shape[1], 1), boolean=True)
+                e1 = cv.Variable((mu.shape[1], 1))
+            else:
+                e = cv.Variable((mu.shape[1], 1), boolean=True)
+
+        # Problem Weight Constraints
+
+        if obj == "Sharpe":
+            constraints += [cv.sum(w) == self.budget * k, k * 1000 >= 0]
+            if self.sht == False:
+                constraints += [w <= self.upperlng * k, w * 1000 >= 0]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        e1 <= k,
+                        e1 >= 0,
+                        e1 <= 100000 * e,
+                        e1 >= k - 100000 * (1 - e),
+                        w <= self.upperlng * e1,
+                    ]
+            elif self.sht == True:
+                constraints += [
+                    cv.sum(cv.pos(w)) * 1000 <= self.upperlng * k * 1000,
+                    cv.sum(cv.neg(w)) * 1000 <= self.uppersht * k * 1000,
+                ]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        e1 <= k,
+                        e1 >= 0,
+                        e1 <= 100000 * e,
+                        e1 >= k - 100000 * (1 - e),
+                        w >= -self.uppersht * e1,
+                        w <= self.upperlng * e1,
+                    ]
+
+        else:
+            constraints += [cv.sum(w) == self.budget]
+            if self.sht == False:
+                constraints += [w <= self.upperlng, w * 1000 >= 0]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        w <= self.upperlng * e,
+                    ]
+
+            elif self.sht == True:
+                constraints += [
+                    cv.sum(cv.pos(w)) * 1000 <= self.upperlng * 1000,
+                    cv.sum(cv.neg(w)) * 1000 <= self.uppersht * 1000,
+                ]
+                if self.card is not None:
+                    constraints += [
+                        cv.sum(e) <= self.card,
+                        w >= -self.uppersht * e,
+                        w <= self.upperlng * e,
+                    ]
+
+        # Problem Linear Constraints
+
+        if self.ainequality is not None and self.binequality is not None:
+            A = np.array(self.ainequality, ndmin=2) * 1000
+            B = np.array(self.binequality, ndmin=2) * 1000
+            if obj == "Sharpe":
+                constraints += [A @ w - B @ k >= 0]
+            else:
+                constraints += [A @ w - B >= 0]
+
+        # Number of Effective Assets Constraints
+
+        if self.nea is not None:
+            if obj == "Sharpe":
+                constraints += [cv.norm(w, "fro") <= 1 / self.nea ** 0.5 * k]
+            else:
+                constraints += [cv.norm(w, "fro") <= 1 / self.nea ** 0.5]
+
+        # Tracking Error Model Variables
+
+        c = np.array(self.benchweights, ndmin=2)
+        if self.kindbench == True:
+            bench = returns @ c
+        elif self.kindbench == False:
+            bench = np.array(self.benchindex, ndmin=2)
+
+        # Tracking error Constraints
+
+        if obj == "Sharpe":
+            if self.allowTE == True:
+                TE_1 = cv.norm(returns @ w - bench @ k, "fro") / cv.sqrt(n - 1)
+                constraints += [TE_1 * 1000 <= self.TE * k * 1000]
+        else:
+            if self.allowTE == True:
+                TE_1 = cv.norm(returns @ w - bench, "fro") / cv.sqrt(n - 1)
+                constraints += [TE_1 * 1000 <= self.TE * 1000]
+
+        # Turnover Constraints
+
+        if obj == "Sharpe":
+            if self.allowTO == True:
+                TO_1 = cv.abs(w - c @ k) * 1000
+                constraints += [TO_1 <= self.turnover * k * 1000]
+        else:
+            if self.allowTO == True:
+                TO_1 = cv.abs(w - c) * 1000
+                constraints += [TO_1 <= self.turnover * 1000]
+
+        # Problem return Constraints
+
+        if self.lowerret is not None:
+            if obj == "Sharpe":
+                constraints += [ret >= self.lowerret * k]
+            else:
+                constraints += [ret >= self.lowerret]
+
+        # Frontier Variables
+
+        portafolio = {}
+
+        for i in self.assetslist:
+            portafolio.update({i: []})
+
+        # Optimization Process
+
+        # Defining objective function
+        if obj == "Sharpe":
+            if kelly == "exact":
+                constraints += [risk <= 1]
+                constraints += [
+                    cv.constraints.ExpCone(gr, np.ones((n, 1)) @ k, k + returns @ w)
+                ]
+                objective = cv.Maximize(ret * 1000)
+            elif kelly == "approx":
+                constraints += [risk <= 1]
+                constraints += devconstraints
+                objective = cv.Maximize(ret)
+            elif kelly == False:
+                constraints += [mu @ w - rf0 * k == 1]
+                objective = cv.Minimize(risk * 1000)
+        elif obj == "MinRisk":
+            objective = cv.Minimize(risk * 1000)
+        elif obj == "Utility":
+            objective = cv.Maximize(ret - l * risk)
+        elif obj == "MaxRet":
+            objective = cv.Maximize(ret * 1000)
+
+        try:
+            prob = cv.Problem(objective, constraints)
+            for solver in self.solvers:
+                try:
+                    if len(self.sol_params) == 0:
+                        prob.solve(solver=solver)
+                    else:
+                        prob.solve(solver=solver, **self.sol_params[solver])
+                except:
+                    pass
+                if w.value is not None:
+                    break
+
+            if obj == "Sharpe":
+                weights = np.array(w.value / k.value, ndmin=2).T
+            else:
+                weights = np.array(w.value, ndmin=2).T
+
+            if self.sht == False:
+                weights = np.abs(weights) / np.sum(np.abs(weights)) * self.budget
+
+            for j in self.assetslist:
+                portafolio[j].append(weights[0, self.assetslist.index(j)])
+
+        except:
+            pass
+
+        try:
+            self.owa_optimal = pd.DataFrame(
+                portafolio, index=["weights"], dtype=np.float64
+            ).T
+        except:
+            self.owa_optimal = None
+            print("The problem doesn't have a solution with actual input parameters")
+
+        return self.owa_optimal
+
+
     def frontier_limits(self, model="Classic", rm="MV", kelly=False, rf=0, hist=True):
         r"""
         Method that calculates the minimum risk and maximum return portfolios
@@ -2402,12 +2964,17 @@ class Portfolio(object):
 
             - 'MV': Standard Deviation.
             - 'MAD': Mean Absolute Deviation.
+            - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
+            - 'TG': Tail Gini.
             - 'EVaR': Entropic Value at Risk.
-            - 'WR': Worst Realization (Minimax)
+            - 'WR': Worst Realization (Minimax).
+            - 'RG': Range of returns.
+            - 'CVRG': CVaR range of returns.
+            - 'TGRG': Tail Gini range of returns.
             - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
             - 'ADD': Average Drawdown of uncompounded cumulative returns.
             - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
@@ -2478,12 +3045,17 @@ class Portfolio(object):
 
             - 'MV': Standard Deviation.
             - 'MAD': Mean Absolute Deviation.
+            - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
+            - 'TG': Tail Gini.
             - 'EVaR': Entropic Value at Risk.
-            - 'WR': Worst Realization (Minimax)
+            - 'WR': Worst Realization (Minimax).
+            - 'RG': Range of returns.
+            - 'CVRG': CVaR range of returns.
+            - 'TGRG': Tail Gini range of returns.
             - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
             - 'ADD': Average Drawdown of uncompounded cumulative returns.
             - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
@@ -2567,7 +3139,18 @@ class Portfolio(object):
                 nav = np.array(self.nav_fm, ndmin=2)
 
         alpha = self.alpha
+        a_sim = self.a_sim
 
+        if self.beta is None:
+            beta = alpha
+        else:
+            beta = self.beta
+
+        if self.b_sim is None:
+            b_sim = a_sim
+        else:
+            b_sim = self.b_sim
+            
         limits = self.frontier_limits(model=model, rm=rm, kelly=kelly, rf=rf, hist=hist)
 
         w_min = np.array(limits.iloc[:, 0], ndmin=2).T
@@ -2615,6 +3198,21 @@ class Portfolio(object):
         elif rm == "EDaR":
             risk_min = rk.EDaR_Abs(returns @ w_min, alpha)[0]
             risk_max = rk.EDaR_Abs(returns @ w_max, alpha)[0]
+        elif rm == "GMD":
+            risk_min = rk.GMD(returns @ w_min)
+            risk_max = rk.GMD(returns @ w_max)
+        elif rm == "TG":
+            risk_min = rk.TG(returns @ w_min, alpha, a_sim)
+            risk_max = rk.TG(returns @ w_max, alpha, a_sim)
+        elif rm == "RG":
+            risk_min = rk.RG(returns @ w_min)
+            risk_max = rk.RG(returns @ w_max)
+        elif rm == "CVRG":
+            risk_min = rk.CVRG(returns @ w_min, alpha, beta)
+            risk_max = rk.CVRG(returns @ w_max, alpha, beta)
+        elif rm == "TGRG":
+            risk_min = rk.TGRG(returns @ w_min, alpha, a_sim, beta, b_sim)
+            risk_max = rk.TGRG(returns @ w_max, alpha, a_sim, beta, b_sim)
 
         mus = np.linspace(ret_min, ret_max, points)
 
@@ -2623,10 +3221,15 @@ class Portfolio(object):
         risk_lims = [
             "upperdev",
             "uppermad",
+            "uppergmd",
             "uppersdev",
             "upperCVaR",
+            "uppertg",
             "upperEVaR",
             "upperwr",
+            "upperrg",
+            "uppercvrg",
+            "uppertgrg",
             "upperflpm",
             "upperslpm",
             "uppermdd",
@@ -2639,10 +3242,15 @@ class Portfolio(object):
         risk_names = [
             "MV",
             "MAD",
+            "GMD"
             "MSV",
             "CVaR",
+            "TG",
             "EVaR",
             "WR",
+            "RG",
+            "CVRG",
+            "TGRG",
             "FLPM",
             "SLPM",
             "MDD",
@@ -2711,6 +3319,11 @@ class Portfolio(object):
             "upperCDaR",
             "upperEDaR",
             "upperuci",
+            "uppergmd",
+            "uppertg",
+            "upperrg",
+            "uppercvrg",
+            "uppertgrg",
         ]
 
         for i in cons:

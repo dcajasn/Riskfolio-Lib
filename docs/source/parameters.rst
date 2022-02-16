@@ -11,7 +11,7 @@ and covariance matrix using several methods:
 
 - Historical estimates.
 - Estimates using exponencial weighted moving averages (EWMA).
-- Robust estimates of the covariance matrix like shrinkage estimator or oracle method.
+- Robust estimates of the covariance matrix like Ledoit and Wolf, Oracle, Shrinkage and Graphical Lasso, j-LoGo :cite:`b-jLogo` and Denoise :cite:`b-MLforAM` estimators.
 - Factors models to estimate the vector of means and covariance matrix.
 - The Black Litterman model that allows to incorporate analyst's views on returns in estimates of vector of means and covariance matrix :cite:`b-BlackLitterman` :cite:`b-Black1`.
 - The Augmented Black Litterman model that allows to incorporate analyst's views on risk factors in estimates of vector of means and covariance matrix :cite:`b-WCheung`.

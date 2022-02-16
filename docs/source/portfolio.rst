@@ -76,15 +76,19 @@ Where:
 
 :math:`Aw \geq B`: is a set of linear constraints.
 
-:math:`\phi_{i}(w)`: are 13 available risk measures. The available risk
+:math:`\phi_{i}(w)`: are 18 available risk measures. The available risk
 measures are:
 
 - Standard Deviation :cite:`a-Markowitz`.
 - Mean Absolute Deviation :cite:`a-Konno`.
+- Gini Mean Difference :cite:`a-Yitzhaki1`, :cite:`a-Cajas3`.
+- Conditional Value at Risk Range :cite:`a-Cajas3`.
+- Tail Gini Range :cite:`a-Cajas3`.
 - Semi Standard Deviation :cite:`a-Mansini3`.
 - First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.
+- Tail Gini :cite:`a-Ogryczak2002`, :cite:`a-Cajas3`.
 - Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`, :cite:`a-Cajas1`.
 - Worst Realization (Minimax) :cite:`a-Mansini2`.
 - Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio) :cite:`a-Uryasev1`.
@@ -133,10 +137,14 @@ measures are:
 
 - Standard Deviation :cite:`a-Markowitz`.
 - Mean Absolute Deviation :cite:`a-Konno`.
+- Gini Mean Difference :cite:`a-Yitzhaki1`, :cite:`a-Cajas3`.
+- Conditional Value at Risk Range :cite:`a-Cajas3`.
+- Tail Gini Range :cite:`a-Cajas3`.
 - Semi Standard Deviation :cite:`a-Mansini3`.
 - First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.
+- Tail Gini :cite:`a-Ogryczak2002`, :cite:`a-Cajas3`.
 - Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`, :cite:`a-Cajas1`.
 - Conditional Drawdown at Risk of uncompounded cumulative returns :cite:`a-Uryasev1`.
 - Entropic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas1`.
@@ -213,7 +221,7 @@ that results from optimize one of the following 4 objective functions:
     &\text{s.t.} & & Aw \geq B\\
     \end{aligned}
 
-            
+
 - **Worst Case Maximum Risk Adjusted Return Ratio Portfolio:**
 
 .. math::
@@ -265,6 +273,50 @@ Where:
 :math:`r_{f}`: is the risk free rate. 
 
 :math:`\lambda`: is the risk aversion coefficient of the investor.
+
+
+Ordered Weighted Averaging (OWA) Portfolio
+------------------------------------------
+
+- **Minimum Risk Portfolio:**
+
+.. math::
+    \begin{aligned}
+    &\underset{w}{\min} & & \sum^{T}_{i=0} v_{[i]}y_{[i]} \\
+    &\text{s.t.} & & Aw \geq B\\
+    & & & y = rw \\
+    & & & R (w) \geq \overline{\mu} \\
+    \end{aligned}
+
+- **Maximum Risk Adjusted Return Ratio Portfolio:**
+
+.. math::
+    \begin{aligned}
+    &\underset{w}{\max} & & \frac{R (w) - r_{f}}{\sum^{T}_{i=0} v_{[i]}y_{[i]}}\\
+    &\text{s.t.} & & Aw \geq B\\
+    & & & y = rw \\
+    & & & R (w) \geq \overline{\mu} \\
+    \end{aligned}
+
+- **Maximum Utility Portfolio:**
+
+.. math::
+    \begin{aligned}
+    &\underset{w}{\max} & & R (w) - \lambda \left ( \sum^{T}_{i=0} v_{[i]}y_{[i]} \right) \\
+    &\text{s.t.} & & Aw \geq B\\
+    & & & y = rw \\
+    & & & R (w) \geq \overline{\mu} \\
+    \end{aligned}
+
+Where:
+
+:math:`w` are the weights of the portfolio.
+
+:math:`v` are the weights of the owa operator.
+
+:math:`\mu`: is the vector of expected returns.
+
+:math:`X_{[i]}`: is the element of order :math:`i` of vector :math:`X`.
 
 
 Module Methods

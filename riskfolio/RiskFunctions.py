@@ -7,6 +7,7 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 """
 
 import numpy as np
+import riskfolio.OwaWeights as owa
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
 
@@ -32,6 +33,11 @@ __all__ = [
     "CDaR_Rel",
     "EDaR_Rel",
     "UCI_Rel",
+    "GMD",
+    "TG",
+    "RG",
+    "CVRG",
+    "TGRG",
     "Sharpe_Risk",
     "Sharpe",
     "Risk_Contribution",
@@ -55,19 +61,6 @@ def MAD(X):
     -------
     value : float
         MAD of a returns series.
-
-    Raises
-    ------
-    ValueError
-        When the value cannot be calculated.
-
-    Examples
-    --------
-    Examples should be written in doctest format, and should illustrate how
-    to use the function.
-
-    >>> print([i for i in example_generator(4)])
-    [0, 1, 2, 3]
 
     """
 
@@ -1057,12 +1050,197 @@ def UCI_Rel(X):
     return value
 
 
+def GMD(X):
+    r"""
+    Calculate the Gini Mean Difference (GMD) of a returns series.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Ulcer Index of a cumpounded cumulative returns.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_gmd(T)
+    value = (w_.T @ np.sort(a, axis=0)).item()
+    
+    return value
+
+
+def TG(X, alpha=0.05, a_sim=100):
+    r"""
+    Calculate the Tail Gini of a returns series.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    alpha : float, optional
+        Significance level of Tail Gini. The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini. The default is 100.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Ulcer Index of a cumpounded cumulative returns.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_tg(T, alpha, a_sim)
+    value = (w_.T @ np.sort(a, axis=0)).item()
+    
+    return value
+
+def RG(X):
+    r"""
+    Calculate the range of a returns series.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Ulcer Index of a cumpounded cumulative returns.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_rg(T)
+    value = (w_.T @ np.sort(a, axis=0)).item()
+    
+    return value
+
+def CVRG(X, alpha=0.05, beta=None):
+    r"""
+    Calculate the CVaR range of a returns series.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    alpha : float, optional
+        Significance level of CVaR of losses. The default is 0.05.
+    beta : float, optional
+        Significance level of CVaR of gains. If None it duplicates alpha value.
+        The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Ulcer Index of a cumpounded cumulative returns.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_cvrg(T, alpha=alpha, beta=beta)
+    value = (w_.T @ np.sort(a, axis=0)).item()
+    
+    return value
+
+def TGRG(X, alpha=0.05, a_sim=100, beta=None, b_sim=None):
+    r"""
+    Calculate the Tail Gini range of a returns series.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    alpha : float, optional
+        Significance level of Tail Gini of losses. The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Ulcer Index of a cumpounded cumulative returns.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_tgrg(T, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+    value = (w_.T @ np.sort(a, axis=0)).item()
+    
+    return value
+
 ###############################################################################
 # Risk Adjusted Return Ratios
 ###############################################################################
 
 
-def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
+def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     r"""
     Calculate the risk measure available on the Sharpe function.
 
@@ -1081,13 +1259,18 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
 
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
+        - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
         - 'CVaR': Conditional Value at Risk.
+        - 'TG': Tail Gini.
         - 'EVaR': Entropic Value at Risk.
-        - 'WR': Worst Realization (Minimax)
+        - 'WR': Worst Realization (Minimax).
+        - 'RG': Range of returns.
+        - 'CVRG': CVaR range of returns.
+        - 'TGRG': Tail Gini range of returns.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -1103,8 +1286,16 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
     rf : float, optional
         Risk free rate. The default is 0.
     alpha : float, optional
-        Significance level of VaR, CVaR, EDaR, DaR, CDaR and EDaR.
+        Significance level of VaR, CVaR, EDaR, DaR, CDaR, EDaR, Tail Gini of losses.
         The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
 
     Raises
     ------
@@ -1135,6 +1326,8 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         risk = np.sqrt(risk.item())
     elif rm == "MAD":
         risk = MAD(a)
+    elif rm == "GMD":
+        risk = GMD(a)
     elif rm == "MSV":
         risk = SemiDeviation(a)
     elif rm == "FLPM":
@@ -1145,10 +1338,18 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         risk = VaR_Hist(a, alpha=alpha)
     elif rm == "CVaR":
         risk = CVaR_Hist(a, alpha=alpha)
+    elif rm == "TG":
+        risk = TG(a, alpha=alpha, a_sim=a_sim)
     elif rm == "EVaR":
         risk = EVaR_Hist(a, alpha=alpha)[0]
     elif rm == "WR":
         risk = WR(a)
+    elif rm == "RG":
+        risk = RG(a)
+    elif rm == "CVRG":
+        risk = CVRG(a, alpha=alpha, beta=beta)
+    elif rm == "TGRG":
+        risk = TGRG(a, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
     elif rm == "MDD":
         risk = MDD_Abs(a)
     elif rm == "ADD":
@@ -1173,12 +1374,13 @@ def Sharpe_Risk(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         risk = EDaR_Rel(a, alpha=alpha)[0]
     elif rm == "UCI_Rel":
         risk = UCI_Rel(a)
+
     value = risk
 
     return value
 
 
-def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
+def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     r"""
     Calculate the Risk Adjusted Return Ratio from a portfolio returns series.
 
@@ -1214,13 +1416,18 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
 
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
+        - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
         - 'CVaR': Conditional Value at Risk.
+        - 'TG': Tail Gini.
         - 'EVaR': Entropic Value at Risk.
-        - 'WR': Worst Realization (Minimax)
+        - 'WR': Worst Realization (Minimax).
+        - 'RG': Range of returns.
+        - 'CVRG': CVaR range of returns.
+        - 'TGRG': Tail Gini range of returns.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -1236,8 +1443,16 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
     rf : float, optional
         Risk free rate. The default is 0.
     alpha : float, optional
-        Significance level of VaR, CVaR, EDaR, DaR, CDaR and EDaR.
+        Significance level of VaR, CVaR, EDaR, DaR, CDaR, EDaR, Tail Gini of losses.
         The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
 
     Raises
     ------
@@ -1274,7 +1489,7 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
     ret = mu_ @ w_
     ret = ret.item()
 
-    risk = Sharpe_Risk(w, cov=cov_, returns=returns_, rm=rm, rf=rf, alpha=alpha)
+    risk = Sharpe_Risk(w, cov=cov_, returns=returns_, rm=rm, rf=rf, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
 
     value = (ret - rf) / risk
 
@@ -1286,7 +1501,7 @@ def Sharpe(w, mu, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
 ###############################################################################
 
 
-def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
+def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     r"""
     Calculate the risk contribution for each asset based on the risk measure
     selected.
@@ -1306,13 +1521,18 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
 
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
+        - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
         - 'CVaR': Conditional Value at Risk.
+        - 'TG': Tail Gini.
         - 'EVaR': Entropic Value at Risk.
-        - 'WR': Worst Realization (Minimax)
+        - 'WR': Worst Realization (Minimax).
+        - 'RG': Range of returns.
+        - 'CVRG': CVaR range of returns.
+        - 'TGRG': Tail Gini range of returns.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -1328,9 +1548,17 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
     rf : float, optional
         Risk free rate. The default is 0.
     alpha : float, optional
-        Significance level of VaR, CVaR, EDaR, DaR, CDaR and EDaR.
+        Significance level of VaR, CVaR, EDaR, DaR, CDaR, EDaR, Tail Gini of losses.
         The default is 0.05.
-
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
+        
     Raises
     ------
     ValueError
@@ -1372,6 +1600,9 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         elif rm == "MAD":
             risk_1 = MAD(a_1)
             risk_2 = MAD(a_2)
+        elif rm == "GMD":
+            risk_1 = GMD(a_1)
+            risk_2 = GMD(a_2)
         elif rm == "MSV":
             risk_1 = SemiDeviation(a_1)
             risk_2 = SemiDeviation(a_2)
@@ -1387,12 +1618,24 @@ def Risk_Contribution(w, cov=None, returns=None, rm="MV", rf=0, alpha=0.05):
         elif rm == "CVaR":
             risk_1 = CVaR_Hist(a_1, alpha=alpha)
             risk_2 = CVaR_Hist(a_2, alpha=alpha)
+        elif rm == "TG":
+            risk_1 = TG(a_1, alpha=alpha, a_sim=a_sim)
+            risk_2 = TG(a_2, alpha=alpha, a_sim=a_sim)
         elif rm == "EVaR":
             risk_1 = EVaR_Hist(a_1, alpha=alpha)[0]
             risk_2 = EVaR_Hist(a_2, alpha=alpha)[0]
         elif rm == "WR":
             risk_1 = WR(a_1)
             risk_2 = WR(a_2)
+        elif rm == "RG":
+            risk_1 = RG(a_1)
+            risk_2 = RG(a_2)  
+        elif rm == "CVRG":
+            risk_1 = CVRG(a_1, alpha=alpha, beta=beta)
+            risk_2 = CVRG(a_2, alpha=alpha, beta=beta)
+        elif rm == "TGRG":
+            risk_1 = TGRG(a_1, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+            risk_2 = TGRG(a_2, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
         elif rm == "MDD":
             risk_1 = MDD_Abs(a_1)
             risk_2 = MDD_Abs(a_2)

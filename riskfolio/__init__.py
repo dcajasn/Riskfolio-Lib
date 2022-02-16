@@ -15,5 +15,7 @@ from .RiskFunctions import *
 from .Reports import *
 from .AuxFunctions import *
 from .DBHT import *
+from .OwaWeights import *
 
-__version__ = "1.0.0"
+
+__version__ = "3.0.0"

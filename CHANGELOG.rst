@@ -6,6 +6,16 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Version 3.0.0
+=============
+
+- Implements 5 additional risk measures for mean risk model: Gini Mean Difference, Tail Gini, Range, CVaR range and Tail Gini range.
+- Implements 4 additional risk measures for risk parity model: Gini Mean Difference, Tail Gini, CVaR range and Tail Gini range.
+- Implements the OWA Portfolio Optimization model for custom vector of weights and a module to build OWA weights for some special cases.
+- Implements a function to plot range risk measures.
+- Adds the option to use Graphical Lasso, j-Logo, denoising and detoning covariance estimates.
+
+
 Version 2.0.0
 =============
 
@@ -146,6 +156,6 @@ Version 0.0.2
 Version 0.0.1
 =============
 
-- Implements robust estimates and ewma estimates.
+- Implements robust and ewma estimates.
 - Implements Black Litterman model and risk factors models.
 - Implements mean risk optimization with 10 risk measures.

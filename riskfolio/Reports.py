@@ -14,7 +14,7 @@ import riskfolio.PlotFunctions as plf
 import riskfolio.RiskFunctions as rk
 
 
-__LICENSE__ = """Copyright (c) 2020-2021, Dany Cajas 
+__LICENSE__ = """Copyright (c) 2020-2022, Dany Cajas 
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:

@@ -25,89 +25,127 @@ with [pandas](https://pandas.pydata.org/) data structures.
 
 Some of key functionalities that Riskfolio-Lib offers:
 
-* Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 4 objective functions:
+- Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 4 objective functions:
 
-    * Minimum Risk.
-    * Maximum Return.
-    * Maximum Utility Function.
-    * Maximum Risk Adjusted Return Ratio.
+    - Minimum Risk.
+    - Maximum Return.
+    - Maximum Utility Function.
+    - Maximum Risk Adjusted Return Ratio.
 
-* Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 13 convex risk measures:
+- Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 18 convex risk measures:
 
-    * Standard Deviation.
-    * Semi Standard Deviation.
-    * Mean Absolute Deviation (MAD).
-    * First Lower Partial Moment (Omega Ratio).
-    * Second Lower Partial Moment (Sortino Ratio).
-    * Conditional Value at Risk (CVaR).
-    * Entropic Value at Risk (EVaR).
-    * Worst Case Realization (Minimax Model).
-    * Maximum Drawdown (Calmar Ratio) for uncompounded cumulative returns.
-    * Average Drawdown for uncompounded cumulative returns.
-    * Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
-    * Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
-    * Ulcer Index for uncompounded cumulative returns.
+    **Dispersion Risk Measures:**
 
-* Risk Parity Portfolio Optimization with 10 convex risk measures:
+    - Standard Deviation.
+    - Mean Absolute Deviation (MAD).
+    - Gini Mean Difference (GMD).
+    - Range.
+    - Conditional Value at Risk Range.
+    - Tail Gini Range.
 
-    * Standard Deviation.
-    * Semi Standard Deviation.
-    * Mean Absolute Deviation (MAD).
-    * First Lower Partial Moment (Omega Ratio).
-    * Second Lower Partial Moment (Sortino Ratio).
-    * Conditional Value at Risk (CVaR).
-    * Entropic Value at Risk (EVaR).
-    * Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
-    * Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
-    * Ulcer Index for uncompounded cumulative returns.
+    **Downside Risk Measures:**
 
-* Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 22 risk measures:
+    - Semi Standard Deviation.
+    - First Lower Partial Moment (Omega Ratio).
+    - Second Lower Partial Moment (Sortino Ratio).
+    - Conditional Value at Risk (CVaR).
+    - Tail Gini.
+    - Entropic Value at Risk (EVaR).
+    - Worst Case Realization (Minimax).
 
-    * Standard Deviation.
-    * Variance.
-    * Semi Standard Deviation.
-    * Mean Absolute Deviation (MAD).
-    * First Lower Partial Moment (Omega Ratio).
-    * Second Lower Partial Moment (Sortino Ratio).
-    * Value at Risk (VaR).
-    * Conditional Value at Risk (CVaR).
-    * Entropic Value at Risk (EVaR).
-    * Worst Case Realization (Minimax Model).
-    * Maximum Drawdown (Calmar Ratio) for compounded and uncompounded cumulative returns.
-    * Average Drawdown for compounded and uncompounded cumulative returns.
-    * Drawdown at Risk (DaR) for compounded and uncompounded cumulative returns.
-    * Conditional Drawdown at Risk (CDaR) for compounded and uncompounded cumulative returns.
-    * Entropic Drawdown at Risk (EDaR) for compounded and uncompounded cumulative returns.
-    * Ulcer Index for compounded and uncompounded cumulative returns.
+    **Drawdown Risk Measures:**
 
-* Nested Clustered Optimization (NCO) with four objective functions and the available risk measures to each objective:
+    - Maximum Drawdown (Calmar Ratio) for uncompounded cumulative returns.
+    - Average Drawdown for uncompounded cumulative returns.
+    - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
+    - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
+    - Ulcer Index for uncompounded cumulative returns.
 
-    * Minimum Risk.
-    * Maximum Return.
-    * Maximum Utility Function.
-    * Equal Risk Contribution.
+- Risk Parity Portfolio Optimization with 14 convex risk measures:
 
-* Worst Case Mean Variance Portfolio Optimization.
-* Relaxed Risk Parity Portfolio Optimization.
-* Portfolio optimization with Black Litterman model.
-* Portfolio optimization with Risk Factors model.
-* Portfolio optimization with Black Litterman Bayesian model.
-* Portfolio optimization with Augmented Black Litterman model.
-* Portfolio optimization with constraints on tracking error and turnover.
-* Portfolio optimization with short positions and leveraged portfolios.
-* Portfolio optimization with constraints on number of assets and number of effective assets.
-* Tools to build efficient frontier for 13 risk measures.
-* Tools to build linear constraints on assets, asset classes and risk factors.
-* Tools to build views on assets and asset classes.
-* Tools to build views on risk factors.
-* Tools to calculate risk measures.
-* Tools to calculate risk contributions per asset.
-* Tools to calculate uncertainty sets for mean vector and covariance matrix.
-* Tools to calculate assets clusters based on codependence metrics.
-* Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
-* Tools to visualizing portfolio properties and risk measures.
-* Tools to build reports on Jupyter Notebook and Excel. 
-* Option to use commercial optimization solver like MOSEK or GUROBI for large scale problems. 
+    **Dispersion Risk Measures:**
+
+    - Standard Deviation.
+    - Mean Absolute Deviation (MAD).
+    - Gini Mean Difference (GMD).
+    - Conditional Value at Risk Range.
+    - Tail Gini Range.
+
+    **Downside Risk Measures:**
+
+    - Semi Standard Deviation.
+    - First Lower Partial Moment (Omega Ratio)
+    - Second Lower Partial Moment (Sortino Ratio)
+    - Conditional Value at Risk (CVaR).
+    - Tail Gini.
+    - Entropic Value at Risk (EVaR).
+
+    **Drawdown Risk Measures:**
+
+    - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
+    - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
+    - Ulcer Index for uncompounded cumulative returns.
+
+- Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 22 risk measures using naive risk parity:
+
+    **Dispersion Risk Measures:**
+
+    - Standard Deviation.
+    - Variance.
+    - Mean Absolute Deviation (MAD).
+    - Range.
+    - Conditional Value at Risk Range.
+    - Tail Gini Range.
+
+    **Downside Risk Measures:**
+
+    - Semi Standard Deviation.
+    - First Lower Partial Moment (Omega Ratio).
+    - Second Lower Partial Moment (Sortino Ratio).
+    - Value at Risk (VaR).
+    - Conditional Value at Risk (CVaR).
+    - Entropic Value at Risk (EVaR).
+    - Tail Gini.
+    - Worst Case Realization (Minimax).
+
+    **Drawdown Risk Measures:**
+
+    - Maximum Drawdown (Calmar Ratio) for compounded and uncompounded cumulative returns.
+    - Average Drawdown for compounded and uncompounded cumulative returns.
+    - Drawdown at Risk (DaR) for compounded and uncompounded cumulative returns.
+    - Conditional Drawdown at Risk (CDaR) for compounded and uncompounded cumulative returns.
+    - Entropic Drawdown at Risk (EDaR) for compounded and uncompounded cumulative returns.
+    - Ulcer Index for compounded and uncompounded cumulative returns.
+
+- Nested Clustered Optimization (NCO) with four objective functions and the available risk measures to each objective:
+
+    - Minimum Risk.
+    - Maximum Return.
+    - Maximum Utility Function.
+    - Equal Risk Contribution.
+
+- Worst Case Mean Variance Portfolio Optimization.
+- Relaxed Risk Parity Portfolio Optimization.
+- Ordered Weighted Averaging (OWA) Portfolio Optimization.
+- Portfolio optimization with Black Litterman model.
+- Portfolio optimization with Risk Factors model.
+- Portfolio optimization with Black Litterman Bayesian model.
+- Portfolio optimization with Augmented Black Litterman model.
+- Portfolio optimization with constraints on tracking error and turnover.
+- Portfolio optimization with short positions and leveraged portfolios.
+- Portfolio optimization with constraints on number of assets and number of effective assets.
+- Tools to build efficient frontier for 18 risk measures.
+- Tools to build linear constraints on assets, asset classes and risk factors.
+- Tools to build views on assets and asset classes.
+- Tools to build views on risk factors.
+- Tools to calculate risk measures.
+- Tools to calculate risk contributions per asset.
+- Tools to calculate uncertainty sets for mean vector and covariance matrix.
+- Tools to calculate assets clusters based on codependence metrics.
+- Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
+- Tools to visualizing portfolio properties and risk measures.
+- Tools to build reports on Jupyter Notebook and Excel. 
+- Option to use commercial optimization solver like MOSEK or GUROBI for large scale problems.
 
 
 ## Documentation
@@ -123,17 +161,17 @@ with examples that shows the capacities of Riskfolio-Lib.
 Riskfolio-Lib supports Python 3.7+.
 
 Installation requires:
-* [numpy](http://www.numpy.org/) >= 1.17.0
-* [scipy](https://www.scipy.org/) >= 1.1.0
-* [pandas](https://pandas.pydata.org/) >= 1.0.0
-* [matplotlib](https://matplotlib.org/) >= 3.3.0
-* [cvxpy](https://www.cvxpy.org/) >= 1.0.15
-* [scikit-learn](https://scikit-learn.org/stable/) >= 0.22.0
-* [statsmodels](https://www.statsmodels.org/) >= 0.10.1
-* [arch](https://bashtage.github.io/arch/) >= 4.15
-* [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 1.3.7
-* [networkx](https://networkx.org) >= 2.5.1
-* [astropy](https://www.astropy.org) >= 4.3.1
+- [numpy](http://www.numpy.org/) >= 1.17.0
+- [scipy](https://www.scipy.org/) >= 1.1.0
+- [pandas](https://pandas.pydata.org/) >= 1.0.0
+- [matplotlib](https://matplotlib.org/) >= 3.3.0
+- [cvxpy](https://www.cvxpy.org/) >= 1.0.15
+- [scikit-learn](https://scikit-learn.org/stable/) >= 0.22.0
+- [statsmodels](https://www.statsmodels.org/) >= 0.10.1
+- [arch](https://bashtage.github.io/arch/) >= 4.15
+- [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 1.3.7
+- [networkx](https://networkx.org) >= 2.5.1
+- [astropy](https://www.astropy.org) >= 4.3.1
 
 ## Installation
 
@@ -148,7 +186,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 ```
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (2.0.0)},
+      title = {Riskfolio-Lib (3.0.0)},
       year  = {2021},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }
@@ -163,4 +201,4 @@ Riskfolio-Lib development takes place on Github: https://github.com/dcajasn/Risk
 The plan for this module is to add more functions that will be very useful
 to asset managers.
 
-* Add more functions based on suggestion of users.
+- Add more functions based on suggestion of users.

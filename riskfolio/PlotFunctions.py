@@ -10,7 +10,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.lines as mlines
 from matplotlib import cm
+from matplotlib.patches import Patch
 import scipy.stats as st
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
@@ -27,6 +29,7 @@ __all__ = [
     "plot_frontier_area",
     "plot_risk_con",
     "plot_hist",
+    "plot_range",
     "plot_drawdown",
     "plot_table",
     "plot_clusters",
@@ -50,6 +53,11 @@ rm_names = [
     "Conditional Drawdown at Risk",
     "Entropic Drawdown at Risk",
     "Ulcer Index",
+    "Gini Mean Difference",
+    "Tail Gini",
+    "Range",
+    "Conditional Value at Risk Range",
+    "Tail Gini Range",
 ]
 
 rmeasures = [
@@ -68,6 +76,11 @@ rmeasures = [
     "CDaR",
     "EDaR",
     "UCI",
+    "GMD",
+    "TG",
+    "RG",
+    "CVRG",
+    "TGRG",
 ]
 
 
@@ -170,7 +183,7 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
         fig.tight_layout()
     except:
         pass
-
+    
     return ax
 
 
@@ -183,6 +196,9 @@ def plot_frontier(
     kelly=False,
     rf=0,
     alpha=0.05,
+    a_sim=100,    
+    beta=None,
+    b_sim=None,
     cmap="viridis",
     w=None,
     label="Portfolio",
@@ -219,8 +235,12 @@ def plot_frontier(
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'CVaR': Conditional Value at Risk.
-        - 'EVaR': Conditional Value at Risk.
-        - 'WR': Worst Realization (Minimax)
+        - 'TG': Tail Gini.
+        - 'EVaR': Entropic Value at Risk.
+        - 'WR': Worst Realization (Minimax).
+        - 'RG': Range of returns.
+        - 'CVRG': CVaR range of returns.
+        - 'TGRG': Tail Gini range of returns.
         - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -235,8 +255,15 @@ def plot_frontier(
     rf : float, optional
         Risk free rate or minimum aceptable return. The default is 0.
     alpha : float, optional
-        Significante level of VaR, CVaR, EVaR, DaR and CDaR.
-        The default is 0.05.
+        Significante level of VaR, CVaR, Tail Gini, EVaR, CDaR and EDaR. The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
     cmap : cmap, optional
         Colorscale, represente the risk adjusted return ratio.
         The default is 'viridis'.
@@ -329,6 +356,11 @@ def plot_frontier(
             a2 = str(w.shape)
             raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
+    if beta is None:
+        beta = alpha
+    if b_sim is None:
+        b_sim = a_sim
+
     if ax is None:
         fig = plt.gcf()
         ax = fig.gca()
@@ -336,7 +368,7 @@ def plot_frontier(
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
-
+        
     mu_ = np.array(mu, ndmin=2)
 
     if kelly == False:
@@ -358,7 +390,7 @@ def plot_frontier(
     for i in range(w_frontier.shape[1]):
         weights = np.array(w_frontier.iloc[:, i], ndmin=2).T
         risk = rk.Sharpe_Risk(
-            weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha
+            weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim
         )
 
         if kelly == False:
@@ -384,7 +416,7 @@ def plot_frontier(
         for i in range(w.shape[1]):
             weights = np.array(w.iloc[:, i], ndmin=2).T
             risk = rk.Sharpe_Risk(
-                weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha
+                weights, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim
             )
             if kelly == False:
                 ret = mu_ @ weights
@@ -430,7 +462,7 @@ def plot_frontier(
         fig.tight_layout()
     except:
         pass
-
+    
     return ax
 
 
@@ -491,13 +523,13 @@ def plot_pie(
         raise ValueError("w must be a column DataFrame")
 
     if ax is None:
+        ax = plt.gca()
         fig = plt.gcf()
-        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
-
+        
     labels = w.index.tolist()
     sizes = w.iloc[:, 0].tolist()
     abs_sizes = [np.absolute(s) for s in sizes]
@@ -589,7 +621,7 @@ def plot_pie(
         fig.tight_layout()
     except:
         pass
-
+    
     return ax
 
 
@@ -672,7 +704,7 @@ def plot_bar(
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
-
+        
     labels = w.index.tolist()
     sizes = w.iloc[:, 0].tolist()
     abs_sizes = [np.absolute(s) for s in sizes]
@@ -880,7 +912,7 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
-
+        
     ax.set_title("Efficient Frontier's Assets Structure")
     labels = w_frontier.index.tolist()
 
@@ -924,6 +956,9 @@ def plot_risk_con(
     rm="MV",
     rf=0,
     alpha=0.05,
+    a_sim=100,
+    beta=None,
+    b_sim=None,
     color="tab:blue",
     height=6,
     width=10,
@@ -948,12 +983,17 @@ def plot_risk_con(
 
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
+        - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'CVaR': Conditional Value at Risk.
-        - 'EVaR': Conditional Value at Risk.
-        - 'WR': Worst Realization (Minimax)
+        - 'TG': Tail Gini.
+        - 'EVaR': Entropic Value at Risk.
+        - 'WR': Worst Realization (Minimax).
+        - 'RG': Range of returns.
+        - 'CVRG': CVaR range of returns.
+        - 'TGRG': Tail Gini range of returns.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -963,7 +1003,15 @@ def plot_risk_con(
     rf : float, optional
         Risk free rate or minimum aceptable return. The default is 0.
     alpha : float, optional
-        Significante level of VaR, CVaR and CDaR. The default is 0.05.
+        Significante level of VaR, CVaR, Tail Gini, EVaR, CDaR and EDaR. The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
     color : str, optional
         Color used to plot each asset risk contribution.
         The default is 'tab:blue'.
@@ -1011,6 +1059,11 @@ def plot_risk_con(
     if not isinstance(w, pd.DataFrame):
         raise ValueError("w must be a DataFrame")
 
+    if beta is None:
+        beta = alpha
+    if b_sim is None:
+        b_sim = a_sim
+    
     if ax is None:
         fig = plt.gcf()
         ax = fig.gca()
@@ -1025,7 +1078,7 @@ def plot_risk_con(
 
     X = w.index.tolist()
 
-    RC = rk.Risk_Contribution(w, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha)
+    RC = rk.Risk_Contribution(w, cov=cov, returns=returns, rm=rm, rf=rf, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
 
     if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
         RC = RC * t_factor ** 0.5
@@ -1033,7 +1086,8 @@ def plot_risk_con(
     ax.bar(X, RC, alpha=0.7, color=color, edgecolor="black")
 
     ax.set_xlim(-0.5, len(X) - 0.5)
-
+    ax.tick_params(axis='x', labelrotation=90)
+    
     ticks_loc = ax.get_yticks().tolist()
     ax.set_yticks(ax.get_yticks())
     ax.set_yticklabels(["{:3.4%}".format(x) for x in ticks_loc])
@@ -1047,7 +1101,7 @@ def plot_risk_con(
     return ax
 
 
-def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
+def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax=None):
     r"""
     Create a histogram of portfolio returns with the risk measures.
 
@@ -1058,7 +1112,9 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
     w : DataFrame of shape (n_assets, 1)
         Portfolio weights.
     alpha : float, optional
-        Significante level of VaR, CVaR and EVaR. The default is 0.05.
+        Significante level of VaR, CVaR, Tail Gini and EVaR. The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
     bins : float, optional
         Number of bins of the histogram. The default is 50.
     height : float, optional
@@ -1125,8 +1181,10 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
         mu,
         mu - sigma,
         mu - rk.MAD(a),
+        mu - rk.GMD(a),
         -rk.VaR_Hist(a, alpha),
         -rk.CVaR_Hist(a, alpha),
+        -rk.TG(a, alpha),
         -rk.EVaR_Hist(a, alpha)[0],
         -rk.WR(a),
     ]
@@ -1140,16 +1198,21 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
         + "{0:.2%}".format(-risk[2] + mu)
         + "): "
         + "{0:.2%}".format(risk[2]),
-        "{0:.2%}".format((1 - alpha)) + " Confidence VaR: " + "{0:.2%}".format(risk[3]),
+        "Mean - GMD("
+        + "{0:.2%}".format(-risk[3] + mu)
+        + "): "
+        + "{0:.2%}".format(risk[3]),
+        "{0:.2%}".format((1 - alpha)) + " Confidence VaR: " + "{0:.2%}".format(risk[4]),
         "{0:.2%}".format((1 - alpha))
         + " Confidence CVaR: "
-        + "{0:.2%}".format(risk[4]),
+        + "{0:.2%}".format(risk[5]),
+        "{0:.2%}".format((1 - alpha)) + " Confidence Tail Gini: " + "{0:.2%}".format(risk[6]),
         "{0:.2%}".format((1 - alpha))
         + " Confidence EVaR: "
-        + "{0:.2%}".format(risk[5]),
-        "Worst Realization: " + "{0:.2%}".format(risk[6]),
+        + "{0:.2%}".format(risk[7]),
+        "Worst Realization: " + "{0:.2%}".format(risk[8]),
     ]
-    color = ["b", "r", "fuchsia", "darkorange", "limegreen", "dodgerblue", "darkgrey"]
+    color = ["b", "r", "fuchsia", "navy", "darkorange", "limegreen", "mediumvioletred", "dodgerblue", "darkgrey"]
 
     for i, j, k in zip(risk, label, color):
         ax.axvline(x=i, color=k, linestyle="-", label=j)
@@ -1170,8 +1233,168 @@ def plot_hist(returns, w, alpha=0.05, bins=50, height=6, width=10, ax=None):
         + "$%",
     )
 
+    ax.plot([], [], ' ', label=label[8])
+    
     factor = (np.max(a) - np.min(a)) / bins
 
+    ax.xaxis.set_major_locator(plt.AutoLocator())
+    ticks_loc = ax.get_xticks().tolist()
+    ax.set_xticks(ax.get_xticks())
+    ax.set_xticklabels(["{:3.2%}".format(x) for x in ticks_loc])
+    ticks_loc = ax.get_yticks().tolist()
+    ax.set_yticks(ax.get_yticks())
+    ax.set_yticklabels(["{:3.2%}".format(x * factor) for x in ticks_loc])
+    ax.legend(loc="upper right")  # , fontsize = 'x-small')
+    ax.grid(linestyle=":")
+    ax.set_ylabel("Probability Density")
+
+    try:
+        fig.tight_layout()
+    except:
+        pass
+
+    return ax
+
+
+def plot_range(returns, w, alpha=0.05, a_sim=100, beta=None, b_sim=None, bins=50, height=6, width=10, ax=None):
+    r"""
+    Create a histogram of portfolio returns with the range risk measures.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
+    alpha : float, optional
+        Significance level of CVaR and Tail Gini of losses.
+        The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
+    bins : float, optional
+        Number of bins of the histogram. The default is 50.
+    height : float, optional
+        Height of the image in inches. The default is 6.
+    width : float, optional
+        Width of the image in inches. The default is 10.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax : matplotlib axis.
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = plot_range(returns=Y, w=w1, alpha=0.05, a_sim=100, beta=None,
+                        b_sim=None, bins=50, height=6, width=10, ax=None)
+
+    .. image:: images/Range.png
+
+
+    """
+
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
+
+    if not isinstance(w, pd.DataFrame):
+        raise ValueError("w must be a DataFrame")
+
+    if w.shape[1] > 1 and w.shape[0] == 0:
+        w = w.T
+    elif w.shape[1] > 1 and w.shape[0] > 0:
+        raise ValueError("w must be a  DataFrame")
+
+    if returns.shape[1] != w.shape[0]:
+        a1 = str(returns.shape)
+        a2 = str(w.shape)
+        raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
+
+    if beta is None:
+        beta = alpha
+    if b_sim is None:
+        b_sim = a_sim
+
+    if ax is None:
+        fig = plt.gcf()
+        ax = fig.gca()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
+
+    a = np.array(returns, ndmin=2) @ np.array(w, ndmin=2)
+    ax.set_title("Portfolio Returns Range")
+
+    df = dict(risk = ['Range', 'Tail Gini Range', 'CVaR Range'],
+              lower = [],
+              upper = [],
+              )
+    
+    df['lower'].append(np.min(a))
+    df['lower'].append(-rk.TG(a, alpha=alpha, a_sim=a_sim))
+    df['lower'].append(-rk.CVaR_Hist(a, alpha=alpha))
+    df['upper'].append(-np.min(-a))
+    df['upper'].append(rk.TG(-a, alpha=beta, a_sim=b_sim))
+    df['upper'].append(rk.CVaR_Hist(-a, alpha=beta))
+    df = pd.DataFrame(df)
+    df.set_index('risk', inplace=True)
+    
+    # Func to draw line segment
+    def newline(p1, p2, color='black'):
+        ax = fig.gca()
+        l = mlines.Line2D([p1[0],p2[0]], [p1[1],p2[1]], color=color)
+        ax.add_line(l)
+        return l
+    
+    n, _, _ = ax.hist(
+            a, bins=bins, density=True, color="darkgrey", alpha=0.3
+        )
+    
+    risk = [rk.RG(a),
+            rk.CVRG(a, alpha=alpha, beta=beta),
+            rk.TGRG(a, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim),
+            ]
+    
+    label = [
+        "Range :" + "{0:.2%}".format(risk[0]),
+        "Tail Gini Range (" + "{0:.1%}".format((1 - alpha)) + ", " +  "{0:.1%}".format((1 - beta)) + "): " + "{0:.2%}".format(risk[1]),
+        "CVaR Range ("+ "{0:.1%}".format((1 - alpha)) + ", " +  "{0:.1%}".format((1 - beta)) + "): " + "{0:.2%}".format(risk[2]),
+    ]
+    
+    colors = ["dodgerblue", "fuchsia", "limegreen"]
+    
+    y_max = np.ceil(n.max())
+    
+    j = 1
+    for i in df.index:
+        x1 = df.loc[i,'lower']
+        x2 = df.loc[i,'upper']
+        y1 = j * y_max/4
+        ax.vlines(x=x1, ymin=0, ymax=y1, color=colors[j-1], alpha=1, linewidth=1, linestyles='dashed')
+        ax.vlines(x=x2, ymin=0, ymax=y1, color=colors[j-1], alpha=1, linewidth=1, linestyles='dashed')
+        ax.scatter(y=y1, x=x1, s=50, color=colors[j-1], alpha=1, label=label[j-1])
+        ax.scatter(y=y1, x=x2, s=50, color=colors[j-1], alpha=1)
+        newline([x1, y1], [x2, y1], color=colors[j-1])
+        j += 1
+    
+    ax.set(ylim=(0, y_max))
+    
+    factor = (np.max(a) - np.min(a)) / bins
     ax.xaxis.set_major_locator(plt.AutoLocator())
     ticks_loc = ax.get_xticks().tolist()
     ax.set_xticks(ax.get_xticks())
@@ -1429,7 +1652,7 @@ def plot_table(
         fig.set_figwidth(width)
         fig.set_figheight(height)
     else:
-        fig = ax.gcf()
+        fig = ax.get_figure()
 
     mu = returns.mean()
     cov = returns.cov()
@@ -1714,7 +1937,9 @@ def plot_clusters(
         fig = plt.gcf()
         fig.set_figwidth(width)
         fig.set_figheight(height)
-
+    else:
+        fig = ax.get_figure()
+        
     labels = np.array(returns.columns.tolist())
 
     vmin, vmax = 0, 1
@@ -1736,7 +1961,7 @@ def plot_clusters(
         codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
         dist = -np.log(codep)
     elif codependence in {"custom_cov"}:
-        codep = af.correl_matrix(custom_cov).astype(float)
+        codep = af.cov2corr(custom_cov).astype(float)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
         
     # Hierarchcial clustering
@@ -1781,31 +2006,32 @@ def plot_clusters(
     ax.yaxis.set_label_position("right")
     ax.yaxis.tick_right()
 
-    for cluster_id, cluster in clusters.items():
-
-        amin = permutation.index(cluster[0])
-        xmin, xmax = amin, amin + len(cluster)
-        ymin, ymax = amin, amin + len(cluster)
-
-        for i in cluster:
-            a = permutation.index(i)
-            if a < amin:
-                xmin, xmax = a, a + len(cluster)
-                ymin, ymax = a, a + len(cluster)
-                amin = a
-
-        ax.axvline(
-            x=xmin, ymin=ymin / dim, ymax=(ymax) / dim, linewidth=4, color=linecolor
-        )
-        ax.axvline(
-            x=xmax, ymin=ymin / dim, ymax=(ymax) / dim, linewidth=4, color=linecolor
-        )
-        ax.axhline(
-            y=ymin, xmin=xmin / dim, xmax=(xmax) / dim, linewidth=4, color=linecolor
-        )
-        ax.axhline(
-            y=ymax, xmin=xmin / dim, xmax=(xmax) / dim, linewidth=4, color=linecolor
-        )
+    if linecolor is not None:
+        for cluster_id, cluster in clusters.items():
+    
+            amin = permutation.index(cluster[0])
+            xmin, xmax = amin, amin + len(cluster)
+            ymin, ymax = amin, amin + len(cluster)
+    
+            for i in cluster:
+                a = permutation.index(i)
+                if a < amin:
+                    xmin, xmax = a, a + len(cluster)
+                    ymin, ymax = a, a + len(cluster)
+                    amin = a
+    
+            ax.axvline(
+                x=xmin, ymin=ymin / dim, ymax=(ymax) / dim, linewidth=4, color=linecolor
+            )
+            ax.axvline(
+                x=xmax, ymin=ymin / dim, ymax=(ymax) / dim, linewidth=4, color=linecolor
+            )
+            ax.axhline(
+                y=ymin, xmin=xmin / dim, xmax=(xmax) / dim, linewidth=4, color=linecolor
+            )
+            ax.axhline(
+                y=ymax, xmin=xmin / dim, xmax=(xmax) / dim, linewidth=4, color=linecolor
+            )
 
     axcolor = fig.add_axes([1.02, 0.1, 0.02, 0.6])
     plt.colorbar(im, cax=axcolor)
@@ -1912,7 +2138,7 @@ def plot_clusters(
         ax1.set_title(title)
     elif dendrogram == False:
         ax.set_title(title)
-
+    
     try:
         fig.tight_layout()
     except:
@@ -2030,11 +2256,11 @@ def plot_dendrogram(
 
     if ax is None:
         fig = plt.gcf()
-        ax = plt.gca()
+        ax = fig.gca()
         fig.set_figwidth(width)
         fig.set_figheight(height)
     else:
-        fig = ax.gcf()
+        fig = ax.get_figure()
 
     labels = np.array(returns.columns.tolist())
 
@@ -2055,7 +2281,7 @@ def plot_dendrogram(
         codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
         dist = -np.log(codep)
     elif codependence in {"custom_cov"}:
-        codep = af.correl_matrix(custom_cov).astype(float)
+        codep = af.cov2corr(custom_cov).astype(float)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
         
     # Hierarchcial clustering
@@ -2285,8 +2511,8 @@ def plot_network(
         fig.set_figwidth(width)
         fig.set_figheight(height)
     else:
-        fig = ax.gcf()
-        
+        fig = ax.get_figure()
+
     labels = np.array(returns.columns.tolist())
 
     # Calculating codependence matrix and distance metric
@@ -2306,7 +2532,7 @@ def plot_network(
         codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
         dist = -np.log(codep)
     elif codependence in {"custom_cov"}:
-        codep = af.correl_matrix(custom_cov).astype(float)
+        codep = af.cov2corr(custom_cov).astype(float)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
 
     # Hierarchcial clustering

@@ -13,8 +13,9 @@ import sklearn.covariance as skcov
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from numpy.linalg import inv
-import riskfolio.AuxFunctions as au
+import riskfolio.AuxFunctions as af
 import arch.bootstrap as bs
+import riskfolio.DBHT as db
 
 
 def mean_vector(X, method="hist", d=0.94):
@@ -26,9 +27,9 @@ def mean_vector(X, method="hist", d=0.94):
     X : DataFrame of shape (n_samples, n_features)
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
-    method : str, can be {'hist', 'ewma1' or 'ewma2'}
+    method : str, optinal
         The method used to estimate the expected returns.
-        The default value is 'hist'.
+        The default value is 'hist'. Posible values are:
 
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -75,9 +76,9 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
     X : DataFrame of shape (n_samples, n_features)
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
-    method : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+    method : str, optional
         The method used to estimate the covariance matrix:
-        The default is 'hist'.
+        The default is 'hist'. Posible values are:
 
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -85,13 +86,18 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         - 'ledoit': use the Ledoit and Wolf Shrinkage method.
         - 'oas': use the Oracle Approximation Shrinkage method.
         - 'shrunk': use the basic Shrunk Covariance method.
+        - 'gl': use the basic Graphical Lasso Covariance method.
+        - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`b-jLogo`.
+        - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
     d : scalar
         The smoothing factor of ewma methods.
         The default is 0.94.
     **kwargs:
         Other variables related to covariance estimation. See
         `Scikit Learn <https://scikit-learn.org/stable/modules/covariance.html>`_
-        for more details.
+        and chapter 2 of :cite:`b-MLforAM` for more details. 
 
     Returns
     -------
@@ -132,6 +138,22 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         sc = skcov.ShrunkCovariance(**kwargs)
         sc.fit(X)
         cov = sc.covariance_
+    elif method == "gl":
+        gl = skcov.GraphicalLassoCV(**kwargs)
+        gl.fit(X)
+        cov = gl.covariance_
+    elif method == "jlogo":
+        S = np.cov(X.T)
+        R = np.corrcoef(X.T)
+        D = np.sqrt(np.clip((1 - R) / 2, a_min=0.0, a_max=1.0))
+        (_, _, separators, cliques, _) = db.PMFG_T2s(1 - D**2, nargout=4)
+        cov = db.j_LoGo(S, separators, cliques)
+        cov = np.linalg.inv(cov)
+    elif method in ["fixed", "spectral", "shrink"]:
+        cov = np.cov(X.T)
+        T, N = X.shape
+        q = T/N
+        cov = af.denoiseCov(cov, q, kind=method, **kwargs)
 
     cov = pd.DataFrame(np.array(cov, ndmin=2), columns=assets, index=assets)
 
@@ -151,14 +173,16 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
         n_features is the number of features.
     y : Series of shape (n_samples, 1)
         Target vector, where n_samples in the number of samples.
-    criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
-        The default is 'pvalue'. The criterion used to select the best features:
+    criterion : str, optional
+        The default is 'pvalue'. Posible values of the criterion used to select
+        the best features are:
 
         - 'pvalue': select the features based on p-values.
         - 'AIC': select the features based on lowest Akaike Information Criterion.
         - 'SIC': select the features based on lowest Schwarz Information Criterion.
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
+        
     thresholdt : scalar, optional
         Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.
@@ -323,8 +347,9 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
         n_features is the number of features.
     y : Series of shape (n_samples, 1)
         Target vector, where n_samples in the number of samples.
-    criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
-        The default is 'pvalue'. The criterion used to select the best features:
+    criterion : str, optional
+        The default is 'pvalue'. Posible values of the criterion used to select
+        the best features are:
 
         - 'pvalue': select the features based on p-values.
         - 'AIC': select the features based on lowest Akaike Information Criterion.
@@ -567,8 +592,9 @@ def loadings_matrix(
     stepwise: str 'Forward' or 'Backward', optional
         Indicate the method used for stepwise regression.
         The default is 'Forward'.
-    criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
-        The default is 'pvalue'. The criterion used to select the best features:
+    criterion : str, optional
+        The default is 'pvalue'. Posible values of the criterion used to select
+        the best features are:
 
         - 'pvalue': select the features based on p-values.
         - 'AIC': select the features based on lowest Akaike Information Criterion.
@@ -694,14 +720,15 @@ def risk_factors(
     const : bool, optional
         Indicate if the loadings matrix has a constant.
         The default is False.
-    method: str 'stepwise' or 'PCR', optional
+    method: str, 'stepwise' or 'PCR', optional
         Indicate the method used to estimate the loadings matrix.
         The default is 'stepwise'.
-    stepwise: str 'Forward' or 'Backward'
+    stepwise: str, 'Forward' or 'Backward'
         Indicate the method used for stepwise regression.
         The default is 'Forward'.
-    criterion : str, can be {'pvalue', 'AIC', 'SIC', 'R2' or 'R2_A'}
-        The default is 'pvalue'. The criterion used to select the best features:
+    criterion : str, optional
+        The default is 'pvalue'. Posible values of the criterion used to select
+        the best features are:
 
         - 'pvalue': select the features based on p-values.
         - 'AIC': select the features based on lowest Akaike Information Criterion.
@@ -851,16 +878,21 @@ def black_litterman(
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
-    method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+    method_cov : str, optional
         The method used to estimate the covariance matrix:
-        The default is 'hist'. 
-        
+        The default is 'hist'. Posible values are:
+
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ledoit': use the Ledoit and Wolf Shrinkage method.
         - 'oas': use the Oracle Approximation Shrinkage method.
         - 'shrunk': use the basic Shrunk Covariance method.
+        - 'gl': use the basic Graphical Lasso Covariance method.
+        - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`b-jLogo`.
+        - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
     **kwargs : dict
         Other variables related to the expected returns and covariance estimation.
 
@@ -1035,16 +1067,21 @@ def augmented_black_litterman(
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
-    method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+    method_cov : str, optional
         The method used to estimate the covariance matrix:
-        The default is 'hist'. 
-        
+        The default is 'hist'. Posible values are:
+
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ledoit': use the Ledoit and Wolf Shrinkage method.
         - 'oas': use the Oracle Approximation Shrinkage method.
         - 'shrunk': use the basic Shrunk Covariance method.
+        - 'gl': use the basic Graphical Lasso Covariance method.
+        - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`b-jLogo`.
+        - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
     **kwargs : dict
         Other variables related to the expected returns and covariance estimation.
 
@@ -1260,17 +1297,22 @@ def black_litterman_bayesian(
 
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
-        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
-    method_cov : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas' or 'shrunk'}
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.    
+    method_cov : str, optional
         The method used to estimate the covariance matrix:
-        The default is 'hist'. 
-        
+        The default is 'hist'. Posible values are:
+
         - 'hist': use historical estimates.
         - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
         - 'ledoit': use the Ledoit and Wolf Shrinkage method.
         - 'oas': use the Oracle Approximation Shrinkage method.
         - 'shrunk': use the basic Shrunk Covariance method.
+        - 'gl': use the basic Graphical Lasso Covariance method.
+        - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`b-jLogo`.
+        - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
     **kwargs : dict
         Other variables related to the expected returns and covariance estimation.
 
@@ -1449,10 +1491,10 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=3000, window=3, seed=0):
     cov_sigma = np.diag(np.diag(cov_sigma))
     cov_sigma = pd.DataFrame(cov_sigma, index=cols_2, columns=cols_2)
 
-    if au.is_pos_def(cov_l) == False:
-        cov_l = au.cov_fix(cov_l, method="clipped", threshold=1e-3)
+    if af.is_pos_def(cov_l) == False:
+        cov_l = af.cov_fix(cov_l, method="clipped", threshold=1e-3)
 
-    if au.is_pos_def(cov_u) == False:
-        cov_u = au.cov_fix(cov_u, method="clipped", threshold=1e-3)
+    if af.is_pos_def(cov_u) == False:
+        cov_u = af.cov_fix(cov_u, method="clipped", threshold=1e-3)
 
     return mu_l, mu_u, cov_l, cov_u, cov_mu, cov_sigma

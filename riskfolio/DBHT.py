@@ -53,7 +53,7 @@ def DBHTs(D, S, leaf_order=True):
         Linkage matrix using DBHT hierarchy.
     """
 
-    (Rpm, _, _) = PMFG_T2s(S)
+    (Rpm, _, _, _, _) = PMFG_T2s(S)
     Apm = Rpm.copy()
     Apm[Apm != 0] = D[Apm != 0].copy()
     (Dpm, _) = distance_wei(Apm)
@@ -75,7 +75,55 @@ def DBHTs(D, S, leaf_order=True):
     return (T8, Rpm, Adjv, Dpm, Mv, Z)
 
 
-def PMFG_T2s(W):
+def j_LoGo(S, separators, cliques):
+    r"""
+    computes sparse inverse covariance, J, from a clique tree made of cliques 
+    and separators. For more information see: :cite:`d-jLogo`.
+
+    
+    Parameters
+    ----------
+    S : ndarray
+        It is the complete covariance matrix.
+    separators : nd-array
+        It is the list of separators.
+    clique : nd-array
+        It is the list of cliques.
+    
+    Returns
+    -------
+    JLogo : nd-array
+        Inverse covariance.
+    
+    Notes
+    -----
+    separators and cliques can be the outputs of TMFG function 
+    
+    """
+    N = S.shape[0]
+    if isinstance(separators,dict) == False:
+        separators_temp = {}
+        for i in range(len(separators)):
+            separators_temp[i] = separators[i,:]
+
+    if isinstance(cliques,dict) == False:
+        cliques_temp = {}
+        for i in range(len(cliques)):
+            cliques_temp[i] = cliques[i,:]
+            
+    Jlogo = np.zeros((N,N))
+    for i in cliques_temp.keys():
+        v = np.int32(cliques_temp[i])
+        Jlogo[np.ix_(v,v)] = Jlogo[np.ix_(v,v)] + np.linalg.inv(S[np.ix_(v,v)])
+
+    for i in separators_temp.keys():
+        v = np.int32(separators_temp[i])
+        Jlogo[np.ix_(v,v)] = Jlogo[np.ix_(v,v)] - np.linalg.inv(S[np.ix_(v,v)]);
+    
+    return Jlogo
+
+
+def PMFG_T2s(W, nargout=3):
     r"""
     Computes a Triangulated Maximally Filtered Graph (TMFG) :cite:`d-Massara`
     starting from a tetrahedron and inserting recursively vertices inside
@@ -86,6 +134,8 @@ def PMFG_T2s(W):
     ----------
     W : nd-array
         An N x N matrix of non-negative weights.
+    nargout : int, optional
+        Number of results, posible values are 3, 4 and 5.
 
     Returns
     -------
@@ -93,9 +143,13 @@ def PMFG_T2s(W):
         Adjacency matrix of the PMFG (with weights)
     tri : nd-array
         Matrix of triangles (triangular faces) of size 2N - 4 x 3
-    clique3 : nd-array
+    separators : nd-array
         Matrix of 3-cliques that are not triangular faces (all 3-cliques are
-        given by: [tri;clique3])
+        given by: [tri;separators]).
+    clique4 : nd-array, optional
+        List of all 4-cliques.
+    cliqueTree : nd-array, optional
+        4-cliques tree structure (adjacency matrix).
 
     """
     N = W.shape[0]
@@ -107,7 +161,7 @@ def PMFG_T2s(W):
     A = np.zeros((N, N))  # ininzialize adjacency matrix
     in_v = -1 * np.ones(N, dtype=np.int32)  # ininzialize list of inserted vertices
     tri = np.zeros((2 * N - 4, 3))  # ininzialize list of triangles
-    clique3 = np.zeros((N - 4, 3))  # ininzialize list of 3-cliques (non face-triangles)
+    separators = np.zeros((N - 4, 3))  # ininzialize list of 3-cliques (non face-triangles)
     # find 3 vertices with largest strength
     s = np.sum(W * (W > np.mean(W)), axis=1)
     j = np.int32(np.argsort(s)[::-1].reshape(-1))
@@ -152,7 +206,7 @@ def PMFG_T2s(W):
         # update adjacency matrix
         A[np.ix_([ve], np.int32(tri[tr, :]))] = 1
         # update 3-clique list
-        clique3[k - 4, :] = tri[tr, :]
+        separators[k - 4, :] = tri[tr, :]
         # update triangle list replacing 1 and adding 2 triangles
         tri[kk + 1, :] = np.hstack((tri[tr, [0, 2]], ve))  # add
         tri[kk + 2, :] = np.hstack((tri[tr, [1, 2]], ve))  # add
@@ -169,7 +223,24 @@ def PMFG_T2s(W):
 
     A = W * ((A + A.T) == 1)
 
-    return (A, tri, clique3)
+    if nargout > 3:
+        cliques = np.vstack((in_v[0:4].reshape(1,-1), np.hstack((separators, in_v[4:].reshape(-1,1)))))
+    else:
+        cliques = None
+
+    # computes 4-clique tree (note this may include incomplete cliques!)
+    if nargout > 4:
+        cliqueTree = np.zeros((cliques.shape[0],cliques.shape[0]))
+        for i in range(0, cliques.shape[0]):
+            ss = np.zeros(cliques.shape[0], 1)
+            for k in range(0,3):
+                ss = ss + np.sum((cliques[i,k]==cliques), axis=1)
+
+            cliqueTree[i, ss==2] = 1
+    else:
+        cliqueTree = None
+
+    return (A, tri, separators, cliques, cliqueTree)
 
 
 def distance_wei(L):

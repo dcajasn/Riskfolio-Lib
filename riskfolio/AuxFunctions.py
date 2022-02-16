@@ -10,14 +10,17 @@ import numpy as np
 import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import scipy.stats as st
+import scipy.cluster.hierarchy as hr
 from scipy import linalg as LA
 from statsmodels.stats.correlation_tools import cov_nearest
 from scipy.sparse import csr_matrix
 from scipy.spatial.distance import pdist, squareform
-import scipy.cluster.hierarchy as hr
-import scipy.stats as st
+from scipy.optimize import minimize
 from sklearn.metrics import mutual_info_score
+from sklearn.neighbors import KernelDensity
 from astropy.stats import knuth_bin_width, freedman_bin_width, scott_bin_width
+
 
 ###############################################################################
 # Aditional Matrix Functions
@@ -31,7 +34,7 @@ def is_pos_def(cov, threshold=1e-8):
     Parameters
     ----------
     cov : ndarray
-        Features covariance matrix of shape (n_features, n_features), where
+        Covariance matrix of shape (n_features, n_features), where
         n_features is the number of features.
 
     Returns
@@ -51,14 +54,14 @@ def is_pos_def(cov, threshold=1e-8):
     return value
 
 
-def correl_matrix(cov):
+def cov2corr(cov):
     r"""
     Generate a correlation matrix from a covariance matrix cov.
 
     Parameters
     ----------
     cov : ndarray
-        Assets covariance matrix of shape n_features x n_features, where
+        Covariance matrix of shape n_features x n_features, where
         n_features is the number of features.
 
     Returns
@@ -71,22 +74,58 @@ def correl_matrix(cov):
         ValueError when the value cannot be calculated.
 
     """
+    
     flag = False
     if isinstance(cov, pd.DataFrame):
         cols = cov.columns.tolist()
         flag = True
 
-    cov1 = np.array(cov, ndmin=2)
-    corr = np.array(cov, ndmin=2)
-    m, n = cov.shape
-    for i in range(0, m):
-        for j in range(0, n):
-            corr[i, j] = cov1[i, j] / np.sqrt(cov1[i, i] * cov1[j, j])
-
+    cov1 = np.array(cov, ndmin=2)    
+    std = np.sqrt(np.diag(cov1))
+    corr = np.clip(cov1/np.outer(std,std), a_min=-1.0, a_max=1.0)
+    
     if flag:
         corr = pd.DataFrame(corr, index=cols, columns=cols)
 
     return corr
+
+def corr2cov(corr, std):
+    r"""
+    Generate a covariance matrix from a correlation matrix corr and a standard
+    deviation vector std.
+
+    Parameters
+    ----------
+    corr : ndarray
+        Assets correlation matrix of shape n_features x n_features, where
+        n_features is the number of features.
+    std : 1darray
+        Assets standard deviation vector of size n_features, where
+        n_features is the number of features.
+
+
+    Returns
+    -------
+    cov : ndarray
+        A covariance matrix.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    
+    flag = False
+    if isinstance(corr, pd.DataFrame):
+        cols = corr.columns.tolist()
+        flag = True
+        
+    cov = corr * np.outer(std,std)
+
+    if flag:
+        cov = pd.DataFrame(cov, index=cols, columns=cols)
+
+    return cov 
 
 
 def cov_fix(cov, method="clipped", **kwargs):
@@ -96,7 +135,7 @@ def cov_fix(cov, method="clipped", **kwargs):
     Parameters
     ----------
     cov : ndarray
-        Features covariance matrix of shape n_features x n_features, where
+        Covariance matrix of shape n_features x n_features, where
         n_features is the number of features.
     method : str
         The default value is 'clipped', see more in `cov_nearest <https://www.statsmodels.org/stable/generated/statsmodels.stats.correlation_tools.cov_nearest.html>`_.
@@ -135,7 +174,7 @@ def cov_returns(cov, seed=0):
     Parameters
     ----------
     cov : ndarray
-        Assets covariance matrix of shape n_features x n_features, where
+        Covariance matrix of shape n_features x n_features, where
         n_features is the number of features.
 
     Returns
@@ -174,7 +213,7 @@ def commutation_matrix(cov):
     Parameters
     ----------
     cov : ndarray
-        Assets covariance matrix of shape n_features x n_features, where
+        Covariance matrix of shape n_features x n_features, where
         n_features is the number of features.
 
     Returns
@@ -258,7 +297,7 @@ def dcorr_matrix(X):
 
     Parameters
     ----------
-    X : ndarray or
+    X : ndarray
         Returns series of shape n_sample x n_features.
 
     Returns
@@ -609,7 +648,7 @@ def two_diff_gap_stat(codep, dist, clusters, max_k=10):
         A codependence matrix.
     dist : str, optional
         A distance measure based on the codependence matrix.
-    clusters : string, optional
+    clusters : str, optional
         The hierarchical clustering encoded as a linkage matrix, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
     max_k : int, optional
         Max number of clusters used by the two difference gap statistic
@@ -661,6 +700,354 @@ def two_diff_gap_stat(codep, dist, clusters, max_k=10):
 
     return k
 
+###############################################################################
+# Denoising Functions Based on Lopez de Prado Book
+###############################################################################
+
+def fitKDE(obs, bWidth=0.01, kernel='gaussian', x=None):
+    """
+    Fit kernel to a series of obs, and derive the prob of obs x is the array of
+    values on which the fit KDE will be evaluated. It is the empirical Probability
+    Density Function (PDF). For more information see chapter 2 of :cite:`d-MLforAM`.
+    
+    Parameters
+    ----------
+    obs : ndarray
+        Observations to fit. Commonly is the diagonal of Eigenvalues.
+    bWidth : float, optional
+        The bandwidth of the kernel. The default value is 0.01.
+    kernel : string, optional
+        The kernel to use. The default value is 'gaussian'. For more information see: `kernel-density <https://scikit-learn.org/stable/modules/density.html#kernel-density>`_.
+        Posible values are:
+        
+        - 'gaussian': gaussian kernel.
+        - 'tophat': tophat kernel.
+        - 'epanechnikov': epanechnikov kernel.
+        - 'exponential': exponential kernel.
+        - 'linear': linear kernel.
+        - 'cosine': cosine kernel.
+        
+    x : ndarray, optional
+        It is the array of values on which the fit KDE will be evaluated.
+
+    Returns
+    -------
+    pdf : pd.series
+        Empirical PDF.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+    
+    """
+    
+    if len(obs.shape) == 1:
+        obs = obs.reshape(-1, 1)
+        
+    kde = KernelDensity(kernel=kernel, bandwidth=bWidth).fit(obs)
+
+    if x is None:
+        x = np.unique(obs).reshape(-1, 1)
+
+    if len(x.shape) == 1:
+        x = x.reshape(-1, 1)
+
+    logProb = kde.score_samples(x)  # log(density)
+    pdf = pd.Series(np.exp(logProb), index=x.flatten())
+
+    return pdf
+
+
+def mpPDF(var, q, pts):    
+    r"""
+    Creates a Marchenko-Pastur Probability Density Function (PDF). For more
+    information see chapter 2 of :cite:`d-MLforAM`.
+    
+    Parameters
+    ----------
+    var : float
+        Variance.
+    q : float
+        T/N where T is the number of rows and N the number of columns
+    pts : int
+        Number of points used to construct the PDF.
+        
+    Returns
+    -------
+    pdf : pd.series
+        Marchenko-Pastur PDF.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+    
+    """
+    
+    if isinstance(var, np.ndarray):
+        if var.shape == (1,):
+            var = var[0]
+
+    eMin, eMax = var * (1 - (1. / q) ** .5) ** 2, var * (1 + (1. / q) ** .5) ** 2
+    eVal = np.linspace(eMin, eMax, pts)
+    pdf = q / (2 * np.pi * var * eVal) * ((eMax - eVal) * (eVal - eMin)) ** .5
+    pdf = pd.Series(pdf, index=eVal)
+
+    return pdf
+
+
+def errPDFs(var, eVal, q, bWidth=0.01, pts=1000):
+    r"""
+    Fit error of Empirical PDF (uses Marchenko-Pastur PDF). For more information
+    see chapter 2 of :cite:`d-MLforAM`.
+    
+    Parameters
+    ----------
+    var : float
+        Variance.
+    eVal : ndarray
+        Eigenvalues to fit.        
+    q : float
+        T/N where T is the number of rows and N the number of columns.
+    bWidth : float, optional
+        The bandwidth of the kernel. The default value is 0.01.
+    pts : int
+        Number of points used to construct the PDF. The default value is 1000.
+
+    Returns
+    -------
+    pdf : float
+        Sum squared error.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+    """
+    
+    # Fit error
+    pdf0 = mpPDF(var, q, pts)  # theoretical pdf
+    pdf1 = fitKDE(eVal, bWidth, x=pdf0.index.values)  # empirical pdf
+    sse = np.sum((pdf1 - pdf0) ** 2)
+    
+    return sse
+
+
+def findMaxEval(eVal, q, bWidth=0.01):
+    r"""
+    Find max random eVal by fitting Marchenko’s dist (i.e) everything else
+    larger than this, is a signal eigenvalue. For more information see chapter
+    2 of :cite:`d-MLforAM`.
+        
+    Parameters
+    ----------
+    eVal : ndarray
+        Eigenvalues to fit.        
+    q : float
+        T/N where T is the number of rows and N the number of columns.
+    bWidth : float, optional
+        The bandwidth of the kernel.
+
+    Returns
+    -------
+    pdf : tuple (float, float)
+       First value is the maximum random eigenvalue and second is the variance
+       attributed to noise (1-result) is one way to measure signal-to-noise.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.    
+    """
+
+    out = minimize(lambda *x: errPDFs(*x), .5, args=(eVal, q, bWidth),
+                   bounds=((1E-5, 1 - 1E-5),))
+    
+    if out['success']:
+        var = out['x'][0]
+    else:
+        var = 1
+    
+    eMax = var * (1 + (1. / q) ** .5) ** 2
+    
+    return eMax, var
+
+
+def getPCA(matrix):
+    r"""
+    Gets the Eigenvalues and Eigenvector values from a Hermitian Matrix.
+    For more information see chapter 2 of :cite:`d-MLforAM`.
+        
+    Parameters
+    ----------
+    matrix : ndarray or pd.DataFrame
+        Correlation matrix.        
+
+    Returns
+    -------
+    pdf : tuple (float, float)
+       First value are the eigenvalues of correlation matrix and second are 
+       the Eigenvectors of correlation matrix.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.    
+    """
+    
+    # Get eVal,eVec from a Hermitian matrix
+    eVal, eVec = np.linalg.eigh(matrix)
+    indices = eVal.argsort()[::-1]  # arguments for sorting eVal desc
+    eVal, eVec = eVal[indices], eVec[:, indices]
+    eVal = np.diagflat(eVal)
+    
+    return eVal, eVec
+
+
+def denoisedCorr(eVal, eVec, nFacts, kind='fixed'):
+    r"""
+    Remove noise from correlation matrix using fixing random eigenvalues and 
+    spectral method. For more information see chapter 2 of :cite:`d-MLforAM`.
+        
+    Parameters
+    ----------
+    eVal : 1darray
+        Eigenvalues.
+    eVal : ndarray
+        Eigenvectors.  
+    nFacts : float
+        The number of factors.
+    kind : str, optional
+        The denoise method. The default value is 'fixed'. Posible values are:
+            
+        - 'fixed': takes average of eigenvalues above max Marchenko Pastour limit.
+        - 'spectral': makes zero eigenvalues above max Marchenko Pastour limit.
+
+    Returns
+    -------
+    corr : ndarray
+       Denoised correlation matrix.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.    
+    """
+
+    eVal_ = np.diag(eVal).copy()
+    
+    if kind == 'fixed':
+        eVal_[nFacts:] = eVal_[nFacts:].sum()/float(eVal_.shape[0]-nFacts)
+    elif kind == 'spectral':
+        eVal_[nFacts:] = 0
+    
+    eVal_ = np.diag(eVal_)
+    corr = np.dot(eVec, eVal_).dot(eVec.T)
+    corr = cov2corr(corr)
+    
+    return corr
+
+
+def shrinkCorr(eVal, eVec, nFacts, alpha=0):
+    r"""
+    Remove noise from correlation using target shrinkage. For more information
+    see chapter 2 of :cite:`d-MLforAM`.
+        
+    Parameters
+    ----------
+    eVal : 1darray
+        Eigenvalues.
+    eVal : ndarray
+        Eigenvectors.  
+    nFacts : float
+        The number of factors.
+    alpha : float, optional
+        Shrinkage factor.
+        
+    Returns
+    -------
+    corr : ndarray
+       Denoised correlation matrix.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.    
+    """
+
+    eVal_L = eVal[:nFacts,:nFacts]
+    eVec_L = eVec[:,:nFacts]
+    eVal_R = eVal[nFacts:,nFacts:]
+    eVec_R = eVec[:,nFacts:]
+    corr0 = np.dot(eVec_L,eVal_L).dot(eVec_L.T)
+    corr1 = np.dot(eVec_R,eVal_R).dot(eVec_R.T) 
+    corr2 = corr0 + alpha * corr1 + (1-alpha) * np.diag(np.diag(corr1))
+    
+    return corr2
+
+
+def denoiseCov(cov, q, kind='fixed', bWidth=0.01, detone=False, mkt_comp=1, alpha=0):
+    r"""
+    Remove noise from cov by fixing random eigenvalues of their correlation
+    matrix. For more information see chapter 2 of :cite:`d-MLforAM`.
+        
+    Parameters
+    ----------
+    cov : ndarray or pd.DataFrame
+        Covariance matrix of shape n_features x n_features, where
+        n_features is the number of features.       
+    q : float
+        T/N where T is the number of rows and N the number of columns.
+    bWidth : float
+        The bandwidth of the kernel.
+    kind : str, optional
+        The denoise method. The default value is 'fixed'. Posible values are:
+            
+        - 'fixed': takes average of eigenvalues above max Marchenko Pastour limit.
+        - 'spectral': makes zero eigenvalues above max Marchenko Pastour limit.
+        - 'shrink': uses target shrinkage method.
+    
+    detone : bool, optional
+        If remove the firs mkt_comp of correlation matrix. The detone correlation
+        matrix is singular, so it cannot be inverted.
+    mkt_comp : float, optional
+        Number of first components that will be removed using the detone method.
+    alpha : float, optional
+        Shrinkage factor.
+    
+    Returns
+    -------
+    cov_ : ndarray or pd.DataFrame
+       Denoised covariance matrix.
+ 
+    Raises
+    ------
+        ValueError when the value cannot be calculated.    
+    """
+
+    flag = False
+    if isinstance(cov, pd.DataFrame):
+        cols = cov.columns.tolist()
+        flag = True
+    
+    corr = cov2corr(cov)
+    std = np.diag(cov)**0.5
+    eVal, eVec = getPCA(corr)
+    eMax, var = findMaxEval(np.diag(eVal), q, bWidth)
+    nFacts = eVal.shape[0] - np.diag(eVal)[::-1].searchsorted(eMax)
+
+    if kind in ['fixed', 'spectral']:
+        corr = denoisedCorr(eVal, eVec, nFacts, kind=kind)
+    elif kind == 'shrink':
+        corr = shrinkCorr(eVal, eVec, nFacts, alpha=alpha)
+
+    if detone == True:
+        eVal_ = eVal[:mkt_comp, :mkt_comp]
+        eVec_ = eVec[:, :mkt_comp]
+        corr_ = np.dot(eVec_, eVal_).dot(eVec_.T)
+        corr = corr - corr_
+        
+    cov_ = corr2cov(corr, std)
+
+    if flag:
+        cov_ = pd.DataFrame(cov_, index=cols, columns=cols)    
+
+    return cov_
+
 
 ###############################################################################
 # Other Aditional Functions
@@ -668,7 +1055,7 @@ def two_diff_gap_stat(codep, dist, clusters, max_k=10):
 
 
 def round_values(data, decimals=4, wider=False):
-    """
+    r"""
     This function help us to round values to values close or away from zero.
 
     Parameters
@@ -717,7 +1104,7 @@ def round_values(data, decimals=4, wider=False):
 def weights_discretizetion(
     weights, prices, capital=1000000, w_decimal=6, ascending=False
 ):
-    """
+    r"""
     This function help us to find the number of shares that must be bought or
     sold to achieve portfolio weights according the prices of assets and the
     invested capital.

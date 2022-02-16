@@ -50,47 +50,85 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Maximum Utility Function.
     - Maximum Risk Adjusted Return Ratio.
 
-- Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 13 convex risk measures:
+- Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 18 convex risk measures:
+
+    **Dispersion Risk Measures:**
 
     - Standard Deviation.
-    - Semi Standard Deviation.
     - Mean Absolute Deviation (MAD).
+    - Gini Mean Difference (GMD).
+    - Range.
+    - Conditional Value at Risk Range.
+    - Tail Gini Range.
+
+    **Downside Risk Measures:**
+
+    - Semi Standard Deviation.
     - First Lower Partial Moment (Omega Ratio).
     - Second Lower Partial Moment (Sortino Ratio).
     - Conditional Value at Risk (CVaR).
+    - Tail Gini.
     - Entropic Value at Risk (EVaR).
-    - Worst Case Realization (Minimax Model)
+    - Worst Case Realization (Minimax).
+
+    **Drawdown Risk Measures:**
+
     - Maximum Drawdown (Calmar Ratio) for uncompounded cumulative returns.
     - Average Drawdown for uncompounded cumulative returns.
     - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
     - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
     - Ulcer Index for uncompounded cumulative returns.
 
-- Risk Parity Portfolio Optimization with 10 convex risk measures:
+- Risk Parity Portfolio Optimization with 14 convex risk measures:
+
+    **Dispersion Risk Measures:**
 
     - Standard Deviation.
-    - Semi Standard Deviation.
     - Mean Absolute Deviation (MAD).
+    - Gini Mean Difference (GMD).
+    - Conditional Value at Risk Range.
+    - Tail Gini Range.
+
+    **Downside Risk Measures:**
+
+    - Semi Standard Deviation.
     - First Lower Partial Moment (Omega Ratio)
     - Second Lower Partial Moment (Sortino Ratio)
     - Conditional Value at Risk (CVaR).
+    - Tail Gini.
     - Entropic Value at Risk (EVaR).
+
+    **Drawdown Risk Measures:**
+
     - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
     - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
     - Ulcer Index for uncompounded cumulative returns.
 
-- Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 22 risk measures using naive risk parity:
+- Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 27 risk measures using naive risk parity:
+
+    **Dispersion Risk Measures:**
 
     - Standard Deviation.
     - Variance.
-    - Semi Standard Deviation.
     - Mean Absolute Deviation (MAD).
+    - Gini Mean Difference (GMD).
+    - Range.
+    - Conditional Value at Risk Range.
+    - Tail Gini Range.
+
+    **Downside Risk Measures:**
+
+    - Semi Standard Deviation.
     - First Lower Partial Moment (Omega Ratio).
     - Second Lower Partial Moment (Sortino Ratio).
     - Value at Risk (VaR).
     - Conditional Value at Risk (CVaR).
     - Entropic Value at Risk (EVaR).
-    - Worst Case Realization (Minimax Model).
+    - Tail Gini.
+    - Worst Case Realization (Minimax).
+
+    **Drawdown Risk Measures:**
+
     - Maximum Drawdown (Calmar Ratio) for compounded and uncompounded cumulative returns.
     - Average Drawdown for compounded and uncompounded cumulative returns.
     - Drawdown at Risk (DaR) for compounded and uncompounded cumulative returns.
@@ -107,6 +145,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 
 - Worst Case Mean Variance Portfolio Optimization.
 - Relaxed Risk Parity Portfolio Optimization.
+- Ordered Weighted Averaging (OWA) Portfolio Optimization.
 - Portfolio optimization with Black Litterman model.
 - Portfolio optimization with Risk Factors model.
 - Portfolio optimization with Black Litterman Bayesian model.
@@ -114,7 +153,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 - Portfolio optimization with constraints on tracking error and turnover.
 - Portfolio optimization with short positions and leveraged portfolios.
 - Portfolio optimization with constraints on number of assets and number of effective assets.
-- Tools to build efficient frontier for 13 risk measures.
+- Tools to build efficient frontier for 18 risk measures.
 - Tools to build linear constraints on assets, asset classes and risk factors.
 - Tools to build views on assets and asset classes.
 - Tools to build views on risk factors.
@@ -136,8 +175,8 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 
     @misc{riskfolio,
           author = {Dany Cajas},
-          title = {Riskfolio-Lib (2.0.0)},
-          year  = {2021},
+          title = {Riskfolio-Lib (3.0.0)},
+          year  = {2022},
           url   = {https://github.com/dcajasn/Riskfolio-Lib},
           }
 
@@ -166,9 +205,9 @@ Contents
 Indices and tables
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+- :ref:`genindex`
+- :ref:`modindex`
+- :ref:`search`
 
 
 Module Plans
@@ -177,4 +216,4 @@ Module Plans
 The plan for this library is to add more functions that will be very useful
 for students, academics and practitioners.
 
-* Add more functions based on suggestion of users.
+- Add more functions based on suggestion of users.

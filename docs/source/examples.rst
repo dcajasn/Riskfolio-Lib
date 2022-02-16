@@ -18,6 +18,10 @@ Return Risk Portfolio Optimization Models
 * `Entropic Drawdown at Risk (EDaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2019.ipynb>`_.
 * `Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2022.ipynb>`_.
 * `Worst Case Mean Variance Portfolio Optimization using box and elliptical uncertainty sets <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2012.ipynb>`_.
+* `Comparing Covariance Estimators Methods <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2034.ipynb>`_.
+* `Gini Mean Difference (GMD) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2035.ipynb>`_.
+* `Tail Gini Range Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2036.ipynb>`_.
+* `Ordered Weighted Averaging (OWA) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2037.ipynb>`_.
 
 
 Special Constraints

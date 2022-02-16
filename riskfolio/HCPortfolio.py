@@ -28,7 +28,16 @@ class HCPortfolio(object):
         A dataframe that containts the returns of the assets.
         The default is None.
     alpha : float, optional
-        Significance level of CVaR, EVaR, CDaR and EDaR. The default is 0.05.
+        Significance level of VaR, CVaR, EDaR, DaR, CDaR, EDaR, Tail Gini of losses.
+        The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
     w_max : Series, optional
         Upper bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
     w_min : Series, optional
@@ -39,6 +48,9 @@ class HCPortfolio(object):
         self,
         returns=None,
         alpha=0.05,
+        a_sim=100,
+        beta=None,
+        b_sim=None,
         w_max=None,
         w_min=None,
         alpha_tail=0.05,
@@ -46,6 +58,9 @@ class HCPortfolio(object):
     ):
         self._returns = returns
         self.alpha = alpha
+        self.a_sim = a_sim
+        self.beta = beta
+        self.b_sim = b_sim
         self.alpha_tail = alpha_tail
         self.bins_info = bins_info
         self.asset_order = None
@@ -92,11 +107,11 @@ class HCPortfolio(object):
                 w = pd.DataFrame(w, columns=["weights"], index=assets)
                 if rm == "vol":
                     risk = rk.Sharpe_Risk(
-                        w, cov=cov, returns=returns, rm="MV", rf=rf, alpha=self.alpha
+                        w, cov=cov, returns=returns, rm="MV", rf=rf, alpha=self.alpha, a_sim=self.a_sim, beta=self.beta, b_sim=self.b_sim
                     )
                 else:
                     risk = rk.Sharpe_Risk(
-                        w, cov=cov, returns=returns, rm=rm, rf=rf, alpha=self.alpha
+                        w, cov=cov, returns=returns, rm=rm, rf=rf, alpha=self.alpha, a_sim=self.a_sim, beta=self.beta, b_sim=self.b_sim
                     )
                 inv_risk[k, 0] = risk
 
@@ -235,6 +250,9 @@ class HCPortfolio(object):
                         rm="MV",
                         rf=rf,
                         alpha=self.alpha,
+                        a_sim=self.a_sim,
+                        beta=self.beta,
+                        b_sim=self.b_sim
                     )
                 else:
                     left_risk = rk.Sharpe_Risk(
@@ -244,6 +262,9 @@ class HCPortfolio(object):
                         rm=rm,
                         rf=rf,
                         alpha=self.alpha,
+                        a_sim=self.a_sim,
+                        beta=self.beta,
+                        b_sim=self.b_sim
                     )
                     if rm == "MV":
                         left_risk = np.power(left_risk, 2)
@@ -261,6 +282,9 @@ class HCPortfolio(object):
                         rm="MV",
                         rf=rf,
                         alpha=self.alpha,
+                        a_sim=self.a_sim,
+                        beta=self.beta,
+                        b_sim=self.b_sim
                     )
                 else:
                     right_risk = rk.Sharpe_Risk(
@@ -270,6 +294,9 @@ class HCPortfolio(object):
                         rm=rm,
                         rf=rf,
                         alpha=self.alpha,
+                        a_sim=self.a_sim,
+                        beta=self.beta,
+                        b_sim=self.b_sim
                     )
                     if rm == "MV":
                         right_risk = np.power(right_risk, 2)
@@ -357,6 +384,9 @@ class HCPortfolio(object):
                                     rm="MV",
                                     rf=rf,
                                     alpha=self.alpha,
+                                    a_sim=self.a_sim,
+                                    beta=self.beta,
+                                    b_sim=self.b_sim
                                 )
                             else:
                                 left_risk_ = rk.Sharpe_Risk(
@@ -366,6 +396,9 @@ class HCPortfolio(object):
                                     rm=rm,
                                     rf=rf,
                                     alpha=self.alpha,
+                                    a_sim=self.a_sim,
+                                    beta=self.beta,
+                                    b_sim=self.b_sim
                                 )
                                 if rm == "MV":
                                     left_risk_ = np.power(left_risk_, 2)
@@ -388,6 +421,9 @@ class HCPortfolio(object):
                                     rm="MV",
                                     rf=rf,
                                     alpha=self.alpha,
+                                    a_sim=self.a_sim,
+                                    beta=self.beta,
+                                    b_sim=self.b_sim
                                 )
                             else:
                                 right_risk_ = rk.Sharpe_Risk(
@@ -397,6 +433,9 @@ class HCPortfolio(object):
                                     rm=rm,
                                     rf=rf,
                                     alpha=self.alpha,
+                                    a_sim=self.a_sim,
+                                    beta=self.beta,
+                                    b_sim=self.b_sim
                                 )
                                 if rm == "MV":
                                     right_risk_ = np.power(right_risk_, 2)
@@ -509,6 +548,7 @@ class HCPortfolio(object):
         alpha_tail=0.05,
         leaf_order=True,
         d=0.94,
+        **kwargs,
     ):
         r"""
         This method calculates the optimal portfolio according to the
@@ -525,7 +565,7 @@ class HCPortfolio(object):
             - 'HERC2': HERC but splitting weights equally within clusters.
             - 'NCO': Nested Clustered Optimization.
 
-        codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+        codependence : str, optional
             The codependence or similarity matrix used to build the distance
             metric and clusters. The default is 'pearson'. Posible values are:
 
@@ -538,18 +578,23 @@ class HCPortfolio(object):
             - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
             - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
 
-        covariance : str, can be {'hist', 'ewma1', 'ewma2', 'ledoit', 'oas', 'shrunk' or 'custom_cov'}
+        covariance : str, optional
             The method used to estimate the covariance matrix:
-            The default is 'hist'.
-
+            The default is 'hist'. Posible values are:
+    
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
+            - 'gl': use the basic Graphical Lasso Covariance method.
+            - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`c-jLogo`.
+            - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`c-MLforAM`.
+            - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`c-MLforAM`.
+            - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`c-MLforAM`.
             - 'custom_cov': use custom covariance matrix.
-
+        
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'ERC'}.
             Objective function used by the NCO model.
             The default is 'MinRisk'. Posible values are:
@@ -573,8 +618,12 @@ class HCPortfolio(object):
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'VaR': Value at Risk.
             - 'CVaR': Conditional Value at Risk.
+            - 'TG': Tail Gini.
             - 'EVaR': Entropic Value at Risk.
-            - 'WR': Worst Realization (Minimax)
+            - 'WR': Worst Realization (Minimax).
+            - 'RG': Range of returns.
+            - 'CVRG': CVaR range of returns.
+            - 'TGRG': Tail Gini range of returns.
             - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
             - 'ADD': Average Drawdown of uncompounded cumulative returns.
             - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -638,7 +687,11 @@ class HCPortfolio(object):
         d : scalar
             The smoothing factor of ewma methods.
             The default is 0.94.
-
+        **kwargs:
+            Other variables related to covariance estimation. See
+            `Scikit Learn <https://scikit-learn.org/stable/modules/covariance.html>`_
+            and chapter 2 of :cite:`d-MLforAM` for more details. 
+        
         Returns
         -------
         w : DataFrame
@@ -650,7 +703,7 @@ class HCPortfolio(object):
         if covariance == 'custom_cov':
             self.cov = custom_cov.copy()
         else:
-            self.cov = pe.covar_matrix(self.returns, method=covariance, d=0.94)
+            self.cov = pe.covar_matrix(self.returns, method=covariance, d=0.94, **kwargs)
         
         # Custom mean vector
         if custom_mu is not None:
@@ -687,7 +740,7 @@ class HCPortfolio(object):
                 float
             )
         elif codependence in {"custom_cov"}:
-            self.codep = af.correl_matrix(custom_cov).astype(float)
+            self.codep = af.cov2corr(custom_cov).astype(float)
 
         # Step-1: Tree clustering
         self.clusters, self.k = self._hierarchical_clustering(
