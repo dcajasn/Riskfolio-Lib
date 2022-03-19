@@ -15,6 +15,7 @@
 [![GitHub license](https://img.shields.io/github/license/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD)
 
+[![Star History Chart](https://api.star-history.com/svg?repos=dcajasn/Riskfolio-Lib&type=Timeline)](https://star-history.com/#dcajasn/Riskfolio-Lib&Timeline)
 
 ## Description
 
@@ -42,7 +43,8 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Range.
     - Conditional Value at Risk Range.
     - Tail Gini Range.
-
+    &nbsp;
+    
     **Downside Risk Measures:**
 
     - Semi Standard Deviation.
@@ -52,7 +54,8 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Tail Gini.
     - Entropic Value at Risk (EVaR).
     - Worst Case Realization (Minimax).
-
+    &nbsp;
+    
     **Drawdown Risk Measures:**
 
     - Maximum Drawdown (Calmar Ratio) for uncompounded cumulative returns.
@@ -70,7 +73,8 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Gini Mean Difference (GMD).
     - Conditional Value at Risk Range.
     - Tail Gini Range.
-
+    &nbsp;
+    
     **Downside Risk Measures:**
 
     - Semi Standard Deviation.
@@ -79,7 +83,8 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Conditional Value at Risk (CVaR).
     - Tail Gini.
     - Entropic Value at Risk (EVaR).
-
+    &nbsp;
+    
     **Drawdown Risk Measures:**
 
     - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
@@ -96,7 +101,8 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Range.
     - Conditional Value at Risk Range.
     - Tail Gini Range.
-
+    &nbsp;
+    
     **Downside Risk Measures:**
 
     - Semi Standard Deviation.
@@ -107,7 +113,8 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Entropic Value at Risk (EVaR).
     - Tail Gini.
     - Worst Case Realization (Minimax).
-
+    &nbsp;
+    
     **Drawdown Risk Measures:**
 
     - Maximum Drawdown (Calmar Ratio) for compounded and uncompounded cumulative returns.

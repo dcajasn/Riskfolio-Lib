@@ -56,7 +56,15 @@ class Portfolio(object):
         A dataframe that containts the loadings matrix.
         The default is None.
     alpha : float, optional
-        Significance level of CVaR and CDaR. The default is 0.05.
+        Significance level of CVaR, EVaR, CDaR, EDaR and Tail Gini of losses. The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
     kindbench : bool, optional
         True if the benchmark is a portfolio with detailed weights and False if
         the benchmark is an index. The default is True.
@@ -3254,7 +3262,8 @@ class Portfolio(object):
         risk_names = [
             "MV",
             "MAD",
-            "GMD" "MSV",
+            "GMD",
+            "MSV",
             "CVaR",
             "TG",
             "EVaR",

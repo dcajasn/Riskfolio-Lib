@@ -28,7 +28,7 @@ class HCPortfolio(object):
         A dataframe that containts the returns of the assets.
         The default is None.
     alpha : float, optional
-        Significance level of VaR, CVaR, EDaR, DaR, CDaR, EDaR, Tail Gini of losses.
+        Significance level of VaR, CVaR, EVaR, DaR, CDaR, EDaR and Tail Gini of losses.
         The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
