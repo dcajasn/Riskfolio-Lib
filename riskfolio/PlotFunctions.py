@@ -11,7 +11,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.lines as mlines
+import matplotlib.ticker as mticker
 from matplotlib import cm
+from matplotlib.gridspec import GridSpec
 from matplotlib.patches import Patch
 import scipy.stats as st
 import scipy.cluster.hierarchy as hr
@@ -1271,8 +1273,6 @@ def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax
         + "$%",
     )
 
-    ax.plot([], [], " ", label=label[8])
-
     factor = (np.max(a) - np.min(a)) / bins
 
     ax.xaxis.set_major_locator(plt.AutoLocator())
@@ -1516,8 +1516,8 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
 
     Returns
     -------
-    ax : matplotlib axis.
-        Returns the Axes object with the plot for further tweaking.
+    ax : np.array
+        Returns the a np.array with Axes objects with plots for further tweaking.
 
     Example
     -------
@@ -1551,18 +1551,32 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
     if ax is None:
         fig = plt.gcf()
         ax = fig.subplots(nrows=2, ncols=1)
-        ax = ax.flatten()
+        ax = np.ravel(ax)
         fig.set_figwidth(width)
         fig.set_figheight(height)
     else:
-        fig = ax.get_figure()
+        if isinstance(ax, plt.Axes):
+            fig = ax.get_figure()
+            gs = GridSpec(2, 1, figure=fig)
+            ax.set_position(gs[0].get_position(fig))
+            ax.set_subplotspec(gs[0])
+            fig.add_subplot(gs[1])
+            ax = fig.axes
+        elif (
+            len(np.ravel(ax)) > 2
+            or not isinstance(ax[0], plt.Axes)
+            or not isinstance(ax[1], plt.Axes)
+        ):
+            print("ax must be an array with two Axes or a subplot with 2 rows")
+            return
+        ax = np.ravel(ax)
+        fig = ax[0].get_figure()
 
     index = nav.index.tolist()
-
-    a = np.array(nav, ndmin=2)
+    a = nav.to_numpy()
     a = np.insert(a, 0, 0, axis=0)
     a = np.diff(a, axis=0)
-    a = np.array(a, ndmin=2) @ np.array(w, ndmin=2)
+    a = a @ w.to_numpy()
     prices = 1 + np.insert(a, 0, 0, axis=0)
     prices = np.cumprod(prices, axis=0)
     prices = np.ravel(prices).tolist()
@@ -1609,6 +1623,8 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
 
     ymin = np.min(DD) * 1.5
 
+    locator = mdates.AutoDateLocator(minticks=5, maxticks=10)
+    formatter = mdates.DateFormatter("%Y-%m")
     for i in ax:
         i.clear()
         i.plot_date(index, data[j], "-", color=color1[j])
@@ -1619,10 +1635,8 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
             i.set_ylim(ymin, 0)
             i.legend(loc="lower right")  # , fontsize = 'x-small')
         i.set_title(titles[j])
-        i.xaxis.set_major_locator(
-            mdates.AutoDateLocator(tz=None, minticks=5, maxticks=10)
-        )
-        i.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+        i.xaxis.set_major_locator(locator)
+        i.xaxis.set_major_formatter(formatter)
         ticks_loc = i.get_yticks().tolist()
         i.set_yticks(i.get_yticks())
         i.set_yticklabels(["{:3.2%}".format(x) for x in ticks_loc])
@@ -2014,6 +2028,8 @@ def plot_clusters(
         fig.set_figheight(height)
     else:
         fig = ax.get_figure()
+        ax.grid(False)
+        ax.axis("off")
 
     labels = np.array(returns.columns.tolist())
 
@@ -2131,6 +2147,7 @@ def plot_clusters(
             ax=ax1,
         )
         hr.set_link_color_palette(None)
+        ax1.xaxis.set_major_locator(mticker.FixedLocator(np.arange(codep.shape[0])))
         ax1.set_xticklabels(labels[permutation], rotation=90, ha="center")
 
         i = 0
@@ -2171,6 +2188,8 @@ def plot_clusters(
             ax=ax2,
         )
         hr.set_link_color_palette(None)
+
+        ax2.xaxis.set_major_locator(mticker.FixedLocator(np.arange(codep.shape[0])))
         ax2.set_xticklabels(labels[permutation], rotation=90, ha="center")
 
         i = 0
@@ -2398,6 +2417,7 @@ def plot_dendrogram(
     )
     hr.set_link_color_palette(None)
 
+    ax.xaxis.set_major_locator(mticker.FixedLocator(np.arange(codep.shape[0])))
     ax.set_xticklabels(labels[permutation], rotation=90, ha="center")
 
     i = 0
