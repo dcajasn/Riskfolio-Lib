@@ -361,13 +361,13 @@ def numBins(n_samples, corr=None):
     # univariate case
     if corr is None:
         z = (
-            8 + 324 * n_samples + 12 * (36 * n_samples + 729 * n_samples ** 2) ** 0.5
+            8 + 324 * n_samples + 12 * (36 * n_samples + 729 * n_samples**2) ** 0.5
         ) ** (1 / 3)
         b = np.round(z / 6 + 2 / (3 * z) + 1 / 3)
     # bivariate case
     else:
         b = np.round(
-            2 ** -0.5 * (1 + (1 + 24 * n_samples / (1 - corr ** 2)) ** 0.5) ** 0.5
+            2**-0.5 * (1 + (1 + 24 * n_samples / (1 - corr**2)) ** 0.5) ** 0.5
         )
 
     bins = np.int32(b)
@@ -1087,14 +1087,14 @@ def round_values(data, decimals=4, wider=False):
     if wider == True:
         value = np.where(
             data >= 0,
-            np.ceil(data * 10 ** decimals) / 10 ** decimals,
-            np.floor(data * 10 ** decimals) / 10 ** decimals,
+            np.ceil(data * 10**decimals) / 10**decimals,
+            np.floor(data * 10**decimals) / 10**decimals,
         )
     elif wider == False:
         value = np.where(
             data >= 0,
-            np.floor(data * 10 ** decimals) / 10 ** decimals,
-            np.ceil(data * 10 ** decimals) / 10 ** decimals,
+            np.floor(data * 10**decimals) / 10**decimals,
+            np.ceil(data * 10**decimals) / 10**decimals,
         )
 
     if isinstance(data, pd.DataFrame):

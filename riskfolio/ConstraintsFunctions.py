@@ -786,7 +786,7 @@ def assets_clusters(
         # different choices for D, S give different outputs!
         D = dist.to_numpy()  # dissimilatity matrix
         if codependence in {"pearson", "spearman"}:
-            S = (1 - dist ** 2).to_numpy()
+            S = (1 - dist**2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix
         (_, _, _, _, _, clustering) = db.DBHTs(

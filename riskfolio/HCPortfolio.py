@@ -194,7 +194,7 @@ class HCPortfolio(object):
             # different choices for D, S give different outputs!
             D = dist.to_numpy()  # dissimilatity matrix
             if codependence in {"pearson", "spearman", "custom_cov"}:
-                codep = 1 - dist ** 2
+                codep = 1 - dist**2
                 S = codep.to_numpy()  # similarity matrix
             else:
                 S = self.codep.to_numpy()  # similarity matrix
@@ -586,8 +586,8 @@ class HCPortfolio(object):
             The default is 'hist'. Posible values are:
 
             - 'hist': use historical estimates.
-            - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
-            - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+            - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
             - 'ledoit': use the Ledoit and Wolf Shrinkage method.
             - 'oas': use the Oracle Approximation Shrinkage method.
             - 'shrunk': use the basic Shrunk Covariance method.
@@ -653,7 +653,7 @@ class HCPortfolio(object):
             Custom mean vector when NCO objective is 'Utility' or 'Sharpe'.
             The default is None.
         linkage : string, optional
-            Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+            Linkage method of hierarchical clustering. For more information see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html>`_.
             The default is 'single'. Posible values are:
 
             - 'single'.

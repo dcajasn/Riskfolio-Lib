@@ -410,7 +410,7 @@ def plot_frontier(
         ret = ret.item() * t_factor
 
         if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
-            risk = risk * t_factor ** 0.5
+            risk = risk * t_factor**0.5
 
         ratio = (ret - rf) / risk
 
@@ -443,12 +443,12 @@ def plot_frontier(
             ret = ret.item() * t_factor
 
             if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
-                risk = risk * t_factor ** 0.5
+                risk = risk * t_factor**0.5
 
             X2.append(risk)
             Y2.append(ret)
 
-        ax.scatter(X2, Y2, marker=marker, s=s ** 2, c=c, label=label)
+        ax.scatter(X2, Y2, marker=marker, s=s**2, c=c, label=label)
         ax.legend(loc="upper left")
 
     xmin = np.min(X1) - np.abs(np.max(X1) - np.min(X1)) * 0.1
@@ -1109,7 +1109,7 @@ def plot_risk_con(
     )
 
     if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
-        RC = RC * t_factor ** 0.5
+        RC = RC * t_factor**0.5
 
     ax.bar(X, RC, alpha=0.7, color=color, edgecolor="black")
 
@@ -1790,15 +1790,15 @@ def plot_table(
         alpha,
         "",
         "",
-        np.sqrt(w.T @ cov @ w).to_numpy().item() * t_factor ** 0.5,
-        rk.MAD(X) * t_factor ** 0.5,
-        rk.SemiDeviation(X) * t_factor ** 0.5,
-        rk.LPM(X, MAR=MAR, p=1) * t_factor ** 0.5,
-        rk.LPM(X, MAR=MAR, p=2) * t_factor ** 0.5,
-        rk.VaR_Hist(X, alpha=alpha) * t_factor ** 0.5,
-        rk.CVaR_Hist(X, alpha=alpha) * t_factor ** 0.5,
-        rk.EVaR_Hist(X, alpha=alpha)[0] * t_factor ** 0.5,
-        rk.WR(X) * t_factor ** 0.5,
+        np.sqrt(w.T @ cov @ w).to_numpy().item() * t_factor**0.5,
+        rk.MAD(X) * t_factor**0.5,
+        rk.SemiDeviation(X) * t_factor**0.5,
+        rk.LPM(X, MAR=MAR, p=1) * t_factor**0.5,
+        rk.LPM(X, MAR=MAR, p=2) * t_factor**0.5,
+        rk.VaR_Hist(X, alpha=alpha) * t_factor**0.5,
+        rk.CVaR_Hist(X, alpha=alpha) * t_factor**0.5,
+        rk.EVaR_Hist(X, alpha=alpha)[0] * t_factor**0.5,
+        rk.WR(X) * t_factor**0.5,
         st.skew(X, bias=False),
         st.kurtosis(X, bias=False),
         "",
@@ -2063,7 +2063,7 @@ def plot_clusters(
         # different choices for D, S give different outputs!
         D = dist.to_numpy()  # dissimilatity matrix
         if codependence in {"pearson", "spearman", "custom_cov"}:
-            S = (1 - dist ** 2).to_numpy()
+            S = (1 - dist**2).to_numpy()
         else:
             S = codep.to_numpy()  # similarity matrix
         (_, _, _, _, _, clustering) = db.DBHTs(
@@ -2385,7 +2385,7 @@ def plot_dendrogram(
         # different choices for D, S give different outputs!
         D = dist.to_numpy()  # dissimilatity matrix
         if codependence in {"pearson", "spearman", "custom_cov"}:
-            S = (1 - dist ** 2).to_numpy()
+            S = (1 - dist**2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix
         (_, _, _, _, _, clustering) = db.DBHTs(
@@ -2637,7 +2637,7 @@ def plot_network(
         # different choices for D, S give different outputs!
         D = dist.to_numpy()  # dissimilatity matrix
         if codependence in {"pearson", "spearman", "custom_cov"}:
-            S = (1 - dist ** 2).to_numpy()
+            S = (1 - dist**2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix
         (_, Rpm, _, _, _, clustering) = db.DBHTs(

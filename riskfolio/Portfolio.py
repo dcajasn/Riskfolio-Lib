@@ -934,8 +934,8 @@ class Portfolio(object):
             d_mu = (mu_u - mu_l) / 2
         elif box == "n":
             # Defining confidence level of mean vector assuming normal returns
-            mu_u = mu + st.norm.ppf(1 - q / 2) * np.diag(cov) / n ** 2
-            mu_l = mu - st.norm.ppf(1 - q / 2) * np.diag(cov) / n ** 2
+            mu_u = mu + st.norm.ppf(1 - q / 2) * np.diag(cov) / n**2
+            mu_l = mu - st.norm.ppf(1 - q / 2) * np.diag(cov) / n**2
             d_mu = (mu_u - mu_l) / 2
             d_mu = pd.DataFrame(d_mu, index=[0], columns=cols)
 
@@ -1150,7 +1150,7 @@ class Portfolio(object):
 
         g = cv.Variable(nonneg=True)
         G = sqrtm(sigma)
-        risk1 = g ** 2
+        risk1 = g**2
         devconstraints = [cv.SOC(g, G.T @ w)]
 
         # Return Variables
@@ -1165,7 +1165,7 @@ class Portfolio(object):
                 if obj == "Sharpe":
                     ret = mu @ w - 0.5 * cv.quad_over_lin(g, k)
                 else:
-                    ret = mu @ w - 0.5 * g ** 2
+                    ret = mu @ w - 0.5 * g**2
             elif kelly == False:
                 ret = mu @ w
         else:
@@ -1310,11 +1310,9 @@ class Portfolio(object):
         risk14 = cv.sum(a1 + b1)
 
         owaconstraints = [returns @ w == y]
-        gmdconstraints = []
         gmd_w = owa.owa_gmd(n) / 2
-
-        for i in range(n):
-            gmdconstraints += [a1[i] + b1 >= cv.multiply(gmd_w[i], y)]
+        onesvec = np.ones((n, 1))
+        gmdconstraints = [y @ gmd_w.T <= onesvec @ a1.T + b1 @ onesvec.T]
 
         # Tail Gini Model Variables
 
@@ -1323,11 +1321,8 @@ class Portfolio(object):
         risk15 = cv.sum(a2 + b2)
         a_sim = self.a_sim
 
-        tgconstraints = []
         tg_w = owa.owa_tg(n, alpha=alpha)
-
-        for i in range(n):
-            tgconstraints += [a2[i] + b2 >= cv.multiply(tg_w[i], y)]
+        tgconstraints = [y @ tg_w.T <= onesvec @ a2.T + b2 @ onesvec.T]
 
         # Range Model Variables
 
@@ -1335,11 +1330,8 @@ class Portfolio(object):
         b3 = cv.Variable((n, 1))
         risk16 = cv.sum(a3 + b3)
 
-        rgconstraints = []
         rg_w = owa.owa_rg(n)
-
-        for i in range(n):
-            rgconstraints += [a3[i] + b3 >= cv.multiply(rg_w[i], y)]
+        rgconstraints = [y @ rg_w.T <= onesvec @ a3.T + b3 @ onesvec.T]
 
         # CVaR Range Model Variables
 
@@ -1352,11 +1344,8 @@ class Portfolio(object):
         else:
             beta = self.beta
 
-        cvrgconstraints = []
         cvrg_w = owa.owa_cvrg(n, alpha=alpha, beta=beta)
-
-        for i in range(n):
-            cvrgconstraints += [a4[i] + b4 >= cv.multiply(cvrg_w[i], y)]
+        cvrgconstraints = [y @ cvrg_w.T <= onesvec @ a4.T + b4 @ onesvec.T]
 
         # Tail Gini Range Model Variables
 
@@ -1369,11 +1358,8 @@ class Portfolio(object):
         else:
             b_sim = self.b_sim
 
-        tgrgconstraints = []
         tgrg_w = owa.owa_tgrg(n, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
-
-        for i in range(n):
-            tgrgconstraints += [a5[i] + b5 >= cv.multiply(tgrg_w[i], y)]
+        tgrgconstraints = [y @ tgrg_w.T <= onesvec @ a5.T + b5 @ onesvec.T]
 
         # Cardinal Boolean Variables
 
@@ -1451,9 +1437,9 @@ class Portfolio(object):
 
         if self.nea is not None:
             if obj == "Sharpe":
-                constraints += [cv.norm(w, "fro") <= 1 / self.nea ** 0.5 * k]
+                constraints += [cv.norm(w, "fro") <= 1 / self.nea**0.5 * k]
             else:
-                constraints += [cv.norm(w, "fro") <= 1 / self.nea ** 0.5]
+                constraints += [cv.norm(w, "fro") <= 1 / self.nea**0.5]
 
         # Tracking Error Model Variables
 
@@ -1914,7 +1900,7 @@ class Portfolio(object):
 
         g = cv.Variable(nonneg=True)
         G = sqrtm(sigma)
-        risk1 = g ** 2
+        risk1 = g**2
         devconstraints = [cv.SOC(g, G.T @ w)]
 
         # MAD Model Variables
@@ -2013,11 +1999,10 @@ class Portfolio(object):
         risk14 = cv.sum(a1 + b1)
 
         owaconstraints = [returns @ w == y]
-        gmdconstraints = []
         gmd_w = owa.owa_gmd(n) / 2
 
-        for i in range(n):
-            gmdconstraints += [a1[i] + b1 >= cv.multiply(gmd_w[i], y)]
+        onesvec = np.ones((n, 1))
+        gmdconstraints = [y @ gmd_w.T <= onesvec @ a1.T + b1 @ onesvec.T]
 
         # Tail Gini Model Variables
 
@@ -2026,11 +2011,8 @@ class Portfolio(object):
         risk15 = cv.sum(a2 + b2)
         a_sim = self.a_sim
 
-        tgconstraints = []
         tg_w = owa.owa_tg(n, alpha=alpha, a_sim=a_sim)
-
-        for i in range(n):
-            tgconstraints += [a2[i] + b2 >= cv.multiply(tg_w[i], y)]
+        tgconstraints = [y @ tg_w.T <= onesvec @ a2.T + b2 @ onesvec.T]
 
         # CVaR Range Model Variables
 
@@ -2043,11 +2025,8 @@ class Portfolio(object):
         else:
             beta = self.beta
 
-        cvrgconstraints = []
         cvrg_w = owa.owa_cvrg(n, alpha=alpha, beta=beta)
-
-        for i in range(n):
-            cvrgconstraints += [a4[i] + b4 >= cv.multiply(cvrg_w[i], y)]
+        cvrgconstraints = [y @ cvrg_w.T <= onesvec @ a4.T + b4 @ onesvec.T]
 
         # Tail Gini Range Model Variables
 
@@ -2060,11 +2039,8 @@ class Portfolio(object):
         else:
             b_sim = self.b_sim
 
-        tgrgconstraints = []
         tgrg_w = owa.owa_tgrg(n, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
-
-        for i in range(n):
-            tgrgconstraints += [a5[i] + b5 >= cv.multiply(tgrg_w[i], y)]
+        tgrgconstraints = [y @ tgrg_w.T <= onesvec @ a5.T + b5 @ onesvec.T]
 
         # Problem Linear Constraints
 
@@ -2323,12 +2299,12 @@ class Portfolio(object):
         # Specific Model Constraints
 
         if version == "A":
-            constraints += [cv.SOC(n ** 0.5 * psi, G.T @ w)]
+            constraints += [cv.SOC(n**0.5 * psi, G.T @ w)]
         elif version == "B":
             constraints += [
                 cv.SOC(
-                    2 * n ** 0.5 * psi,
-                    cv.vstack([2 * G.T @ w, -2 * n ** 0.5 * rho * np.ones((1, 1))]),
+                    2 * n**0.5 * psi,
+                    cv.vstack([2 * G.T @ w, -2 * n**0.5 * rho * np.ones((1, 1))]),
                 )
             ]
             constraints += [cv.SOC(rho, G.T @ w)]
@@ -2336,11 +2312,11 @@ class Portfolio(object):
         elif version == "C":
             constraints += [
                 cv.SOC(
-                    2 * n ** 0.5 * psi,
-                    cv.vstack([2 * G.T @ w, -2 * n ** 0.5 * rho * np.ones((1, 1))]),
+                    2 * n**0.5 * psi,
+                    cv.vstack([2 * G.T @ w, -2 * n**0.5 * rho * np.ones((1, 1))]),
                 )
             ]
-            constraints += [cv.SOC(rho, l ** 0.5 * Theta.T @ w)]
+            constraints += [cv.SOC(rho, l**0.5 * Theta.T @ w)]
             constraints += [rho >= 0]
 
         # Problem Linear Constraints
@@ -2516,7 +2492,7 @@ class Portfolio(object):
             constraints += [M >> 0, Z >> 0]
         else:
             G = sqrtm(sigma)
-            risk = g ** 2
+            risk = g**2
             constraints += [cv.SOC(g, G.T @ w)]
 
         # Cardinal Boolean Variables
@@ -2763,7 +2739,7 @@ class Portfolio(object):
             if obj == "Sharpe":
                 ret = mu @ w - 0.5 * cv.quad_over_lin(g, k)
             else:
-                ret = mu @ w - 0.5 * g ** 2
+                ret = mu @ w - 0.5 * g**2
         elif kelly == False:
             ret = mu @ w
 
@@ -2779,8 +2755,8 @@ class Portfolio(object):
         if owa_w is None:
             owa_w = owa.owa_gmd(n) / 2
 
-        for i in range(n):
-            constraints += [a[i] + b >= cv.multiply(owa_w[i], y)]
+        onesvec = np.ones((n, 1))
+        constraints += [y @ owa_w.T <= onesvec @ a.T + b @ onesvec.T]
 
         # Cardinal Boolean Variables
 
@@ -2858,9 +2834,9 @@ class Portfolio(object):
 
         if self.nea is not None:
             if obj == "Sharpe":
-                constraints += [cv.norm(w, "fro") <= 1 / self.nea ** 0.5 * k]
+                constraints += [cv.norm(w, "fro") <= 1 / self.nea**0.5 * k]
             else:
-                constraints += [cv.norm(w, "fro") <= 1 / self.nea ** 0.5]
+                constraints += [cv.norm(w, "fro") <= 1 / self.nea**0.5]
 
         # Tracking Error Model Variables
 

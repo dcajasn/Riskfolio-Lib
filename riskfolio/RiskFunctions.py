@@ -712,7 +712,7 @@ def UCI_Abs(X):
             peak = i
         DD = peak - i
         if DD > 0:
-            value += DD ** 2
+            value += DD**2
         n += 1
     if n == 0:
         value = 0
@@ -1038,7 +1038,7 @@ def UCI_Rel(X):
             peak = i
         DD = (peak - i) / peak
         if DD > 0:
-            value += DD ** 2
+            value += DD**2
         n += 1
     if n == 0:
         value = 0
