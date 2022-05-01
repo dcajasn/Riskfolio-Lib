@@ -52,7 +52,7 @@ def jupyter_report(
         Portfolio weights.
     rm : str, optional
         Risk measure used to estimate risk contribution.
-        The default is 'MV'. Posible values are:
+        The default is 'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
@@ -207,9 +207,9 @@ def excel_report(
     w : DataFrame of size (n_assets, n_portfolios)
         Portfolio weights.
     rf : float, optional
-        Risk free rate or minimum aceptable return. The default is 0.
+        Risk free rate or minimum acceptable return. The default is 0.
     alpha : float, optional
-        Significante level of VaR, CVaR, EVaR, DaR and CDaR.
+        Significance level of VaR, CVaR, EVaR, DaR and CDaR.
         The default is 0.05.
     t_factor : float, optional
         Factor used to annualize expected return and expected risks for

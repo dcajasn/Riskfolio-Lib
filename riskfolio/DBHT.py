@@ -135,7 +135,7 @@ def PMFG_T2s(W, nargout=3):
     W : nd-array
         An N x N matrix of non-negative weights.
     nargout : int, optional
-        Number of results, posible values are 3, 4 and 5.
+        Number of results, Possible values are 3, 4 and 5.
 
     Returns
     -------

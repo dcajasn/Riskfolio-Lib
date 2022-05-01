@@ -561,7 +561,7 @@ class HCPortfolio(object):
         ----------
         model : str, can be {'HRP', 'HERC' or 'HERC2'}
             The hierarchical cluster portfolio model used for optimize the
-            portfolio. The default is 'HRP'. Posible values are:
+            portfolio. The default is 'HRP'. Possible values are:
 
             - 'HRP': Hierarchical Risk Parity.
             - 'HERC': Hierarchical Equal Risk Contribution.
@@ -570,7 +570,7 @@ class HCPortfolio(object):
 
         codependence : str, optional
             The codependence or similarity matrix used to build the distance
-            metric and clusters. The default is 'pearson'. Posible values are:
+            metric and clusters. The default is 'pearson'. Possible values are:
 
             - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
             - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
@@ -583,7 +583,7 @@ class HCPortfolio(object):
 
         covariance : str, optional
             The method used to estimate the covariance matrix:
-            The default is 'hist'. Posible values are:
+            The default is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
@@ -600,7 +600,7 @@ class HCPortfolio(object):
 
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'ERC'}.
             Objective function used by the NCO model.
-            The default is 'MinRisk'. Posible values are:
+            The default is 'MinRisk'. Possible values are:
 
             - 'MinRisk': Minimize the selected risk measure.
             - 'Utility': Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
@@ -608,9 +608,9 @@ class HCPortfolio(object):
             - 'ERC': Equally risk contribution portfolio of the selected risk measure.
 
         rm : str, optional
-            The risk measure used to optimze the portfolio. If model is 'NCO',
-            the risk measures available depends on the objective functon.
-            The default is 'MV'. Posible values are:
+            The risk measure used to optimize the portfolio. If model is 'NCO',
+            the risk measures available depends on the objective function.
+            The default is 'MV'. Possible values are:
 
             - 'equal': Equally weighted.
             - 'vol': Standard Deviation.
@@ -674,7 +674,7 @@ class HCPortfolio(object):
             to find the optimal number of clusters. The default is 10.
         bins_info: int or str
             Number of bins used to calculate variation of information. The default
-            value is 'KN'. Posible values are:
+            value is 'KN'. Possible values are:
 
             - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
             - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.

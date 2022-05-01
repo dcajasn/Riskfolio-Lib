@@ -385,7 +385,7 @@ def mutual_info_matrix(X, bins_info="KN", normalize=True):
         Returns series of shape n_sample x n_features.
     bins_info: int or str
         Number of bins used to calculate mutual information. The default
-        value is 'KN'. Posible values are:
+        value is 'KN'. Possible values are:
 
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
@@ -482,7 +482,7 @@ def var_info_matrix(X, bins_info="KN", normalize=True):
         Returns series of shape n_sample x n_features.
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
-        value is 'KN'. Posible values are:
+        value is 'KN'. Possible values are:
 
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
@@ -721,7 +721,7 @@ def fitKDE(obs, bWidth=0.01, kernel="gaussian", x=None):
         The bandwidth of the kernel. The default value is 0.01.
     kernel : string, optional
         The kernel to use. The default value is 'gaussian'. For more information see: `kernel-density <https://scikit-learn.org/stable/modules/density.html#kernel-density>`_.
-        Posible values are:
+        Possible values are:
 
         - 'gaussian': gaussian kernel.
         - 'tophat': tophat kernel.
@@ -918,7 +918,7 @@ def denoisedCorr(eVal, eVec, nFacts, kind="fixed"):
     nFacts : float
         The number of factors.
     kind : str, optional
-        The denoise method. The default value is 'fixed'. Posible values are:
+        The denoise method. The default value is 'fixed'. Possible values are:
 
         - 'fixed': takes average of eigenvalues above max Marchenko Pastour limit.
         - 'spectral': makes zero eigenvalues above max Marchenko Pastour limit.
@@ -999,7 +999,7 @@ def denoiseCov(cov, q, kind="fixed", bWidth=0.01, detone=False, mkt_comp=1, alph
     bWidth : float
         The bandwidth of the kernel.
     kind : str, optional
-        The denoise method. The default value is 'fixed'. Posible values are:
+        The denoise method. The default value is 'fixed'. Possible values are:
 
         - 'fixed': takes average of eigenvalues above max Marchenko Pastour limit.
         - 'spectral': makes zero eigenvalues above max Marchenko Pastour limit.

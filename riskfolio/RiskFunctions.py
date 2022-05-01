@@ -1269,7 +1269,7 @@ def Sharpe_Risk(
         n_features is the number of features.
     rm : str, optional
         Risk measure used in the denominator of the ratio. The default is
-        'MV'. Posible values are:
+        'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
@@ -1437,7 +1437,7 @@ def Sharpe(
         n_features is the number of features.
     rm : str, optional
         Risk measure used in the denominator of the ratio. The default is
-        'MV'. Posible values are:
+        'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
@@ -1562,7 +1562,7 @@ def Risk_Contribution(
         n_features is the number of features.
     rm : str, optional
         Risk measure used in the denominator of the ratio. The default is
-        'MV'. Posible values are:
+        'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.

@@ -71,11 +71,11 @@ class Portfolio(object):
     allowTO : bool, optional
         Indicate if there is turnover constraints. The default is False.
     turnover : float, optional
-        The maximum limit of turnover deviatons. The default is 0.05.
+        The maximum limit of turnover deviations. The default is 0.05.
     allowTE : bool, optional
         Indicate if there is tracking error constraints.. The default is False.
     TE : float, optional
-        The maximum limit of tracking error deviatons. The default is 0.05.
+        The maximum limit of tracking error deviations. The default is 0.05.
     benchindex : DataFrame, optional
         A dataframe that containts the returns of an index. If kindbench is
         False the tracking error constraints are calculated respect to this
@@ -411,7 +411,7 @@ class Portfolio(object):
         ----------
         method_mu : str, optional
             The method used to estimate the expected returns.
-            The default value is 'hist'. Posible values are:
+            The default value is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -419,7 +419,7 @@ class Portfolio(object):
 
         method_cov : str, optional
             The method used to estimate the covariance matrix:
-            The default is 'hist'. Posible values are:
+            The default is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -434,7 +434,7 @@ class Portfolio(object):
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
 
         **kwargs : dict
-            All aditional parameters of mean_vector and covar_matrix functions.
+            All additional parameters of mean_vector and covar_matrix functions.
 
         See Also
         --------
@@ -485,11 +485,11 @@ class Portfolio(object):
             Weights matrix, where n_assets is the number of assets.
             The default is None.
         eq: bool, optional
-            Indicates if use equilibrum or historical excess returns.
+            Indicates if use equilibrium or historical excess returns.
             The default is True.
         method_mu : str, optional
             The method used to estimate the expected returns.
-            The default value is 'hist'. Posible values are:
+            The default value is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -497,7 +497,7 @@ class Portfolio(object):
 
         method_cov : str, optional
             The method used to estimate the covariance matrix:
-            The default is 'hist'. Posible values are:
+            The default is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -574,7 +574,7 @@ class Portfolio(object):
         ----------
         method_mu : str, optional
             The method used to estimate the expected returns.
-            The default value is 'hist'. Posible values are:
+            The default value is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -582,7 +582,7 @@ class Portfolio(object):
 
         method_cov : str, optional
             The method used to estimate the covariance matrix:
-            The default is 'hist'. Posible values are:
+            The default is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -693,7 +693,7 @@ class Portfolio(object):
             Weights matrix, where n_assets is the number of assets.
             The default is None.
         eq: bool, optional
-            Indicates if use equilibrum or historical excess returns.
+            Indicates if use equilibrium or historical excess returns.
             The default is True.
         const : bool, optional
             Indicate if the loadings matrix has a constant.
@@ -705,7 +705,7 @@ class Portfolio(object):
             The default is False.
         method_mu : str, optional
             The method used to estimate the expected returns.
-            The default value is 'hist'. Posible values are:
+            The default value is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -713,7 +713,7 @@ class Portfolio(object):
 
         method_cov : str, optional
             The method used to estimate the covariance matrix:
-            The default is 'hist'. Posible values are:
+            The default is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
@@ -866,7 +866,7 @@ class Portfolio(object):
         Parameters
         ----------
         box : string
-            The method used to estimate the box uncertainty sets. The default is 's'. Posible values are:
+            The method used to estimate the box uncertainty sets. The default is 's'. Possible values are:
 
             - 's': stationary bootstrapping method.
             - 'c': circular bootstrapping method.
@@ -875,7 +875,7 @@ class Portfolio(object):
             - 'd': delta method, this method increase and decrease by a percentage.
 
         ellip : string
-            The method used to estimate the elliptical uncertainty sets. The default is 's'. Posible values are:
+            The method used to estimate the elliptical uncertainty sets. The default is 's'. Possible values are:
 
             - 's': stationary bootstrapping method.
             - 'c': circular bootstrapping method.
@@ -1025,7 +1025,7 @@ class Portfolio(object):
         ----------
         model : str can be {'Classic', 'BL', 'FM' or 'BLFM'}
             The model used for optimize the portfolio.
-            The default is 'Classic'. Posible values are:
+            The default is 'Classic'. Possible values are:
 
             - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
             - 'BL': use estimates of expected return vector and covariance matrix based on the Black Litterman model.
@@ -1034,7 +1034,7 @@ class Portfolio(object):
             
         rm : str, optional
             The risk measure used to optimze the portfolio.
-            The default is 'MV'. Posible values are:
+            The default is 'MV'. Possible values are:
             
             - 'MV': Standard Deviation.
             - 'MAD': Mean Absolute Deviation.
@@ -1057,7 +1057,7 @@ class Portfolio(object):
             
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
             Objective function of the optimization model.
-            The default is 'Sharpe'. Posible values are:
+            The default is 'Sharpe'. Possible values are:
 
             - 'MinRisk': Minimize the selected risk measure.
             - 'Utility': Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
@@ -1065,7 +1065,7 @@ class Portfolio(object):
             - 'MaxRet': Maximize the expected return of the portfolio.
                 
         kelly : str, optional
-            Method used to calculate mean return. Posible values are False for
+            Method used to calculate mean return. Possible values are False for
             arithmetic mean return, "approx" for approximate mean logarithmic 
             return using first and second moment and "exact" for mean logarithmic
             return. The default is False.
@@ -1816,14 +1816,14 @@ class Portfolio(object):
         ----------
         model : str can be 'Classic' or 'FM'
             The model used for optimize the portfolio.
-            The default is 'Classic'. Posible values are:
+            The default is 'Classic'. Possible values are:
 
             - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
             - 'FM': use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.
             
         rm : str, optional
             The risk measure used to optimze the portfolio.
-            The default is 'MV'. Posible values are:
+            The default is 'MV'. Possible values are:
             
             - 'MV': Standard Deviation.
             - 'MAD': Mean Absolute Deviation.
@@ -2140,7 +2140,7 @@ class Portfolio(object):
                     break
 
             weights = np.array(w.value, ndmin=2).T
-            weights = np.abs(weights) / np.sum(np.abs(weights))
+            weights = np.abs(weights) / np.sum(np.abs(weights)) * self.budget
 
             for j in self.assetslist:
                 portafolio[j].append(weights[0, self.assetslist.index(j)])
@@ -2203,14 +2203,14 @@ class Portfolio(object):
         ----------
         model : str can be 'Classic' or 'FM'
             The model used for optimize the portfolio.
-            The default is 'Classic'. Posible values are:
+            The default is 'Classic'. Possible values are:
 
             - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
             - 'FM': use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.
             
         version : str can be 'A', 'B' or 'C'
             Relaxed risk parity model version proposed in :cite:`a-RichardRoncalli`.
-            The default is 'A'. Posible values are:
+            The default is 'A'. Possible values are:
                 
             - 'A': without regularization and penalization constraints.
             - 'B': with regularization constraint but without penalization constraint.
@@ -2358,7 +2358,7 @@ class Portfolio(object):
                     break
 
             weights = np.array(w.value, ndmin=2).T
-            weights = np.abs(weights) / np.sum(np.abs(weights))
+            weights = np.abs(weights) / np.sum(np.abs(weights)) * self.budget
 
             for j in self.assetslist:
                 portafolio[j].append(weights[0, self.assetslist.index(j)])
@@ -2386,7 +2386,7 @@ class Portfolio(object):
         ----------
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
             Objective function of the optimization model.
-            The default is 'Sharpe'. Posible values are:
+            The default is 'Sharpe'. Possible values are:
 
             - 'MinRisk': Minimize the worst case formulation of the selected risk measure.
             - 'Utility': Maximize the worst case formulation of the Utility function :math:`\mu w - l \phi_{i}(w)`.
@@ -2401,7 +2401,7 @@ class Portfolio(object):
             The default is 2.
         Umu : str, optional
             The type of uncertainty set for the mean vector used in the model.
-            The default is 'box'. Posible values are:
+            The default is 'box'. Possible values are:
 
             - 'box': Use a box uncertainty set for the mean vector.
             - 'ellip': Use a elliptical uncertainty set for the mean vector.
@@ -2409,7 +2409,7 @@ class Portfolio(object):
 
         Ucov : str, optional
             The type of uncertainty set for the covariance matrix used in the model.
-            The default is 'box'. Posible values are:
+            The default is 'box'. Possible values are:
 
             - 'box': Use a box uncertainty set for the covariance matrix.
             - 'ellip': Use a elliptical uncertainty set for the covariance matrix.
@@ -2573,7 +2573,7 @@ class Portfolio(object):
         elif self.kindbench == False:
             bench = np.array(self.benchindex, ndmin=2)
 
-        # Problem aditional linear constraints
+        # Problem additional linear constraints
 
         if self.ainequality is not None and self.binequality is not None:
             A = np.array(self.ainequality, ndmin=2) * 1000
@@ -2683,7 +2683,7 @@ class Portfolio(object):
         ----------
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
             Objective function of the optimization model.
-            The default is 'Sharpe'. Posible values are:
+            The default is 'Sharpe'. Possible values are:
 
             - 'MinRisk': Minimize the selected risk measure.
             - 'Utility': Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
@@ -2691,9 +2691,9 @@ class Portfolio(object):
             
         owa_w : 1darray, optional
             The owa weight used to define the owa risk measure.
-            The default is 'MV'. Posible values are:
+            The default is 'MV'. Possible values are:
         kelly : str, optional
-            Method used to calculate mean return. Posible values are False for
+            Method used to calculate mean return. Possible values are False for
             arithmetic mean return, "approx" for approximate mean logarithmic 
             return using first and second moment and "exact" for mean logarithmic
             return. The default is False.
@@ -2956,7 +2956,7 @@ class Portfolio(object):
             The default is 'Classic'.
         rm : str, optional
             The risk measure used to optimze the portfolio.
-            The default is 'MV'. Posible values are:
+            The default is 'MV'. Possible values are:
 
             - 'MV': Standard Deviation.
             - 'MAD': Mean Absolute Deviation.
@@ -2978,7 +2978,7 @@ class Portfolio(object):
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
         kelly : str, optional
-            Method used to calculate mean return. Posible values are False for
+            Method used to calculate mean return. Possible values are False for
             arithmetic mean return, "approx" for approximate mean logarithmic
             return using first and second moment and "exact" for mean logarithmic
             return. The default is False.
@@ -3037,7 +3037,7 @@ class Portfolio(object):
             The default is 'Classic'.
         rm : str, optional
             The risk measure used to optimze the portfolio.
-            The default is 'MV'. Posible values are:
+            The default is 'MV'. Possible values are:
 
             - 'MV': Standard Deviation.
             - 'MAD': Mean Absolute Deviation.
@@ -3059,7 +3059,7 @@ class Portfolio(object):
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
         kelly : str, optional
-            Method used to calculate mean return. Posible values are False for
+            Method used to calculate mean return. Possible values are False for
             arithmetic mean return, "approx" for approximate mean logarithmic
             return using first and second moment and "exact" for mean logarithmic
             return. The default is False.

@@ -6,6 +6,11 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Version 3.1.0
+=============
+
+- Implements a reformulation of OWA portfolio optimization to speed up calculations.
+
 Version 3.0.0
 =============
 

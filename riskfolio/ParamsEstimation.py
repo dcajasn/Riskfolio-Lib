@@ -27,9 +27,9 @@ def mean_vector(X, method="hist", d=0.94):
     X : DataFrame of shape (n_samples, n_features)
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
-    method : str, optinal
+    method : str, optional
         The method used to estimate the expected returns.
-        The default value is 'hist'. Posible values are:
+        The default value is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
         - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
@@ -78,7 +78,7 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         n_features is the number of features.
     method : str, optional
         The method used to estimate the covariance matrix:
-        The default is 'hist'. Posible values are:
+        The default is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
         - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
@@ -174,7 +174,7 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
     y : Series of shape (n_samples, 1)
         Target vector, where n_samples in the number of samples.
     criterion : str, optional
-        The default is 'pvalue'. Posible values of the criterion used to select
+        The default is 'pvalue'. Possible values of the criterion used to select
         the best features are:
 
         - 'pvalue': select the features based on p-values.
@@ -348,7 +348,7 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
     y : Series of shape (n_samples, 1)
         Target vector, where n_samples in the number of samples.
     criterion : str, optional
-        The default is 'pvalue'. Posible values of the criterion used to select
+        The default is 'pvalue'. Possible values of the criterion used to select
         the best features are:
 
         - 'pvalue': select the features based on p-values.
@@ -593,7 +593,7 @@ def loadings_matrix(
         Indicate the method used for stepwise regression.
         The default is 'Forward'.
     criterion : str, optional
-        The default is 'pvalue'. Posible values of the criterion used to select
+        The default is 'pvalue'. Possible values of the criterion used to select
         the best features are:
 
         - 'pvalue': select the features based on p-values.
@@ -647,7 +647,7 @@ def loadings_matrix(
                     X, Y[i], criterion=criterion, threshold=threshold, verbose=verbose
                 )
             else:
-                raise ValueError("Choose and adecuate stepwise method")
+                raise ValueError("Choose and adequate stepwise method")
             results = sm.OLS(Y[i], sm.add_constant(X[included])).fit()
             params = results.params
             loadings.loc[i, params.index.tolist()] = params.T
@@ -727,7 +727,7 @@ def risk_factors(
         Indicate the method used for stepwise regression.
         The default is 'Forward'.
     criterion : str, optional
-        The default is 'pvalue'. Posible values of the criterion used to select
+        The default is 'pvalue'. Possible values of the criterion used to select
         the best features are:
 
         - 'pvalue': select the features based on p-values.
@@ -759,7 +759,7 @@ def risk_factors(
     returns : DataFrame
         The returns based on a risk factor model.
     nav : DataFrame
-        The cumulated uncompound returns based on a risk factor model.
+        The cumulated uncompounded returns based on a risk factor model.
 
     Raises
     ------
@@ -869,7 +869,7 @@ def black_litterman(
     rf : scalar, optional
         Risk free rate. The default is 0.
     eq : bool, optional
-        Indicate if use equilibrum or historical excess returns.
+        Indicate if use equilibrium or historical excess returns.
         The default is True.
     method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
         The method used to estimate the expected returns.
@@ -880,7 +880,7 @@ def black_litterman(
         - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
     method_cov : str, optional
         The method used to estimate the covariance matrix:
-        The default is 'hist'. Posible values are:
+        The default is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
         - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
@@ -1055,10 +1055,10 @@ def augmented_black_litterman(
     rf : scalar, optional
         Risk free rate. The default is 0.
     eq : bool, optional
-        Indicate if use equilibrum or historical excess returns.
+        Indicate if use equilibrium or historical excess returns.
         The default is True.
     const : bool, optional
-        Indicate if use equilibrum or historical excess returns.
+        Indicate if use equilibrium or historical excess returns.
         The default is True.
     method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
         The method used to estimate the expected returns.
@@ -1069,7 +1069,7 @@ def augmented_black_litterman(
         - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
     method_cov : str, optional
         The method used to estimate the covariance matrix:
-        The default is 'hist'. Posible values are:
+        The default is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
         - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
@@ -1281,7 +1281,7 @@ def black_litterman_bayesian(
     rf : scalar, optional
         Risk free rate. The default is 0.
     eq : bool, optional
-        Indicate if use equilibrum or historical excess returns.
+        Indicate if use equilibrium or historical excess returns.
         The default is True.
     const : bool, optional
         Indicate if the loadings matrix has a constant.
@@ -1300,7 +1300,7 @@ def black_litterman_bayesian(
         - 'ewma2': use ewma with adjust=False, For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
     method_cov : str, optional
         The method used to estimate the covariance matrix:
-        The default is 'hist'. Posible values are:
+        The default is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
         - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
@@ -1396,7 +1396,7 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=3000, window=3, seed=0):
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     kind : str
-        The bootstrapping method. The default value is 'stationary'. Posible values are:
+        The bootstrapping method. The default value is 'stationary'. Possible values are:
 
         - 'stationary': stationary bootstrapping method, see `StationaryBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.StationaryBootstrap.html#arch.bootstrap.StationaryBootstrap>`_ for more details.
         - 'circular': circular bootstrapping method, see `CircularBlockBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.CircularBlockBootstrap.html#arch.bootstrap.CircularBlockBootstrap>`_ for more details.

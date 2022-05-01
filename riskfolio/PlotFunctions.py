@@ -97,7 +97,7 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     w : DataFrame of shape (n_assets, n_portfolios)
         Portfolio weights.
     cmap : cmap, optional
-        Colorscale, represente the risk adjusted return ratio.
+        Colorscale that represents the risk adjusted return ratio.
         The default is 'tab20'.
     height : float, optional
         Height of the image in inches. The default is 6.
@@ -229,7 +229,7 @@ def plot_frontier(
         n_features is the number of features.
     rm : str, optional
         The risk measure used to estimate the frontier.
-        The default is 'MV'. Posible values are:
+        The default is 'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
@@ -251,13 +251,13 @@ def plot_frontier(
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     kelly : bool, optional
-        Method used to calculate mean return. Posible values are False for
+        Method used to calculate mean return. Possible values are False for
         arithmetic mean return and True for mean logarithmic return. The default
         is False.
     rf : float, optional
-        Risk free rate or minimum aceptable return. The default is 0.
+        Risk free rate or minimum acceptable return. The default is 0.
     alpha : float, optional
-        Significante level of VaR, CVaR, Tail Gini, EVaR, CDaR and EDaR. The default is 0.05.
+        Significance level of VaR, CVaR, Tail Gini, EVaR, CDaR and EDaR. The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
     beta : float, optional
@@ -267,7 +267,7 @@ def plot_frontier(
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     cmap : cmap, optional
-        Colorscale, represente the risk adjusted return ratio.
+        Colorscale that represents the risk adjusted return ratio.
         The default is 'viridis'.
     w : DataFrame of shape (n_assets, 1), optional
         A portfolio specified by the user. The default is None.
@@ -699,7 +699,7 @@ def plot_bar(
     -------
     ::
 
-        ax = rp.plot_bar(w, title='Portafolio', kind="v", others=0.05,
+        ax = rp.plot_bar(w, title='Portfolio', kind="v", others=0.05,
                          nrow=25, height=6, width=10, ax=None)
 
     .. image:: images/Bar_Chart.png
@@ -997,7 +997,7 @@ def plot_risk_con(
         n_features is the number of features.
     rm : str, optional
         Risk measure used to estimate risk contribution.
-        The default is 'MV'. Posible values are:
+        The default is 'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
         - 'MAD': Mean Absolute Deviation.
@@ -1019,9 +1019,9 @@ def plot_risk_con(
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
-        Risk free rate or minimum aceptable return. The default is 0.
+        Risk free rate or minimum acceptable return. The default is 0.
     alpha : float, optional
-        Significante level of VaR, CVaR, Tail Gini, EVaR, CDaR and EDaR. The default is 0.05.
+        Significance level of VaR, CVaR, Tail Gini, EVaR, CDaR and EDaR. The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
     beta : float, optional
@@ -1140,7 +1140,7 @@ def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax
     w : DataFrame of shape (n_assets, 1)
         Portfolio weights.
     alpha : float, optional
-        Significante level of VaR, CVaR, Tail Gini and EVaR. The default is 0.05.
+        Significance level of VaR, CVaR, Tail Gini and EVaR. The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
     bins : float, optional
@@ -1501,7 +1501,7 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
         A portfolio specified by the user to compare with the efficient
         frontier. The default is None.
     alpha : float, optional
-        Significante level of DaR and CDaR. The default is 0.05.
+        Significance level of DaR and CDaR. The default is 0.05.
     height : float, optional
         Height of the image in inches. The default is 8.
     width : float, optional
@@ -1934,7 +1934,7 @@ def plot_clusters(
         'custom_cov'. The default is None.
     codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
         The codependence or similarity matrix used to build the distance
-        metric and clusters. The default is 'pearson'. Posible values are:
+        metric and clusters. The default is 'pearson'. Possible values are:
 
         - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
         - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
@@ -1947,7 +1947,7 @@ def plot_clusters(
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
-        The default is 'ward'. Posible values are:
+        The default is 'ward'. Possible values are:
 
         - 'single'.
         - 'complete'.
@@ -1967,7 +1967,7 @@ def plot_clusters(
         to find the optimal number of clusters. The default is 10.
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
-        value is 'KN'. Posible values are:
+        value is 'KN'. Possible values are:
 
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
@@ -2268,7 +2268,7 @@ def plot_dendrogram(
         'custom_cov'. The default is None.
     codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
         The codependence or similarity matrix used to build the distance
-        metric and clusters. The default is 'pearson'. Posible values are:
+        metric and clusters. The default is 'pearson'. Possible values are:
 
         - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
         - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
@@ -2281,7 +2281,7 @@ def plot_dendrogram(
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
-        The default is 'ward'. Posible values are:
+        The default is 'ward'. Possible values are:
 
         - 'single'.
         - 'complete'.
@@ -2301,7 +2301,7 @@ def plot_dendrogram(
         to find the optimal number of clusters. The default is 10.
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
-        value is 'KN'. Posible values are:
+        value is 'KN'. Possible values are:
 
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
@@ -2417,7 +2417,6 @@ def plot_dendrogram(
     )
     hr.set_link_color_palette(None)
 
-    ax.xaxis.set_major_locator(mticker.FixedLocator(np.arange(codep.shape[0])))
     ax.set_xticklabels(labels[permutation], rotation=90, ha="center")
 
     i = 0
@@ -2499,7 +2498,7 @@ def plot_network(
         'custom_cov'. The default is None.
     codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
         The codependence or similarity matrix used to build the distance
-        metric and clusters. The default is 'pearson'. Posible values are:
+        metric and clusters. The default is 'pearson'. Possible values are:
 
         - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
         - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
@@ -2512,7 +2511,7 @@ def plot_network(
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
-        The default is 'ward'. Posible values are:
+        The default is 'ward'. Possible values are:
 
         - 'single'.
         - 'complete'.
@@ -2532,7 +2531,7 @@ def plot_network(
         to find the optimal number of clusters. The default is 10.
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
-        value is 'KN'. Posible values are:
+        value is 'KN'. Possible values are:
 
         - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
@@ -2546,7 +2545,7 @@ def plot_network(
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
     kind : str, optional
-        Kind of networkx layout. The default value is 'spring'. Posible values
+        Kind of networkx layout. The default value is 'spring'. Possible values
         are:
 
         - 'spring': networkx spring_layout.
