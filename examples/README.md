@@ -36,5 +36,5 @@ Tutorials:
 - Risk Parity with Constraints using the Risk Budgeting Approach [Tutorial 33](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2033.ipynb)
 - Comparing Covariance Estimators Methods [Tutorial 34](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2034.ipynb)
 - Gini Mean Difference (GMD) Optimization [Tutorial 35](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2035.ipynb)
-- [Tutorial 36](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2036.ipynb)
+- Mean Tail Gini Range Optimization [Tutorial 36](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2036.ipynb)
 - OWA Portfolio Optimization [Tutorial 37](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2037.ipynb)
