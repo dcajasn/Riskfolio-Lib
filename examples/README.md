@@ -1,4 +1,4 @@
-
+Tutorials:
 
 - Classic Mean Risk Optimization [Tutorial 1](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%201.ipynb)
 - Risk Factors using Stepwise Regression [Tutorial 2](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%202.ipynb)
@@ -33,4 +33,8 @@
 - Nested Clustered Optimization (NCO) [Tutorial 30](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2030.ipynb)
 - Hierarchical Portfolios with Custom Covariance [Tutorial 31](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2031.ipynb)
 - Relaxed Risk Parity Portfolio Optimization [Tutorial 32](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2032.ipynb)
-- 
+- Risk Parity with Constraints using the Risk Budgeting Approach [Tutorial 33](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2033.ipynb)
+- Comparing Covariance Estimators Methods [Tutorial 34](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2034.ipynb)
+- Gini Mean Difference (GMD) Optimization [Tutorial 35](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2035.ipynb)
+- [Tutorial 36](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2036.ipynb)
+- OWA Portfolio Optimization [Tutorial 37](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2037.ipynb)
