@@ -16,6 +16,7 @@ Tutorials:
 - Mean Ulcer Index Portfolio Optimization [Tutorial 14](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2014.ipynb)
 - Mean Entropic Value at Risk (EVaR) Optimization [Tutorial 15](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2015.ipynb)
 - Riskfolio-Lib Reports in Jupyter Notebook and Excel [Tutorial 16](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2016.ipynb)
+- Riskfolio-Lib with MOSEK for Real Applications [Tutorial 17](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2017.ipynb)
 - Multi Assets Algorithmic Trading Backtesting with Vectorbt [Tutorial 18](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2018.ipynb)
 - Mean Entropic Drawdown at Risk (EDaR) Optimization [Tutorial 17](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2019.ipynb)
 - Black Litterman with Factors Models Mean Risk Optimization [Tutorial 18](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2020.ipynb)
