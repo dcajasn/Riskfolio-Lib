@@ -403,7 +403,7 @@ def EVaR_Hist(X, alpha=0.05):
 def MDD_Abs(X):
     r"""
     Calculate the Maximum Drawdown (MDD) of a returns series
-    using uncumpounded cumulative returns.
+    using uncompounded cumulative returns.
 
     .. math::
         \text{MDD}(X) = \max_{j \in (0,T)} \left [\max_{t \in (0,j)}
@@ -422,7 +422,7 @@ def MDD_Abs(X):
     Returns
     -------
     value : float
-        MDD of an uncumpounded cumulative returns.
+        MDD of an uncompounded cumulative returns.
 
     """
 
@@ -451,7 +451,7 @@ def MDD_Abs(X):
 def ADD_Abs(X):
     r"""
     Calculate the Average Drawdown (ADD) of a returns series
-    using uncumpounded cumulative returns.
+    using uncompounded cumulative returns.
 
     .. math::
         \text{ADD}(X) = \frac{1}{T}\sum_{j=0}^{T}\left [ \max_{t \in (0,j)}
@@ -470,7 +470,7 @@ def ADD_Abs(X):
     Returns
     -------
     value : float
-        ADD of an uncumpounded cumulative returns.
+        ADD of an uncompounded cumulative returns.
 
     """
 
@@ -505,7 +505,7 @@ def ADD_Abs(X):
 def DaR_Abs(X, alpha=0.05):
     r"""
     Calculate the Drawdown at Risk (DaR) of a returns series
-    using uncumpounded cumulative returns.
+    using uncompounded cumulative returns.
 
     .. math::
         \text{DaR}_{\alpha}(X) & = \max_{j \in (0,T)} \left \{ \text{DD}(X,j)
@@ -529,7 +529,7 @@ def DaR_Abs(X, alpha=0.05):
     Returns
     -------
     value : float
-        DaR of an uncumpounded cumulative returns series.
+        DaR of an uncompounded cumulative returns series.
 
     """
 
@@ -559,7 +559,7 @@ def DaR_Abs(X, alpha=0.05):
 def CDaR_Abs(X, alpha=0.05):
     r"""
     Calculate the Conditional Drawdown at Risk (CDaR) of a returns series
-    using uncumpounded cumulative returns.
+    using uncompounded cumulative returns.
 
     .. math::
         \text{CDaR}_{\alpha}(X) = \text{DaR}_{\alpha}(X) + \frac{1}{\alpha T}
@@ -569,7 +569,7 @@ def CDaR_Abs(X, alpha=0.05):
 
     Where:
 
-    :math:`\text{DaR}_{\alpha}` is the Drawdown at Risk of an uncumpound
+    :math:`\text{DaR}_{\alpha}` is the Drawdown at Risk of an uncompounded
     cumulated return series :math:`X`.
 
     Parameters
@@ -587,7 +587,7 @@ def CDaR_Abs(X, alpha=0.05):
     Returns
     -------
     value : float
-        CDaR of an uncumpounded cumulative returns series.
+        CDaR of an uncompounded cumulative returns series.
 
     """
 
@@ -620,7 +620,7 @@ def CDaR_Abs(X, alpha=0.05):
 def EDaR_Abs(X, alpha=0.05):
     r"""
     Calculate the Entropic Drawdown at Risk (EDaR) of a returns series
-    using uncumpounded cumulative returns.
+    using uncompounded cumulative returns.
 
     .. math::
         \text{EDaR}_{\alpha}(X) & = \inf_{z>0} \left \{ z
@@ -643,7 +643,7 @@ def EDaR_Abs(X, alpha=0.05):
     Returns
     -------
     (value, z) : tuple
-        EDaR of an uncumpounded cumulative returns series 
+        EDaR of an uncompounded cumulative returns series 
         and value of z that minimize EDaR.
         
     """
@@ -672,7 +672,7 @@ def EDaR_Abs(X, alpha=0.05):
 def UCI_Abs(X):
     r"""
     Calculate the Ulcer Index (UCI) of a returns series
-    using uncumpounded cumulative returns.
+    using uncompounded cumulative returns.
 
     .. math::
         \text{UCI}(X) =\sqrt{\frac{1}{T}\sum_{j=0}^{T} \left [ \max_{t \in
@@ -692,7 +692,7 @@ def UCI_Abs(X):
     Returns
     -------
     value : float
-        Ulcer Index of an uncumpounded cumulative returns.
+        Ulcer Index of an uncompounded cumulative returns.
 
     """
 

@@ -502,7 +502,7 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
 
 def PCR(X, y, n_components=0.95):
     r"""
-    Estimate the coeficients using Principal Components Regression (PCR).
+    Estimate the coefficients using Principal Components Regression (PCR).
 
     Parameters
     ----------
@@ -514,7 +514,7 @@ def PCR(X, y, n_components=0.95):
     n_components : int, float, None or str, optional
         if 1 < n_components (int), it represents the number of components that
         will be keep. if 0 < n_components < 1 (float), it represents the
-        percentage of variance that the is explained by the components keeped.
+        percentage of variance that the is explained by the components kept.
         See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
         for more details. The default is 0.95.
 
@@ -607,7 +607,7 @@ def loadings_matrix(
     n_components : int, float, None or str, optional
         if 1 < n_components (int), it represents the number of components that
         will be keep. if 0 < n_components < 1 (float), it represents the
-        percentage of variance that the is explained by the components keeped.
+        percentage of variance that the is explained by the components kept.
         See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
         for more details. The default is 0.95.
     verbose : bool, optional
@@ -741,7 +741,7 @@ def risk_factors(
     n_components : int, float, None or str, optional
         if 1 < n_components (int), it represents the number of components that
         will be keep. if 0 < n_components < 1 (float), it represents the
-        percentage of variance that the is explained by the components keeped.
+        percentage of variance that the is explained by the components kept.
         See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
         for more details. The default is 0.95.
     error : bool

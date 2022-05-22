@@ -70,9 +70,9 @@ def jupyter_report(
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
-        Risk free rate or minimum aceptable return. The default is 0.
+        Risk free rate or minimum acceptable return. The default is 0.
     alpha : float, optional
-        Significante level of VaR, CVaR, EVaR, DaR and CDaR.
+        Significant level of VaR, CVaR, EVaR, DaR and CDaR.
         The default is 0.05.
     others : float, optional
         Percentage of others section. The default is 0.05.

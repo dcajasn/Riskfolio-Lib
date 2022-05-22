@@ -1033,7 +1033,7 @@ class Portfolio(object):
             - 'BLFM': use estimates of expected return vector and covariance matrix based on Black Litterman applied to a Risk Factor model specified by the user.
             
         rm : str, optional
-            The risk measure used to optimze the portfolio.
+            The risk measure used to optimize the portfolio.
             The default is 'MV'. Possible values are:
             
             - 'MV': Standard Deviation.
@@ -1083,7 +1083,7 @@ class Portfolio(object):
             If model = 'FM', True means historical covariance and returns and
             False Risk Factor model for covariance and returns.
             If model = 'BL_FM', True means historical covariance and returns,
-            False Black Litteram with Risk Factor model for covariance and
+            False Black Litterman with Risk Factor model for covariance and
             Risk Factor model for returns, and '2' Risk Factor model for
             covariance and returns. The default is True.
 
@@ -1822,7 +1822,7 @@ class Portfolio(object):
             - 'FM': use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.
             
         rm : str, optional
-            The risk measure used to optimze the portfolio.
+            The risk measure used to optimize the portfolio.
             The default is 'MV'. Possible values are:
             
             - 'MV': Standard Deviation.
@@ -2187,7 +2187,7 @@ class Portfolio(object):
         
         :math:`\psi`: is the average risk of the portfolio.
         
-        :math:`\gamma`: is the lower bound of each asset risk constribution.
+        :math:`\gamma`: is the lower bound of each asset risk contribution.
         
         :math:`\zeta_{i}`: is the marginal risk of asset :math:`i`.
         
@@ -2955,7 +2955,7 @@ class Portfolio(object):
             Methodology used to estimate input parameters.
             The default is 'Classic'.
         rm : str, optional
-            The risk measure used to optimze the portfolio.
+            The risk measure used to optimize the portfolio.
             The default is 'MV'. Possible values are:
 
             - 'MV': Standard Deviation.
@@ -2992,7 +2992,7 @@ class Portfolio(object):
             If model = 'FM', True means historical covariance and returns and
             False Risk Factor model for covariance and returns.
             If model = 'BL_FM', True means historical covariance and returns,
-            False Black Litteram with Risk Factor model for covariance and
+            False Black Litterman with Risk Factor model for covariance and
             Risk Factor model for returns, and '2' Risk Factor model for
             covariance and returns. The default is True.
 
@@ -3036,7 +3036,7 @@ class Portfolio(object):
             Methodology used to estimate input parameters.
             The default is 'Classic'.
         rm : str, optional
-            The risk measure used to optimze the portfolio.
+            The risk measure used to optimize the portfolio.
             The default is 'MV'. Possible values are:
 
             - 'MV': Standard Deviation.
@@ -3076,7 +3076,7 @@ class Portfolio(object):
             If model = 'FM', True means historical covariance and returns and
             False Risk Factor model for covariance and returns.
             If model = 'BL_FM', True means historical covariance and returns,
-            False Black Litteram with Risk Factor model for covariance and
+            False Black Litterman with Risk Factor model for covariance and
             Risk Factor model for returns, and '2' Risk Factor model for
             covariance and returns. The default is True.
 

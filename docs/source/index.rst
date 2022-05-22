@@ -169,7 +169,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 Citing
 ======
 
-If you use Riskfolio-Lib for published work, please use the following BibTeX entrie:
+If you use Riskfolio-Lib for published work, please use the following BibTeX entry:
 
 ::
 

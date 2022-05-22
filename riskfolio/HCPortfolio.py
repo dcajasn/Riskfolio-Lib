@@ -187,12 +187,12 @@ class HCPortfolio(object):
         elif codependence in {"tail"}:
             dist = -np.log(self.codep).astype(float)
 
-        # Hierarchcial clustering
+        # Hierarchical clustering
         dist = dist.to_numpy()
         dist = pd.DataFrame(dist, columns=self.codep.columns, index=self.codep.index)
         if linkage == "DBHT":
             # different choices for D, S give different outputs!
-            D = dist.to_numpy()  # dissimilatity matrix
+            D = dist.to_numpy()  # dissimilarity matrix
             if codependence in {"pearson", "spearman", "custom_cov"}:
                 codep = 1 - dist**2
                 S = codep.to_numpy()  # similarity matrix

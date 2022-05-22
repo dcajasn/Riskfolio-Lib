@@ -2055,13 +2055,13 @@ def plot_clusters(
         codep = af.cov2corr(custom_cov).astype(float)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
 
-    # Hierarchcial clustering
+    # Hierarchical clustering
     dist = dist.to_numpy()
     dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
     dim = len(dist)
     if linkage == "DBHT":
         # different choices for D, S give different outputs!
-        D = dist.to_numpy()  # dissimilatity matrix
+        D = dist.to_numpy()  # dissimilarity matrix
         if codependence in {"pearson", "spearman", "custom_cov"}:
             S = (1 - dist**2).to_numpy()
         else:
@@ -2378,12 +2378,12 @@ def plot_dendrogram(
         codep = af.cov2corr(custom_cov).astype(float)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
 
-    # Hierarchcial clustering
+    # Hierarchical clustering
     dist = dist.to_numpy()
     dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
     if linkage == "DBHT":
         # different choices for D, S give different outputs!
-        D = dist.to_numpy()  # dissimilatity matrix
+        D = dist.to_numpy()  # dissimilarity matrix
         if codependence in {"pearson", "spearman", "custom_cov"}:
             S = (1 - dist**2).to_numpy()
         else:
@@ -2629,12 +2629,12 @@ def plot_network(
         codep = af.cov2corr(custom_cov).astype(float)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
 
-    # Hierarchcial clustering
+    # Hierarchical clustering
     dist = dist.to_numpy()
     dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
     if linkage == "DBHT":
         # different choices for D, S give different outputs!
-        D = dist.to_numpy()  # dissimilatity matrix
+        D = dist.to_numpy()  # dissimilarity matrix
         if codependence in {"pearson", "spearman", "custom_cov"}:
             S = (1 - dist**2).to_numpy()
         else:

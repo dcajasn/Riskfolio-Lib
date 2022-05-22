@@ -9,7 +9,7 @@ Tutorials:
 - Index Tracking / Replicating Portfolios [Tutorial 7](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%207.ipynb)
 - Short and Leveraged Portfolios [Tutorial 8](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%208.ipynb)
 - Portfolio Optimization with Risk Factors and Principal Components Regression (PCR) [Tutorial 9](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%209.ipynb)
-- Risk Parity Portfolio Optimization [Tuturial 10](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2010.ipynb)
+- Risk Parity Portfolio Optimization [Tutorial 10](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2010.ipynb)
 - Risk Parity Portfolio Optimization with Risk Factors using Stepwise Regression [Tutorial 11](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2011.ipynb)
 - Worst Case Mean Variance Portfolio Optimization [Tutorial 12](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2012.ipynb)
 - Riskfolio-Lib and Xlwings [Tutorial 13](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2013.ipynb)
