@@ -188,7 +188,7 @@ The latest stable release (and older versions) can be installed from PyPI:
 
 ## Citing
 
-If you use Riskfolio-Lib for published work, please use the following BibTeX entrie:
+If you use Riskfolio-Lib for published work, please use the following BibTeX entry:
 
 ```
 @misc{riskfolio,

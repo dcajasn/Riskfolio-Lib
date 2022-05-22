@@ -183,7 +183,7 @@ Where:
 
 :math:`\psi`: is the average risk of the portfolio.
 
-:math:`\gamma`: is the lower bound of each asset risk constribution.
+:math:`\gamma`: is the lower bound of each asset risk contribution.
 
 :math:`\zeta_{i}`: is the marginal risk of asset :math:`i`.
 

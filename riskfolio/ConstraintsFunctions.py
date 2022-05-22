@@ -779,12 +779,12 @@ def assets_clusters(
         codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
         dist = -np.log(codep)
 
-    # Hierarchcial clustering
+    # Hierarchical clustering
     dist = dist.to_numpy()
     dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
     if linkage == "DBHT":
         # different choices for D, S give different outputs!
-        D = dist.to_numpy()  # dissimilatity matrix
+        D = dist.to_numpy()  # dissimilarity matrix
         if codependence in {"pearson", "spearman"}:
             S = (1 - dist**2).to_numpy()
         else:
