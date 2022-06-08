@@ -808,9 +808,8 @@ def risk_factors(
     mu = pd.DataFrame(mu.T, columns=assets)
     cov = pd.DataFrame(S, index=assets, columns=assets)
     returns = pd.DataFrame(returns, index=dates, columns=assets)
-    nav = returns.cumsum()
 
-    return mu, cov, returns, nav
+    return mu, cov, returns
 
 
 def black_litterman(

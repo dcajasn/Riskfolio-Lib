@@ -239,7 +239,6 @@ class Portfolio(object):
         self.mu_bl_fm = None
         self.cov_bl_fm = None
         self.returns_fm = None
-        self.nav_fm = None
         self.z_EVaR = None
         self.z_EDaR = None
 
@@ -283,11 +282,6 @@ class Portfolio(object):
             self._returns = value
         else:
             raise NameError("returns must be a DataFrame")
-
-    @property
-    def nav(self):
-        if self._returns is not None and isinstance(self._returns, pd.DataFrame):
-            return self._returns.cumsum()
 
     @property
     def assetslist(self):
@@ -628,14 +622,13 @@ class Portfolio(object):
             except:
                 print("You must convert self.cov to a positive definite matrix")
 
-        mu, cov, returns, nav = pe.risk_factors(
+        mu, cov, returns = pe.risk_factors(
             X, Y, B=B, method_mu=method_mu, method_cov=method_cov, **dict_risk
         )
 
         self.mu_fm = mu
         self.cov_fm = cov
         self.returns_fm = returns
-        self.nav_fm = nav
 
         value = af.is_pos_def(self.cov_fm, threshold=1e-8)
         if value == False:
@@ -1103,17 +1096,14 @@ class Portfolio(object):
             mu = np.array(self.mu, ndmin=2)
             sigma = np.array(self.cov, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
-            nav = np.array(self.nav, ndmin=2)
         elif model == "FM":
             mu = np.array(self.mu_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
-                nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
-                nav = np.array(self.nav, ndmin=2)
         elif model == "BL":
             mu = np.array(self.mu_bl, ndmin=2)
             if hist == False:
@@ -1121,21 +1111,17 @@ class Portfolio(object):
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
-            nav = np.array(self.nav, ndmin=2)
         elif model == "BL_FM":
             mu = np.array(self.mu_bl_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_bl_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
-                nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
-                nav = np.array(self.nav, ndmin=2)
             elif hist == 2:
                 sigma = np.array(self.cov_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
-                nav = np.array(self.nav_fm, ndmin=2)
 
         # General Model Variables
 
@@ -1222,42 +1208,38 @@ class Portfolio(object):
         # Drawdown Model Variables
 
         drawdown = False
-        if obj == "Sharpe":
-            X1 = k + nav @ w
-        else:
-            X1 = 1 + nav @ w
 
-        U = cv.Variable((nav.shape[0] + 1, 1))
-        ddconstraints = [U[1:] * 1000 >= X1 * 1000, U[1:] * 1000 >= U[:-1] * 1000]
+        U = cv.Variable((n + 1, 1))
+        ddconstraints = [U[1:] * 1000 >= U[:-1] * 1000 - X * 1000]
 
         if obj == "Sharpe":
-            ddconstraints += [U[1:] * 1000 >= k * 1000, U[0] * 1000 == k * 1000]
+            ddconstraints += [U[1:] * 1000 >= 0 * 1000, U[0] * 1000 == 0 * 1000]
         else:
-            ddconstraints += [U[1:] * 1000 >= 1 * 1000, U[0] * 1000 == 1 * 1000]
+            ddconstraints += [U[1:] * 1000 >= 0 * 1000, U[0] * 1000 == 0 * 1000]
 
         # Maximum Drawdown Model Variables
 
         MDD = cv.Variable((1, 1))
         risk8 = MDD
-        mddconstraints = [MDD >= U[1:] - X1]
+        mddconstraints = [MDD >= U[1:]]
 
         # Average Drawdown Model Variables
 
-        risk9 = 1 / n * cv.sum(U[1:] - X1)
+        risk9 = 1 / n * cv.sum(U[1:])
 
         # Conditional Drawdown Model Variables
 
-        CDaR = cv.Variable((1, 1))
-        Zd = cv.Variable((nav.shape[0], 1))
-        risk10 = CDaR + 1 / (alpha * n) * cv.sum(Zd)
+        DaR = cv.Variable((1, 1))
+        Zd = cv.Variable((n, 1))
+        risk10 = DaR + 1 / (alpha * n) * cv.sum(Zd)
         cdarconstraints = [
-            Zd * 1000 >= U[1:] * 1000 - X1 * 1000 - CDaR * 1000,
+            Zd * 1000 >= U[1:] * 1000 - DaR * 1000,
             Zd * 1000 >= 0,
         ]
 
         # Ulcer Index Model Variables
 
-        risk11 = cv.norm(U[1:] * 1000 - X1 * 1000, "fro") / np.sqrt(n)
+        risk11 = cv.norm(U[1:] * 1000, "fro") / np.sqrt(n)
 
         # Entropic Value at Risk Model Variables
 
@@ -1290,7 +1272,7 @@ class Portfolio(object):
             edarconstraints = [cv.sum(uj) * 1000 <= s2 * 1000]
             edarconstraints += [
                 cv.constraints.ExpCone(
-                    U[1:] * 1000 - X1 * 1000 - t2 * 1000,
+                    U[1:] * 1000 - t2 * 1000,
                     np.ones((n, 1)) @ s2 * 1000,
                     uj * 1000,
                 )
@@ -1298,7 +1280,7 @@ class Portfolio(object):
         else:
             edarconstraints = [cv.sum(uj) <= s2]
             edarconstraints += [
-                cv.constraints.ExpCone(U[1:] - X1 - t2, np.ones((n, 1)) @ s2, uj)
+                cv.constraints.ExpCone(U[1:] - t2, np.ones((n, 1)) @ s2, uj)
             ]
 
         # Gini Mean Difference Model Variables
@@ -1532,9 +1514,9 @@ class Portfolio(object):
 
         if self.uppermdd is not None:
             if obj == "Sharpe":
-                constraints += [U[1:] - X1 <= self.uppermdd * k]
+                constraints += [U[1:] <= self.uppermdd * k]
             else:
-                constraints += [U[1:] - X1 <= self.uppermdd]
+                constraints += [U[1:] <= self.uppermdd]
             constraints += mddconstraints
             drawdown = True
 
@@ -1870,17 +1852,14 @@ class Portfolio(object):
             mu = np.array(self.mu, ndmin=2)
             sigma = np.array(self.cov, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
-            nav = np.array(self.nav, ndmin=2)
         elif model == "FM":
             mu = np.array(self.mu_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
-                nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
-                nav = np.array(self.nav, ndmin=2)
 
         # General Model Variables
 
@@ -1940,28 +1919,26 @@ class Portfolio(object):
 
         # Drawdown Model Variables
 
-        X1 = k + nav @ w
-        U = cv.Variable((nav.shape[0] + 1, 1))
+        U = cv.Variable((n + 1, 1))
         ddconstraints = [
-            U[1:] * 1000 >= X1 * 1000,
-            U[1:] * 1000 >= U[:-1] * 1000,
+            U[1:] * 1000 >= U[:-1] * 1000 - X * 1000,
             U[1:] * 1000 >= 1 * 1000 * k,
             U[0] * 1000 == 1 * 1000 * k,
         ]
 
         # Conditional Drawdown Model Variables
 
-        CDaR = cv.Variable((1, 1))
-        Zd = cv.Variable((nav.shape[0], 1))
-        risk10 = CDaR + 1 / (alpha * n) * cv.sum(Zd)
+        DaR = cv.Variable((1, 1))
+        Zd = cv.Variable((n, 1))
+        risk10 = DaR + 1 / (alpha * n) * cv.sum(Zd)
         cdarconstraints = [
-            Zd * 1000 >= U[1:] * 1000 - X1 * 1000 - CDaR * 1000,
+            Zd * 1000 >= U[1:] * 1000 - DaR * 1000,
             Zd * 1000 >= 0,
         ]
 
         # Ulcer Index Model Variables
 
-        risk11 = cv.norm(U[1:] - X1, "fro") / np.sqrt(n)
+        risk11 = cv.norm(U[1:], "fro") / np.sqrt(n)
 
         # Entropic Value at Risk Model Variables
 
@@ -1985,7 +1962,7 @@ class Portfolio(object):
         edarconstraints = [cv.sum(uj) * 1000 <= s2 * 1000]
         edarconstraints += [
             cv.constraints.ExpCone(
-                U[1:] * 1000 - X1 * 1000 - t2 * 1000,
+                U[1:] * 1000 - t2 * 1000,
                 np.ones((n, 1)) @ s2 * 1000,
                 uj * 1000,
             )
@@ -2140,7 +2117,7 @@ class Portfolio(object):
                     break
 
             weights = np.array(w.value, ndmin=2).T
-            weights = np.abs(weights) / np.sum(np.abs(weights)) * self.budget
+            weights = np.abs(weights) / np.sum(np.abs(weights))
 
             for j in self.assetslist:
                 portafolio[j].append(weights[0, self.assetslist.index(j)])
@@ -2187,7 +2164,7 @@ class Portfolio(object):
         
         :math:`\psi`: is the average risk of the portfolio.
         
-        :math:`\gamma`: is the lower bound of each asset risk contribution.
+        :math:`\gamma`: is the lower bound of each asset risk constribution.
         
         :math:`\zeta_{i}`: is the marginal risk of asset :math:`i`.
         
@@ -2244,17 +2221,14 @@ class Portfolio(object):
             mu = np.array(self.mu, ndmin=2)
             sigma = np.array(self.cov, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
-            nav = np.array(self.nav, ndmin=2)
         elif model == "FM":
             mu = np.array(self.mu_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
-                nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
-                nav = np.array(self.nav, ndmin=2)
 
         # General Model Variables
 
@@ -2358,7 +2332,7 @@ class Portfolio(object):
                     break
 
             weights = np.array(w.value, ndmin=2).T
-            weights = np.abs(weights) / np.sum(np.abs(weights)) * self.budget
+            weights = np.abs(weights) / np.sum(np.abs(weights))
 
             for j in self.assetslist:
                 portafolio[j].append(weights[0, self.assetslist.index(j)])
@@ -3100,17 +3074,14 @@ class Portfolio(object):
             mu = np.array(self.mu, ndmin=2)
             sigma = np.array(self.cov, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
-            nav = np.array(self.nav, ndmin=2)
         elif model == "FM":
             mu = np.array(self.mu_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
-                nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
-                nav = np.array(self.nav, ndmin=2)
         elif model == "BL":
             mu = np.array(self.mu_bl, ndmin=2)
             if hist == False:
@@ -3118,21 +3089,17 @@ class Portfolio(object):
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
-            nav = np.array(self.nav, ndmin=2)
         elif model == "BL_FM":
             mu = np.array(self.mu_bl_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_bl_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
-                nav = np.array(self.nav_fm, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
-                nav = np.array(self.nav, ndmin=2)
             elif hist == 2:
                 sigma = np.array(self.cov_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
-                nav = np.array(self.nav_fm, ndmin=2)
 
         alpha = self.alpha
         a_sim = self.a_sim
@@ -3350,7 +3317,6 @@ class Portfolio(object):
             "mu_bl_fm",
             "cov_bl_fm",
             "returns_fm",
-            "nav_fm",
             "cov_l",
             "cov_u",
             "cov_mu",

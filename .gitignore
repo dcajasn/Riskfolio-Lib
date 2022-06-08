@@ -7,6 +7,6 @@ __pycache__/
 /Riskfolio_Lib.egg-info
 /docs/build
 /examples/.ipynb_checkpoints
-/tests
+/tests/__pycache__
 /conda-recipe
 /docs/.DS_Store

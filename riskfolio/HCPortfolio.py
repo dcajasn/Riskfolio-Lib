@@ -221,7 +221,7 @@ class HCPortfolio(object):
     def _recursive_bisection(self, sort_order, rm="MV", rf=0):
 
         if isinstance(self.w_max, pd.Series) and isinstance(self.w_min, pd.Series):
-            if (self.w_max.all() >= self.w_min.all()).item():
+            if (self.w_max >= self.w_min).all().item():
                 flag = True
             else:
                 raise NameError("All upper bounds must be higher than lower bounds")
@@ -654,7 +654,7 @@ class HCPortfolio(object):
             The default is None.
         linkage : string, optional
             Linkage method of hierarchical clustering. For more information see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html>`_.
-            The default is 'single'. Posible values are:
+            The default is 'single'. Possible values are:
 
             - 'single'.
             - 'complete'.
@@ -791,7 +791,7 @@ class HCPortfolio(object):
             self.w_max = self.w_max.sort_index()
             self.w_max.index = self.assetslist
             self.w_min = self.w_min.sort_index()
-            self.w_max.index = self.assetslist
+            self.w_min.index = self.assetslist
 
         weights = weights.loc[self.assetslist].to_frame()
         weights.columns = ["weights"]
