@@ -48,7 +48,7 @@ def is_pos_def(cov, threshold=1e-8):
 
     """
     cov_ = np.array(cov, ndmin=2)
-    w, V = LA.eigh(cov_, lower=True, check_finite=True)
+    w = LA.eigh(cov_, lower=True, check_finite=True, eigvals_only=True)
     value = np.all(w >= threshold)
 
     return value
@@ -129,7 +129,7 @@ def corr2cov(corr, std):
     return cov
 
 
-def cov_fix(cov, method="clipped", **kwargs):
+def cov_fix(cov, method="clipped", threshold=1e-8):
     r"""
     Fix a covariance matrix to a positive definite matrix.
 
@@ -159,7 +159,7 @@ def cov_fix(cov, method="clipped", **kwargs):
         flag = True
 
     cov_ = np.array(cov, ndmin=2)
-    cov_ = cov_nearest(cov_, method=method, **kwargs)
+    cov_ = cov_nearest(cov_, method=method, threshold=threshold)
     cov_ = np.array(cov_, ndmin=2)
 
     if flag:
@@ -466,8 +466,6 @@ def mutual_info_matrix(X, bins_info="KN", normalize=True):
 
     if flag:
         mat = pd.DataFrame(mat, index=cols, columns=cols)
-    else:
-        mat = pd.DataFrame(mat)
 
     return mat
 
@@ -562,8 +560,6 @@ def var_info_matrix(X, bins_info="KN", normalize=True):
 
     if flag:
         mat = pd.DataFrame(mat, index=cols, columns=cols)
-    else:
-        mat = pd.DataFrame(mat)
 
     return mat
 

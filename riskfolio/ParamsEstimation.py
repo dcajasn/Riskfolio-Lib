@@ -10,12 +10,13 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 import sklearn.covariance as skcov
+import arch.bootstrap as bs
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from numpy.linalg import inv
 import riskfolio.AuxFunctions as af
-import arch.bootstrap as bs
 import riskfolio.DBHT as db
+import riskfolio.GerberStatistic as gs
 
 
 def mean_vector(X, method="hist", d=0.94):
@@ -91,6 +92,8 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
+        - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
     d : scalar
         The smoothing factor of ewma methods.
         The default is 0.94.
@@ -154,6 +157,10 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         T, N = X.shape
         q = T / N
         cov = af.denoiseCov(cov, q, kind=method, **kwargs)
+    elif method == "gerber1":
+        cov = gs.gerber_cov_stat1(X, **kwargs)
+    elif method == "gerber2":
+        cov = gs.gerber_cov_stat2(X, **kwargs)
 
     cov = pd.DataFrame(np.array(cov, ndmin=2), columns=assets, index=assets)
 
@@ -892,6 +899,8 @@ def black_litterman(
         - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
+        - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
     **kwargs : dict
         Other variables related to the expected returns and covariance estimation.
 
@@ -1081,6 +1090,8 @@ def augmented_black_litterman(
         - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
+        - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
     **kwargs : dict
         Other variables related to the expected returns and covariance estimation.
 
@@ -1312,6 +1323,8 @@ def black_litterman_bayesian(
         - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
+        - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
     **kwargs : dict
         Other variables related to the expected returns and covariance estimation.
 

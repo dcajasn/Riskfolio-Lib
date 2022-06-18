@@ -426,7 +426,8 @@ class Portfolio(object):
             - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
-
+            - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`a-Gerber2021`.
+            - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`a-Gerber2021`.
         **kwargs : dict
             All additional parameters of mean_vector and covar_matrix functions.
 
@@ -504,7 +505,8 @@ class Portfolio(object):
             - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
-
+            - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`a-Gerber2021`.
+            - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`a-Gerber2021`.
         **kwargs : dict
             Other variables related to the covariance estimation.
 
@@ -589,7 +591,8 @@ class Portfolio(object):
             - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
-
+            - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`a-Gerber2021`.
+            - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`a-Gerber2021`.
         dict_cov : dict
             Other variables related to the covariance estimation.
         dict_risk : dict
@@ -719,7 +722,8 @@ class Portfolio(object):
             - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
-
+            - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`a-Gerber2021`.
+            - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`a-Gerber2021`.
         kwargs_1 : dict
             Other variables related to the loadings matrix estimation.
         kwargs_2 : dict

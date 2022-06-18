@@ -22,6 +22,8 @@ import networkx as nx
 import riskfolio.RiskFunctions as rk
 import riskfolio.AuxFunctions as af
 import riskfolio.DBHT as db
+import riskfolio.GerberStatistic as gs
+
 
 __all__ = [
     "plot_series",
@@ -287,7 +289,7 @@ def plot_frontier(
     t_factor : float, optional
         Factor used to annualize expected return and expected risks for
         risk measures based on returns (not drawdowns). The default is 252.
-        
+
         .. math::
             
             \begin{align}
@@ -524,7 +526,7 @@ def plot_pie(
     -------
     ::
 
-        ax = rp.plot_pie(w=w1, title='Portafolio', height=6, width=10,
+        ax = rp.plot_pie(w=w1, title='Portfolio', height=6, width=10,
                          cmap="tab20", ax=None)
 
     .. image:: images/Pie_Chart.png
@@ -1913,6 +1915,7 @@ def plot_clusters(
     max_k=10,
     bins_info="KN",
     alpha_tail=0.05,
+    gs_threshold=0.5,
     leaf_order=True,
     dendrogram=True,
     cmap="viridis",
@@ -1938,8 +1941,12 @@ def plot_clusters(
 
         - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
         - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
         - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
         - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
         - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
         - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
         - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
@@ -1977,6 +1984,8 @@ def plot_clusters(
 
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
     leaf_order : bool, optional
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
@@ -2035,11 +2044,21 @@ def plot_clusters(
 
     vmin, vmax = 0, 1
     # Calculating codependence matrix and distance metric
-    if codependence in {"pearson", "spearman"}:
+    if codependence in {"pearson", "spearman", "kendall"}:
         codep = returns.corr(method=codependence)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
         vmin, vmax = -1, 1
-    elif codependence in {"abs_pearson", "abs_spearman"}:
+    elif codependence == "gerber1":
+        codep = gs.gerber_cov_stat1(returns, threshold=gs_threshold)
+        codep = af.cov2corr(codep)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+        vmin, vmax = -1, 1
+    elif codependence == "gerber2":
+        codep = gs.gerber_cov_stat2(returns, threshold=gs_threshold)
+        codep = af.cov2corr(codep)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+        vmin, vmax = -1, 1
+    elif codependence in {"abs_pearson", "abs_spearman", "abs_kendall"}:
         codep = np.abs(returns.corr(method=codependence[4:]))
         dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
     elif codependence in {"distance"}:
@@ -2250,6 +2269,7 @@ def plot_dendrogram(
     max_k=10,
     bins_info="KN",
     alpha_tail=0.05,
+    gs_threshold=0.5,
     leaf_order=True,
     title="",
     height=5,
@@ -2272,8 +2292,12 @@ def plot_dendrogram(
 
         - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
         - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
         - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
         - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
         - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
         - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
         - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
@@ -2311,6 +2335,8 @@ def plot_dendrogram(
 
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
     leaf_order : bool, optional
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
@@ -2359,10 +2385,18 @@ def plot_dendrogram(
     labels = np.array(returns.columns.tolist())
 
     # Calculating codependence matrix and distance metric
-    if codependence in {"pearson", "spearman"}:
+    if codependence in {"pearson", "spearman", "kendall"}:
         codep = returns.corr(method=codependence)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-    elif codependence in {"abs_pearson", "abs_spearman"}:
+    elif codependence == "gerber1":
+        codep = gs.gerber_cov_stat1(returns, threshold=gs_threshold)
+        codep = af.cov2corr(codep)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    elif codependence == "gerber2":
+        codep = gs.gerber_cov_stat2(returns, threshold=gs_threshold)
+        codep = af.cov2corr(codep)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    elif codependence in {"abs_pearson", "abs_spearman", "abs_kendall"}:
         codep = np.abs(returns.corr(method=codependence[4:]))
         dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
     elif codependence in {"distance"}:
@@ -2473,6 +2507,7 @@ def plot_network(
     max_k=10,
     bins_info="KN",
     alpha_tail=0.05,
+    gs_threshold=0.5,
     leaf_order=True,
     kind="spring",
     seed=0,
@@ -2502,8 +2537,12 @@ def plot_network(
 
         - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
         - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
-        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{pearson}_{i,j}|)}`.
-        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{spearman}_{i,j}|)}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
         - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
         - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
         - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
@@ -2541,6 +2580,8 @@ def plot_network(
 
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
     leaf_order : bool, optional
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
@@ -2610,10 +2651,18 @@ def plot_network(
     labels = np.array(returns.columns.tolist())
 
     # Calculating codependence matrix and distance metric
-    if codependence in {"pearson", "spearman"}:
+    if codependence in {"pearson", "spearman", "kendall"}:
         codep = returns.corr(method=codependence)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-    elif codependence in {"abs_pearson", "abs_spearman"}:
+    elif codependence == "gerber1":
+        codep = gs.gerber_cov_stat1(returns, threshold=gs_threshold)
+        codep = af.cov2corr(codep)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    elif codependence == "gerber2":
+        codep = gs.gerber_cov_stat2(returns, threshold=gs_threshold)
+        codep = af.cov2corr(codep)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    elif codependence in {"abs_pearson", "abs_spearman", "abs_kendall"}:
         codep = np.abs(returns.corr(method=codependence[4:]))
         dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
     elif codependence in {"distance"}:
