@@ -312,7 +312,7 @@ def test_hc_nco_optimization():
 
     port = rp.HCPortfolio(returns=Y)
 
-    model = "HERC"
+    model = "NCO"
     codependence = "pearson"
     covariance = "hist"
     obj = "MinRisk"
