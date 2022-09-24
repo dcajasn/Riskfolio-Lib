@@ -931,15 +931,13 @@ class Portfolio(object):
             d_mu = (mu_u - mu_l) / 2
         elif box == "n":
             # Defining confidence level of mean vector assuming normal returns
-            mu_u = mu + st.norm.ppf(1 - q / 2) * np.diag(cov) / n**2
-            mu_l = mu - st.norm.ppf(1 - q / 2) * np.diag(cov) / n**2
-            d_mu = (mu_u - mu_l) / 2
+            d_mu = st.norm.ppf(1 - q / 2) * np.sqrt(np.diag(cov) / n)
             d_mu = pd.DataFrame(d_mu, index=[0], columns=cols)
 
             # Defining confidence level of covariance matrix assuming normal returns
             rs = np.random.RandomState(seed=seed)
             A = st.wishart.rvs(n, cov / n, size=10000, random_state=rs)
-            cov_l = np.percentile(A, q=q, axis=0)
+            cov_l = np.percentile(A, q=q / 2, axis=0)
             cov_u = np.percentile(A, q=1 - q / 2, axis=0)
 
             cov_l = pd.DataFrame(cov_l, index=cols, columns=cols)
