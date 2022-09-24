@@ -560,13 +560,14 @@ def plot_pie(
     sizes3 = sizes2.cumsum()
     sizes3["abs_values"] = sizes3["abs_values"] / sizes3["abs_values"].max()
     l = sizes3[sizes3["abs_values"] >= 1 - others].index.tolist()[0]
-
-    a1 = sizes2["abs_values"].sum() - sizes2[sizes2.index <= l]["abs_values"].sum()
-    a2 = sizes2["values"].sum() - sizes2[sizes2.index <= l]["values"].sum()
-    item = pd.DataFrame(["Others", a1, a2]).T
-    item.columns = ["labels", "abs_values", "values"]
-    sizes2 = sizes2[sizes2.index <= l]
-    sizes2 = sizes2.append(item)
+    
+    if l > 0:    
+        a1 = sizes2["abs_values"].sum() - sizes2[sizes2.index <= l]["abs_values"].sum()
+        a2 = sizes2["values"].sum() - sizes2[sizes2.index <= l]["values"].sum()
+        item = pd.DataFrame(["Others", a1, a2]).T
+        item.columns = ["labels", "abs_values", "values"]
+        sizes2 = sizes2[sizes2.index <= l]
+        sizes2 = sizes2.append(item)
 
     abs_sizes = sizes2["abs_values"].tolist()
     sizes = sizes2["values"].tolist()
@@ -606,8 +607,10 @@ def plot_pie(
     # Equal aspect ratio ensures that pie is drawn as a circle.
 
     ax.axis("equal")
-
+    
     n = int(np.ceil(l / nrow))
+    if n == 0:
+        n += 1
 
     ax.legend(wedges, labels, loc="center left", bbox_to_anchor=(1, 0.5), ncol=n)
 
