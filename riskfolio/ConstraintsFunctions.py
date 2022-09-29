@@ -902,7 +902,7 @@ def hrp_constraints(constraints, asset_classes):
         raise ValueError("constraints and asset_classes must be DataFrames")
 
     if constraints.shape[1] != 6:
-        raise ValueError("constraints must have ten columns")
+        raise ValueError("constraints must have six columns")
 
     n = len(constraints)
     data = constraints.fillna("").copy()
