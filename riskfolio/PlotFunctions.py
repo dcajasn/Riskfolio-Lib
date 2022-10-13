@@ -1791,7 +1791,7 @@ def plot_table(
         "",
         (mu @ w).to_numpy().item() * t_factor,
         np.power(np.prod(1 + X), days_per_year / days) - 1,
-        MAR,
+        MAR * t_factor,
         alpha,
         "",
         "",
