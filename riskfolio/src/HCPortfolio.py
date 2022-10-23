@@ -11,11 +11,11 @@ import pandas as pd
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
 import riskfolio as rp
-import riskfolio.RiskFunctions as rk
-import riskfolio.AuxFunctions as af
-import riskfolio.ParamsEstimation as pe
-import riskfolio.DBHT as db
-import riskfolio.GerberStatistic as gs
+import riskfolio.src.RiskFunctions as rk
+import riskfolio.src.AuxFunctions as af
+import riskfolio.src.ParamsEstimation as pe
+import riskfolio.src.DBHT as db
+import riskfolio.src.GerberStatistic as gs
 
 
 class HCPortfolio(object):

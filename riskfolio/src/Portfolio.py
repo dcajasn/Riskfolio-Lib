@@ -11,10 +11,10 @@ import pandas as pd
 import cvxpy as cv
 import scipy.stats as st
 from scipy.linalg import sqrtm
-import riskfolio.RiskFunctions as rk
-import riskfolio.ParamsEstimation as pe
-import riskfolio.AuxFunctions as af
-import riskfolio.OwaWeights as owa
+import riskfolio.src.RiskFunctions as rk
+import riskfolio.src.ParamsEstimation as pe
+import riskfolio.src.AuxFunctions as af
+import riskfolio.src.OwaWeights as owa
 
 
 class Portfolio(object):
@@ -433,8 +433,8 @@ class Portfolio(object):
 
         See Also
         --------
-        riskfolio.ParamsEstimation.mean_vector
-        riskfolio.ParamsEstimation.covar_matrix
+        riskfolio.src.ParamsEstimation.mean_vector
+        riskfolio.src.ParamsEstimation.covar_matrix
 
         """
 
@@ -512,7 +512,7 @@ class Portfolio(object):
 
         See Also
         --------
-        riskfolio.ParamsEstimation.black_litterman
+        riskfolio.src.ParamsEstimation.black_litterman
 
         """
         X = self.returns
@@ -600,10 +600,10 @@ class Portfolio(object):
 
         See Also
         --------
-        riskfolio.ParamsEstimation.forward_regression
-        riskfolio.ParamsEstimation.backward_regression
-        riskfolio.ParamsEstimation.loadings_matrix
-        riskfolio.ParamsEstimation.risk_factors
+        riskfolio.src.ParamsEstimation.forward_regression
+        riskfolio.src.ParamsEstimation.backward_regression
+        riskfolio.src.ParamsEstimation.loadings_matrix
+        riskfolio.src.ParamsEstimation.risk_factors
 
         """
         X = self.factors
@@ -731,8 +731,8 @@ class Portfolio(object):
 
         See Also
         --------
-        riskfolio.ParamsEstimation.augmented_black_litterman
-        riskfolio.ParamsEstimation.black_litterman_bayesian
+        riskfolio.src.ParamsEstimation.augmented_black_litterman
+        riskfolio.src.ParamsEstimation.black_litterman_bayesian
 
         """
         X = self.returns
@@ -898,7 +898,7 @@ class Portfolio(object):
 
         See Also
         --------
-        riskfolio.ParamsEstimation.bootstrapping
+        riskfolio.src.ParamsEstimation.bootstrapping
 
         """
 

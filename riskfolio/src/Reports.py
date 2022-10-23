@@ -10,8 +10,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from xlsxwriter.utility import xl_range_abs, xl_range, xl_rowcol_to_cell, xl_col_to_name
 import datetime
-import riskfolio.PlotFunctions as plf
-import riskfolio.RiskFunctions as rk
+import riskfolio.src.PlotFunctions as plf
+import riskfolio.src.RiskFunctions as rk
 
 
 __LICENSE__ = """Copyright (c) 2020-2022, Dany Cajas 

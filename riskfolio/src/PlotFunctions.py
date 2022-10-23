@@ -19,10 +19,10 @@ import scipy.stats as st
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
 import networkx as nx
-import riskfolio.RiskFunctions as rk
-import riskfolio.AuxFunctions as af
-import riskfolio.DBHT as db
-import riskfolio.GerberStatistic as gs
+import riskfolio.src.RiskFunctions as rk
+import riskfolio.src.AuxFunctions as af
+import riskfolio.src.DBHT as db
+import riskfolio.src.GerberStatistic as gs
 
 
 __all__ = [

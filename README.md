@@ -35,11 +35,12 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Maximum Utility Function.
     - Maximum Risk Adjusted Return Ratio.
 
-- Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 18 convex risk measures:
+- Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 20 convex risk measures:
 
     **Dispersion Risk Measures:**
 
     - Standard Deviation.
+    - Fourth Root Kurtosis.
     - Mean Absolute Deviation (MAD).
     - Gini Mean Difference (GMD).
     - Range.
@@ -50,6 +51,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     **Downside Risk Measures:**
 
     - Semi Standard Deviation.
+    - Fourth Root Semi Kurtosis.
     - First Lower Partial Moment (Omega Ratio).
     - Second Lower Partial Moment (Sortino Ratio).
     - Conditional Value at Risk (CVaR).
@@ -66,20 +68,23 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
     - Ulcer Index for uncompounded cumulative returns.
 
-- Risk Parity Portfolio Optimization with 14 convex risk measures:
+- Risk Parity Portfolio Optimization with 16 convex risk measures:
 
     **Dispersion Risk Measures:**
 
     - Standard Deviation.
+    - Fourth Root Kurtosis.
     - Mean Absolute Deviation (MAD).
     - Gini Mean Difference (GMD).
     - Conditional Value at Risk Range.
     - Tail Gini Range.
     &nbsp;
-    
+    - Kurtosis.
+
     **Downside Risk Measures:**
 
     - Semi Standard Deviation.
+    - Fourth Root Semi Kurtosis.
     - First Lower Partial Moment (Omega Ratio)
     - Second Lower Partial Moment (Sortino Ratio)
     - Conditional Value at Risk (CVaR).
@@ -93,12 +98,13 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
     - Ulcer Index for uncompounded cumulative returns.
 
-- Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 22 risk measures using naive risk parity:
+- Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 24 risk measures using naive risk parity:
 
     **Dispersion Risk Measures:**
 
     - Standard Deviation.
     - Variance.
+    - Fourth Root Kurtosis.
     - Mean Absolute Deviation (MAD).
     - Range.
     - Conditional Value at Risk Range.
@@ -108,6 +114,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     **Downside Risk Measures:**
 
     - Semi Standard Deviation.
+    - Fourth Root Semi Kurtosis.
     - First Lower Partial Moment (Omega Ratio).
     - Second Lower Partial Moment (Sortino Ratio).
     - Value at Risk (VaR).

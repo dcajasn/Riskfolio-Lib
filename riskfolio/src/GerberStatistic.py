@@ -6,7 +6,7 @@ https://github.com/yinsenm/gerber/blob/af04c2ee5adf342393b028b85ab5546f31c0c8d3/
 
 import numpy as np
 import pandas as pd
-import riskfolio.AuxFunctions as af
+import riskfolio.src.AuxFunctions as af
 
 
 def gerber_cov_stat0(X, threshold=0.5):

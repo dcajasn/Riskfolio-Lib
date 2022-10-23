@@ -7,7 +7,7 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 """
 
 import numpy as np
-import riskfolio.OwaWeights as owa
+import riskfolio.src.OwaWeights as owa
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
 

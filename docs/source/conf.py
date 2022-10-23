@@ -16,6 +16,8 @@ import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(1, os.path.abspath('../../riskfolio'))
+sys.path.insert(2, os.path.abspath('../../riskfolio/src'))
+sys.path.insert(3, os.path.abspath('../../riskfolio/external'))
 
 
 # -- Project information -----------------------------------------------------
@@ -27,7 +29,7 @@ author = 'Dany Cajas'
 # The short X.Y version
 version = 'latest'
 # The full version, including alpha/beta/rc tags
-release = '3.3.0'
+release = '4.0.0'
 
 
 # -- General configuration ---------------------------------------------------

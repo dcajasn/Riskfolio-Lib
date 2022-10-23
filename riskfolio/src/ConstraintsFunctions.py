@@ -10,8 +10,8 @@ import numpy as np
 import pandas as pd
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
-import riskfolio.AuxFunctions as af
-import riskfolio.DBHT as db
+import riskfolio.src.AuxFunctions as af
+import riskfolio.src.DBHT as db
 
 
 def assets_constraints(constraints, asset_classes):

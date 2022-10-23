@@ -14,9 +14,9 @@ import arch.bootstrap as bs
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from numpy.linalg import inv
-import riskfolio.AuxFunctions as af
-import riskfolio.DBHT as db
-import riskfolio.GerberStatistic as gs
+import riskfolio.src.AuxFunctions as af
+import riskfolio.src.DBHT as db
+import riskfolio.src.GerberStatistic as gs
 
 
 def mean_vector(X, method="hist", d=0.94):
