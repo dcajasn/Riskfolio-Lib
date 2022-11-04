@@ -13,8 +13,7 @@ Parameters Estimation
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
-This module has functions that allows us to estimate the vector of means 
-and covariance matrix using several methods:
+This module has functions that allows us to estimate the vector of means, covariance matrix and cokurtosis square matrix using several methods:
 
 - Historical estimates.
 - Estimates using exponencial weighted moving averages (EWMA).

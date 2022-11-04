@@ -652,8 +652,10 @@ class HCPortfolio(object):
             - 'equal': Equally weighted.
             - 'vol': Standard Deviation.
             - 'MV': Variance.
+            - 'KT': Square Root Kurtosis.
             - 'MAD': Mean Absolute Deviation.
             - 'MSV': Semi Standard Deviation.
+            - 'SKT': Square Root Semi Kurtosis.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'VaR': Value at Risk.

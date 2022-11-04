@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.lines as mlines
 import matplotlib.ticker as mticker
-from matplotlib import cm
+from matplotlib import cm, colors
 from matplotlib.gridspec import GridSpec
 from matplotlib.patches import Patch
 import scipy.stats as st
@@ -43,48 +43,52 @@ __all__ = [
 
 rm_names = [
     "Standard Deviation",
+    "Square Root Kurtosis",
     "Mean Absolute Deviation",
+    "Gini Mean Difference",
     "Semi Standard Deviation",
-    "Value at Risk",
-    "Conditional Value at Risk",
-    "Entropic Value at Risk",
-    "Worst Realization",
+    "Square Root Semi Kurtosis",
     "First Lower Partial Moment",
     "Second Lower Partial Moment",
+    "Value at Risk",
+    "Conditional Value at Risk",
+    "Tail Gini",
+    "Entropic Value at Risk",
+    "Worst Realization",
+    "Conditional Value at Risk Range",
+    "Tail Gini Range",
+    "Range",
     "Max Drawdown",
     "Average Drawdown",
     "Drawdown at Risk",
     "Conditional Drawdown at Risk",
     "Entropic Drawdown at Risk",
     "Ulcer Index",
-    "Gini Mean Difference",
-    "Tail Gini",
-    "Range",
-    "Conditional Value at Risk Range",
-    "Tail Gini Range",
 ]
 
 rmeasures = [
     "MV",
+    "KT",
     "MAD",
+    "GMD",
     "MSV",
-    "VaR",
-    "CVaR",
-    "EVaR",
-    "WR",
+    "SKT",
     "FLPM",
     "SLPM",
+    "VaR",
+    "CVaR",
+    "TG",
+    "EVaR",
+    "WR",
+    "CVRG",
+    "TGRG",
+    "RG",
     "MDD",
     "ADD",
     "DaR",
     "CDaR",
     "EDaR",
     "UCI",
-    "GMD",
-    "TG",
-    "RG",
-    "CVRG",
-    "TGRG",
 ]
 
 
@@ -234,17 +238,19 @@ def plot_frontier(
         The default is 'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
+        - 'KT': Square Root Kurtosis.
         - 'MAD': Mean Absolute Deviation.
         - 'MSV': Semi Standard Deviation.
+        - 'SKT': Square Root Semi Kurtosis.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'CVaR': Conditional Value at Risk.
         - 'TG': Tail Gini.
         - 'EVaR': Entropic Value at Risk.
         - 'WR': Worst Realization (Minimax).
-        - 'RG': Range of returns.
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
+        - 'RG': Range of returns.
         - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -273,8 +279,8 @@ def plot_frontier(
         The default is 'viridis'.
     w : DataFrame of shape (n_assets, 1), optional
         A portfolio specified by the user. The default is None.
-    label : str, optional
-        Name of portfolio that appear on plot legend.
+    label : str or list, optional
+        Name or list of names of portfolios that appear on plot legend.
         The default is 'Portfolio'.
     marker : str, optional
         Marker of w. The default is "*".
@@ -350,10 +356,8 @@ def plot_frontier(
         if not isinstance(w, pd.DataFrame):
             raise ValueError("w must be a DataFrame")
 
-        if w.shape[1] > 1 and w.shape[0] == 0:
+        if w.shape[1] > 1 and w.shape[0] == 1:
             w = w.T
-        elif w.shape[1] > 1 and w.shape[0] > 0:
-            raise ValueError("w must be a column DataFrame")
 
         if returns.shape[1] != w.shape[0]:
             a1 = str(returns.shape)
@@ -421,12 +425,42 @@ def plot_frontier(
         Z1.append(ratio)
 
     ax1 = ax.scatter(X1, Y1, c=Z1, cmap=cmap)
-
+    
     if w is not None:
-        X2 = []
-        Y2 = []
+        if isinstance(label,str):
+            label = [label]
+
+        if label is None:
+            label = w.columns.tolist()
+        
+        if w.shape[1] != len(label):
+            label = w.columns.tolist()
+        
+        label = [v + " " + str(label[:i].count(v) + 1) if label.count(v) > 1 else v for i, v in enumerate(label)]
+            
+        if isinstance(c,str):
+            colormap = np.array(colors.to_rgba(c)).reshape(1,-1)
+        elif c is None:
+            colormap = np.array(colors.to_rgba("red")).reshape(1,-1)
+            
+        elif isinstance(c,list):
+            colormap = [list(colors.to_rgba(i)) for i in c]
+            colormap = np.array(colormap)
+            
+        if len(label) != colormap.shape[0]:
+            colormap = cm.get_cmap("tab20")
+            colormap = colormap(np.linspace(0, 1, 20))
+            colormap = np.vstack([colormap[6:8],
+                                  colormap[2:6],
+                                  colormap[8:],
+                                  colormap[0:2]])
+            
+        n_repeats = int(len(label) // 20 + 1)
+        if n_repeats > 1:
+            colormap = np.vstack([colormap] * n_repeats)
+
         for i in range(w.shape[1]):
-            weights = np.array(w.iloc[:, i], ndmin=2).T
+            weights = w.iloc[:, i].to_numpy().reshape(-1,1)
             risk = rk.Sharpe_Risk(
                 weights,
                 cov=cov,
@@ -447,10 +481,9 @@ def plot_frontier(
             if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
                 risk = risk * t_factor**0.5
 
-            X2.append(risk)
-            Y2.append(ret)
+            color = colormap[i].reshape(1,-1)
+            ax.scatter(risk, ret, marker=marker, s=s**2, c=color, label=label[i])
 
-        ax.scatter(X2, Y2, marker=marker, s=s**2, c=c, label=label)
         ax.legend(loc="upper left")
 
     xmin = np.min(X1) - np.abs(np.max(X1) - np.min(X1)) * 0.1
@@ -1005,18 +1038,20 @@ def plot_risk_con(
         The default is 'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
+        - 'KT': Square Root Kurtosis.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
+        - 'SKT': Square Root Semi Kurtosis.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'CVaR': Conditional Value at Risk.
         - 'TG': Tail Gini.
         - 'EVaR': Entropic Value at Risk.
         - 'WR': Worst Realization (Minimax).
-        - 'RG': Range of returns.
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
+        - 'RG': Range of returns.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.

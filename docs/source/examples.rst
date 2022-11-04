@@ -29,6 +29,8 @@ Return Risk Portfolio Optimization Models
 * `Gini Mean Difference (GMD) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2035.ipynb>`_.
 * `Tail Gini Range Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2036.ipynb>`_.
 * `Ordered Weighted Averaging (OWA) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2037.ipynb>`_.
+* `Kurtosis Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2038.ipynb>`_.
+* `Semi Kurtosis Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2039.ipynb>`_.
 
 
 Special Constraints

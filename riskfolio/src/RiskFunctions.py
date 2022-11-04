@@ -14,6 +14,8 @@ from scipy.optimize import Bounds
 
 __all__ = [
     "MAD",
+    "Kurtosis",
+    "SemiKurtosis",
     "SemiDeviation",
     "VaR_Hist",
     "CVaR_Hist",
@@ -69,8 +71,12 @@ def MAD(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
-
-    value = np.mean(np.absolute(a - np.mean(a, axis=0)), axis=0)
+    
+    T, N = a.shape
+    mu = np.mean(a, axis=0).reshape(1,-1)
+    mu = np.repeat(mu, T, axis=0)
+    value = a - mu
+    value = np.mean(np.absolute(value), axis=0)
     value = np.array(value).item()
 
     return value
@@ -82,7 +88,7 @@ def SemiDeviation(X):
 
     .. math::
         \text{SemiDev}(X) = \left [ \frac{1}{T-1}\sum_{t=1}^{T}
-        (X_{t} - \mathbb{E}(X_{t}))^2 \right ]^{1/2}
+        \min (X_{t} - \mathbb{E}(X_{t}), 0)^2 \right ]^{1/2}
 
     Parameters
     ----------
@@ -106,10 +112,91 @@ def SemiDeviation(X):
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
 
-    mu = np.mean(a, axis=0)
+    T, N = a.shape
+    mu = np.mean(a, axis=0).reshape(1,-1)
+    mu = np.repeat(mu, T, axis=0)
     value = mu - a
-    n = value.shape[0]
-    value = np.sum(np.power(value[np.where(value >= 0)], 2)) / (n - 1)
+    value = np.sum(np.power(value[np.where(value >= 0)], 2)) / (T - 1)
+    value = np.power(value, 0.5).item()
+
+    return value
+
+
+def Kurtosis(X):
+    r"""
+    Calculate the Square Root Kurtosis of a returns series.
+
+    .. math::
+        \text{Kurt}(X) = \left [ \frac{1}{T}\sum_{t=1}^{T}
+        (X_{t} - \mathbb{E}(X_{t}))^{4} \right ]^{1/2}
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Square Root Kurtosis of a returns series.
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T, N = a.shape
+    mu = np.mean(a, axis=0).reshape(1,-1)
+    mu = np.repeat(mu, T, axis=0)
+    value = mu - a
+    value = np.sum(np.power(value, 4)) / T
+    value = np.power(value, 0.5).item()
+
+    return value
+
+
+def SemiKurtosis(X):
+    r"""
+    Calculate the Semi Square Root Kurtosis of a returns series.
+
+    .. math::
+        \text{Kurt}(X) = \left [ \frac{1}{T}\sum_{t=1}^{T}
+        \min (X_{t} - \mathbb{E}(X_{t}), 0)^{4} \right ]^{1/2}
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Semi Square Root Kurtosis of a returns series.
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T, N = a.shape
+    mu = np.mean(a, axis=0).reshape(1,-1)
+    mu = np.repeat(mu, T, axis=0)
+    value = mu - a
+    value = np.sum(np.power(value[np.where(value >= 0)], 4)) / T
     value = np.power(value, 0.5).item()
 
     return value
@@ -1247,6 +1334,7 @@ def TGRG(X, alpha=0.05, a_sim=100, beta=None, b_sim=None):
 def Sharpe_Risk(
     w,
     cov=None,
+    kurt=None,
     returns=None,
     rm="MV",
     rf=0,
@@ -1272,9 +1360,11 @@ def Sharpe_Risk(
         'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
+        - 'KT': Square Root Kurtosis.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
+        - 'SKT': Square Root Semi Kurtosis.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
@@ -1388,6 +1478,10 @@ def Sharpe_Risk(
         risk = EDaR_Rel(a, alpha=alpha)[0]
     elif rm == "UCI_Rel":
         risk = UCI_Rel(a)
+    elif rm == "KT":
+        risk = Kurtosis(a)
+    elif rm == "SKT":
+        risk = SemiKurtosis(a)
 
     value = risk
 
@@ -1440,9 +1534,11 @@ def Sharpe(
         'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
+        - 'KT': Square Root Kurtosis.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
+        - 'SKT': Square Root Semi Kurtosis.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
@@ -1565,9 +1661,11 @@ def Risk_Contribution(
         'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
+        - 'KT': Square Root Kurtosis.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
+        - 'SKT': Square Root Semi Kurtosis.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
@@ -1717,6 +1815,12 @@ def Risk_Contribution(
         elif rm == "UCI_Rel":
             risk_1 = UCI_Rel(a_1)
             risk_2 = UCI_Rel(a_2)
+        elif rm == "KT":
+            risk_1 = Kurtosis(a_1)
+            risk_2 = Kurtosis(a_2)
+        elif rm == "SKT":
+            risk_1 = SemiKurtosis(a_1)
+            risk_2 = SemiKurtosis(a_2)
 
         RC_i = (risk_1 - risk_2) / (2 * d_i) * w_[i, 0]
         RC.append(RC_i)

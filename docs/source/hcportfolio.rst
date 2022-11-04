@@ -25,21 +25,23 @@ Riskfolio-Lib allows to calculate the new machine learning asset allocation mode
 - Hierarchical Equal Risk Contribution (HERC) :cite:`c-Raffinot1`, :cite:`c-Raffinot2`, :cite:`c-Sjostrand`.
 - Nested Clustered Optimization (NCO) :cite:`c-Prado2`, :cite:`c-Sjostrand`.
 
-In the first two cases we have the option to use the following 27 risk measures to calculate HRP and HERC portfolios using naive risk parity:
+In the first two cases we have the option to use the following 29 risk measures to calculate HRP and HERC portfolios using naive risk parity:
 
 **Dispersion Risk Measures:**
 
 - Standard Deviation.
 - Variance.
+- Square Root Kurtosis.
 - Mean Absolute Deviation (MAD).
 - Gini Mean Difference (GMD).
-- Range.
 - Conditional Value at Risk Range.
 - Tail Gini Range.
+- Range.
 
 **Downside Risk Measures:**
 
 - Semi Standard Deviation.
+- Square Root Semi Kurtosis.
 - First Lower Partial Moment (Omega Ratio).
 - Second Lower Partial Moment (Sortino Ratio).
 - Value at Risk (VaR).

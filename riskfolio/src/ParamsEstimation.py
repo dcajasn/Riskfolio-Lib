@@ -14,9 +14,11 @@ import arch.bootstrap as bs
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from numpy.linalg import inv
+from itertools import product
 import riskfolio.src.AuxFunctions as af
 import riskfolio.src.DBHT as db
 import riskfolio.src.GerberStatistic as gs
+import riskfolio.external.cppfunctions as cf
 
 
 def mean_vector(X, method="hist", d=0.94):
@@ -82,6 +84,7 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         The default is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
+        - 'semi': use semi lower covariance matrix.
         - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
         - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
         - 'ledoit': use the Ledoit and Wolf Shrinkage method.
@@ -121,6 +124,12 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
 
     if method == "hist":
         cov = np.cov(X.T)
+    if method == "semi":
+        T, N = X.shape
+        mu = X.mean().to_numpy().reshape(1,-1)
+        a = X - np.repeat(mu, T, axis=0)
+        a = np.minimum(a, np.zeros_like(a))
+        cov = 1/(T-1) * a.T @ a
     elif method == "ewma1":
         cov = X.ewm(alpha=1 - d).cov()
         item = cov.iloc[-1, :].name[0]
@@ -165,6 +174,62 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
     cov = pd.DataFrame(np.array(cov, ndmin=2), columns=assets, index=assets)
 
     return cov
+
+
+def kurt_matrix(X, method="hist", **kwargs):
+    r"""
+    Calculate the cokurtosis square matrix using the selected method.
+
+    Parameters
+    ----------
+    X : DataFrame of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
+    method : str, optional
+        The method used to estimate the cokurtosis square matrix:
+        The default is 'hist'. Possible values are:
+
+        - 'hist': use historical estimates.
+        - 'semi': use semi lower cokurtosis square matrix.
+        - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
+    **kwargs:
+        Other variables related to covariance estimation. See
+        chapter 2 of :cite:`b-MLforAM` for more details.
+
+    Returns
+    -------
+    kurt : nd-array
+        The estimation of cokurtosis square matrix.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    """
+
+    if not isinstance(X, pd.DataFrame):
+        raise ValueError("X must be a DataFrame")
+
+    assets = X.columns.tolist()
+    cols = list(product(assets,assets))
+    cols = [y + ' - ' + x for x, y in cols]
+    
+    if method == "hist":
+        kurt = cf.kurtosis_matrix(X)
+    if method == "semi":
+        kurt = cf.semi_kurtosis_matrix(X)
+    elif method in ["fixed", "spectral", "shrink"]:
+        kurt = cf.kurtosis_matrix(X)
+        T, N = X.shape
+        q = T / N
+        kurt = af.denoiseCov(kurt, q, kind=method, **kwargs)
+
+    kurt = pd.DataFrame(np.array(kurt, ndmin=2), columns=cols, index=cols)
+
+    return kurt
 
 
 def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
@@ -282,9 +347,12 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
 
     else:
         excluded = X.columns.tolist()
-        for i in range(X.shape[1]):
-            j = 0
-            value = None
+        flag = False
+        n = len(excluded)
+        
+        for j in range(n):
+            value = {}
+            n_ini = len(excluded)
             for i in excluded:
                 factors = included.copy()
                 factors.append(i)
@@ -293,50 +361,56 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
                 results = sm.OLS(y, X1).fit()
 
                 if criterion == "AIC":
-                    if results.aic < aic:
-                        value = i
-                        aic = results.aic
-                if criterion == "SIC":
-                    if results.bic < sic:
-                        value = i
-                        sic = results.bic
-                if criterion == "R2":
-                    if results.rsquared > r2:
-                        value = i
-                        r2 = results.rsquared
-                if criterion == "R2_A":
-                    if results.rsquared_adj > r2_a:
-                        value = i
-                        r2_a = results.rsquared_adj
+                    value[i] = results.aic
+                elif criterion == "SIC":
+                    value[i] = results.bic
+                elif criterion == "R2":
+                    value[i] = results.rsquared
+                elif criterion == "R2_A":
+                    value[i] = results.rsquared_adj
+            
+            value = pd.Series(value)
 
-                j += 1
-                if j == len(excluded):
-                    if value is None:
-                        break
-                    else:
-                        excluded.remove(value)
-                        included.append(value)
-                        if verbose:
-                            if criterion == "AIC":
-                                print(
-                                    "Add {} with AIC {:.6}".format(value, results.aic)
-                                )
-                            elif criterion == "SIC":
-                                print(
-                                    "Add {} with SIC {:.6}".format(value, results.bic)
-                                )
-                            elif criterion == "R2":
-                                print(
-                                    "Add {} with R2 {:.6}".format(
-                                        value, results.rsquared
-                                    )
-                                )
-                            elif criterion == "R2_A":
-                                print(
-                                    "Add {} with Adjusted R2 {:.6}".format(
-                                        value, results.rsquared_adj
-                                    )
-                                )
+            if criterion in ["AIC", "SIC"]:
+                key = value.idxmin()
+                value = value.min()
+            if criterion in ["R2", "R2_A"]:
+                key = value.idxmax()
+                value = value.max()
+                            
+            if criterion == "AIC":
+                if value < aic:
+                    excluded.remove(key)
+                    included.append(key)
+                    aic = value
+                    flag = True
+            elif criterion == "SIC":
+                if value < sic:
+                    excluded.remove(key)
+                    included.append(key)
+                    sic = value
+                    flag = True
+            elif criterion == "R2":
+                if value > r2:
+                    excluded.remove(key)
+                    included.append(key)
+                    r2 = value
+                    flag = True
+            elif criterion == "R2_A":
+                if value > r2_a:
+                    excluded.remove(key)
+                    included.append(key)
+                    r2_a = value
+                    flag = True
+                    
+            if n_ini == len(excluded):
+                break
+
+            if flag and verbose:
+                print("Add {} with {} {:.6}".format(key, criterion, value))
+                
+            flag = False
+
 
     return included
 
@@ -400,9 +474,9 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
     r2_a = results.rsquared_adj
 
     included = pvalues.index.tolist()
-    excluded = ["const"]
 
     if criterion == "pvalue":
+        excluded = ["const"]
         while pvalues[pvalues.index != "const"].max() > threshold:
             factors = pvalues[~pvalues.index.isin(excluded)].index.tolist()
             X1 = X[factors]
@@ -449,9 +523,12 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
 
     else:
         included.remove("const")
-        for i in range(X.shape[1]):
-            j = 0
-            value = None
+        flag = False
+        n = len(included)
+        
+        for j in range(n):
+            value = {}
+            n_ini = len(included)
             for i in included:
                 factors = included.copy()
                 factors.remove(i)
@@ -460,49 +537,51 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
                 results = sm.OLS(y, X1).fit()
 
                 if criterion == "AIC":
-                    if results.aic < aic:
-                        value = i
-                        aic = results.aic
+                    value[i] = results.aic
                 elif criterion == "SIC":
-                    if results.bic < sic:
-                        value = i
-                        sic = results.bic
+                    value[i] = results.bic
                 elif criterion == "R2":
-                    if results.rsquared > r2:
-                        value = i
-                        r2 = results.rsquared
+                    value[i] = results.rsquared
                 elif criterion == "R2_A":
-                    if results.rsquared_adj > r2_a:
-                        value = i
-                        r2_a = results.rsquared_adj
+                    value[i] = results.rsquared_adj
+            
+            value = pd.Series(value)
 
-                j += 1
-                if j == len(included):
-                    if value is None:
-                        break
-                    else:
-                        included.remove(value)
-                        if verbose:
-                            if criterion == "AIC":
-                                print(
-                                    "Drop {} with AIC {:.6}".format(value, results.aic)
-                                )
-                            elif criterion == "SIC":
-                                print(
-                                    "Drop {} with SIC {:.6}".format(value, results.bic)
-                                )
-                            elif criterion == "R2":
-                                print(
-                                    "Drop {} with R2 {:.6}".format(
-                                        value, results.rsquared
-                                    )
-                                )
-                            elif criterion == "R2_A":
-                                print(
-                                    "Drop {} with Adjusted R2 {:.6}".format(
-                                        value, results.rsquared_adj
-                                    )
-                                )
+            if criterion in ["AIC", "SIC"]:
+                key = value.idxmin()
+                value = value.min()
+            if criterion in ["R2", "R2_A"]:
+                key = value.idxmax()
+                value = value.max()
+                            
+            if criterion == "AIC":
+                if value < aic:
+                    included.remove(key)
+                    aic = value
+                    flag = True
+            elif criterion == "SIC":
+                if value < sic:
+                    included.remove(key)
+                    sic = value
+                    flag = True
+            elif criterion == "R2":
+                if value > r2:
+                    included.remove(key)
+                    r2 = value
+                    flag = True
+            elif criterion == "R2_A":
+                if value > r2_a:
+                    included.remove(key)
+                    r2_a = value
+                    flag = True
+                    
+            if n_ini == len(included):
+                break
+
+            if flag and verbose:
+                print("Drop {} with {} {:.6}".format(key, criterion, value))
+                
+            flag = False
 
     return included
 
@@ -806,7 +885,7 @@ def risk_factors(
     mu = B @ mu_f.T
 
     if error == True:
-        e = np.array(Y, ndmin=2) - returns
+        e = np.array(Y, ndmin=2) - np.repeat(returns, Y.shape[0], axis=0)
         S_e = np.diag(np.var(np.array(e), ddof=1, axis=0))
         S = B @ S_f @ B.T + S_e
     elif error == False:

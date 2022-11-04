@@ -83,15 +83,17 @@ Where:
 
 :math:`Aw \geq B`: is a set of linear constraints.
 
-:math:`\phi_{i}(w)`: are 18 available risk measures. The available risk
+:math:`\phi_{i}(w)`: are 20 available risk measures. The available risk
 measures are:
 
 - Standard Deviation :cite:`a-Markowitz`.
+- Square Root Kurtosis :cite:`a-Cajas4`.
 - Mean Absolute Deviation :cite:`a-Konno`.
 - Gini Mean Difference :cite:`a-Yitzhaki1`, :cite:`a-Cajas3`.
 - Conditional Value at Risk Range :cite:`a-Cajas3`.
 - Tail Gini Range :cite:`a-Cajas3`.
 - Semi Standard Deviation :cite:`a-Mansini3`.
+- Square Root Semi Kurtosis :cite:`a-Cajas4`.
 - First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.
@@ -139,15 +141,17 @@ Where:
 
 :math:`Aw \geq B`: is a set of linear constraints.
 
-:math:`\phi(w)`: are 10 available risk measures. The available risk
+:math:`\phi(w)`: are 16 available risk measures. The available risk
 measures are:
 
 - Standard Deviation :cite:`a-Markowitz`.
+- Square Root Kurtosis :cite:`a-Cajas4`.
 - Mean Absolute Deviation :cite:`a-Konno`.
 - Gini Mean Difference :cite:`a-Yitzhaki1`, :cite:`a-Cajas3`.
 - Conditional Value at Risk Range :cite:`a-Cajas3`.
 - Tail Gini Range :cite:`a-Cajas3`.
 - Semi Standard Deviation :cite:`a-Mansini3`.
+- Square Root Semi Kurtosis :cite:`a-Cajas4`.
 - First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.

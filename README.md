@@ -40,18 +40,18 @@ Some of key functionalities that Riskfolio-Lib offers:
     **Dispersion Risk Measures:**
 
     - Standard Deviation.
-    - Fourth Root Kurtosis.
+    - Square Root Kurtosis.
     - Mean Absolute Deviation (MAD).
     - Gini Mean Difference (GMD).
-    - Range.
     - Conditional Value at Risk Range.
     - Tail Gini Range.
+    - Range.
     &nbsp;
     
     **Downside Risk Measures:**
 
     - Semi Standard Deviation.
-    - Fourth Root Semi Kurtosis.
+    - Square Root Semi Kurtosis.
     - First Lower Partial Moment (Omega Ratio).
     - Second Lower Partial Moment (Sortino Ratio).
     - Conditional Value at Risk (CVaR).
@@ -73,7 +73,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     **Dispersion Risk Measures:**
 
     - Standard Deviation.
-    - Fourth Root Kurtosis.
+    - Square Root Kurtosis.
     - Mean Absolute Deviation (MAD).
     - Gini Mean Difference (GMD).
     - Conditional Value at Risk Range.
@@ -84,7 +84,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     **Downside Risk Measures:**
 
     - Semi Standard Deviation.
-    - Fourth Root Semi Kurtosis.
+    - Square Root Semi Kurtosis.
     - First Lower Partial Moment (Omega Ratio)
     - Second Lower Partial Moment (Sortino Ratio)
     - Conditional Value at Risk (CVaR).

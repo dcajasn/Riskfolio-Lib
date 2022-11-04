@@ -17,8 +17,8 @@ Changelog
 Version 4.0.0
 =============
 
-- Implements Kurtosis Portfolio Model based on Co-Kurtosis square matrix.
-- Implements new c++ based functions to speed up some calculations.
+- Implements Kurtosis and Semi Kurtosis portfolio models based on parametric approach.
+- Implements new c++ based functions to speed up kurtosis model calculations.
 - Repairs some bugs.
 
 Version 3.3.0
