@@ -14,3 +14,4 @@ __pycache__/
 /tests/pruebita.py
 /conda-recipe
 /docs/.DS_Store
+/vscode
