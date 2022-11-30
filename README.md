@@ -188,6 +188,7 @@ Installation requires:
 - [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 1.3.7
 - [networkx](https://networkx.org) >= 2.5.1
 - [astropy](https://www.astropy.org) >= 4.3.1
+- [pybind11[(https://pybind11.readthedocs.io/en/stable/) >= 2.10.1
 
 ## Installation
 
@@ -202,7 +203,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 ```
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (3.1.1)},
+      title = {Riskfolio-Lib (4.0.1)},
       year  = {2022},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }
