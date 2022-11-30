@@ -8,3 +8,5 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 
 from riskfolio.src import *
 from riskfolio.external import *
+
+__version__ = "4.0.1"
