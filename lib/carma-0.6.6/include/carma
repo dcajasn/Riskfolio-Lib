@@ -1,0 +1,61 @@
+/*  carma/carma.h: Coverter of Numpy arrays and Armadillo matrices
+ *  Copyright (c) 2020 Ralph Urlus <rurlus.dev@gmail.com>
+ *  All rights reserved. Use of this source code is governed by a
+ *  Apache-2.0 license that can be found in the LICENSE file.
+ */
+#ifndef INCLUDE_CARMA_H_
+#define INCLUDE_CARMA_H_
+/* If the Numpy allocator/deallocator have not been set through
+ * the carma_armadillo target ARMA_ALIEN_MEM_ALLOC_FUNCTION and
+ * ARMA_ALIEN_MEM_FREE_FUNCTION need to be set.
+ *
+ * This requires that Armadillo wasn't included before carma
+ */
+#ifndef CARMA_ARMA_ALIEN_MEM_FUNCTIONS_SET
+  #if defined(ARMA_VERSION_MAJOR)
+    #error "carma: please include the armadillo header after the carma header or use the CARMA CMake build"
+  #endif
+  #include "carma_bits/cnalloc.h"
+#endif
+
+#include <armadillo>
+
+#if defined(CARMA_ARMA_ALIEN_MEM_FUNCTIONS_SET)
+  #if (defined(ARMA_ALIEN_MEM_ALLOC_FUNCTION) && !defined(ARMA_ALIEN_MEM_FREE_FUNCTION)) || (!defined(ARMA_ALIEN_MEM_ALLOC_FUNCTION) && defined(ARMA_ALIEN_MEM_FREE_FUNCTION))
+    #error "carma: ARMA_ALIEN_MEM_ALLOC_FUNCTION and or ARMA_ALIEN_MEM_FREE_FUNCTION not set while CARMA_ARMA_ALIEN_MEM_FUNCTIONS_SET is"
+  #endif
+#endif
+
+#define CARMA_ARMA_VERSION (ARMA_VERSION_MAJOR * 10000 + ARMA_VERSION_MINOR * 100 + ARMA_VERSION_PATCH)
+#if (CARMA_ARMA_VERSION < 100502)
+  #error "carma: minimum supported armadillo version is 10.5.2"
+#endif
+
+#ifndef CARMA_VERSION_MAJOR
+  #define CARMA_VERSION_MAJOR 0
+  #define CARMA_VERSION_MINOR 6
+  #define CARMA_VERSION_PATCH 6
+  #define CARMA_VERSION_NAME  "0.6.6 HO"
+#endif
+
+namespace carma {
+
+struct carma_version {
+    static constexpr unsigned int major = CARMA_VERSION_MAJOR;
+    static constexpr unsigned int minor = CARMA_VERSION_MINOR;
+    static constexpr unsigned int patch = CARMA_VERSION_PATCH;
+
+    static inline std::string as_string() {
+        std::ostringstream buffer;
+        buffer << carma_version::major
+        << "." << carma_version::minor
+        << "." << carma_version::patch;
+        return buffer.str();
+    }
+}; // carma_version
+} // namespace carma
+
+#include "carma_bits/nparray.h"
+#include "carma_bits/arraystore.h"
+#include "carma_bits/converters.h"
+#endif  // INCLUDE_CARMA_H_

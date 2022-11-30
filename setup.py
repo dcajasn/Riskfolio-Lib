@@ -3,6 +3,9 @@
 import os
 import numpy as np
 
+from pybind11.setup_helpers import Pybind11Extension, build_ext
+from setuptools import setup
+
 DESCRIPTION = "Portfolio Optimization and Quantitative Strategic Asset Allocation in Python"
 
 with open("README.md", encoding='UTF-8') as fh:
@@ -30,6 +33,7 @@ INSTALL_REQUIRES = [
     'xlsxwriter>=1.3.7',
     'networkx>=2.5.1',
     'astropy>=4.3.1',
+    'pybind11>=2.10.1',
 ]
 
 PACKAGES = [
@@ -68,22 +72,25 @@ if __name__ == "__main__":
     except AttributeError:
         numpy_include = np.get_numpy_include()
 
-    armadillo_path = os.path.abspath('./riskfolio/external/armadillo/include')
-    external_path = os.path.abspath('./riskfolio/external')
+    WIN = sys.platform.startswith("win32")
+    armadillo_path = os.path.abspath(os.path.join('.', 'lib', 'armadillo-11.4.1', 'include'))
+    carma_path = os.path.abspath(os.path.join('.', 'lib', 'carma-0.6.6', 'include'))
+    lpack_path = os.path.abspath(os.path.join('.', 'lib', 'armadillo-11.4.1', 'lib_win64'))
+    external_path = os.path.abspath(os.path.join('.', 'riskfolio', 'external'))
 
-    external_module = Extension('riskfolio.external._cppfunctions',
-        sources=['./riskfolio/external/cppfunctions.i',
-                './riskfolio/external/cppfunctions.cpp',
-                ],
-        swig_opts=['-I ' + armadillo_path, '-c++'],
-        include_dirs = [numpy_include, external_path],
-        extra_compile_args=['-std=c++11', '-O2', '-I ' + armadillo_path, '-I ' + external_path, 
-                            '-DARMA_DONT_USE_WRAPPER', '-lblas', '-llapack'],
-        libraries=['armadillo'],
-        library_dirs=[armadillo_path],
-        language='c++',
-        define_macros=[('NPY_NO_DEPRECATED_API', 'NPY_1_7_API_VERSION')],
-        )
+    if WIN:
+        external_module = Pybind11Extension('riskfolio.external.cppfunctions',
+            sources=[os.path.join('riskfolio', 'external', 'cpp_functions_bindings.cpp')],
+            include_dirs = [numpy_include, armadillo_path, carma_path, external_path],
+            define_macros = [('VERSION_INFO', VERSION)],
+            )
+    else:
+        external_module = Pybind11Extension('riskfolio.external.cppfunctions',
+            sources=[os.path.join('riskfolio', 'external', 'cpp_functions_bindings.cpp')],
+            include_dirs = [numpy_include, armadillo_path, carma_path, external_path],
+            extra_compile_args = ['-DARMA_DONT_USE_WRAPPER'],
+            define_macros = [('VERSION_INFO', VERSION)],
+            )
 
     setup(
         name=DISTNAME,
@@ -107,6 +114,6 @@ if __name__ == "__main__":
                       "Issues": "https://github.com/dcajasn/Riskfolio-Lib/issues",
                       "Personal website": "http://financioneroncios.wordpress.com",
                       },
+        cmdclass={"build_ext": build_ext},
         ext_modules=[external_module],
-        py_modules=["riskfolio.external.cppfunctions"],
     )

@@ -1,0 +1,94 @@
+name: Asan test
+
+on: push
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  pre_job:
+    # continue-on-error: true # Uncomment once integration is finished
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          # All of these options are optional, so you can remove them if you are happy with the defaults
+          cancel_others: 'true'
+  build:
+    name: "Asan Python (Clang-10)"
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: True
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Print env
+        run: |
+          echo github.event.action: ${{ github.event.action }}
+          echo github.event_name: ${{ github.event_name }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade cmake
+          ninja --version
+          cmake --version
+
+      - name: Install python pacakges
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install numpy pytest
+          
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+
+          export PY_CMD=$(python -c 'import sys; print(sys.executable)')
+
+          cmake \
+            -DCARMA_BUILD_TESTS=ON \
+            -DBUILD_NATIVE_TESTS=OFF \
+            -DBUILD_PYTHON_TESTS=ON \
+            -DCMAKE_C_COMPILER=clang-10 \
+            -DCMAKE_CXX_COMPILER=clang++-10 \
+            -DCMAKE_INSTALL_PREFIX:PATH=. \
+            -DPython3_EXECUTABLE=${PY_CMD} \
+            -DCMAKE_BUILD_TYPE=Asan \
+            -DLDFLAGS=-shared-libasan \
+            -G "Ninja" \
+            ..
+
+      - name: Build
+        run: |
+            cd build
+            cmake \
+              --build . \
+              --target all \
+              --config Asan
+
+      - name: Test
+        run: |
+            cd build
+            LD_PRELOAD=$(clang -print-file-name=libclang_rt.asan-x86_64.so) \
+            ASAN_OPTIONS=detect_leaks=0 \
+            PYTHONMALLOC=malloc \
+            ctest \
+              --verbose --rerun-failed --output-on-failure \
+              -C Asan

@@ -1,0 +1,4 @@
+# MANIFEST.in
+graft riskfolio
+graft lib
+graft tests

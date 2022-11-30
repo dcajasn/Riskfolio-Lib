@@ -20,10 +20,11 @@ from scipy.optimize import minimize
 from sklearn.metrics import mutual_info_score
 from sklearn.neighbors import KernelDensity
 from astropy.stats import knuth_bin_width, freedman_bin_width, scott_bin_width
+from itertools import product
 
 
 ###############################################################################
-# Aditional Matrix Functions
+# Additional Matrix Functions
 ###############################################################################
 
 
@@ -235,6 +236,89 @@ def commutation_matrix(cov):
     K = K.toarray()
 
     return K
+
+
+def cokurtosis_matrix(Y):
+    r"""
+    Calculates cokurtosis square matrix as shown in :cite:`d-Cajas4`.
+
+    Parameters
+    ----------
+    Y : ndarray
+        Returns series of shape n_sample x n_features.
+
+    Returns
+    -------
+    K : ndarray
+        The cokurtosis square matrix.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    flag = False
+    if isinstance(Y, pd.DataFrame):
+        assets = Y.columns.tolist()
+        cols = list(product(assets, assets))
+        cols = [y + " - " + x for x, y in cols]
+        flag = True
+
+    Y_ = np.array(Y, ndmin=2)
+    T, n = Y_.shape
+    mu = np.mean(Y_, axis=0).reshape(1, -1)
+    mu = np.repeat(mu, T, axis=0)
+    x = Y_ - mu
+    ones = np.ones((1, n))
+    z = np.kron(ones, x) * np.kron(x, ones)
+    S4 = 1 / T * z.T @ z
+
+    if flag:
+        S4 = pd.DataFrame(S4, index=cols, columns=cols)
+
+    return S4
+
+
+def semi_cokurtosis_matrix(Y):
+    r"""
+    Calculates semi cokurtosis square matrix as shown in :cite:`d-Cajas4`.
+
+    Parameters
+    ----------
+    Y : ndarray
+        Returns series of shape n_sample x n_features.
+
+    Returns
+    -------
+    SK : ndarray
+        The semi cokurtosis square matrix.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    flag = False
+    if isinstance(Y, pd.DataFrame):
+        assets = Y.columns.tolist()
+        cols = list(product(assets, assets))
+        cols = [y + " - " + x for x, y in cols]
+        flag = True
+
+    Y_ = np.array(Y, ndmin=2)
+    T, n = Y_.shape
+    mu = np.mean(Y_, axis=0).reshape(1, -1)
+    mu = np.repeat(mu, T, axis=0)
+    x = Y_ - mu
+    x = np.minimum(x, np.zeros_like(x))
+    ones = np.ones((1, n))
+    z = np.kron(ones, x) * np.kron(x, ones)
+    SK4 = 1 / T * z.T @ z
+
+    if flag:
+        SK4 = pd.DataFrame(SK4, index=cols, columns=cols)
+
+    return SK4
 
 
 ###############################################################################

@@ -71,9 +71,9 @@ def MAD(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
-    
+
     T, N = a.shape
-    mu = np.mean(a, axis=0).reshape(1,-1)
+    mu = np.mean(a, axis=0).reshape(1, -1)
     mu = np.repeat(mu, T, axis=0)
     value = a - mu
     value = np.mean(np.absolute(value), axis=0)
@@ -113,7 +113,7 @@ def SemiDeviation(X):
         raise ValueError("returns must have Tx1 size")
 
     T, N = a.shape
-    mu = np.mean(a, axis=0).reshape(1,-1)
+    mu = np.mean(a, axis=0).reshape(1, -1)
     mu = np.repeat(mu, T, axis=0)
     value = mu - a
     value = np.sum(np.power(value[np.where(value >= 0)], 2)) / (T - 1)
@@ -153,7 +153,7 @@ def Kurtosis(X):
         raise ValueError("returns must have Tx1 size")
 
     T, N = a.shape
-    mu = np.mean(a, axis=0).reshape(1,-1)
+    mu = np.mean(a, axis=0).reshape(1, -1)
     mu = np.repeat(mu, T, axis=0)
     value = mu - a
     value = np.sum(np.power(value, 4)) / T
@@ -193,7 +193,7 @@ def SemiKurtosis(X):
         raise ValueError("returns must have Tx1 size")
 
     T, N = a.shape
-    mu = np.mean(a, axis=0).reshape(1,-1)
+    mu = np.mean(a, axis=0).reshape(1, -1)
     mu = np.repeat(mu, T, axis=0)
     value = mu - a
     value = np.sum(np.power(value[np.where(value >= 0)], 4)) / T
@@ -1770,15 +1770,15 @@ def Risk_Contribution(
         elif rm == "WR":
             risk_1 = WR(a_1)
             risk_2 = WR(a_2)
-        elif rm == "RG":
-            risk_1 = RG(a_1)
-            risk_2 = RG(a_2)
         elif rm == "CVRG":
             risk_1 = CVRG(a_1, alpha=alpha, beta=beta)
             risk_2 = CVRG(a_2, alpha=alpha, beta=beta)
         elif rm == "TGRG":
             risk_1 = TGRG(a_1, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
             risk_2 = TGRG(a_2, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+        elif rm == "RG":
+            risk_1 = RG(a_1)
+            risk_2 = RG(a_2)
         elif rm == "MDD":
             risk_1 = MDD_Abs(a_1)
             risk_2 = MDD_Abs(a_2)

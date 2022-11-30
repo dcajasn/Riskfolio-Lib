@@ -108,8 +108,9 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
     'arch': ('https://bashtage.github.io/arch/', None),
     'xlsxwriter': ('https://xlsxwriter.readthedocs.io', None),
-    'networkx': ('https://networkx.org', None),
-    'astropy': ('https://www.astropy.org', None),
+    'networkx': ('https://networkx.org/documentation/stable/index.html', None),
+    'astropy': ('https://docs.astropy.org/en/stable/', None),
+    'pybind11': ('https://pybind11.readthedocs.io/en/stable/',None),
 }
 
 # -- Options for todo extension ----------------------------------------------

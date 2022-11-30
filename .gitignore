@@ -4,11 +4,13 @@ __pycache__/
 /riskfolio/__pycache__
 /riskfolio/src/__pycache__
 /riskfolio/external/__pycache__
+/riskfolio/external/cppfunctions.cpython-39-darwin.so
 /dist
 /build
 /Riskfolio_Lib.egg-info
 /docs/build
 /examples/.ipynb_checkpoints
 /tests/__pycache__
+/tests/pruebita.py
 /conda-recipe
 /docs/.DS_Store

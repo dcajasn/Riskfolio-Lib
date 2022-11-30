@@ -17,6 +17,8 @@ The DBHT module has functions that allows us to use the Direct Bubble Hierarchic
 
 The OwaWeights module has functions that allows us to build the weights of some special cases of the OWA Portfolio optimization model :cite:`d-Cajas3`.
 
+The cppfunctions module has functions that allows us to build some special matrixes defined in :cite:`d-Magnus1980` and :cite:`d-Cajas4`.
+
 The AuxFunctions module has some auxiliary functions that are used in other modules.
 
 DBHT Methods
@@ -31,6 +33,14 @@ OWA Weights Functions
 =====================
 
 .. automodule:: OwaWeights
+   :members:
+   :private-members:
+   :member-order: bysource
+
+CPP Functions
+===================
+
+.. automodule:: cppfunctions
    :members:
    :private-members:
    :member-order: bysource

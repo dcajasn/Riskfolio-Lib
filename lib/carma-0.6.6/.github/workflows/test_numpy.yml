@@ -1,0 +1,115 @@
+name: Test Numpy versions
+on: 
+  push:
+    branches:
+      - stable
+      - unstable
+  pull_request:
+    branches:
+      - stable
+      - unstable
+  schedule:
+    - cron: '0 23 * * 1'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  pre_job:
+    # continue-on-error: true # Uncomment once integration is finished
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          # All of these options are optional, so you can remove them if you are happy with the defaults
+          cancel_others: 'true'
+          concurrent_skipping: 'same_content'
+          skip_after_successful_duplicate: 'true'
+          paths_ignore: '["**/README.md", "**/docs/**"]'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+  build:
+    name: ${{ matrix.config.name }}
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        config: 
+        - {
+            name: "Minimum Numpy version",
+            os: ubuntu-latest,
+            build_type: "Release",
+            cc: "gcc-9",
+            cxx: "g++-9",
+            generators: "Ninja",
+            target: "all",
+            numpy: "numpy==1.14.6"
+          }
+        - {
+            name: "Latest Numpy version",
+            os: ubuntu-latest,
+            build_type: "Release",
+            cc: "gcc-9",
+            cxx: "g++-9",
+            generators: "Ninja",
+            target: "all",
+            numpy: "numpy>1.14.6"
+          }
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install pytest cmake
+          python -m pip install ${{ matrix.config.numpy }}
+          sudo apt install -y libopenblas-dev
+          ninja --version
+          cmake --version
+
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+
+          export PY_CMD=$(python -c 'import sys; print(sys.executable)')
+
+          cmake \
+            -DCARMA_BUILD_TESTS=ON \
+            -DCMAKE_C_COMPILER=${{ matrix.config.cc }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.config.cxx }} \
+            -DCMAKE_INSTALL_PREFIX:PATH=. \
+            -DPython3_EXECUTABLE=${PY_CMD} \
+            -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} \
+            -G "Ninja" \
+            ..
+
+      - name: Build
+        run: |
+            cd build
+            cmake \
+              --build . \
+              --target ${{ matrix.config.target }} \
+              --config ${{ matrix.config.build_type }}
+
+      - name: Test
+        run: |
+            cd build
+            ctest \
+              --verbose --rerun-failed --output-on-failure \
+              -C ${{ matrix.config.build_type }}

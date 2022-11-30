@@ -26,7 +26,7 @@ def get_data(name):
 def test_classic_minrisk_optimization():
 
     Y = get_data("stock_prices.csv")
-    Y = Y[assets].pct_change().dropna().iloc[-200:]
+    Y = Y[assets].pct_change().dropna().iloc[-150:]
 
     port = rp.Portfolio(returns=Y)
 
@@ -70,15 +70,17 @@ def test_classic_minrisk_optimization():
         w_1 = pd.concat([w_1, w], axis=1)
 
     w_1.columns = rms
+
     w_2 = get_data("Classic_MinRisk.csv")
-
-    np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
-
+            
+    a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
+    if a is None:
+        print("There are no errors in test_classic_minrisk_optimization")
 
 def test_classic_sharpe_optimization():
 
     Y = get_data("stock_prices.csv")
-    Y = Y[assets].pct_change().dropna().iloc[-200:]
+    Y = Y[assets].pct_change().dropna().iloc[-100:]
 
     port = rp.Portfolio(returns=Y)
 
@@ -122,15 +124,17 @@ def test_classic_sharpe_optimization():
         w_1 = pd.concat([w_1, w], axis=1)
 
     w_1.columns = rms
+    
     w_2 = get_data("Classic_Sharpe.csv")
 
-    np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
-
+    a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
+    if a is None:
+        print("There are no errors in test_classic_sharpe_optimization")
 
 def test_classic_riskparity_optimization():
 
     Y = get_data("stock_prices.csv")
-    Y = Y[assets].pct_change().dropna().iloc[-200:]
+    Y = Y[assets].pct_change().dropna().iloc[-150:]
 
     port = rp.Portfolio(returns=Y)
 
@@ -170,10 +174,12 @@ def test_classic_riskparity_optimization():
         w_1 = pd.concat([w_1, w], axis=1)
 
     w_1.columns = rms
+
     w_2 = get_data("Classic_RP.csv")
 
-    np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
-
+    a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
+    if a is None:
+        print("There are no errors in test_classic_riskparity_optimization")
 
 def test_hc_hrp_optimization():
 
@@ -235,10 +241,12 @@ def test_hc_hrp_optimization():
         w_1 = pd.concat([w_1, w], axis=1)
 
     w_1.columns = rms
+    
     w_2 = get_data("HC_HRP.csv")
 
-    np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
-
+    a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
+    if a is None:
+        print("There are no errors in test_hc_hrp_optimization")
 
 def test_hc_herc_optimization():
 
@@ -300,10 +308,12 @@ def test_hc_herc_optimization():
         w_1 = pd.concat([w_1, w], axis=1)
 
     w_1.columns = rms
+    
     w_2 = get_data("HC_HERC.csv")
 
-    np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
-
+    a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
+    if a is None:
+        print("There are no errors in test_hc_herc_optimization")
 
 def test_hc_nco_optimization():
 
@@ -355,6 +365,18 @@ def test_hc_nco_optimization():
         w_1 = pd.concat([w_1, w], axis=1)
 
     w_1.columns = rms
+
     w_2 = get_data("HC_NCO.csv")
 
-    np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
+    a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
+    if a is None:
+        print("There are no errors in test_hc_nco_optimization")
+
+
+if __name__ == '__main__':
+    test_classic_minrisk_optimization()
+    test_classic_sharpe_optimization()
+    test_classic_riskparity_optimization()
+    test_hc_hrp_optimization()
+    test_hc_herc_optimization()
+    test_hc_nco_optimization()

@@ -185,7 +185,7 @@ class Portfolio(object):
         upperwr=None,
         uppercvrg=None,
         uppertgrg=None,
-        upperrg=None,        
+        upperrg=None,
         uppermdd=None,
         upperadd=None,
         upperCDaR=None,
@@ -233,7 +233,7 @@ class Portfolio(object):
         self.upperCDaR = upperCDaR
         self.upperEDaR = upperEDaR
         self.upperuci = upperuci
-        
+
         self.allowTO = allowTO
         self.turnover = turnover
         self.allowTE = allowTE
@@ -415,7 +415,9 @@ class Portfolio(object):
                 raise NameError("The matrix binequality must have one column")
         self._binequality = a
 
-    def assets_stats(self, method_mu="hist", method_cov="hist", method_kurt=None, d=0.94, **kwargs):
+    def assets_stats(
+        self, method_mu="hist", method_cov="hist", method_kurt=None, d=0.94, **kwargs
+    ):
         r"""
         Calculate the inputs that will be used by the optimization method when
         we select the input model='Classic'.
@@ -447,18 +449,18 @@ class Portfolio(object):
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`a-Gerber2021`.
             - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`a-Gerber2021`.
-            
+
         method_kurt : str, optional
             The method used to estimate the kurtosis square matrix:
             The default is None. Possible values are:
 
-            - None: do not calculate kurtosis square matrix. 
-            - 'hist': use historical estimates.
-            - 'semi': use semi cokurtosis square matrix.
+            - None: do not calculate kurtosis square matrix.
+            - 'hist': use historical estimates. For more information see :cite:`a-Cajas4`.
+            - 'semi': use semi cokurtosis square matrix. For more information see :cite:`a-Cajas4`.
             - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
-        
+
         **kwargs : dict
             All additional parameters of mean_vector and covar_matrix functions.
 
@@ -466,7 +468,7 @@ class Portfolio(object):
         --------
         riskfolio.src.ParamsEstimation.mean_vector
         riskfolio.src.ParamsEstimation.covar_matrix
-        riskfolio.src.ParamsEstimation.kurt_matrix
+        riskfolio.src.ParamsEstimation.cokurt_matrix
 
         """
 
@@ -485,17 +487,19 @@ class Portfolio(object):
 
         if value == False:
             print("You must convert self.cov to a positive definite matrix")
-        
+
         if method_kurt not in [None, "semi"]:
             T, N = self.returns.shape
             self.L_2 = cf.duplication_elimination_matrix(N)
-            self.S_2 = cf.summation_matrix(N)
-            self.kurt = pe.kurt_matrix(self.returns, method=method_kurt, **kwargs)
+            self.S_2 = cf.duplication_summation_matrix(N)
+            self.kurt = pe.cokurt_matrix(self.returns, method=method_kurt, **kwargs)
             value = af.is_pos_def(self.kurt, threshold=1e-8)
             for i in range(5):
                 if value == False:
                     try:
-                        self.kurt = af.cov_fix(self.kurt, method="clipped", threshold=1e-5)
+                        self.kurt = af.cov_fix(
+                            self.kurt, method="clipped", threshold=1e-5
+                        )
                         value = af.is_pos_def(self.kurt, threshold=1e-8)
                     except:
                         break
@@ -504,13 +508,15 @@ class Portfolio(object):
 
             if value == False:
                 print("You must convert self.kurt to a positive definite matrix")
-            
-            self.skurt = pe.kurt_matrix(self.returns, method="semi")
+
+            self.skurt = pe.cokurt_matrix(self.returns, method="semi")
             value = af.is_pos_def(self.skurt, threshold=1e-8)
             for i in range(5):
                 if value == False:
                     try:
-                        self.skurt = af.cov_fix(self.skurt, method="clipped", threshold=1e-5)
+                        self.skurt = af.cov_fix(
+                            self.skurt, method="clipped", threshold=1e-5
+                        )
                         value = af.is_pos_def(self.skurt, threshold=1e-8)
                     except:
                         break
@@ -518,8 +524,8 @@ class Portfolio(object):
                     break
 
             if value == False:
-                    print("You must convert self.skurt to a positive definite matrix")
-                    
+                print("You must convert self.skurt to a positive definite matrix")
+
         else:
             self.kurt = None
             self.skurt = None
@@ -623,7 +629,9 @@ class Portfolio(object):
         for i in range(5):
             if value == False:
                 try:
-                    self.cov_bl = af.cov_fix(self.cov_bl, method="clipped", threshold=1e-5)
+                    self.cov_bl = af.cov_fix(
+                        self.cov_bl, method="clipped", threshold=1e-5
+                    )
                     value = af.is_pos_def(self.cov_bl, threshold=1e-8)
                 except:
                     break
@@ -717,7 +725,9 @@ class Portfolio(object):
         for i in range(5):
             if value == False:
                 try:
-                    self.cov_fm = af.cov_fix(self.cov_fm, method="clipped", threshold=1e-5)
+                    self.cov_fm = af.cov_fix(
+                        self.cov_fm, method="clipped", threshold=1e-5
+                    )
                     value = af.is_pos_def(self.cov_fm, threshold=1e-8)
                 except:
                     break
@@ -920,7 +930,9 @@ class Portfolio(object):
         for i in range(5):
             if value == False:
                 try:
-                    self.cov_bl_fm = af.cov_fix(self.cov_bl_fm, method="clipped", threshold=1e-5)
+                    self.cov_bl_fm = af.cov_fix(
+                        self.cov_bl_fm, method="clipped", threshold=1e-5
+                    )
                     value = af.is_pos_def(self.cov_bl_fm, threshold=1e-8)
                 except:
                     break
@@ -1015,7 +1027,7 @@ class Portfolio(object):
             d_mu = (mu_u - mu_l) / 2
         elif box == "n":
             # Defining confidence level of mean vector assuming normal returns
-            d_mu = st.norm.ppf(1 - q / 2) * np.sqrt(np.diag(cov) / T)
+            d_mu = st.norm.ppf(1 - q / 2) * np.sqrt(np.diag(cov) / T).reshape(1, -1)
             d_mu = pd.DataFrame(d_mu, index=[0], columns=cols)
 
             # Defining confidence level of covariance matrix assuming normal returns
@@ -1120,7 +1132,7 @@ class Portfolio(object):
             - 'MAD': Mean Absolute Deviation.
             - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
-            - 'SKT': Semi Square Root of Kurtosis.
+            - 'SKT': Square Root of Semi Kurtosis.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
@@ -1248,12 +1260,12 @@ class Portfolio(object):
         # MAD Model Variables
 
         madmodel = False
-        Y = cp.Variable((returns.shape[0], 1))
-        u = np.ones((returns.shape[0], 1)) * mu
+        Y = cp.Variable((T, 1))
+        u = np.repeat(mu, T, axis=0)
         a = returns - u
         risk2 = cp.sum(Y) / T
         # madconstraints=[a @ w >= -Y, a @ w <= Y, Y >= 0]
-        madconstraints = [a @ w >= -Y, Y >= 0]
+        madconstraints = [a @ w * 1000 >= -Y * 1000, Y * 1000 >= 0]
 
         # Semi Variance Model Variables
 
@@ -1264,7 +1276,7 @@ class Portfolio(object):
         VaR = cp.Variable((1, 1))
         alpha = self.alpha
         X = returns @ w
-        Z = cp.Variable((returns.shape[0], 1))
+        Z = cp.Variable((T, 1))
         risk4 = VaR + 1 / (alpha * T) * cp.sum(Z)
         cvarconstraints = [Z >= 0, Z >= -X - VaR]
 
@@ -1277,13 +1289,13 @@ class Portfolio(object):
         # Lower Partial Moment Variables
 
         lpmmodel = False
-        lpm = cp.Variable((returns.shape[0], 1))
-        lpmconstraints = [lpm >= 0]
+        lpm = cp.Variable((T, 1))
+        lpmconstraints = [lpm * 1000 >= 0]
 
         if obj == "Sharpe":
-            lpmconstraints += [lpm >= rf0 * k - X]
+            lpmconstraints += [lpm * 1000 >= rf0 * k * 1000 - X * 1000]
         else:
-            lpmconstraints += [lpm >= rf0 - X]
+            lpmconstraints += [lpm * 1000 >= rf0 * 1000 - X * 1000]
 
         # First Lower Partial Moment (Omega) Model Variables
 
@@ -1298,12 +1310,11 @@ class Portfolio(object):
         drawdown = False
 
         U = cp.Variable((T + 1, 1))
-        ddconstraints = [U[1:] * 1000 >= U[:-1] * 1000 - X * 1000]
-
-        if obj == "Sharpe":
-            ddconstraints += [U[1:] * 1000 >= 0 * 1000, U[0] * 1000 == 0 * 1000]
-        else:
-            ddconstraints += [U[1:] * 1000 >= 0 * 1000, U[0] * 1000 == 0 * 1000]
+        ddconstraints = [
+            U[1:] * 1000 >= U[:-1] * 1000 - X * 1000,
+            U[1:] * 1000 >= 0,
+            U[0] * 1000 == 0,
+        ]
 
         # Maximum Drawdown Model Variables
 
@@ -1432,75 +1443,81 @@ class Portfolio(object):
         tgrgconstraints = [y @ tgrg_w.T <= onesvec @ a5.T + b5 @ onesvec.T]
 
         # Kurtosis Model Variables
-        
-        L_2 = self.L_2
-        S_2 = self.S_2
-        Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
-        Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
-        g1 = cp.Variable(nonneg=True)
-        risk19 = g1
-        ktconstraints = []
-        
-        if self.n_max_kurt <= N:       
-            W1 = cp.Variable((N, N), PSD=True)
-        else:
-            W1 = cp.Variable((N, N), symmetric=True)
-            ktconstraints += [W1 >= 0]
+        if self.kurt is not None:
+            L_2 = self.L_2
+            S_2 = self.S_2
+            Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
+            Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
+            g1 = cp.Variable(nonneg=True)
+            risk19 = g1
+            ktconstraints = []
 
-        M11 = cp.vstack([W1, w.T])
-        if obj == "Sharpe":
-            M21 = cp.vstack([w, k])
-        else:
-            M21 = cp.vstack([w, np.ones((1, 1))])
-            
-        M31 = cp.hstack([M11, M21])
-        z1 = L_2 @ cp.reshape(cp.vec(W1), (N*N, 1))
-        ktconstraints += [M31 >> 0,
-                          cp.SOC(g1, Sqrt_Sigma_4 @ z1),
-                          ]
-
-        L_i = np.linalg.cholesky(sigma).T    
-        if self.n_max_kurt < N:
-            v1 = cp.Variable()
-            if obj == 'Sharpe':
-                ktconstraints += [cp.SOC(1 + v1, cp.vstack([k - v1, 2 * L_i @ w]))]
+            if self.n_max_kurt <= N:
+                W1 = cp.Variable((N, N), PSD=True)
             else:
-                ktconstraints += [cp.SOC(1 + v1, cp.vstack([np.ones((1, 1)) - v1, 2 * L_i @ w]))]
-            ktconstraints += [cp.sum(cp.multiply(sigma.T, W1)) == v1]
+                W1 = cp.Variable((N, N), symmetric=True)
+                ktconstraints += [W1 >= 0]
+
+            M11 = cp.vstack([W1, w.T])
+            if obj == "Sharpe":
+                M21 = cp.vstack([w, k])
+            else:
+                M21 = cp.vstack([w, np.ones((1, 1))])
+
+            M31 = cp.hstack([M11, M21])
+            z1 = L_2 @ cp.reshape(cp.vec(W1), (N * N, 1))
+            ktconstraints += [
+                M31 >> 0,
+                cp.SOC(g1, Sqrt_Sigma_4 @ z1),
+            ]
+
+            L_i = np.linalg.cholesky(sigma).T
+            if self.n_max_kurt < N:
+                v1 = cp.Variable()
+                if obj == "Sharpe":
+                    ktconstraints += [cp.SOC(1 + v1, cp.vstack([k - v1, 2 * L_i @ w]))]
+                else:
+                    ktconstraints += [
+                        cp.SOC(1 + v1, cp.vstack([np.ones((1, 1)) - v1, 2 * L_i @ w]))
+                    ]
+                ktconstraints += [cp.sum(cp.multiply(sigma.T, W1)) == v1]
 
         # Semi Kurtosis Model Variables
-        
-        Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
-        Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
-        g2 = cp.Variable(nonneg=True)
-        risk20 = g2
-        sktconstraints = []
+        if self.skurt is not None:
+            Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
+            Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
+            g2 = cp.Variable(nonneg=True)
+            risk20 = g2
+            sktconstraints = []
 
-        if self.n_max_kurt <= N:       
-            W2 = cp.Variable((N,N), PSD=True)
-        else:
-            W2 = cp.Variable((N,N), symmetric=True)
-            sktconstraints += [W2 >= 0]
-
-        M12 = cp.vstack([W2, w.T])
-        if obj == "Sharpe":
-            M22 = cp.vstack([w, k])
-        else:
-            M22 = cp.vstack([w, np.ones((1, 1))])
-            
-        M32 = cp.hstack([M12, M22])
-        z2 = L_2 @ cp.reshape(cp.vec(W2), (N*N,1))
-        sktconstraints += [M32 >> 0,
-                          cp.SOC(g2, Sqrt_SSigma_4 @ z2),
-                          ]
-    
-        if self.n_max_kurt < N:
-            v2 = cp.Variable()
-            if obj == 'Sharpe':
-                sktconstraints += [cp.SOC(1 + v2, cp.vstack([k - v2, 2 * L_i @ w]))]
+            if self.n_max_kurt <= N:
+                W2 = cp.Variable((N, N), PSD=True)
             else:
-                sktconstraints += [cp.SOC(1 + v2, cp.vstack([np.ones((1, 1)) - v2, 2 * L_i @ w]))]
-            sktconstraints += [cp.sum(cp.multiply(sigma.T, W2)) == v2]
+                W2 = cp.Variable((N, N), symmetric=True)
+                sktconstraints += [W2 >= 0]
+
+            M12 = cp.vstack([W2, w.T])
+            if obj == "Sharpe":
+                M22 = cp.vstack([w, k])
+            else:
+                M22 = cp.vstack([w, np.ones((1, 1))])
+
+            M32 = cp.hstack([M12, M22])
+            z2 = L_2 @ cp.reshape(cp.vec(W2), (N * N, 1))
+            sktconstraints += [
+                M32 >> 0,
+                cp.SOC(g2, Sqrt_SSigma_4 @ z2),
+            ]
+
+            if self.n_max_kurt < N:
+                v2 = cp.Variable()
+                if obj == "Sharpe":
+                    sktconstraints += [cp.SOC(1 + v2, cp.vstack([k - v2, 2 * L_i @ w]))]
+                else:
+                    sktconstraints += [
+                        cp.SOC(1 + v2, cp.vstack([np.ones((1, 1)) - v2, 2 * L_i @ w]))
+                    ]
+                sktconstraints += [cp.sum(cp.multiply(sigma.T, W2)) == v2]
 
         # Cardinal Boolean Variables
 
@@ -1755,19 +1772,21 @@ class Portfolio(object):
             constraints += tgrgconstraints
             owamodel = True
 
-        if self.upperkt is not None:
-            if obj == "Sharpe":
-                constraints += [risk19 <= self.upperkt * k]
-            else:
-                constraints += [risk19 <= self.upperkt]
-            constraints += ktconstraints
-            
-        if self.upperskt is not None:
-            if obj == "Sharpe":
-                constraints += [risk20 <= self.upperskt * k]
-            else:
-                constraints += [risk20 <= self.upperskt]
-            constraints += sktconstraints
+        if self.kurt is not None:
+            if self.upperkt is not None:
+                if obj == "Sharpe":
+                    constraints += [risk19 <= self.upperkt * k]
+                else:
+                    constraints += [risk19 <= self.upperkt]
+                constraints += ktconstraints
+
+        if self.skurt is not None:
+            if self.upperskt is not None:
+                if obj == "Sharpe":
+                    constraints += [risk20 <= self.upperskt * k]
+                else:
+                    constraints += [risk20 <= self.upperskt]
+                constraints += sktconstraints
 
         # Defining risk function
 
@@ -1846,14 +1865,24 @@ class Portfolio(object):
             owamodel = True
             if self.uppertg is None:
                 constraints += tgrgconstraints
-        if rm == "KT":
-            risk = risk19
-            if self.upperkt is None:
-                constraints += ktconstraints
-        if rm == "SKT":
-            risk = risk20
-            if self.upperskt is None:
-                constraints += sktconstraints
+        elif rm == "KT":
+            if self.kurt is not None:
+                risk = risk19
+                if self.upperkt is None:
+                    constraints += ktconstraints
+            else:
+                raise ValueError(
+                    "First you need to calculate Cokurtosis Square Matrix."
+                )
+        elif rm == "SKT":
+            if self.skurt is not None:
+                risk = risk20
+                if self.upperskt is None:
+                    constraints += sktconstraints
+            else:
+                raise ValueError(
+                    "First you need to calculate Semi Cokurtosis Square Matrix."
+                )
 
         if madmodel == True:
             constraints += madconstraints
@@ -2067,12 +2096,12 @@ class Portfolio(object):
 
         # MAD Model Variables
 
-        Y = cp.Variable((returns.shape[0], 1))
-        u = np.ones((returns.shape[0], 1)) * mu
+        Y = cp.Variable((T, 1))
+        u = np.repeat(mu, T, axis=0)
         a = returns - u
         risk2 = cp.sum(Y) / T
         # madconstraints=[a @ w >= -Y, a @ w <= Y, Y >= 0]
-        madconstraints = [a @ w >= -Y, Y >= 0]
+        madconstraints = [a @ w * 1000 >= -Y * 1000, Y * 1000 >= 0]
 
         # Semi Variance Model Variables
 
@@ -2083,14 +2112,14 @@ class Portfolio(object):
         VaR = cp.Variable((1, 1))
         alpha = self.alpha
         X = returns @ w
-        Z = cp.Variable((returns.shape[0], 1))
+        Z = cp.Variable((T, 1))
         risk4 = VaR + 1 / (alpha * T) * cp.sum(Z)
-        cvarconstraints = [Z >= 0, Z >= -X - VaR]
+        cvarconstraints = [Z * 1000 >= 0, Z * 1000 >= -X * 1000 - VaR * 1000]
 
         # Lower Partial Moment Variables
 
-        lpm = cp.Variable((returns.shape[0], 1))
-        lpmconstraints = [lpm >= 0, lpm >= rf0 * k - X]
+        lpm = cp.Variable((T, 1))
+        lpmconstraints = [lpm * 1000 >= 0, lpm * 1000 >= rf0 * k * 1000 - X * 1000]
 
         # First Lower Partial Moment (Omega) Model Variables
 
@@ -2102,11 +2131,12 @@ class Portfolio(object):
 
         # Drawdown Model Variables
 
+        # X1 = k + np.cumsum(returns, axis=0) @ w
         U = cp.Variable((T + 1, 1))
         ddconstraints = [
             U[1:] * 1000 >= U[:-1] * 1000 - X * 1000,
-            U[1:] * 1000 >= 1 * 1000 * k,
-            U[0] * 1000 == 1 * 1000 * k,
+            U[1:] * 1000 >= 0,
+            U[0] * 1000 == 0,
         ]
 
         # Conditional Drawdown Model Variables
@@ -2162,7 +2192,9 @@ class Portfolio(object):
         gmd_w = owa.owa_gmd(T) / 2
 
         onesvec = np.ones((T, 1))
-        gmdconstraints = [y @ gmd_w.T <= onesvec @ a1.T + b1 @ onesvec.T]
+        gmdconstraints = [
+            y @ gmd_w.T * 1000 <= (onesvec @ a1.T + b1 @ onesvec.T) * 1000
+        ]
 
         # Tail Gini Model Variables
 
@@ -2172,7 +2204,7 @@ class Portfolio(object):
         a_sim = self.a_sim
 
         tg_w = owa.owa_tg(T, alpha=alpha, a_sim=a_sim)
-        tgconstraints = [y @ tg_w.T <= onesvec @ a2.T + b2 @ onesvec.T]
+        tgconstraints = [y @ tg_w.T * 1000 <= (onesvec @ a2.T + b2 @ onesvec.T) * 1000]
 
         # CVaR Range Model Variables
 
@@ -2186,7 +2218,9 @@ class Portfolio(object):
             beta = self.beta
 
         cvrg_w = owa.owa_cvrg(T, alpha=alpha, beta=beta)
-        cvrgconstraints = [y @ cvrg_w.T <= onesvec @ a4.T + b4 @ onesvec.T]
+        cvrgconstraints = [
+            y @ cvrg_w.T * 1000 <= (onesvec @ a4.T + b4 @ onesvec.T) * 1000
+        ]
 
         # Tail Gini Range Model Variables
 
@@ -2200,62 +2234,72 @@ class Portfolio(object):
             b_sim = self.b_sim
 
         tgrg_w = owa.owa_tgrg(T, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
-        tgrgconstraints = [y @ tgrg_w.T <= onesvec @ a5.T + b5 @ onesvec.T]
+        tgrgconstraints = [
+            y @ tgrg_w.T * 1000 <= (onesvec @ a5.T + b5 @ onesvec.T) * 1000
+        ]
 
         # Kurtosis Model Variables
-        
-        L_2 = self.L_2
-        S_2 = self.S_2
-        Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
-        Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
-        g2 = cp.Variable()
-        risk19 = g2
 
-        if self.n_max_kurt <= N:       
-            W = cp.Variable((N,N), PSD=True)
-        else:
-            W = cp.Variable((N,N), symmetric=True)
-            ktconstraints = [W >= 0]
+        if self.kurt is not None:
+            L_2 = self.L_2
+            S_2 = self.S_2
+            Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
+            Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
+            g2 = cp.Variable()
+            risk19 = g2
 
-        M1 = cp.vstack([W, w.T])
-        M2 = cp.vstack([w, np.ones((1, 1))])
-        M3 = cp.hstack([M1, M2])
-        z = L_2 @ cp.reshape(cp.vec(W), (N*N,1))
-        ktconstraints += [M3 >> 0,
-                          cp.SOC(g2, Sqrt_Sigma_4 @ z),
-                          ]
-    
-        if self.n_max_kurt > N:
-            v = cp.Variable()
-            L_i = np.linalg.cholesky(sigma).T
-            ktconstraints += [cp.SOC(1 + v, cp.vstack([np.ones((1, 1)) - v, 2 * L_i @ w])),
-                              cp.sum(cp.multiply(sigma.T, W)) == v]
+            if self.n_max_kurt <= N:
+                W = cp.Variable((N, N), PSD=True)
+            else:
+                W = cp.Variable((N, N), symmetric=True)
+                ktconstraints = [W >= 0]
+
+            M1 = cp.vstack([W, w.T])
+            M2 = cp.vstack([w, np.ones((1, 1))])
+            M3 = cp.hstack([M1, M2])
+            z = L_2 @ cp.reshape(cp.vec(W), (N * N, 1))
+            ktconstraints += [
+                M3 >> 0,
+                cp.SOC(g2, Sqrt_Sigma_4 @ z),
+            ]
+
+            if self.n_max_kurt > N:
+                v = cp.Variable()
+                L_i = np.linalg.cholesky(sigma).T
+                ktconstraints += [
+                    cp.SOC(1 + v, cp.vstack([np.ones((1, 1)) - v, 2 * L_i @ w])),
+                    cp.sum(cp.multiply(sigma.T, W)) == v,
+                ]
 
         # Semi Kurtosis Model Variables
 
-        Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
-        Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
-        sg2 = cp.Variable()
-        risk20 = sg2
+        if self.skurt is not None:
+            Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
+            Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
+            sg2 = cp.Variable()
+            risk20 = sg2
 
-        if self.n_max_kurt <= N:       
-            SW = cp.Variable((N,N), PSD=True)
-        else:
-            SW = cp.Variable((N,N), symmetric=True)
-            sktconstraints = [SW >= 0]
+            if self.n_max_kurt <= N:
+                SW = cp.Variable((N, N), PSD=True)
+            else:
+                SW = cp.Variable((N, N), symmetric=True)
+                sktconstraints = [SW >= 0]
 
-        SM1 = cp.vstack([SW, w.T])
-        SM2 = cp.vstack([w, np.ones((1, 1))])
-        SM = cp.hstack([SM1, SM2])
-        sz = L_2 @ cp.reshape(cp.vec(SW), (N*N,1))
-        sktconstraints += [SM >> 0,               
-                          cp.SOC(sg2, Sqrt_SSigma_4 @ sz),
-                          ]
-    
-        if self.n_max_kurt > N:
-            sv = cp.Variable()
-            sktconstraints += [cp.SOC(1 + sv, cp.vstack([np.ones((1, 1)) - sv, 2 * L_i @ w]))]
-            sktconstraints += [cp.sum(cp.multiply(sigma.T, SW)) == sv]
+            SM1 = cp.vstack([SW, w.T])
+            SM2 = cp.vstack([w, np.ones((1, 1))])
+            SM = cp.hstack([SM1, SM2])
+            sz = L_2 @ cp.reshape(cp.vec(SW), (N * N, 1))
+            sktconstraints += [
+                SM >> 0,
+                cp.SOC(sg2, Sqrt_SSigma_4 @ sz),
+            ]
+
+            if self.n_max_kurt > N:
+                sv = cp.Variable()
+                sktconstraints += [
+                    cp.SOC(1 + sv, cp.vstack([np.ones((1, 1)) - sv, 2 * L_i @ w]))
+                ]
+                sktconstraints += [cp.sum(cp.multiply(sigma.T, SW)) == sv]
 
         # Problem Linear Constraints
 
@@ -2320,18 +2364,29 @@ class Portfolio(object):
             constraints += owaconstraints
             constraints += tgrgconstraints
         elif rm == "KT":
-            risk = risk19
-            constraints += ktconstraints
-        if rm == "SKT":
-            risk = risk20
-            constraints += sktconstraints
+            if self.kurt is not None:
+                risk = risk19
+                constraints += ktconstraints
+            else:
+                raise ValueError(
+                    "First you need to calculate Cokurtosis Square Matrix."
+                )
+        elif rm == "SKT":
+            if self.skurt is not None:
+                risk = risk20
+                constraints += sktconstraints
+            else:
+                raise ValueError(
+                    "First you need to calculate Semi Cokurtosis Square Matrix."
+                )
 
         # Risk budgeting constraint
 
+        c = cp.Variable(nonneg=True)
         constraints += [
-            b @ cp.log(w) >= 1,
+            b @ cp.log(w) >= c,
             w * 1000 >= 0,
-            cp.sum(w) == k,
+            cp.sum(w) * 1000 == k * 1000,
         ]
 
         # Frontier Variables
@@ -3181,6 +3236,7 @@ class Portfolio(object):
             - 'MAD': Mean Absolute Deviation.
             - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
+            - 'SKT': Square Root of Semi Kurtosis.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
@@ -3263,7 +3319,7 @@ class Portfolio(object):
             - 'MAD': Mean Absolute Deviation.
             - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
-            - 'SKT': Semi Standard Deviation.
+            - 'SKT': Square Root of Semi Kurtosis.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.

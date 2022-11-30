@@ -126,10 +126,10 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         cov = np.cov(X.T)
     if method == "semi":
         T, N = X.shape
-        mu = X.mean().to_numpy().reshape(1,-1)
+        mu = X.mean().to_numpy().reshape(1, -1)
         a = X - np.repeat(mu, T, axis=0)
         a = np.minimum(a, np.zeros_like(a))
-        cov = 1/(T-1) * a.T @ a
+        cov = 1 / (T - 1) * a.T @ a
     elif method == "ewma1":
         cov = X.ewm(alpha=1 - d).cov()
         item = cov.iloc[-1, :].name[0]
@@ -176,7 +176,7 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
     return cov
 
 
-def kurt_matrix(X, method="hist", **kwargs):
+def cokurt_matrix(X, method="hist", **kwargs):
     r"""
     Calculate the cokurtosis square matrix using the selected method.
 
@@ -214,13 +214,13 @@ def kurt_matrix(X, method="hist", **kwargs):
         raise ValueError("X must be a DataFrame")
 
     assets = X.columns.tolist()
-    cols = list(product(assets,assets))
-    cols = [y + ' - ' + x for x, y in cols]
-    
+    cols = list(product(assets, assets))
+    cols = [y + " - " + x for x, y in cols]
+
     if method == "hist":
-        kurt = cf.kurtosis_matrix(X)
+        kurt = af.cokurtosis_matrix(X)
     if method == "semi":
-        kurt = cf.semi_kurtosis_matrix(X)
+        kurt = af.semi_cokurtosis_matrix(X)
     elif method in ["fixed", "spectral", "shrink"]:
         kurt = cf.kurtosis_matrix(X)
         T, N = X.shape
@@ -349,7 +349,7 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
         excluded = X.columns.tolist()
         flag = False
         n = len(excluded)
-        
+
         for j in range(n):
             value = {}
             n_ini = len(excluded)
@@ -368,7 +368,7 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
                     value[i] = results.rsquared
                 elif criterion == "R2_A":
                     value[i] = results.rsquared_adj
-            
+
             value = pd.Series(value)
 
             if criterion in ["AIC", "SIC"]:
@@ -377,7 +377,7 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
             if criterion in ["R2", "R2_A"]:
                 key = value.idxmax()
                 value = value.max()
-                            
+
             if criterion == "AIC":
                 if value < aic:
                     excluded.remove(key)
@@ -402,15 +402,14 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
                     included.append(key)
                     r2_a = value
                     flag = True
-                    
+
             if n_ini == len(excluded):
                 break
 
             if flag and verbose:
                 print("Add {} with {} {:.6}".format(key, criterion, value))
-                
-            flag = False
 
+            flag = False
 
     return included
 
@@ -525,7 +524,7 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
         included.remove("const")
         flag = False
         n = len(included)
-        
+
         for j in range(n):
             value = {}
             n_ini = len(included)
@@ -544,7 +543,7 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
                     value[i] = results.rsquared
                 elif criterion == "R2_A":
                     value[i] = results.rsquared_adj
-            
+
             value = pd.Series(value)
 
             if criterion in ["AIC", "SIC"]:
@@ -553,7 +552,7 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
             if criterion in ["R2", "R2_A"]:
                 key = value.idxmax()
                 value = value.max()
-                            
+
             if criterion == "AIC":
                 if value < aic:
                     included.remove(key)
@@ -574,13 +573,13 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
                     included.remove(key)
                     r2_a = value
                     flag = True
-                    
+
             if n_ini == len(included):
                 break
 
             if flag and verbose:
                 print("Drop {} with {} {:.6}".format(key, criterion, value))
-                
+
             flag = False
 
     return included

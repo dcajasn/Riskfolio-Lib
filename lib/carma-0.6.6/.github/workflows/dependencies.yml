@@ -1,0 +1,101 @@
+name: Dependency Build and Test Matrix
+
+on: 
+  pull_request:
+    branches:
+      - stable
+      - unstable
+  schedule:
+    - cron: '0 23 * * 1'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  pre_job:
+    # continue-on-error: true # Uncomment once integration is finished
+    runs-on: ubuntu-latest
+    # Map a step output to a job output
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@master
+        with:
+          # All of these options are optional, so you can remove them if you are happy with the defaults
+          cancel_others: 'true'
+          do_not_skip: '["pull_request", "workflow_dispatch", "schedule"]'
+  build:
+    name: ${{ matrix.armadillo }} Pybind11 ${{ matrix.pybind }}
+    needs: pre_job
+    if: ${{ needs.pre_job.outputs.should_skip != 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        armadillo: ["10.6.x", "10.8.x", "11.1.x"]
+        pybind: ["v2.6.0", "v2.9.2"]
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          submodules: false
+
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - uses: seanmiddleditch/gha-setup-ninja@master
+
+      - name: Print env
+        run: |
+          echo github.event.action: ${{ github.event.action }}
+          echo github.event_name: ${{ github.event_name }}
+
+      - name: Install dependencies on ubuntu
+        run: |
+          python -m pip install --upgrade cmake
+          ninja --version
+          cmake --version
+
+      - name: Install python pacakges
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install numpy pytest
+          
+      - name: Configure
+        run: |
+          mkdir build
+          cd build
+
+          export PY_CMD=$(python -c 'import sys; print(sys.executable)')
+
+          cmake \
+            -DCARMA_BUILD_TESTS=ON \
+            -DUSE_ARMA_VERSION=${{ matrix.armadillo }} \
+            -DUSE_PYBIND11_VERSION=${{ matrix.pybind }} \
+            -DCMAKE_C_COMPILER=clang-10 \
+            -DCMAKE_CXX_COMPILER=clang++-10 \
+            -DCMAKE_INSTALL_PREFIX:PATH=. \
+            -DPython3_EXECUTABLE=${PY_CMD} \
+            -DCMAKE_BUILD_TYPE=Release \
+            -G "Ninja" \
+            ..
+
+      - name: Build
+        run: |
+            cd build
+            cmake \
+              --build . \
+              --target all \
+              --config Release
+
+      - name: Test
+        run: |
+            cd build
+            ctest \
+              --verbose --rerun-failed --output-on-failure \
+              -C Release

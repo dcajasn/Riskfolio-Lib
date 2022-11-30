@@ -29,23 +29,33 @@ using pip for installation.
 
       pip install path/cvxpy‑version.whl
 
+4. Install `Visual Studio Build Tools <https://visualstudio.microsoft.com/es/downloads/>`_ (Only for Windows).
 
-4. Install ``Riskfolio-lib``.
+.. image:: images/MVSC1.png
+    :width: 100%
+
+.. image:: images/MVSC2.png
+    :width: 100%
+
+5. Install ``Riskfolio-lib``.
 
   ::
 
       pip install riskfolio-lib
 
 
-5. To run some examples is necessary to install `yfinance <https://pypi.org/project/yfinance/>`_.
+6. To run some examples is necessary to install `yfinance <https://pypi.org/project/yfinance/>`_.
 
   ::
 
       pip install yfinance
   
 
-6. To run some examples is necessary to install MOSEK, you must follow `MOSEK <https://docs.mosek.com/9.2/install/installation.html>`_ installation instructions. To get a MOSEK license you must go to `Academic Licenses <https://www.mosek.com/products/academic-licenses/>`_.
+7. To run some examples is necessary to install MOSEK, you must follow `MOSEK <https://docs.mosek.com/9.2/install/installation.html>`_ installation instructions. To get a MOSEK license you must go to `Academic Licenses <https://www.mosek.com/products/academic-licenses/>`_.
 
+ ::
+
+      pip install mosek
 
 Dependencies
 ============
@@ -63,3 +73,4 @@ Riskfolio-Lib has the following dependencies:
 * xlsxwriter>=1.3.7
 * networkx>=2.5.1
 * astropy>=4.3.1 (if there are problems check `astropy installation instructions <https://www.astropy.org>`_)
+* pybind11>=2.10.1

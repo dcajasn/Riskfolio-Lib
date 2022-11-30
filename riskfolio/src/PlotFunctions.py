@@ -425,42 +425,44 @@ def plot_frontier(
         Z1.append(ratio)
 
     ax1 = ax.scatter(X1, Y1, c=Z1, cmap=cmap)
-    
+
     if w is not None:
-        if isinstance(label,str):
+        if isinstance(label, str):
             label = [label]
 
         if label is None:
             label = w.columns.tolist()
-        
+
         if w.shape[1] != len(label):
             label = w.columns.tolist()
-        
-        label = [v + " " + str(label[:i].count(v) + 1) if label.count(v) > 1 else v for i, v in enumerate(label)]
-            
-        if isinstance(c,str):
-            colormap = np.array(colors.to_rgba(c)).reshape(1,-1)
+
+        label = [
+            v + " " + str(label[:i].count(v) + 1) if label.count(v) > 1 else v
+            for i, v in enumerate(label)
+        ]
+
+        if isinstance(c, str):
+            colormap = np.array(colors.to_rgba(c)).reshape(1, -1)
         elif c is None:
-            colormap = np.array(colors.to_rgba("red")).reshape(1,-1)
-            
-        elif isinstance(c,list):
+            colormap = np.array(colors.to_rgba("red")).reshape(1, -1)
+
+        elif isinstance(c, list):
             colormap = [list(colors.to_rgba(i)) for i in c]
             colormap = np.array(colormap)
-            
+
         if len(label) != colormap.shape[0]:
             colormap = cm.get_cmap("tab20")
             colormap = colormap(np.linspace(0, 1, 20))
-            colormap = np.vstack([colormap[6:8],
-                                  colormap[2:6],
-                                  colormap[8:],
-                                  colormap[0:2]])
-            
+            colormap = np.vstack(
+                [colormap[6:8], colormap[2:6], colormap[8:], colormap[0:2]]
+            )
+
         n_repeats = int(len(label) // 20 + 1)
         if n_repeats > 1:
             colormap = np.vstack([colormap] * n_repeats)
 
         for i in range(w.shape[1]):
-            weights = w.iloc[:, i].to_numpy().reshape(-1,1)
+            weights = w.iloc[:, i].to_numpy().reshape(-1, 1)
             risk = rk.Sharpe_Risk(
                 weights,
                 cov=cov,
@@ -481,7 +483,7 @@ def plot_frontier(
             if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
                 risk = risk * t_factor**0.5
 
-            color = colormap[i].reshape(1,-1)
+            color = colormap[i].reshape(1, -1)
             ax.scatter(risk, ret, marker=marker, s=s**2, c=color, label=label[i])
 
         ax.legend(loc="upper left")
@@ -593,8 +595,8 @@ def plot_pie(
     sizes3 = sizes2.cumsum()
     sizes3["abs_values"] = sizes3["abs_values"] / sizes3["abs_values"].max()
     l = sizes3[sizes3["abs_values"] >= 1 - others].index.tolist()[0]
-    
-    if l > 0:    
+
+    if l > 0:
         a1 = sizes2["abs_values"].sum() - sizes2[sizes2.index <= l]["abs_values"].sum()
         a2 = sizes2["values"].sum() - sizes2[sizes2.index <= l]["values"].sum()
         item = pd.DataFrame(["Others", a1, a2]).T
@@ -640,7 +642,7 @@ def plot_pie(
     # Equal aspect ratio ensures that pie is drawn as a circle.
 
     ax.axis("equal")
-    
+
     n = int(np.ceil(l / nrow))
     if n == 0:
         n += 1

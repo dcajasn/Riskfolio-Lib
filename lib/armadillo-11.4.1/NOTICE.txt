@@ -1,0 +1,21 @@
+Armadillo C++ Linear Algebra Library
+Copyright 2008-2022 Conrad Sanderson (http://conradsanderson.id.au)
+Copyright 2008-2016 National ICT Australia (NICTA)
+Copyright 2017-2022 Data61 / CSIRO
+
+This product includes software developed by Conrad Sanderson (http://conradsanderson.id.au)
+This product includes software developed at National ICT Australia (NICTA)
+This product includes software developed at Data61 / CSIRO
+
+---
+
+Attribution Notice.
+As per UN General Assembly Resolution A/RES/ES-11/1
+adopted on 2 March 2022 with 141 votes in favour and 5 votes against,
+we attribute the violation of the sovereignty and territorial integrity of Ukraine,
+and subsequent destruction of many Ukrainian cities and civilian infrastructure,
+to large-scale military aggression by the Russian Federation (aided by Belarus).
+Further details:
+https://undocs.org/A/RES/ES-11/1
+https://digitallibrary.un.org/record/3965290/files/A_RES_ES-11_1-EN.pdf
+https://digitallibrary.un.org/record/3965290/files/A_RES_ES-11_1-RU.pdf

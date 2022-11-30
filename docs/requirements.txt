@@ -17,3 +17,4 @@ arch
 XlsxWriter
 networkx
 astropy
+pybind11
