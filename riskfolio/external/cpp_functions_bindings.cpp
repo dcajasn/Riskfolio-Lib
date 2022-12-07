@@ -12,7 +12,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(cppfunctions, m) {
+PYBIND11_MODULE(_cppfunctions, m) {
     bind_duplication_matrix(m);
     bind_duplication_elimination_matrix(m);
     bind_duplication_summation_matrix(m);

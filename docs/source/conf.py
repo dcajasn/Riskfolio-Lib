@@ -108,7 +108,7 @@ intersphinx_mapping = {
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
     'arch': ('https://bashtage.github.io/arch/', None),
     'xlsxwriter': ('https://xlsxwriter.readthedocs.io', None),
-    'networkx': ('https://networkx.org/documentation/stable/index.html', None),
+    'networkx': ('https://networkx.org/documentation/stable/', None),
     'astropy': ('https://docs.astropy.org/en/stable/', None),
     'pybind11': ('https://pybind11.readthedocs.io/en/stable/',None),
 }

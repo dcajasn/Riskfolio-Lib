@@ -79,13 +79,13 @@ if __name__ == "__main__":
     external_path = os.path.abspath(os.path.join('.', 'riskfolio', 'external'))
 
     if WIN:
-        external_module = Pybind11Extension('riskfolio.external.cppfunctions',
+        external_module = Pybind11Extension('riskfolio.external._cppfunctions',
             sources=[os.path.join('riskfolio', 'external', 'cpp_functions_bindings.cpp')],
             include_dirs = [numpy_include, armadillo_path, carma_path, external_path],
             define_macros = [('VERSION_INFO', VERSION)],
             )
     else:
-        external_module = Pybind11Extension('riskfolio.external.cppfunctions',
+        external_module = Pybind11Extension('riskfolio.external._cppfunctions',
             sources=[os.path.join('riskfolio', 'external', 'cpp_functions_bindings.cpp')],
             include_dirs = [numpy_include, armadillo_path, carma_path, external_path],
             extra_compile_args = ['-DARMA_DONT_USE_WRAPPER'],
