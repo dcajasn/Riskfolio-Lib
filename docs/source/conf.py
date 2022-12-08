@@ -56,7 +56,7 @@ extensions = [
      'sphinxemoji.sphinxemoji',
 ]
 
-autodoc_mock_imports = ["functions"]
+autodoc_mock_imports = ["riskfolio.external.functions"]
 autodoc_member_order = 'bysource'
 autosummary_generate = True
 keep_warnings = False

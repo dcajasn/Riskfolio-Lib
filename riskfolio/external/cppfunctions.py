@@ -1,4 +1,4 @@
-from .functions import *
+from riskfolio.external.functions import *
 
 
 def duplication_matrix(n: int):
