@@ -39,3 +39,5 @@ Tutorials:
 - Gini Mean Difference (GMD) Optimization [Tutorial 35](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2035.ipynb)
 - Mean Tail Gini Range Optimization [Tutorial 36](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2036.ipynb)
 - OWA Portfolio Optimization [Tutorial 37](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2037.ipynb)
+- Kurtosis Portfolio Optimization for Mean Risk and Risk Parity [Tutorial 38](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2038.ipynb)
+- Semi Kurtosis Portfolio Optimization for Mean Risk and Risk Parity [Tutorial 39](https://github.com/microprediction/Riskfolio-Lib/blob/master/examples/Tutorial%2039.ipynb)

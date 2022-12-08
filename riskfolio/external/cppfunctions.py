@@ -1,6 +1,7 @@
-from _cppfunctions import *
+from .functions import *
 
-def duplication_matrix(n:int):
+
+def duplication_matrix(n: int):
     r"""
     Calculate duplication matrix of size "n" as shown in :cite:`d-Magnus1980`.
 
@@ -14,9 +15,10 @@ def duplication_matrix(n:int):
     D: np.ndarray
         Duplication matrix
     """
-    return _duplication_matrix(n)
+    return cpp_duplication_matrix(n)
 
-def duplication_elimination_matrix(n:int):
+
+def duplication_elimination_matrix(n: int):
     r"""
     Calculate duplication elimination matrix of size "n" as shown in :cite:`d-Magnus1980`.
 
@@ -30,9 +32,10 @@ def duplication_elimination_matrix(n:int):
     L: np.ndarray
         Duplication matrix
     """
-    return _duplication_elimination_matrix(n)
+    return cpp_duplication_elimination_matrix(n)
 
-def duplication_summation_matrix(n:int):
+
+def duplication_summation_matrix(n: int):
     """
     Calculate duplication summation matrix of size "n" as shown in :cite:`d-Cajas4`.
 
@@ -46,4 +49,4 @@ def duplication_summation_matrix(n:int):
     S: np.ndarray
         Duplication summation matrix.
     """
-    return _duplication_summation_matrix(n)
+    return cpp_duplication_summation_matrix(n)

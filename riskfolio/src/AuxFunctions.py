@@ -23,6 +23,36 @@ from astropy.stats import knuth_bin_width, freedman_bin_width, scott_bin_width
 from itertools import product
 
 
+__all__ = [
+    "is_pos_def",
+    "cov2corr",
+    "corr2cov",
+    "cov_fix",
+    "cov_returns",
+    "commutation_matrix",
+    "cokurtosis_matrix",
+    "semi_cokurtosis_matrix",
+    "dcorr",
+    "dcorr_matrix",
+    "numBins",
+    "mutual_info_matrix",
+    "var_info_matrix",
+    "ltdi_matrix",
+    "two_diff_gap_stat",
+    "fitKDE",
+    "mpPDF",
+    "errPDFs",
+    "findMaxEval",
+    "getPCA",
+    "denoisedCorr",
+    "shrinkCorr",
+    "denoiseCov",
+    "round_values",
+    "weights_discretizetion",
+    "color_list",
+]
+
+
 ###############################################################################
 # Additional Matrix Functions
 ###############################################################################

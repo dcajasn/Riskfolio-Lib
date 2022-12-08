@@ -9,6 +9,13 @@ import pandas as pd
 import riskfolio.src.AuxFunctions as af
 
 
+__all__ = [
+    "gerber_cov_stat0",
+    "gerber_cov_stat1",
+    "gerber_cov_stat2",
+]
+
+
 def gerber_cov_stat0(X, threshold=0.5):
     r"""
     Compute Gerber covariance Statistics 0 or original Gerber statistics

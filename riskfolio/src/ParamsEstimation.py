@@ -21,6 +21,22 @@ import riskfolio.src.GerberStatistic as gs
 import riskfolio.external.cppfunctions as cf
 
 
+__all__ = [
+    "mean_vector",
+    "covar_matrix",
+    "cokurt_matrix",
+    "forward_regression",
+    "backward_regression",
+    "PCR",
+    "loadings_matrix",
+    "risk_factors",
+    "black_litterman",
+    "augmented_black_litterman",
+    "black_litterman_bayesian",
+    "bootstrapping",
+]
+
+
 def mean_vector(X, method="hist", d=0.94):
     r"""
     Calculate the expected returns vector using the selected method.
@@ -884,7 +900,7 @@ def risk_factors(
     mu = B @ mu_f.T
 
     if error == True:
-        e = np.array(Y, ndmin=2) - np.repeat(returns, Y.shape[0], axis=0)
+        e = np.array(Y, ndmin=2) - returns
         S_e = np.diag(np.var(np.array(e), ddof=1, axis=0))
         S = B @ S_f @ B.T + S_e
     elif error == False:

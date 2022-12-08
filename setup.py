@@ -18,7 +18,7 @@ URL = 'https://github.com/dcajasn/Riskfolio-Lib'
 LICENSE = 'BSD (3-clause)'
 KEYWORDS = 'finance, portfolio, optimization, quant, asset, allocation, investing'
 DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
-VERSION = '4.0.1'
+VERSION = '4.0.2'
 PYTHON_REQUIRES = ">=3.7"
 
 INSTALL_REQUIRES = [
@@ -79,13 +79,13 @@ if __name__ == "__main__":
     external_path = os.path.abspath(os.path.join('.', 'riskfolio', 'external'))
 
     if WIN:
-        external_module = Pybind11Extension('riskfolio.external._cppfunctions',
+        external_module = Pybind11Extension('riskfolio.external.functions',
             sources=[os.path.join('riskfolio', 'external', 'cpp_functions_bindings.cpp')],
             include_dirs = [numpy_include, armadillo_path, carma_path, external_path],
             define_macros = [('VERSION_INFO', VERSION)],
             )
     else:
-        external_module = Pybind11Extension('riskfolio.external._cppfunctions',
+        external_module = Pybind11Extension('riskfolio.external.functions',
             sources=[os.path.join('riskfolio', 'external', 'cpp_functions_bindings.cpp')],
             include_dirs = [numpy_include, armadillo_path, carma_path, external_path],
             extra_compile_args = ['-DARMA_DONT_USE_WRAPPER'],

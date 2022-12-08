@@ -26,7 +26,7 @@ using namespace arma;
  *
  * @n size of symmetric matrix.
  */
-py::array_t<double> _duplication_matrix(const int & n) {
+py::array_t<double> cpp_duplication_matrix(const int & n) {
     int cols = (n*(n+1))/2;
     int rows = n*n;
     int col;
@@ -55,7 +55,7 @@ py::array_t<double> _duplication_matrix(const int & n) {
  *
  * @n size of symmetric matrix.
  */
-py::array_t<double> _duplication_elimination_matrix(const int &n) {
+py::array_t<double> cpp_duplication_elimination_matrix(const int &n) {
     int rows = (n*(n+1))/2;
     int cols = n*n;
     int row;
@@ -83,11 +83,11 @@ py::array_t<double> _duplication_elimination_matrix(const int &n) {
  *
  * @n size of symmetric matrix.
  */
-py::array_t<double> _duplication_summation_matrix(const int &n) {
+py::array_t<double> cpp_duplication_summation_matrix(const int &n) {
     arma::mat D;
     arma::mat L;
-    D = carma::arr_to_mat(_duplication_matrix(n));
-    L = carma::arr_to_mat(_duplication_elimination_matrix(n));
+    D = carma::arr_to_mat(cpp_duplication_matrix(n));
+    L = carma::arr_to_mat(cpp_duplication_elimination_matrix(n));
     arma::sp_mat D0;
     arma::sp_mat L0;
     arma::sp_mat S0;
@@ -102,8 +102,8 @@ py::array_t<double> _duplication_summation_matrix(const int &n) {
 
 void bind_duplication_matrix(py::module &m) {
     m.def(
-        "_duplication_matrix",
-        &_duplication_matrix,
+        "cpp_duplication_matrix",
+        &cpp_duplication_matrix,
         R"pbdoc(
             Calculate duplication matrix of size "n" as shown in :cite:`d-Magnus1980`.
 
@@ -123,8 +123,8 @@ void bind_duplication_matrix(py::module &m) {
 
 void bind_duplication_elimination_matrix(py::module &m) {
     m.def(
-        "_duplication_elimination_matrix",
-        &_duplication_elimination_matrix,
+        "cpp_duplication_elimination_matrix",
+        &cpp_duplication_elimination_matrix,
         R"pbdoc(
             Calculate duplication elimination matrix of size "n" as shown in :cite:`d-Magnus1980`.
 
@@ -144,8 +144,8 @@ void bind_duplication_elimination_matrix(py::module &m) {
 
 void bind_duplication_summation_matrix(py::module &m) {
     m.def(
-        "_duplication_summation_matrix",
-        &_duplication_summation_matrix,
+        "cpp_duplication_summation_matrix",
+        &cpp_duplication_summation_matrix,
         R"pbdoc(
             Calculate duplication summation matrix of size "n" as shown in :cite:`d-Cajas4`.
 

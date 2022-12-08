@@ -14,6 +14,12 @@ import riskfolio.src.PlotFunctions as plf
 import riskfolio.src.RiskFunctions as rk
 
 
+__all__ = [
+    "jupyter_report",
+    "excel_report",
+]
+
+
 __LICENSE__ = """Copyright (c) 2020-2022, Dany Cajas 
 All rights reserved.
 

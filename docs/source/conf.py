@@ -29,7 +29,7 @@ author = 'Dany Cajas'
 # The short X.Y version
 version = 'latest'
 # The full version, including alpha/beta/rc tags
-release = '4.0.1'
+release = '4.0.2'
 
 
 # -- General configuration ---------------------------------------------------

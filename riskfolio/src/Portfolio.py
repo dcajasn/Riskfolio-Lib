@@ -18,6 +18,11 @@ import riskfolio.src.OwaWeights as owa
 import riskfolio.external.cppfunctions as cf
 
 
+__all__ = [
+    "Portfolio",
+]
+
+
 class Portfolio(object):
     r"""
     Class that creates a portfolio object with all properties needed to

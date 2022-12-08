@@ -9,6 +9,19 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 import numpy as np
 
 
+__all__ = [
+    "owa_gmd",
+    "owa_cvar",
+    "owa_wcvar",
+    "owa_tg",
+    "owa_wr",
+    "owa_rg",
+    "owa_cvrg",
+    "owa_wcvrg",
+    "owa_tgrg",
+]
+
+
 def owa_gmd(T):
     r"""
     Calculate the OWA weights to calculate the Gini mean difference (GMD)

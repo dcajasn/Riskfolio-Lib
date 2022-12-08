@@ -18,6 +18,11 @@ import riskfolio.src.DBHT as db
 import riskfolio.src.GerberStatistic as gs
 
 
+__all__ = [
+    "HCPortfolio",
+]
+
+
 class HCPortfolio(object):
     r"""
     Class that creates a portfolio object with all properties needed to
