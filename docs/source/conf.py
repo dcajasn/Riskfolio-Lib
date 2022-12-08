@@ -56,7 +56,7 @@ extensions = [
      'sphinxemoji.sphinxemoji',
 ]
 
-autodoc_mock_imports = ["_cppfunctions"]
+autodoc_mock_imports = ["functions"]
 autodoc_member_order = 'bysource'
 autosummary_generate = True
 keep_warnings = False
