@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
-import riskfolio.src.Portfolio as pf
+import riskfolio as rp
 import riskfolio.src.RiskFunctions as rk
 import riskfolio.src.AuxFunctions as af
 import riskfolio.src.ParamsEstimation as pe
@@ -168,7 +168,7 @@ class HCPortfolio(object):
             weight = np.array([1]).reshape(-1, 1)
         else:
             if obj in {"MinRisk", "Utility", "Sharpe"}:
-                port = pf.Portfolio(returns=returns)
+                port = rp.Portfolio(returns=returns)
                 port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
                 port.cov = cov
                 if mu is not None:
@@ -177,7 +177,7 @@ class HCPortfolio(object):
                     model="Classic", rm=rm, obj=obj, rf=rf, l=l, hist=True
                 ).to_numpy()
             elif obj in {"ERC"}:
-                port = pf.Portfolio(returns=returns)
+                port = rp.Portfolio(returns=returns)
                 port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
                 port.cov = cov
                 weight = port.rp_optimization(
