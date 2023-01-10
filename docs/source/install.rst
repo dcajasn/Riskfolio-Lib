@@ -21,15 +21,22 @@ using pip for installation.
 
 1. It is highly recommendable that you must have installed a scientific Python distribution like `anaconda <https://www.anaconda.com/products/individual>`_ or `winpython <https://winpython.github.io>`_ (Windows only).
 
-2. If you don't have installed cvxpy, you must follow `cvxpy <https://www.cvxpy.org/install/index.html>`_ installation instructions before installing Riskfolio-Lib.
+2. Install ``Pybind11``.
 
-3. If you still have problems installing cvxpy, you can download cvxpy wheel from the `Unofficial Windows Binaries for Python Extension Packages <https://www.lfd.uci.edu/~gohlke/pythonlibs/#cvxpy>`_ and install using pip.
+  ::
+
+      pip install pybind11
+
+
+3. If you don't have installed cvxpy, you must follow `cvxpy <https://www.cvxpy.org/install/index.html>`_ installation instructions before installing Riskfolio-Lib.
+
+4. If you still have problems installing cvxpy, you can download cvxpy wheel from the `Unofficial Windows Binaries for Python Extension Packages <https://www.lfd.uci.edu/~gohlke/pythonlibs/#cvxpy>`_ and install using pip.
 
   ::
 
       pip install path/cvxpy‑version.whl
 
-4. Install `Visual Studio Build Tools <https://visualstudio.microsoft.com/es/downloads/>`_ (Only for Windows).
+5. Install `Visual Studio Build Tools <https://visualstudio.microsoft.com/es/downloads/>`_ (Only for Windows).
 
 .. image:: images/MVSC1.png
     :width: 100%
@@ -37,21 +44,21 @@ using pip for installation.
 .. image:: images/MVSC2.png
     :width: 100%
 
-5. Install ``Riskfolio-lib``.
+6. Install ``Riskfolio-lib``.
 
   ::
 
       pip install riskfolio-lib
 
 
-6. To run some examples is necessary to install `yfinance <https://pypi.org/project/yfinance/>`_.
+7. To run some examples is necessary to install `yfinance <https://pypi.org/project/yfinance/>`_.
 
   ::
 
       pip install yfinance
   
 
-7. To run some examples is necessary to install MOSEK, you must follow `MOSEK <https://docs.mosek.com/9.2/install/installation.html>`_ installation instructions. To get a MOSEK license you must go to `Academic Licenses <https://www.mosek.com/products/academic-licenses/>`_.
+8. To run some examples is necessary to install MOSEK, you must follow `MOSEK <https://docs.mosek.com/9.2/install/installation.html>`_ installation instructions. To get a MOSEK license you must go to `Academic Licenses <https://www.mosek.com/products/academic-licenses/>`_.
 
  ::
 
