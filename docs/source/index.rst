@@ -179,6 +179,43 @@ Some of key functionalities that Riskfolio-Lib offers:
 - Tools to build reports on Jupyter Notebook and Excel. 
 - Option to use commercial optimization solver like MOSEK or GUROBI for large scale problems.
 
+
+Consulting Fees
+===============
+
+Riskfolio-Lib is an open-source project, however due it's a project that is not financed for any institution, I started charging for consultancies that are not related to errors in source code. Our fees are as follows:
+
+- $ 25 USD (United States Dollars) per question that doesn't require to check code.
+
+- $ 50 USD to check a small size script or code (less than 200 lines of code). The fee of the solution depends on the complexity of the solution:
+    - $ 50 USD for simple errors in scripts (modify less than 10 lines of code).
+    - For most complex errors the fee depends on the complexity of the solution but the fee is $ 150 USD per hour.
+
+- $ 100 USD to check a medium size script or code (between 201 and 600 lines of code). The fee of the solution depends on the complexity of the solution:
+    - $ 50 USD for simple errors in scripts (modify less than 10 lines of code).
+    - For most complex errors the fee depends on the complexity of the solution but the fee is $ 150 USD per hour.
+
+- For large size script or code (more than 600 lines of code) the fee is variable depending on the size of the code. The fee of the solution depends on the complexity of the solution:
+    - $ 50 USD for simple errors in scripts (modify less than 10 lines of code).
+    - For most complex errors the fee depends on the complexity of the solution but the fee is $ 150 USD per hour.
+
+**All consulting must be paid in advance**.
+
+You can contact me through:
+
+- __`LinkedIn <https://www.linkedin.com/in/dany-cajas/>´__
+- __`Gmail <dcajasn@gmail.com>`__
+
+You can pay using one of the following channels:
+
+.. image:: https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86
+ :target: https://github.com/sponsors/dcajasn
+ 
+.. raw:: html
+
+    <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a><br>
+    
+    
 Citing
 ======
 
