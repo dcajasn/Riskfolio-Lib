@@ -216,7 +216,7 @@ Riskfolio-Lib development takes place on Github: https://github.com/dcajasn/Risk
 
 ## Consulting Fees
 
-Riskfolio-Lib is an open-source project, however due it's a project that is not financed for any institution, I started charging for consultancies that are not related to errors in source code. Our fees are as follows
+Riskfolio-Lib is an open-source project, however due it's a project that is not financed for any institution, I started charging for consultancies that are not related to errors in source code. Our fees are as follows:
 
 - $ 25 USD (United States Dollars) per question that doesn't require to check code.
 - $ 50 USD to check a small size script or code (less than 200 lines of code). The fee of the solution depends on the complexity of the solution:
