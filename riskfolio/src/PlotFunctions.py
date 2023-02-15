@@ -522,7 +522,7 @@ def plot_frontier(
 
 
 def plot_pie(
-    w, title="", others=0.05, nrow=25, cmap="tab20", height=6, width=8, ax=None
+    w, title="", others=0.05, nrow=25, cmap="tab20", height=6, width=8, ax=None, bbox_props=dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
 ):
     r"""
     Create a pie chart with portfolio weights.
@@ -649,7 +649,6 @@ def plot_pie(
 
     ax.legend(wedges, labels, loc="center left", bbox_to_anchor=(1, 0.5), ncol=n)
 
-    bbox_props = dict(boxstyle="square,pad=0.3", fc="w", ec="k", lw=0.72)
     kw = dict(
         xycoords="data",
         textcoords="data",
