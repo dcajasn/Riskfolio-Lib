@@ -2453,7 +2453,7 @@ def plot_dendrogram(
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
 
     # Hierarchical clustering
-    dist = dist.to_numpy()
+    dist = np.nan_to_num(dist.to_numpy(), nan=0.0, posinf=0.0, neginf=0.0)
     dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
     if linkage == "DBHT":
         # different choices for D, S give different outputs!
