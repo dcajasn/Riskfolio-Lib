@@ -6,16 +6,16 @@
  */
 
 #include <iostream>
-#include <carma>
 #include <armadillo>
+#include <carma>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
 
 namespace py = pybind11;
 using namespace std;
-using namespace carma;
 using namespace arma;
+using namespace carma;
 
 /**
  * Calculate duplication matrix of size "n" as shown
