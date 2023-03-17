@@ -34,7 +34,10 @@ using is_Vec = std::enable_if_t<p_is_Vec<armaT>::value, int>;
 template <typename armaT>
 using is_Mat = std::enable_if_t<arma::is_Mat<armaT>::value, int>;
 template <typename armaT>
-using is_Mat_only = std::enable_if_t<arma::is_Mat_only<armaT>::value, int>;
+using is_Mat_only = std::enable_if_t< arma::is_Mat_only<armaT>::value &&
+                                      !arma::is_Mat_fixed_only<armaT>::value, int>;
+template <typename armaT>
+using is_Mat_fixed_only = std::enable_if_t<arma::is_Mat_fixed_only<armaT>::value, int>;
 
 template <typename T>
 struct is_mat : std::false_type {};

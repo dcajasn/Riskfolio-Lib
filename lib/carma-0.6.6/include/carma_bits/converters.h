@@ -685,6 +685,30 @@ inline py::array_t<T> to_numpy(armaT* src, int copy = 0) {
     return details::construct_array<T>(data);
 } /* to_numpy */
 
+template <typename armaT, typename T = typename armaT::elem_type, is_Mat_fixed_only<armaT> = 4>
+ inline py::array_t<T> to_numpy(armaT& src, int copy = 0) {
+     // if not copy we steal
+     armaT* data;
+     if (!copy) {
+         data = new armaT(std::move(src));
+     } else {
+         data = new armaT(src.memptr());
+     }
+     return details::construct_array<T>(data);
+ } /* to_numpy */
+
+ template <typename armaT, typename T = typename armaT::elem_type, is_Mat_fixed_only<armaT> = 4>
+ inline py::array_t<T> to_numpy(armaT* src, int copy = 0) {
+     // if not copy we steal
+     armaT* data;
+     if (!copy) {
+         data = new armaT(std::move(*src));
+     } else {
+         data = new armaT(src->memptr());
+     }
+     return details::construct_array<T>(data);
+ } /* to_numpy */    
+    
 /* ---------------------------------- to_numpy_view ---------------------------------- */
 template <typename armaT, typename T = typename armaT::elem_type>
 inline py::array_t<T> to_numpy_view(const armaT& src) {
