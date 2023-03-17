@@ -1,10 +1,26 @@
-# Copyright (C) 2020-2022 Dany Cajas
+# Copyright (C) 2020-2023 Dany Cajas
 
 import os
 import numpy as np
 
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
+
+MAJOR = 4
+MINOR = 0
+MICRO = 3
+VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
+
+def write_version_py(filename='riskfolio/version.py'):
+    cnt = """
+    # THIS FILE IS GENERATED FROM RISKFOLIO-LIB SETUP.PY
+    short_version = '%(version)s'
+    """
+    a = open(filename, 'w')
+    try:
+        a.write(cnt % {'version': VERSION,})
+    finally:
+        a.close()
 
 DESCRIPTION = "Portfolio Optimization and Quantitative Strategic Asset Allocation in Python"
 
@@ -18,7 +34,6 @@ URL = 'https://github.com/dcajasn/Riskfolio-Lib'
 LICENSE = 'BSD (3-clause)'
 KEYWORDS = 'finance, portfolio, optimization, quant, asset, allocation, investing'
 DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
-VERSION = '4.0.3'
 PYTHON_REQUIRES = ">=3.7"
 
 INSTALL_REQUIRES = [

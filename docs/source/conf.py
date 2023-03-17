@@ -13,6 +13,7 @@
 import os
 import sys
 import sphinx_rtd_theme
+import riskfolio as rp
 
 sys.path.insert(0, os.path.abspath('../..'))
 sys.path.insert(1, os.path.abspath('../../riskfolio'))
@@ -23,13 +24,15 @@ sys.path.insert(3, os.path.abspath('../../riskfolio/external'))
 # -- Project information -----------------------------------------------------
 
 project = 'Riskfolio-Lib'
-copyright = '2020-2022, Dany Cajas'
+copyright = '2020-2023, Dany Cajas'
 author = 'Dany Cajas'
 
+__version__ = rp.__version__
+
 # The short X.Y version
-version = 'latest'
+version = '.'.join(__version__.split('.')[:2])
 # The full version, including alpha/beta/rc tags
-release = '4.0.3'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------

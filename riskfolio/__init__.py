@@ -1,6 +1,6 @@
 """"""  #
 """
-Copyright (c) 2020-2022, Dany Cajas
+Copyright (c) 2020-2023, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -8,5 +8,4 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 
 from riskfolio.src import *
 from riskfolio.external import *
-
-__version__ = "4.0.3"
+from riskfolio.version import (version as __version__,)  # riskfolio/version.py is auto-generated
