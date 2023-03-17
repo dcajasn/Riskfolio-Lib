@@ -20,14 +20,12 @@ jobs:
   linters:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-      - name: Format code with black
-        run: |
-          pip install black
-          black .
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+#        with:
+#          python-version: 3.8
+      - run: pip install -r requirements.txt
+
 
   build:
     runs-on: ${{ matrix.os }}
@@ -38,18 +36,18 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-20.04, macos-11, windows-2022 ]
-        python-version: [ 3.7, 3.9, "3.10", "3.11"]
-        include:
-          - os: ubuntu-20.04
-            python-version: 3.8
-            openmp: "True"
-          - os: ubuntu-20.04
-            python-version: 3.8
-          - os: macos-11
-            python-version: 3.8
-            single_action_config: "True"
-          - os: windows-2022
-            python-version: 3.8
+        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11"]
+#        include:
+#          - os: ubuntu-20.04
+#            python-version: 3.8
+#            openmp: "True"
+#          - os: ubuntu-20.04
+#            python-version: 3.8
+#          - os: macos-11
+#            python-version: 3.8
+#            single_action_config: "True"
+#          - os: windows-2022
+#            python-version: 3.8
 
     env:
       RUNNER_OS: ${{ matrix.os }}
@@ -92,15 +90,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-20.04, macos-11, windows-2022 ]
-        python-version: [ 3.7, 3.9, "3.10", "3.11" ]
-        include:
-          - os: ubuntu-20.04
-            python-version: 3.8
-          - os: macos-11
-            python-version: 3.8
-            single_action_config: "True"
-          - os: windows-2022
-            python-version: 3.8
+        python-version: [ "3.7", "3.8", "3.9", "3.10", "3.11"]
+#        include:
+#          - os: ubuntu-20.04
+#            python-version: 3.8
+#          - os: macos-11
+#            python-version: 3.8
+#            single_action_config: "True"
+#          - os: windows-2022
+#            python-version: 3.8
 
     env:
       RUNNER_OS: ${{ matrix.os }}
@@ -111,8 +109,8 @@ jobs:
       PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
 
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
 
