@@ -34,7 +34,7 @@ class HCPortfolio(object):
         A dataframe that containts the returns of the assets.
         The default is None.
     alpha : float, optional
-        Significance level of VaR, CVaR, EVaR, DaR, CDaR, EDaR and Tail Gini of losses.
+        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR and Tail Gini of losses.
         The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
@@ -44,6 +44,11 @@ class HCPortfolio(object):
     b_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
     w_max : Series, optional
         Upper bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
     w_min : Series, optional
@@ -70,6 +75,8 @@ class HCPortfolio(object):
         a_sim=100,
         beta=None,
         b_sim=None,
+        kappa=0.30,
+        solver=None,
         w_max=None,
         w_min=None,
         alpha_tail=0.05,
@@ -81,6 +88,8 @@ class HCPortfolio(object):
         self.a_sim = a_sim
         self.beta = beta
         self.b_sim = b_sim
+        self._kappa = kappa
+        self.solver = solver
         self.alpha_tail = alpha_tail
         self.gs_threshold = gs_threshold
         self.bins_info = bins_info
@@ -112,6 +121,22 @@ class HCPortfolio(object):
         if self._returns is not None and isinstance(self._returns, pd.DataFrame):
             return self._returns.columns.tolist()
 
+    @property
+    def kappa(self):
+        return self._kappa
+
+    @kappa.setter
+    def kappa(self, value):
+        a = value
+        if a >= 1 :
+            print("kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99")
+            self._kappa = 0.99
+        elif a <= 0:
+            print("kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01")
+            self._kappa = 0.01
+        else:
+            self._kappa = a
+
     # get naive-risk weights
     def _naive_risk(self, returns, cov, rm="MV", rf=0):
         assets = returns.columns.tolist()
@@ -137,6 +162,8 @@ class HCPortfolio(object):
                         a_sim=self.a_sim,
                         beta=self.beta,
                         b_sim=self.b_sim,
+                        kappa=self.kappa,
+                        solver=self.solver
                     )
                 else:
                     risk = rk.Sharpe_Risk(
@@ -149,6 +176,8 @@ class HCPortfolio(object):
                         a_sim=self.a_sim,
                         beta=self.beta,
                         b_sim=self.b_sim,
+                        kappa=self.kappa,
+                        solver=self.solver
                     )
                 inv_risk[k, 0] = risk
 
@@ -171,6 +200,7 @@ class HCPortfolio(object):
                 port = rp.Portfolio(returns=returns)
                 port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
                 port.cov = cov
+                port.solvers = [self.solver]
                 if mu is not None:
                     port.mu = mu
                 weight = port.optimization(
@@ -180,6 +210,7 @@ class HCPortfolio(object):
                 port = rp.Portfolio(returns=returns)
                 port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
                 port.cov = cov
+                port.solvers = [self.solver]
                 weight = port.rp_optimization(
                     model="Classic", rm=rm, rf=rf, b=None, hist=True
                 ).to_numpy()
@@ -298,6 +329,8 @@ class HCPortfolio(object):
                         a_sim=self.a_sim,
                         beta=self.beta,
                         b_sim=self.b_sim,
+                        kappa=self.kappa,
+                        solver=self.solver
                     )
                 else:
                     left_risk = rk.Sharpe_Risk(
@@ -310,6 +343,8 @@ class HCPortfolio(object):
                         a_sim=self.a_sim,
                         beta=self.beta,
                         b_sim=self.b_sim,
+                        kappa=self.kappa,
+                        solver=self.solver
                     )
                     if rm == "MV":
                         left_risk = np.power(left_risk, 2)
@@ -330,6 +365,8 @@ class HCPortfolio(object):
                         a_sim=self.a_sim,
                         beta=self.beta,
                         b_sim=self.b_sim,
+                        kappa=self.kappa,
+                        solver=self.solver
                     )
                 else:
                     right_risk = rk.Sharpe_Risk(
@@ -342,6 +379,8 @@ class HCPortfolio(object):
                         a_sim=self.a_sim,
                         beta=self.beta,
                         b_sim=self.b_sim,
+                        kappa=self.kappa,
+                        solver=self.solver
                     )
                     if rm == "MV":
                         right_risk = np.power(right_risk, 2)
@@ -432,6 +471,8 @@ class HCPortfolio(object):
                                     a_sim=self.a_sim,
                                     beta=self.beta,
                                     b_sim=self.b_sim,
+                                    kappa=self.kappa,
+                                    solver=self.solver
                                 )
                             else:
                                 left_risk_ = rk.Sharpe_Risk(
@@ -444,6 +485,8 @@ class HCPortfolio(object):
                                     a_sim=self.a_sim,
                                     beta=self.beta,
                                     b_sim=self.b_sim,
+                                    kappa=self.kappa,
+                                    solver=self.solver
                                 )
                                 if rm == "MV":
                                     left_risk_ = np.power(left_risk_, 2)
@@ -469,6 +512,8 @@ class HCPortfolio(object):
                                     a_sim=self.a_sim,
                                     beta=self.beta,
                                     b_sim=self.b_sim,
+                                    kappa=self.kappa,
+                                    solver=self.solver
                                 )
                             else:
                                 right_risk_ = rk.Sharpe_Risk(
@@ -481,6 +526,8 @@ class HCPortfolio(object):
                                     a_sim=self.a_sim,
                                     beta=self.beta,
                                     b_sim=self.b_sim,
+                                    kappa=self.kappa,
+                                    solver=self.solver
                                 )
                                 if rm == "MV":
                                     right_risk_ = np.power(right_risk_, 2)
@@ -667,6 +714,7 @@ class HCPortfolio(object):
             - 'CVaR': Conditional Value at Risk.
             - 'TG': Tail Gini.
             - 'EVaR': Entropic Value at Risk.
+            - 'RLVaR': Relativistic Value at Risk.
             - 'WR': Worst Realization (Minimax).
             - 'RG': Range of returns.
             - 'CVRG': CVaR range of returns.
@@ -676,12 +724,14 @@ class HCPortfolio(object):
             - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
             - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
             - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+            - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns.
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
             - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
             - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
             - 'DaR_Rel': Drawdown at Risk of compounded cumulative returns.
             - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
             - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
+            - 'RLDaR_Rel': Relativistic Drawdown at Risk of compounded cumulative returns.
             - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
 
         rf : float, optional

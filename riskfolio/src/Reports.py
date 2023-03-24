@@ -20,7 +20,7 @@ __all__ = [
 ]
 
 
-__LICENSE__ = """Copyright (c) 2020-2022, Dany Cajas 
+__LICENSE__ = """Copyright (c) 2020-2023, Dany Cajas 
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -37,6 +37,11 @@ def jupyter_report(
     rm="MV",
     rf=0,
     alpha=0.05,
+    a_sim=100,
+    beta=None,
+    b_sim=None,
+    kappa=0.30,
+    solver=None,
     others=0.05,
     nrow=25,
     height=6,
@@ -61,25 +66,47 @@ def jupyter_report(
         The default is 'MV'. Possible values are:
 
         - 'MV': Standard Deviation.
+        - 'KT': Square Root Kurtosis.
         - 'MAD': Mean Absolute Deviation.
+        - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
+        - 'SKT': Square Root Semi Kurtosis.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'CVaR': Conditional Value at Risk.
-        - 'EVaR': Conditional Value at Risk.
-        - 'WR': Worst Realization (Minimax)
+        - 'TG': Tail Gini.
+        - 'EVaR': Entropic Value at Risk.
+        - 'RLVaR': Relativistc Value at Risk.
+        - 'WR': Worst Realization (Minimax).
+        - 'CVRG': CVaR range of returns.
+        - 'TGRG': Tail Gini range of returns.
+        - 'RG': Range of returns.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'RLDaR': Relativistc Drawdown at Risk of uncompounded cumulative returns.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
         Risk free rate or minimum acceptable return. The default is 0.
     alpha : float, optional
-        Significant level of VaR, CVaR, EVaR, DaR and CDaR.
+        Significance level of VaR, CVaR, Tail Gini, EVaR, RLVaR, CDaR, EDaR and RLDaR. The default is 0.05.
         The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
     others : float, optional
         Percentage of others section. The default is 0.05.
     nrow : int, optional
@@ -138,7 +165,6 @@ def jupyter_report(
     """
 
     cov = returns.cov()
-    nav = returns.cumsum()
 
     fig, ax = plt.subplots(
         nrows=6,
@@ -151,6 +177,9 @@ def jupyter_report(
         w,
         MAR=rf,
         alpha=alpha,
+        a_sim=a_sim,
+        kappa=0.30,
+        solver=None,
         t_factor=t_factor,
         ini_days=ini_days,
         days_per_year=days_per_year,
@@ -173,13 +202,30 @@ def jupyter_report(
         rm=rm,
         rf=rf,
         alpha=alpha,
+        a_sim=a_sim,
+        beta=beta,
+        b_sim=b_sim,
+        kappa=kappa,
+        solver=solver,
         t_factor=t_factor,
         ax=ax[3],
     )
 
-    ax[4] = plf.plot_hist(returns=returns, w=w, alpha=alpha, bins=bins, ax=ax[4])
+    ax[4] = plf.plot_hist(returns=returns,
+                          w=w,
+                          alpha=alpha,
+                          a_sim=a_sim,
+                          kappa=kappa,
+                          solver=solver,
+                          bins=bins,
+                          ax=ax[4])
 
-    ax[[1, 5]] = plf.plot_drawdown(nav=nav, w=w, alpha=alpha, ax=ax[[1, 5]])
+    ax[[1, 5]] = plf.plot_drawdown(returns=returns,
+                                   w=w,
+                                   alpha=alpha,
+                                   kappa=kappa,
+                                   solver=solver,
+                                   ax=ax[[1, 5]])
 
     year = str(datetime.datetime.now().year)
 

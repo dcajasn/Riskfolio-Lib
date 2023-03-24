@@ -54,6 +54,7 @@ rm_names = [
     "Conditional Value at Risk",
     "Tail Gini",
     "Entropic Value at Risk",
+    "Relativistic Value at Risk",
     "Worst Realization",
     "Conditional Value at Risk Range",
     "Tail Gini Range",
@@ -63,6 +64,7 @@ rm_names = [
     "Drawdown at Risk",
     "Conditional Drawdown at Risk",
     "Entropic Drawdown at Risk",
+    "Relativistic Drawdown at Risk",
     "Ulcer Index",
 ]
 
@@ -79,6 +81,7 @@ rmeasures = [
     "CVaR",
     "TG",
     "EVaR",
+    "RLVaR",
     "WR",
     "CVRG",
     "TGRG",
@@ -88,6 +91,7 @@ rmeasures = [
     "DaR",
     "CDaR",
     "EDaR",
+    "RLDaR",
     "UCI",
 ]
 
@@ -207,6 +211,8 @@ def plot_frontier(
     a_sim=100,
     beta=None,
     b_sim=None,
+    kappa=0.30,
+    solver=None,
     cmap="viridis",
     w=None,
     label="Portfolio",
@@ -247,6 +253,7 @@ def plot_frontier(
         - 'CVaR': Conditional Value at Risk.
         - 'TG': Tail Gini.
         - 'EVaR': Entropic Value at Risk.
+        - 'RLVaR': Relativistic Value at Risk.
         - 'WR': Worst Realization (Minimax).
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
@@ -256,6 +263,7 @@ def plot_frontier(
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     kelly : bool, optional
@@ -265,7 +273,8 @@ def plot_frontier(
     rf : float, optional
         Risk free rate or minimum acceptable return. The default is 0.
     alpha : float, optional
-        Significance level of VaR, CVaR, Tail Gini, EVaR, CDaR and EDaR. The default is 0.05.
+        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR and Tail Gini of losses.
+        The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
     beta : float, optional
@@ -274,6 +283,11 @@ def plot_frontier(
     b_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
     cmap : cmap, optional
         Colorscale that represents the risk adjusted return ratio.
         The default is 'viridis'.
@@ -297,12 +311,12 @@ def plot_frontier(
         risk measures based on returns (not drawdowns). The default is 252.
 
         .. math::
-            
+
             \begin{align}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
             \end{align}
-            
+
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
 
@@ -407,6 +421,8 @@ def plot_frontier(
             a_sim=a_sim,
             beta=beta,
             b_sim=b_sim,
+            kappa=kappa,
+            solver=solver
         )
 
         if kelly == False:
@@ -415,7 +431,7 @@ def plot_frontier(
             ret = 1 / returns.shape[0] * np.sum(np.log(1 + returns @ weights))
         ret = ret.item() * t_factor
 
-        if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
+        if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
             risk = risk * t_factor**0.5
 
         ratio = (ret - rf) / risk
@@ -473,6 +489,8 @@ def plot_frontier(
                 a_sim=a_sim,
                 beta=beta,
                 b_sim=b_sim,
+                kappa=kappa,
+                solver=solver
             )
             if kelly == False:
                 ret = mu_ @ weights
@@ -480,7 +498,7 @@ def plot_frontier(
                 ret = 1 / returns.shape[0] * np.sum(np.log(1 + returns @ weights))
             ret = ret.item() * t_factor
 
-            if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
+            if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
                 risk = risk * t_factor**0.5
 
             color = colormap[i].reshape(1, -1)
@@ -1017,6 +1035,8 @@ def plot_risk_con(
     a_sim=100,
     beta=None,
     b_sim=None,
+    kappa=0.30,
+    solver=None,
     color="tab:blue",
     height=6,
     width=10,
@@ -1050,20 +1070,22 @@ def plot_risk_con(
         - 'CVaR': Conditional Value at Risk.
         - 'TG': Tail Gini.
         - 'EVaR': Entropic Value at Risk.
+        - 'RLVaR': Relativistic Value at Risk.
         - 'WR': Worst Realization (Minimax).
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
         - 'RG': Range of returns.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
-        - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+        - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
         Risk free rate or minimum acceptable return. The default is 0.
     alpha : float, optional
-        Significance level of VaR, CVaR, Tail Gini, EVaR, CDaR and EDaR. The default is 0.05.
+        Significance level of VaR, CVaR, Tail Gini, EVaR, RLVaR, CDaR, EDaR and RLDaR. The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
     beta : float, optional
@@ -1072,6 +1094,11 @@ def plot_risk_con(
     b_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
     color : str, optional
         Color used to plot each asset risk contribution.
         The default is 'tab:blue'.
@@ -1082,14 +1109,14 @@ def plot_risk_con(
     t_factor : float, optional
         Factor used to annualize expected return and expected risks for
         risk measures based on returns (not drawdowns). The default is 252.
-        
+
         .. math::
-            
+
             \begin{align}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
             \end{align}
-            
+
     ax : matplotlib axis, optional
         If provided, plot on this axis. The default is None.
 
@@ -1133,8 +1160,17 @@ def plot_risk_con(
         fig = ax.get_figure()
 
     item = rmeasures.index(rm)
-    title = "Risk (" + rm_names[item] + ") Contribution per Asset"
-    ax.set_title(title)
+    if rm in ["CVaR", "TG", "EVaR", "RLVaR", "CVRG", "TGRG", "CDaR", "EDaR", "RLDaR"]:
+        title = "Risk (" + rm_names[item] + " $\\alpha = $" + "{0:.2%}".format(alpha)
+    else:
+        title = "Risk (" + rm_names[item]
+    if rm in ["CVRG", "TGRG"]:
+        title += ", $\\beta = $" + "{0:.2%}".format(beta)
+    if rm in ["RLVaR", "RLDaR"]:
+        title += ", $\\kappa = $" + "{0:.2%}".format(kappa)
+
+    title += ") Contribution per Asset"
+    ax.set_title(r'{}'.format(title))
 
     X = w.index.tolist()
 
@@ -1148,9 +1184,11 @@ def plot_risk_con(
         a_sim=a_sim,
         beta=beta,
         b_sim=b_sim,
+        kappa=kappa,
+        solver=solver
     )
 
-    if rm not in ["MDD", "ADD", "CDaR", "EDaR", "UCI"]:
+    if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
         RC = RC * t_factor**0.5
 
     ax.bar(X, RC, alpha=0.7, color=color, edgecolor="black")
@@ -1171,7 +1209,17 @@ def plot_risk_con(
     return ax
 
 
-def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax=None):
+def plot_hist(
+    returns,
+    w,
+    alpha=0.05,
+    a_sim=100,
+    kappa=0.30,
+    solver=None,
+    bins=50,
+    height=6,
+    width=10,
+    ax=None):
     r"""
     Create a histogram of portfolio returns with the risk measures.
 
@@ -1182,9 +1230,14 @@ def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax
     w : DataFrame of shape (n_assets, 1)
         Portfolio weights.
     alpha : float, optional
-        Significance level of VaR, CVaR, Tail Gini and EVaR. The default is 0.05.
+        Significance level of VaR, CVaR, EVaR, RLVaR and Tail Gini. The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    kappa : float, optional
+        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
     bins : float, optional
         Number of bins of the histogram. The default is 50.
     height : float, optional
@@ -1254,8 +1307,9 @@ def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax
         mu - rk.GMD(a),
         -rk.VaR_Hist(a, alpha),
         -rk.CVaR_Hist(a, alpha),
-        -rk.TG(a, alpha),
+        -rk.TG(a, alpha, a_sim),
         -rk.EVaR_Hist(a, alpha)[0],
+        -rk.RLVaR_Hist(a, alpha, kappa, solver),
         -rk.WR(a),
     ]
     label = [
@@ -1282,7 +1336,10 @@ def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax
         "{0:.2%}".format((1 - alpha))
         + " Confidence EVaR: "
         + "{0:.2%}".format(risk[7]),
-        "Worst Realization: " + "{0:.2%}".format(risk[8]),
+        "{0:.1%}".format((1 - alpha))
+        + " Confidence RLVaR(" + "{0:.3}".format(kappa) + "): "
+        + "{0:.2%}".format(risk[8]),
+        "Worst Realization: " + "{0:.2%}".format(risk[9]),
     ]
     color = [
         "b",
@@ -1293,6 +1350,7 @@ def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax
         "limegreen",
         "mediumvioletred",
         "dodgerblue",
+        "slateblue",
         "darkgrey",
     ]
 
@@ -1319,7 +1377,11 @@ def plot_hist(returns, w, alpha=0.05, a_sim=100, bins=50, height=6, width=10, ax
 
     ax.xaxis.set_major_locator(plt.AutoLocator())
     ticks_loc = ax.get_xticks().tolist()
-    ax.set_xticks(ax.get_xticks())
+    ticks_loc = [round(i,8) for i in ticks_loc]
+    ticks_loc = ticks_loc + [-i for i in ticks_loc[::-1]]
+    ticks_loc = list(set(ticks_loc))
+    ticks_loc.sort()
+    ax.set_xticks(np.array(ticks_loc))
     ax.set_xticklabels(["{:3.2%}".format(x) for x in ticks_loc])
     ticks_loc = ax.get_yticks().tolist()
     ax.set_yticks(ax.get_yticks())
@@ -1531,23 +1593,41 @@ def plot_range(
     return ax
 
 
-def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
+def plot_drawdown(
+    returns,
+    w,
+    alpha=0.05,
+    kappa=0.30,
+    solver=None,
+    height=8,
+    width=10,
+    height_ratios=[2,3],
+    ax=None):
     r"""
     Create a chart with the evolution of portfolio prices and drawdown.
 
     Parameters
     ----------
-    nav : DataFrame
-        Cumulative assets returns.
+    returns : DataFrame
+        Assets returns.
     w : DataFrame, optional
         A portfolio specified by the user to compare with the efficient
         frontier. The default is None.
     alpha : float, optional
-        Significance level of DaR and CDaR. The default is 0.05.
+        Significance level of DaR, CDaR, EDaR and RLDaR. The default is 0.05.
+    kappa : float, optional
+        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
     height : float, optional
         Height of the image in inches. The default is 8.
     width : float, optional
         Width of the image in inches. The default is 10.
+    height_ratios : list or ndarray
+        Defines the relative heights of the rows. Each row gets a relative
+        height of height_ratios[i] / sum(height_ratios). The default value is
+        [2,3].
     ax : matplotlib axis of size (2,1), optional
         If provided, plot on this axis. The default is None.
 
@@ -1565,17 +1645,15 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
     -------
     ::
 
-        nav=port.nav
-
-        ax = rp.plot_drawdown(nav=nav, w=w1, alpha=0.05, height=8, width=10, ax=None)
+        ax = rp.plot_drawdown(returns=Y, w=w1, alpha=0.05, height=8, width=10, ax=None)
 
     .. image:: images/Drawdown.png
 
 
     """
 
-    if not isinstance(nav, pd.DataFrame):
-        raise ValueError("nav must be a DataFrame")
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
 
     if not isinstance(w, pd.DataFrame):
         raise ValueError("w must be a DataFrame")
@@ -1585,21 +1663,21 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
     elif w.shape[1] > 1 and w.shape[0] > 0:
         raise ValueError("w must be a  DataFrame")
 
-    if nav.shape[1] != w.shape[0]:
-        a1 = str(nav.shape)
+    if returns.shape[1] != w.shape[0]:
+        a1 = str(returns.shape)
         a2 = str(w.shape)
         raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if ax is None:
         fig = plt.gcf()
-        ax = fig.subplots(nrows=2, ncols=1)
+        ax = fig.subplots(nrows=2, ncols=1, gridspec_kw={'height_ratios':height_ratios})
         ax = np.ravel(ax)
         fig.set_figwidth(width)
         fig.set_figheight(height)
     else:
         if isinstance(ax, plt.Axes):
             fig = ax.get_figure()
-            gs = GridSpec(2, 1, figure=fig)
+            gs = GridSpec(2, 1, figure=fig, height_ratios=height_ratios)
             ax.set_position(gs[0].get_position(fig))
             ax.set_subplotspec(gs[0])
             fig.add_subplot(gs[1])
@@ -1614,11 +1692,8 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
         ax = np.ravel(ax)
         fig = ax[0].get_figure()
 
-    index = nav.index.tolist()
-    a = nav.to_numpy()
-    a = np.insert(a, 0, 0, axis=0)
-    a = np.diff(a, axis=0)
-    a = a @ w.to_numpy()
+    index = returns.index.tolist()
+    a = returns.to_numpy() @ w.to_numpy()
     prices = 1 + np.insert(a, 0, 0, axis=0)
     prices = np.cumprod(prices, axis=0)
     prices = np.ravel(prices).tolist()
@@ -1645,6 +1720,7 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
         -rk.DaR_Abs(a, alpha),
         -rk.CDaR_Abs(a, alpha),
         -rk.EDaR_Abs(a, alpha)[0],
+        -rk.RLDaR_Abs(a, alpha, kappa, solver),
         -rk.MDD_Abs(a),
     ]
     label = [
@@ -1657,9 +1733,18 @@ def plot_drawdown(nav, w, alpha=0.05, height=8, width=10, ax=None):
         "{0:.2%}".format((1 - alpha))
         + " Confidence EDaR: "
         + "{0:.2%}".format(risk[4]),
-        "Maximum Drawdown: " + "{0:.2%}".format(risk[5]),
+        "{0:.1%}".format((1 - alpha))
+        + " Confidence RLDaR (" + "{0:.3}".format(kappa) + "): "
+        + "{0:.2%}".format(risk[5]),
+        "Maximum Drawdown: " + "{0:.2%}".format(risk[6]),
     ]
-    color2 = ["b", "r", "fuchsia", "limegreen", "dodgerblue", "darkgrey"]
+    color2 = ["b",
+              "r",
+              "fuchsia",
+              "limegreen",
+              "dodgerblue",
+              "slateblue",
+              "darkgrey"]
 
     j = 0
 
@@ -1698,6 +1783,9 @@ def plot_table(
     w,
     MAR=0,
     alpha=0.05,
+    a_sim=100,
+    kappa=0.30,
+    solver=None,
     height=9,
     width=12,
     t_factor=252,
@@ -1717,8 +1805,22 @@ def plot_table(
         Portfolio weights.
     MAR: float, optional
         Minimum acceptable return.
-    alpha: float, optional
-        Significance level for VaR, CVaR, EVaR, DaR and CDaR.
+    alpha : float, optional
+        Significance level of VaR, CVaR, Tail Gini, EVaR, RLVaR, CDaR, EDaR and RLDaR.
+        The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
     height : float, optional
         Height of the image in inches. The default is 9.
     width : float, optional
@@ -1808,6 +1910,7 @@ def plot_table(
         "Value at Risk (VaR) (2)",
         "Conditional Value at Risk (CVaR) (2)",
         "Entropic Value at Risk (EVaR) (2)",
+        "Relativistic Value at Risk (RLVaR ) (2)",
         "Worst Realization (2)",
         "Skewness",
         "Kurtosis",
@@ -1818,6 +1921,7 @@ def plot_table(
         "Drawdown at Risk (DaR)",
         "Conditional Drawdown at Risk (CDaR)",
         "Entropic Drawdown at Risk (EDaR)",
+        "Relativistic Drawdown at Risk (RLDaR)",
         "Max Drawdown (MDD)",
         "(1) Annualized, multiplied by " + str(t_factor),
         "(2) Annualized, multiplied by √" + str(t_factor),
@@ -1839,7 +1943,9 @@ def plot_table(
         rk.LPM(X, MAR=MAR, p=2) * t_factor**0.5,
         rk.VaR_Hist(X, alpha=alpha) * t_factor**0.5,
         rk.CVaR_Hist(X, alpha=alpha) * t_factor**0.5,
+        rk.TG(X, alpha=alpha, a_sim=a_sim) * t_factor**0.5,
         rk.EVaR_Hist(X, alpha=alpha)[0] * t_factor**0.5,
+        rk.RLVaR_Hist(X, alpha=alpha, kappa=kappa, solver=solver) * t_factor**0.5,
         rk.WR(X) * t_factor**0.5,
         st.skew(X, bias=False),
         st.kurtosis(X, bias=False),
@@ -1850,6 +1956,7 @@ def plot_table(
         rk.DaR_Abs(X),
         rk.CDaR_Abs(X, alpha=alpha),
         rk.EDaR_Abs(X, alpha=alpha)[0],
+        rk.RLDaR_Abs(X, alpha=alpha, kappa=kappa, solver=solver),
         rk.MDD_Abs(X),
         "",
         "",
@@ -1919,10 +2026,10 @@ def plot_table(
             if k % 2 != 0:
                 cellDict[(j, 0)].set_facecolor("whitesmoke")
                 cellDict[(j, i)].set_facecolor("whitesmoke")
-            if j in [6, 19]:
+            if j in [6, 20]:
                 cellDict[(j, 0)].set_facecolor("white")
                 cellDict[(j, i)].set_facecolor("white")
-            if j in [1, 7, 20]:
+            if j in [1, 7, 21]:
                 cellDict[(j, 0)].set_text_props(color="white")
                 cellDict[(j, 0)].set_facecolor("orange")
                 cellDict[(j, i)].set_facecolor("orange")

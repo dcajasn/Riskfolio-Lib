@@ -291,7 +291,7 @@ def cokurtosis_matrix(Y):
     if isinstance(Y, pd.DataFrame):
         assets = Y.columns.tolist()
         cols = list(product(assets, assets))
-        cols = [y + " - " + x for x, y in cols]
+        cols = [str(y) + " - " + str(x) for x, y in cols]
         flag = True
 
     Y_ = np.array(Y, ndmin=2)

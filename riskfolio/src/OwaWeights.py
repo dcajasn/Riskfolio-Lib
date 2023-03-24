@@ -7,9 +7,12 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 """
 
 import numpy as np
-
+import cvxpy as cp
+import math
+from scipy.special import binom
 
 __all__ = [
+    "owa_l_moment",
     "owa_gmd",
     "owa_cvar",
     "owa_wcvar",
@@ -19,7 +22,35 @@ __all__ = [
     "owa_cvrg",
     "owa_wcvrg",
     "owa_tgrg",
+    "owa_l_moment_crm",
 ]
+
+
+def owa_l_moment(T, k=2):
+    r"""
+    Calculate the OWA weights to calculate the kth linear moment (l-moment)
+    of a returns series.
+
+    Parameters
+    ----------
+    T : int
+        Number of observations of the returns series.
+    k : int
+        Order of the l-moment. Must be an integer higher or equal than 1.
+
+    Returns
+    -------
+    value : 1d-array
+        An OWA weights vector of size Tx1.
+    """
+    w = []
+    for i in range(1, T+1):
+        a = 0
+        for j in range(k):
+            a += (-1)**j * binom(k-1,j)* binom(i-1, k-1-j)*binom(T-i,j)
+        a *= 1/(k * binom(T,k))
+        w.append(a)
+    return np.array(w).reshape(-1,1)
 
 
 def owa_gmd(T):
@@ -268,3 +299,109 @@ def owa_tgrg(T, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     w_ = owa_tg(T, alpha, a_sim) - owa_tg(T, beta, b_sim)[::-1]
 
     return w_
+
+
+def owa_l_moment_crm(T, k=4, method='MSD', g=0.5, max_phi=0.5, solver=None):
+    r"""
+    Calculate the OWA weights to calculate a convex risk measure that considers
+    higher linear moments or L-moments.
+
+    Parameters
+    ----------
+    T : int
+        Number of observations of the returns series.
+    k : int
+        Order of the l-moment. Must be an integer higher or equal than 2.
+    method : str, optional
+        Method to calculate the weights used to combine the l-moments with order higher than 2.
+        The default value is 'MSD'. Possible values are:
+
+        - 'CRRA': Normalized Constant Relative Risk Aversion coefficients.
+        - 'ME': Maximum Entropy.
+        - 'MSS': Minimum Sum Squares.
+        - 'MSD': Minimum Square Distance.
+
+    g : float, optional
+        Risk aversion coefficient of CRRA utility function. The default is 0.5.
+    max_phi : float, optional
+        Maximum weight constraint of L-moments.
+        The default is 0.5.
+    solver: str, optional
+        Solver available for CVXPY. Used to calculate 'ME', 'MSS' and 'MSD' weights.
+        The default value is None.
+
+    Returns
+    -------
+    value : 1d-array
+        A OWA weights vector of size Tx1.
+    """
+
+    if k < 2 or (not isinstance(k,int)):
+        raise ValueError("k must be an integer higher equal than 2")
+    if method not in ['CRRA', 'ME', 'MSS', 'MSD']:
+        raise ValueError("Available methods are 'CRRA', 'ME', 'MSS' and 'MSD'")
+    if g >= 1 or g <= 0:
+        raise ValueError("The risk aversion coefficient mus be between 0 and 1")
+    if max_phi >= 1 or max_phi <= 0:
+        raise ValueError("The constraint on maximum weight of L-moments must be between 0 and 1")
+    
+
+    ws = np.empty((T,0))
+    for i in range(2, k+1):
+        w_i = (-1)**i * l_moment_weights(T, i)
+        ws = np.concatenate([ws, w_i], axis=1)
+
+    if method == 'CRRA':
+        phis = []
+        e = 1
+        for i in range(1,k):
+            e *= (g+i-1)
+            phis.append(e/math.factorial(i+1))
+        phis = np.array(phis)
+        phis = phis/np.sum(phis)
+        phis = phis.reshape(-1,1)
+        a = ws @ phis
+                
+        w  = np.zeros_like(a)
+        w[0]= a[0]
+        for i in range(1,len(a)):
+            w[i,0] = np.max(a[:i+1,0])
+        
+    else:
+        theta = cp.Variable((T,1))
+        n = ws.shape[1]
+        phi = cp.Variable((n,1))
+    
+        constraints = [cp.sum(phi) == 1,
+                       theta == ws @ phi,
+                       phi <= max_phi,
+                       phi >= 0,
+                       phi[1:] <= phi[:-1],
+                       theta[1:] >= theta[:-1],
+                       ]
+                
+        if method == 'ME':
+            theta_ = cp.Variable((T,1))
+            obj = cp.sum(cp.entr(theta_)) * 1000
+            constraints += [theta_ >= theta,
+                            theta_ >= -theta,]
+            objective = cp.Maximize(obj)
+        elif method == 'MSS':
+            obj = cp.pnorm(theta, p=2) * 1000
+            objective = cp.Minimize(obj)
+        elif method == 'MSD':
+            obj = cp.pnorm(theta[1:] - theta[:-1], p=2) * 1000
+            objective = cp.Minimize(obj)
+                
+        problem = cp.Problem(objective, constraints)
+        if solver is not None:
+            problem.solve(solver=solver)
+        else:
+            problem.solve()
+    
+        phis = phi.value
+        phis = phis/np.sum(phis)
+        phis = phis.reshape(-1,1)
+        w = ws @ phis
+
+    return w

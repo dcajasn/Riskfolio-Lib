@@ -7,39 +7,46 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 """
 
 import numpy as np
+import cvxpy as cp
 import riskfolio.src.OwaWeights as owa
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
+import warnings
 
 
 __all__ = [
     "MAD",
+    "SemiDeviation",
     "Kurtosis",
     "SemiKurtosis",
-    "SemiDeviation",
     "VaR_Hist",
     "CVaR_Hist",
     "WR",
     "LPM",
     "Entropic_RM",
     "EVaR_Hist",
+    "RLVaR_Hist",
     "MDD_Abs",
     "ADD_Abs",
     "DaR_Abs",
     "CDaR_Abs",
     "EDaR_Abs",
+    "RLDaR_Abs",
     "UCI_Abs",
     "MDD_Rel",
     "ADD_Rel",
     "DaR_Rel",
     "CDaR_Rel",
     "EDaR_Rel",
+    "RLDaR_Rel",
     "UCI_Rel",
     "GMD",
     "TG",
     "RG",
     "CVRG",
     "TGRG",
+    "L_Moment",
+    "L_Moment_CRM",
     "Sharpe_Risk",
     "Sharpe",
     "Risk_Contribution",
@@ -167,7 +174,7 @@ def SemiKurtosis(X):
     Calculate the Semi Square Root Kurtosis of a returns series.
 
     .. math::
-        \text{Kurt}(X) = \left [ \frac{1}{T}\sum_{t=1}^{T}
+        \text{SemiKurt}(X) = \left [ \frac{1}{T}\sum_{t=1}^{T}
         \min (X_{t} - \mathbb{E}(X_{t}), 0)^{4} \right ]^{1/2}
 
     Parameters
@@ -345,7 +352,7 @@ def LPM(X, MAR=0, p=1):
         Returns series, must have Tx1 size.
     MAR : float, optional
         Minimum acceptable return. The default is 0.
-    p : float, optional can be {1,2} 
+    p : float, optional can be {1,2}
         order of the :math:`\text{LPM}`. The default is 1.
 
     Raises
@@ -433,6 +440,7 @@ def _Entropic_RM(z, X, alpha=0.05):
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
 
+    a = a.flatten()
     value = np.mean(np.exp(-1 / z * a), axis=0)
     value = z * (np.log(value) + np.log(1 / alpha))
     value = np.array(value).item()
@@ -470,6 +478,7 @@ def EVaR_Hist(X, alpha=0.05):
         EVaR of a returns series and value of z that minimize EVaR.
 
     """
+    warnings.filterwarnings('ignore')
 
     a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
@@ -477,14 +486,104 @@ def EVaR_Hist(X, alpha=0.05):
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
 
-    bnd = Bounds([1e-12], [np.inf])
+    bnd = Bounds([-1e-24], [np.inf])
     result = minimize(
-        _Entropic_RM, [1], args=(X, alpha), method="SLSQP", bounds=bnd, tol=1e-12
+        _Entropic_RM,
+        [1],
+        args=(X, alpha),
+        method="SLSQP",
+        bounds=bnd,
+        tol=1e-12
     )
     t = result.x
     t = t.item()
     value = _Entropic_RM(t, X, alpha)
     return (value, t)
+
+def RLVaR_Hist(X, alpha=0.05, kappa=0.01, solver=None):
+    r"""
+    Calculate the Relativistic Value at Risk (RLVaR) of a returns series.
+    I recommend only use this function with MOSEK solver.
+
+    .. math::
+        \text{RLVaR}^{\kappa}_{\alpha}(X) & = \left \{
+        \begin{array}{ll}
+        \underset{z, t, \psi, \theta,  \varepsilon, \omega}{\text{inf}} & t + z \ln_{\kappa} \left ( \frac{1}{\alpha T} \right ) + \sum^T_{i=1} \left ( \psi_{i} + \theta_{i}  \right ) \\
+        \text{s.t.} & -X  - t + \varepsilon + \omega \leq 0\\
+        & z \geq 0 \\
+        & \left ( z \left ( \frac{1+\kappa}{2\kappa} \right ), \psi_{i} \left ( \frac{1+\kappa}{\kappa} \right ), \varepsilon_{i} \right) \in \mathcal{P}_3^{1/(1+\kappa),\, \kappa/(1+\kappa)} \\
+        & \left ( \omega_{i}\left ( \frac{1}{1-\kappa} \right ), \theta_{i}\left ( \frac{1}{\kappa} \right),  -z \left ( \frac{1}{2\kappa} \right ) \right ) \in \mathcal{P}_3^{1-\kappa,\, \kappa} \\
+
+    Where:
+
+    :math:`\mathcal{P}_3^{\alpha,\, 1-\alpha}` is the power cone 3D.
+
+    :math:`\kappa` is the deformation parameter.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    alpha : float, optional
+        Significance level of EVaR. The default is 0.05.
+    kappa : float, optional
+        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.01.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : tuple
+        RLVaR of a returns series.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T, N = a.shape
+
+    t = cp.Variable((1, 1))
+    z = cp.Variable((1, 1))
+    omega = cp.Variable((T, 1))
+    psi = cp.Variable((T, 1))
+    theta = cp.Variable((T, 1))
+    nu = cp.Variable((T, 1))
+
+    ones = np.ones((T,1))
+    constraints = [
+        cp.constraints.power.PowCone3D(z * (1+kappa)/(2*kappa) * ones, psi * (1+kappa)/kappa, nu, 1/(1+kappa)),
+        cp.constraints.power.PowCone3D(omega/(1-kappa), theta/kappa, -z/(2*kappa) * ones, (1-kappa)),
+        -a * 1000 - t * 1000 + nu * 1000 + omega * 1000 <= 0,
+        z >= 0,
+        ]
+
+    c = ((1/(alpha*T))**kappa-(1/(alpha*T))**(-kappa))/(2*kappa)
+    risk = t + c * z + cp.sum(psi + theta)
+
+    objective = cp.Minimize(risk * 1000)
+    prob = cp.Problem(objective, constraints)
+
+    try:
+        if solver in ['CLARABEL', 'MOSEK', 'SCS']:
+            prob.solve(solver=solver)
+        else:
+            prob.solve()
+    except:
+        pass
+
+    value = risk.value.item()
+
+    return value
 
 
 def MDD_Abs(X):
@@ -730,7 +829,7 @@ def EDaR_Abs(X, alpha=0.05):
     Returns
     -------
     (value, z) : tuple
-        EDaR of an uncompounded cumulative returns series 
+        EDaR of an uncompounded cumulative returns series
         and value of z that minimize EDaR.
         
     """
@@ -754,6 +853,61 @@ def EDaR_Abs(X, alpha=0.05):
     (value, t) = EVaR_Hist(np.array(DD), alpha=alpha)
 
     return (value, t)
+
+
+def RLDaR_Abs(X, alpha=0.05, kappa=0.01, solver=None):
+    r"""
+    Calculate the Relativistic Drawdown at Risk (RLDaR) of a returns series
+    using uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
+
+    .. math::
+        \text{RLDaR}^{\kappa}_{\alpha}(X) & = \text{RLVaR}^{\kappa}_{\alpha}(DD(X)) \\
+        \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \sum_{i=0}^{t}X_{i}
+        \right )- \sum_{i=0}^{j}X_{i} \\
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    alpha : float, optional
+        Significance level of EVaR. The default is 0.05.
+    kappa : float, optional
+        Deformation parameter of RLDaR, must be between 0 and 1. The default is 0.01.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : tuple
+        RLDaR of an uncompounded cumulative returns series.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    prices = np.insert(np.array(a), 0, 1, axis=0)
+    NAV = np.cumsum(np.array(prices), axis=0)
+    DD = []
+    peak = -99999
+    for i in NAV:
+        if i > peak:
+            peak = i
+        DD.append(-(peak - i))
+    del DD[0]
+
+    value = RLVaR_Hist(np.array(DD), alpha=alpha, kappa=kappa, solver=solver)
+
+    return value
 
 
 def UCI_Abs(X):
@@ -1056,7 +1210,7 @@ def EDaR_Rel(X, alpha=0.05):
     Returns
     -------
     (value, z) : tuple
-        EDaR of a cumpounded cumulative returns series 
+        EDaR of a cumpounded cumulative returns series
         and value of z that minimize EDaR.
 
     """
@@ -1080,6 +1234,61 @@ def EDaR_Rel(X, alpha=0.05):
     (value, t) = EVaR_Hist(np.array(DD), alpha=alpha)
 
     return (value, t)
+
+
+def RLDaR_Rel(X, alpha=0.05, kappa=0.01, solver=None):
+    r"""
+    Calculate the Relativistic Drawdown at Risk (RLDaR) of a returns series
+    using compounded cumulative returns. I recommend only use this function with MOSEK solver.
+
+    .. math::
+        \text{RLDaR}^{\kappa}_{\alpha}(X) & = \text{RLVaR}^{\kappa}_{\alpha}(DD(X)) \\
+        \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \prod_{i=0}^{t}(1+X_{i})
+        \right )- \prod_{i=0}^{j}(1+X_{i}) \\
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    alpha : float, optional
+        Significance level of RLDaR. The default is 0.05.
+    kappa : float, optional
+        Deformation parameter of RLDaR, must be between 0 and 1. The default is 0.01.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : tuple
+        RLDaR of a compounded cumulative returns series.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("X must have Tx1 size")
+
+    prices = 1 + np.insert(np.array(a), 0, 0, axis=0)
+    NAV = np.cumprod(prices, axis=0)
+    DD = []
+    peak = -99999
+    for i in NAV:
+        if i > peak:
+            peak = i
+        DD.append(-(peak - i) / peak)
+    del DD[0]
+
+    value = RLVaR_Hist(np.array(DD), alpha=alpha, kappa=kappa, solver=solver)
+
+    return value
 
 
 def UCI_Rel(X):
@@ -1154,7 +1363,7 @@ def GMD(X):
     Returns
     -------
     value : float
-        Ulcer Index of a cumpounded cumulative returns.
+        Gini Mean Difference of a returns series.
 
     """
 
@@ -1166,6 +1375,116 @@ def GMD(X):
 
     T = a.shape[0]
     w_ = owa.owa_gmd(T)
+    value = (w_.T @ np.sort(a, axis=0)).item()
+
+    return value
+
+
+def L_Moment(X, k=2):
+    r"""
+    Calculate the kth l-moment of a returns series.
+
+    .. math:
+        \lambda_k = {\tbinom{T}{k}}^{-1} \mathop{\sum \sum \ldots \sum}_{1
+        \leq i_{1} < i_{2} \cdots < i_{k} \leq n} \frac{1}{k}
+        \sum^{k-1}_{j=0} (-1)^{j} \binom{k-1}{j} y_{[i_{k-j}]} \\
+
+    Where $y_{[i]}$ is the ith-ordered statistic.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    k : int
+        Order of the l-moment. Must be an integer higher or equal than 1.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Kth l-moment of a returns series.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_l_moment(T, k=k)
+    value = (w_.T @ np.sort(a, axis=0)).item()
+
+    return value
+
+
+def L_Moment_CRM(X, k=4, method='MSD', g=0.5, max_phi=0.5, solver=None):
+    r"""
+    Calculate a custom convex risk measure that is a weighted average of
+    first k-th l-moments.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    k : int
+        Order of the l-moment. Must be an integer higher or equal than 2.
+    method : str, optional
+        Method to calculate the weights used to combine the l-moments with
+        order higher than 2. The default value is 'MSD'. Possible values are:
+
+        - 'CRRA': Normalized Constant Relative Risk Aversion coefficients.
+        - 'ME': Maximum Entropy.
+        - 'MSS': Minimum Sum Squares.
+        - 'MSD': Minimum Square Distance.
+
+    g : float, optional
+        Risk aversion coefficient of CRRA utility function. The default is 0.5.
+    max_phi : float, optional
+        Maximum weight constraint of L-moments.
+        The default is 0.5.
+    solver: str, optional
+        Solver available for CVXPY. Used to calculate 'ME', 'MSS' and 'MSD' weights.
+        The default value is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Custom convex risk measure that is a weighted average of first k-th l-moments of a returns series.
+
+    """
+    if k < 2 or (not isinstance(k,int)):
+        raise ValueError("k must be an integer higher equal than 2")
+    if method not in ['CRRA', 'ME', 'MSS', 'MSD']:
+        raise ValueError("Available methods are 'CRRA', 'ME', 'MSS' and 'MSD'")
+    if g >= 1 or g <= 0:
+        raise ValueError("The risk aversion coefficient mus be between 0 and 1")
+    if max_phi >= 1 or max_phi <= 0:
+        raise ValueError("The constraint on maximum weight of L-moments must be between 0 and 1")
+    
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_l_moment_crm(T,
+                              k=k,
+                              method=method,
+                              g=g,
+                              max_phi=max_phi,
+                              solver=solver)
     value = (w_.T @ np.sort(a, axis=0)).item()
 
     return value
@@ -1334,7 +1653,6 @@ def TGRG(X, alpha=0.05, a_sim=100, beta=None, b_sim=None):
 def Sharpe_Risk(
     w,
     cov=None,
-    kurt=None,
     returns=None,
     rm="MV",
     rf=0,
@@ -1342,6 +1660,8 @@ def Sharpe_Risk(
     a_sim=100,
     beta=None,
     b_sim=None,
+    kappa=0.01,
+    solver=None,
 ):
     r"""
     Calculate the risk measure available on the Sharpe function.
@@ -1371,6 +1691,7 @@ def Sharpe_Risk(
         - 'CVaR': Conditional Value at Risk.
         - 'TG': Tail Gini.
         - 'EVaR': Entropic Value at Risk.
+        - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
         - 'WR': Worst Realization (Minimax).
         - 'RG': Range of returns.
         - 'CVRG': CVaR range of returns.
@@ -1380,17 +1701,19 @@ def Sharpe_Risk(
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns. I recommend only use this risk measure with MOSEK solver.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
         - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
         - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
         - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
         - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
+        - 'RLDaR_Rel': Relativistic Drawdown at Risk of compounded cumulative returns. I recommend only use this risk measure with MOSEK solver.
         - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
 
     rf : float, optional
         Risk free rate. The default is 0.
     alpha : float, optional
-        Significance level of VaR, CVaR, EDaR, DaR, CDaR, EDaR, Tail Gini of losses.
+        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR and Tail Gini of losses.
         The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
@@ -1400,6 +1723,11 @@ def Sharpe_Risk(
     b_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.01.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
 
     Raises
     ------
@@ -1446,6 +1774,8 @@ def Sharpe_Risk(
         risk = TG(a, alpha=alpha, a_sim=a_sim)
     elif rm == "EVaR":
         risk = EVaR_Hist(a, alpha=alpha)[0]
+    elif rm == "RLVaR":
+        risk = RLVaR_Hist(a, alpha=alpha, kappa=kappa, solver=solver)
     elif rm == "WR":
         risk = WR(a)
     elif rm == "RG":
@@ -1464,6 +1794,8 @@ def Sharpe_Risk(
         risk = CDaR_Abs(a, alpha=alpha)
     elif rm == "EDaR":
         risk = EDaR_Abs(a, alpha=alpha)[0]
+    elif rm == "RLDaR":
+        risk = RLDaR_Abs(a, alpha=alpha, kappa=kappa, solver=solver)
     elif rm == "UCI":
         risk = UCI_Abs(a)
     elif rm == "MDD_Rel":
@@ -1476,6 +1808,8 @@ def Sharpe_Risk(
         risk = CDaR_Rel(a, alpha=alpha)
     elif rm == "EDaR_Rel":
         risk = EDaR_Rel(a, alpha=alpha)[0]
+    elif rm == "RLDaR_Rel":
+        risk = RLDaR_Rel(a, alpha=alpha, kappa=kappa, solver=solver)
     elif rm == "UCI_Rel":
         risk = UCI_Rel(a)
     elif rm == "KT":
@@ -1499,6 +1833,8 @@ def Sharpe(
     a_sim=100,
     beta=None,
     b_sim=None,
+    kappa=0.01,
+    solver=None,
 ):
     r"""
     Calculate the Risk Adjusted Return Ratio from a portfolio returns series.
@@ -1545,6 +1881,7 @@ def Sharpe(
         - 'CVaR': Conditional Value at Risk.
         - 'TG': Tail Gini.
         - 'EVaR': Entropic Value at Risk.
+        - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
         - 'WR': Worst Realization (Minimax).
         - 'RG': Range of returns.
         - 'CVRG': CVaR range of returns.
@@ -1554,17 +1891,19 @@ def Sharpe(
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
         - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
         - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
         - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
         - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
+        - 'RLDaR_Rel': Relativistic Drawdown at Risk of compounded cumulative returns. I recommend only use this function with MOSEK solver.
         - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
 
     rf : float, optional
         Risk free rate. The default is 0.
     alpha : float, optional
-        Significance level of VaR, CVaR, EDaR, DaR, CDaR, EDaR, Tail Gini of losses.
+        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR and Tail Gini of losses.
         The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
@@ -1574,6 +1913,11 @@ def Sharpe(
     b_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.01.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
 
     Raises
     ------
@@ -1620,6 +1964,8 @@ def Sharpe(
         a_sim=a_sim,
         beta=beta,
         b_sim=b_sim,
+        kappa=kappa,
+        solver=solver
     )
 
     value = (ret - rf) / risk
@@ -1642,6 +1988,8 @@ def Risk_Contribution(
     a_sim=100,
     beta=None,
     b_sim=None,
+    kappa=0.01,
+    solver=None,
 ):
     r"""
     Calculate the risk contribution for each asset based on the risk measure
@@ -1672,6 +2020,7 @@ def Risk_Contribution(
         - 'CVaR': Conditional Value at Risk.
         - 'TG': Tail Gini.
         - 'EVaR': Entropic Value at Risk.
+        - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
         - 'WR': Worst Realization (Minimax).
         - 'RG': Range of returns.
         - 'CVRG': CVaR range of returns.
@@ -1681,17 +2030,19 @@ def Risk_Contribution(
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
         - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
         - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
         - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
         - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
+        - 'RLDaR_Rel': Relativistic Drawdown at Risk of compounded cumulative returns. I recommend only use this function with MOSEK solver.
         - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
 
     rf : float, optional
         Risk free rate. The default is 0.
     alpha : float, optional
-        Significance level of VaR, CVaR, EDaR, DaR, CDaR, EDaR, Tail Gini of losses.
+        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR and Tail Gini of losses.
         The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
@@ -1701,6 +2052,11 @@ def Risk_Contribution(
     b_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.01.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
 
     Raises
     ------
@@ -1726,7 +2082,10 @@ def Risk_Contribution(
         returns_ = np.array(returns, ndmin=2)
 
     RC = []
-    d_i = 0.0000001
+    if rm in ['RLVaR', 'RLDaR']:
+        d_i = 0.0001
+    else:
+        d_i = 0.0000001
 
     for i in range(0, w_.shape[0]):
         delta = np.zeros((w_.shape[0], 1))
@@ -1767,6 +2126,9 @@ def Risk_Contribution(
         elif rm == "EVaR":
             risk_1 = EVaR_Hist(a_1, alpha=alpha)[0]
             risk_2 = EVaR_Hist(a_2, alpha=alpha)[0]
+        elif rm == "RLVaR":
+            risk_1 = RLVaR_Hist(a_1, alpha=alpha, kappa=kappa, solver=solver)
+            risk_2 = RLVaR_Hist(a_2, alpha=alpha, kappa=kappa, solver=solver)
         elif rm == "WR":
             risk_1 = WR(a_1)
             risk_2 = WR(a_2)
@@ -1794,6 +2156,9 @@ def Risk_Contribution(
         elif rm == "EDaR":
             risk_1 = EDaR_Abs(a_1, alpha=alpha)[0]
             risk_2 = EDaR_Abs(a_2, alpha=alpha)[0]
+        elif rm == "RLDaR":
+            risk_1 = RLDaR_Abs(a_1, alpha=alpha, kappa=kappa, solver=solver)
+            risk_2 = RLDaR_Abs(a_2, alpha=alpha, kappa=kappa, solver=solver)
         elif rm == "UCI":
             risk_1 = UCI_Abs(a_1)
             risk_2 = UCI_Abs(a_2)
@@ -1812,6 +2177,9 @@ def Risk_Contribution(
         elif rm == "EDaR_Rel":
             risk_1 = EDaR_Rel(a_1, alpha=alpha)[0]
             risk_2 = EDaR_Rel(a_2, alpha=alpha)[0]
+        elif rm == "RLDaR_Rel":
+            risk_1 = RLDaR_Rel(a_1, alpha=alpha, kappa=kappa, solver=solver)
+            risk_2 = RLDaR_Rel(a_2, alpha=alpha, kappa=kappa, solver=solver)
         elif rm == "UCI_Rel":
             risk_1 = UCI_Rel(a_1)
             risk_2 = UCI_Rel(a_2)
