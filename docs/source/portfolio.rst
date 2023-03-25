@@ -99,12 +99,14 @@ measures are:
 - Conditional Value at Risk :cite:`a-Rockafellar`.
 - Tail Gini :cite:`a-Ogryczak2002`, :cite:`a-Cajas3`.
 - Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`, :cite:`a-Cajas1`.
+- Relativistic Value at Risk :cite:`a-Cajas5`.
 - Worst Realization (Minimax) :cite:`a-Mansini2`.
-- Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio) :cite:`a-Uryasev1`.
 - Average Drawdown of uncompounded cumulative returns :cite:`a-Uryasev1`.
+- Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
 - Conditional Drawdown at Risk of uncompounded cumulative returns :cite:`a-Uryasev1`.
 - Entropic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas1`.
-- Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
+- Relativistic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas5`.
+- Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio) :cite:`a-Uryasev1`.
 
 :math:`c_{i}`: are maximum values on each risk measure.
 
@@ -157,9 +159,11 @@ measures are:
 - Conditional Value at Risk :cite:`a-Rockafellar`.
 - Tail Gini :cite:`a-Ogryczak2002`, :cite:`a-Cajas3`.
 - Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`, :cite:`a-Cajas1`.
+- Relativistic Value at Risk :cite:`a-Cajas5`.
+- Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
 - Conditional Drawdown at Risk of uncompounded cumulative returns :cite:`a-Uryasev1`.
 - Entropic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas1`.
-- Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
+- Relativistic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas5`.
 
 :math:`c`: is an arbitrary constant.
 
@@ -288,6 +292,9 @@ Where:
 
 Ordered Weighted Averaging (OWA) Portfolio
 ------------------------------------------
+
+Riskfolio-Lib allows to calculate the OWA portfolio optimization model :cite:`a-Cajas3`. We can use
+this function to calculate the Higher L-Moment portfolio optimization model :cite:`a-Cajas6`.
 
 - **Minimum Risk Portfolio:**
 

@@ -57,7 +57,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Maximum Utility Function.
     - Maximum Risk Adjusted Return Ratio.
 
-- Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 20 convex risk measures:
+- Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 22 convex risk measures:
 
     **Dispersion Risk Measures:**
 
@@ -78,6 +78,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Conditional Value at Risk (CVaR).
     - Tail Gini.
     - Entropic Value at Risk (EVaR).
+    - Relativistic Value at Risk (RLVaR).
     - Worst Case Realization (Minimax).
 
     **Drawdown Risk Measures:**
@@ -86,9 +87,10 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Average Drawdown for uncompounded cumulative returns.
     - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
     - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
+    - Relativistic Drawdown at Risk (RLDaR) for uncompounded cumulative returns.
     - Ulcer Index for uncompounded cumulative returns.
 
-- Risk Parity Portfolio Optimization with 16 convex risk measures:
+- Risk Parity Portfolio Optimization with 18 convex risk measures:
 
     **Dispersion Risk Measures:**
 
@@ -108,14 +110,16 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Conditional Value at Risk (CVaR).
     - Tail Gini.
     - Entropic Value at Risk (EVaR).
+    - Relativistic Value at Risk (RLVaR).
 
     **Drawdown Risk Measures:**
 
     - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
     - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
+    - Relativistic Drawdown at Risk (RLDaR) for uncompounded cumulative returns.
     - Ulcer Index for uncompounded cumulative returns.
 
-- Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 29 risk measures using naive risk parity:
+- Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 32 risk measures using naive risk parity:
 
     **Dispersion Risk Measures:**
 
@@ -137,17 +141,19 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Value at Risk (VaR).
     - Conditional Value at Risk (CVaR).
     - Entropic Value at Risk (EVaR).
+    - Relativistic Value at Risk (RLVaR).
     - Tail Gini.
     - Worst Case Realization (Minimax).
 
     **Drawdown Risk Measures:**
 
-    - Maximum Drawdown (Calmar Ratio) for compounded and uncompounded cumulative returns.
     - Average Drawdown for compounded and uncompounded cumulative returns.
+    - Ulcer Index for compounded and uncompounded cumulative returns.
     - Drawdown at Risk (DaR) for compounded and uncompounded cumulative returns.
     - Conditional Drawdown at Risk (CDaR) for compounded and uncompounded cumulative returns.
     - Entropic Drawdown at Risk (EDaR) for compounded and uncompounded cumulative returns.
-    - Ulcer Index for compounded and uncompounded cumulative returns.
+    - Relativistic Drawdown at Risk (RLDaR) for compounded and uncompounded cumulative returns.
+    - Maximum Drawdown (Calmar Ratio) for compounded and uncompounded cumulative returns.
 
 - Nested Clustered Optimization (NCO) with four objective functions and the available risk measures to each objective:
 

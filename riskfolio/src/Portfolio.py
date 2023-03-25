@@ -3489,7 +3489,7 @@ class Portfolio(object):
         kelly=False,
         points=20,
         rf=0,
-        solver=None
+        solver=None,
         hist=True,
     ):
         r"""

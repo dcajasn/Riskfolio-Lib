@@ -13,6 +13,13 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Version 4.1.0
+=============
+
+- Implements the Relativistic Value at Risk and Relativistic Drawdown at Risk portfolio models.
+- Implements the Higher L-moments portfolio model function as an special case of OWA portfolio.
+- Adds functions to calculate L-moments.
+- Repairs some bugs.
 
 Version 4.0.0
 =============

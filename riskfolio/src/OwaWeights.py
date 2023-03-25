@@ -29,7 +29,7 @@ __all__ = [
 def owa_l_moment(T, k=2):
     r"""
     Calculate the OWA weights to calculate the kth linear moment (l-moment)
-    of a returns series.
+    of a returns series as shown in :cite:`e-Cajas6`.
 
     Parameters
     ----------
@@ -56,7 +56,7 @@ def owa_l_moment(T, k=2):
 def owa_gmd(T):
     r"""
     Calculate the OWA weights to calculate the Gini mean difference (GMD)
-    of a returns series.
+    of a returns series as shown in :cite:`e-Cajas3`.
 
     Parameters
     ----------
@@ -81,7 +81,7 @@ def owa_gmd(T):
 def owa_cvar(T, alpha=0.05):
     r"""
     Calculate the OWA weights to calculate the Conditional Value at Risk (CVaR)
-    of a returns series.
+    of a returns series as shown in :cite:`e-Cajas3`.
 
     Parameters
     ----------
@@ -107,7 +107,7 @@ def owa_cvar(T, alpha=0.05):
 def owa_wcvar(T, alphas, weights):
     r"""
     Calculate the OWA weights to calculate the Weighted Conditional Value at
-    Risk (WCVaR) of a returns series.
+    Risk (WCVaR) of a returns series as shown in :cite:`e-Cajas3`.
 
     Parameters
     ----------
@@ -133,7 +133,8 @@ def owa_wcvar(T, alphas, weights):
 
 def owa_tg(T, alpha=0.05, a_sim=100):
     r"""
-    Calculate the OWA weights to calculate the Tail Gini of a returns series.
+    Calculate the OWA weights to calculate the Tail Gini of a
+    returns series as shown in :cite:`e-Cajas3`.
 
     Parameters
     ----------
@@ -162,7 +163,8 @@ def owa_tg(T, alpha=0.05, a_sim=100):
 
 def owa_wr(T):
     r"""
-    Calculate the OWA weights to calculate the Worst realization (minimum) of a returns series.
+    Calculate the OWA weights to calculate the Worst realization (minimum)
+    of a returns series as shown in :cite:`e-Cajas3`.
 
     Parameters
     ----------
@@ -183,7 +185,8 @@ def owa_wr(T):
 
 def owa_rg(T):
     r"""
-    Calculate the OWA weights to calculate the range of a returns series.
+    Calculate the OWA weights to calculate the range of a returns series
+    as shown in :cite:`e-Cajas3`.
 
     Parameters
     ----------
@@ -205,7 +208,8 @@ def owa_rg(T):
 
 def owa_cvrg(T, alpha=0.05, beta=None):
     r"""
-    Calculate the OWA weights to calculate the CVaR range of a returns series.
+    Calculate the OWA weights to calculate the CVaR range of a returns series
+    as shown in :cite:`e-Cajas3`.
 
     Parameters
     ----------
@@ -233,7 +237,8 @@ def owa_cvrg(T, alpha=0.05, beta=None):
 
 def owa_wcvrg(T, alphas, weights_a, betas=None, weights_b=None):
     r"""
-    Calculate the OWA weights to calculate the WCVaR range of a returns series.
+    Calculate the OWA weights to calculate the WCVaR range of a returns series
+    as shown in :cite:`e-Cajas3`.
 
     Parameters
     ----------
@@ -268,7 +273,7 @@ def owa_wcvrg(T, alphas, weights_a, betas=None, weights_b=None):
 def owa_tgrg(T, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     r"""
     Calculate the OWA weights to calculate the Tail Gini range of a returns
-    series.
+    series as shown in :cite:`e-Cajas3`.
 
     Parameters
     ----------
@@ -304,7 +309,7 @@ def owa_tgrg(T, alpha=0.05, a_sim=100, beta=None, b_sim=None):
 def owa_l_moment_crm(T, k=4, method='MSD', g=0.5, max_phi=0.5, solver=None):
     r"""
     Calculate the OWA weights to calculate a convex risk measure that considers
-    higher linear moments or L-moments.
+    higher linear moments or L-moments as shown in :cite:`e-Cajas6`.
 
     Parameters
     ----------
