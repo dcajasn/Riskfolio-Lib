@@ -10,7 +10,7 @@ MAJOR = 4
 MINOR = 1
 MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
-VERSION += ".dev2"
+
 def write_version_py(filename='riskfolio/version.py'):
     cnt = """
     # THIS FILE IS GENERATED FROM RISKFOLIO-LIB SETUP.PY

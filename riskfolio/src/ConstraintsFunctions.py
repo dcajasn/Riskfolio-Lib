@@ -21,7 +21,7 @@ __all__ = [
     "factors_views",
     "assets_clusters",
     "hrp_constraints",
-    "risk_budget_vector",
+    "risk_constraint",
 ]
 
 
@@ -975,25 +975,25 @@ def hrp_constraints(constraints, asset_classes):
     return w_max, w_min
 
 
-def risk_constraint(kind="vanilla", asset_classes=None, classes_col=None):
+def risk_constraint(asset_classes, kind="vanilla", classes_col=None):
     r"""
     Create the risk contribution constraint vector for the risk parity model.
 
     Parameters
     ----------
-    kind : str
-        Kind of risk contribution constraint vector. The default value is 'vanilla'.
-        Possible values are:
-
-        - 'vanilla': vector of equal risk contribution per asset.
-        - 'classes': vector of equal risk contribution per class.
-
     asset_classes : DataFrame of shape (n_assets, n_cols)
         Asset's classes matrix, where n_assets is the number of assets and
         n_cols is the number of columns of the matrix where the first column
         is the asset list and the next columns are the different asset's
         classes sets. It is only used when kind value is 'classes'. The default
         value is None.
+
+    kind : str
+        Kind of risk contribution constraint vector. The default value is 'vanilla'.
+        Possible values are:
+
+        - 'vanilla': vector of equal risk contribution per asset.
+        - 'classes': vector of equal risk contribution per class.
 
     classes_col : str or int
         If value is str, it is the column name of the set of classes from
@@ -1021,9 +1021,10 @@ def risk_constraint(kind="vanilla", asset_classes=None, classes_col=None):
 
         asset_classes = pd.DataFrame(asset_classes)
         asset_classes = asset_classes.sort_values(by=['Assets'])
+        asset_classes.reset_index(inplace=True, drop=True)
 
-        rb = rp.risk_constraint(kind='classes',
-                                asset_classes=asset_classes,
+        rb = rp.risk_constraint(asset_classes
+                                kind='classes',
                                 classes_col='Class 1')
 
     """
