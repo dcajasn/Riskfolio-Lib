@@ -13,8 +13,8 @@ VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 def write_version_py(filename='riskfolio/version.py'):
     cnt = """
-    # THIS FILE IS GENERATED FROM RISKFOLIO-LIB SETUP.PY
-    version = '%(version)s'
+# THIS FILE IS GENERATED FROM RISKFOLIO-LIB SETUP.PY
+version = '%(version)s'
     """
     a = open(filename, 'w')
     try:
