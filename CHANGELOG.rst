@@ -19,6 +19,7 @@ Version 4.1.0
 - Implements the Relativistic Value at Risk and Relativistic Drawdown at Risk portfolio models.
 - Implements the Higher L-moments portfolio model function as an special case of OWA portfolio.
 - Adds functions to calculate L-moments.
+- Adds a function to calculate risk contribution constraints on asset classes.
 - Repairs some bugs.
 
 Version 4.0.0
