@@ -1013,6 +1013,7 @@ def risk_constraint(asset_classes, kind="vanilla", classes_col=None):
     Examples
     --------
     ::
+
         asset_classes = {'Assets': ['FB', 'GOOGL', 'NTFX', 'BAC', 'WFC', 'TLT', 'SHV'],
                          'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
                                       'Fixed Income', 'Fixed Income'],
@@ -1027,6 +1028,7 @@ def risk_constraint(asset_classes, kind="vanilla", classes_col=None):
                                 kind='classes',
                                 classes_col='Class 1')
 
+                                
     """
     if not isinstance(asset_classes, pd.DataFrame):
         raise ValueError("asset_classes must be a DataFrame")
