@@ -14,13 +14,15 @@ VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 def write_version_py(filename='riskfolio/version.py'):
     cnt = """
     # THIS FILE IS GENERATED FROM RISKFOLIO-LIB SETUP.PY
-    short_version = '%(version)s'
+    version = '%(version)s'
     """
     a = open(filename, 'w')
     try:
         a.write(cnt % {'version': VERSION,})
     finally:
         a.close()
+
+write_version_py()
 
 DESCRIPTION = "Portfolio Optimization and Quantitative Strategic Asset Allocation in Python"
 
