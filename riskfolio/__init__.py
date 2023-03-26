@@ -8,4 +8,6 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 
 from riskfolio.src import *
 from riskfolio.external import *
-from riskfolio.version import (version as __version__,)  # riskfolio/version.py is auto-generated
+from riskfolio.version import (
+    version as __version__,
+)  # riskfolio/version.py is auto-generated

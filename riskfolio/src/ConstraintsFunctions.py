@@ -21,6 +21,7 @@ __all__ = [
     "factors_views",
     "assets_clusters",
     "hrp_constraints",
+    "risk_budget_vector",
 ]
 
 
@@ -972,3 +973,99 @@ def hrp_constraints(constraints, asset_classes):
                         )
 
     return w_max, w_min
+
+
+def risk_constraint(kind="vanilla", asset_classes=None, classes_col=None):
+    r"""
+    Create the risk contribution constraint vector for the risk parity model.
+
+    Parameters
+    ----------
+    kind : str
+        Kind of risk contribution constraint vector. The default value is 'vanilla'.
+        Possible values are:
+
+        - 'vanilla': vector of equal risk contribution per asset.
+        - 'classes': vector of equal risk contribution per class.
+
+    asset_classes : DataFrame of shape (n_assets, n_cols)
+        Asset's classes matrix, where n_assets is the number of assets and
+        n_cols is the number of columns of the matrix where the first column
+        is the asset list and the next columns are the different asset's
+        classes sets. It is only used when kind value is 'classes'. The default
+        value is None.
+
+    classes_col : str or int
+        If value is str, it is the column name of the set of classes from
+        asset_classes dataframe. If value is int, it is the column number of
+        the set of classes from asset_classes dataframe. The default
+        value is None.
+
+    Returns
+    -------
+    rb : nd-array
+        The risk contribution constraint vector.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    ::
+        asset_classes = {'Assets': ['FB', 'GOOGL', 'NTFX', 'BAC', 'WFC', 'TLT', 'SHV'],
+                         'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
+                                      'Fixed Income', 'Fixed Income'],
+                         'Class 2': ['Technology', 'Technology', 'Technology',
+                                      'Financial', 'Financial', 'Treasury', 'Treasury'],}
+
+        asset_classes = pd.DataFrame(asset_classes)
+        asset_classes = asset_classes.sort_values(by=['Assets'])
+
+        rb = rp.risk_constraint(kind='classes',
+                                asset_classes=asset_classes,
+                                classes_col='Class 1')
+
+    """
+    if not isinstance(asset_classes, pd.DataFrame):
+        raise ValueError("asset_classes must be a DataFrame")
+
+    if kind == "vanilla":
+        if asset_classes.shape[1] < 1:
+            raise ValueError("asset_classes must have at least one column")
+
+        assetslist = asset_classes.iloc[:, 0].values.tolist()
+        rb = np.ones((len(assetslist), 1))
+        rb /= len(assetslist)
+
+    elif kind == "classes":
+        if asset_classes.shape[1] < 2:
+            raise ValueError("asset_classes must have at least two columns")
+
+        classes = asset_classes.columns.tolist()
+
+        if isinstance(classes_col, str) and classes_col in classes:
+            A = asset_classes.loc[:, classes_col].to_frame()
+            col = A.columns.to_list()[0]
+        elif isinstance(classes_col, int) and classes[classes_col] in classes:
+            A = asset_classes.iloc[:, classes_col].to_frame()
+            col = A.columns.to_list()[0]
+        else:
+            raise ValueError(
+                "classes_col must be a valid column or column position of asset_classes"
+            )
+
+        A["rb"] = 1
+        B = A.groupby([col]).count()
+        A = pd.merge(A, B, left_on=col, right_index=True, how="left")
+        A["rb"] = A["rb_x"] / A["rb_y"]
+        A["rb"] /= A["rb"].sum()
+
+        rb = A["rb"].to_numpy().reshape(-1, 1)
+
+    else:
+        raise ValueError(
+            "The only available values for kind parameter are 'vanilla' and 'classes'"
+        )
+
+    return rb

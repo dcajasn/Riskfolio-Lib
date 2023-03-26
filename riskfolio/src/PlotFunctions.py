@@ -399,7 +399,16 @@ def plot_frontier(
         ax.set_ylabel("Expected Logarithmic Return")
 
     item = rmeasures.index(rm)
-    x_label = rm_names[item] + " (" + rm + ")"
+    if rm in ["CVaR", "TG", "EVaR", "RLVaR", "CVRG", "TGRG", "CDaR", "EDaR", "RLDaR"]:
+        x_label = (
+            rm_names[item] + " (" + rm + ")" + " $\\alpha = $" + "{0:.2%}".format(alpha)
+        )
+    else:
+        x_label = rm_names[item] + " (" + rm + ")"
+    if rm in ["CVRG", "TGRG"]:
+        x_label += ", $\\beta = $" + "{0:.2%}".format(beta)
+    if rm in ["RLVaR", "RLDaR"]:
+        x_label += ", $\\kappa = $" + "{0:.2}".format(kappa)
     ax.set_xlabel("Expected Risk - " + x_label)
 
     title = "Efficient Frontier Mean - " + x_label
@@ -410,35 +419,38 @@ def plot_frontier(
     Z1 = []
 
     for i in range(w_frontier.shape[1]):
-        weights = np.array(w_frontier.iloc[:, i], ndmin=2).T
-        risk = rk.Sharpe_Risk(
-            weights,
-            cov=cov,
-            returns=returns,
-            rm=rm,
-            rf=rf,
-            alpha=alpha,
-            a_sim=a_sim,
-            beta=beta,
-            b_sim=b_sim,
-            kappa=kappa,
-            solver=solver
-        )
+        try:
+            weights = np.array(w_frontier.iloc[:, i], ndmin=2).T
+            risk = rk.Sharpe_Risk(
+                weights,
+                cov=cov,
+                returns=returns,
+                rm=rm,
+                rf=rf,
+                alpha=alpha,
+                a_sim=a_sim,
+                beta=beta,
+                b_sim=b_sim,
+                kappa=kappa,
+                solver=solver,
+            )
 
-        if kelly == False:
-            ret = mu_ @ weights
-        elif kelly == True:
-            ret = 1 / returns.shape[0] * np.sum(np.log(1 + returns @ weights))
-        ret = ret.item() * t_factor
+            if kelly == False:
+                ret = mu_ @ weights
+            elif kelly == True:
+                ret = 1 / returns.shape[0] * np.sum(np.log(1 + returns @ weights))
+            ret = ret.item() * t_factor
 
-        if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
-            risk = risk * t_factor**0.5
+            if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
+                risk = risk * t_factor**0.5
 
-        ratio = (ret - rf) / risk
+            ratio = (ret - rf) / risk
 
-        X1.append(risk)
-        Y1.append(ret)
-        Z1.append(ratio)
+            X1.append(risk)
+            Y1.append(ret)
+            Z1.append(ratio)
+        except:
+            pass
 
     ax1 = ax.scatter(X1, Y1, c=Z1, cmap=cmap)
 
@@ -490,7 +502,7 @@ def plot_frontier(
                 beta=beta,
                 b_sim=b_sim,
                 kappa=kappa,
-                solver=solver
+                solver=solver,
             )
             if kelly == False:
                 ret = mu_ @ weights
@@ -1167,10 +1179,10 @@ def plot_risk_con(
     if rm in ["CVRG", "TGRG"]:
         title += ", $\\beta = $" + "{0:.2%}".format(beta)
     if rm in ["RLVaR", "RLDaR"]:
-        title += ", $\\kappa = $" + "{0:.2%}".format(kappa)
+        title += ", $\\kappa = $" + "{0:.2}".format(kappa)
 
     title += ") Contribution per Asset"
-    ax.set_title(r'{}'.format(title))
+    ax.set_title(r"{}".format(title))
 
     X = w.index.tolist()
 
@@ -1185,7 +1197,7 @@ def plot_risk_con(
         beta=beta,
         b_sim=b_sim,
         kappa=kappa,
-        solver=solver
+        solver=solver,
     )
 
     if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
@@ -1219,7 +1231,8 @@ def plot_hist(
     bins=50,
     height=6,
     width=10,
-    ax=None):
+    ax=None,
+):
     r"""
     Create a histogram of portfolio returns with the risk measures.
 
@@ -1337,7 +1350,9 @@ def plot_hist(
         + " Confidence EVaR: "
         + "{0:.2%}".format(risk[7]),
         "{0:.1%}".format((1 - alpha))
-        + " Confidence RLVaR(" + "{0:.3}".format(kappa) + "): "
+        + " Confidence RLVaR("
+        + "{0:.3}".format(kappa)
+        + "): "
         + "{0:.2%}".format(risk[8]),
         "Worst Realization: " + "{0:.2%}".format(risk[9]),
     ]
@@ -1377,7 +1392,7 @@ def plot_hist(
 
     ax.xaxis.set_major_locator(plt.AutoLocator())
     ticks_loc = ax.get_xticks().tolist()
-    ticks_loc = [round(i,8) for i in ticks_loc]
+    ticks_loc = [round(i, 8) for i in ticks_loc]
     ticks_loc = ticks_loc + [-i for i in ticks_loc[::-1]]
     ticks_loc = list(set(ticks_loc))
     ticks_loc.sort()
@@ -1601,8 +1616,9 @@ def plot_drawdown(
     solver=None,
     height=8,
     width=10,
-    height_ratios=[2,3],
-    ax=None):
+    height_ratios=[2, 3],
+    ax=None,
+):
     r"""
     Create a chart with the evolution of portfolio prices and drawdown.
 
@@ -1611,8 +1627,7 @@ def plot_drawdown(
     returns : DataFrame
         Assets returns.
     w : DataFrame, optional
-        A portfolio specified by the user to compare with the efficient
-        frontier. The default is None.
+        A portfolio specified by the user. The default is None.
     alpha : float, optional
         Significance level of DaR, CDaR, EDaR and RLDaR. The default is 0.05.
     kappa : float, optional
@@ -1670,7 +1685,9 @@ def plot_drawdown(
 
     if ax is None:
         fig = plt.gcf()
-        ax = fig.subplots(nrows=2, ncols=1, gridspec_kw={'height_ratios':height_ratios})
+        ax = fig.subplots(
+            nrows=2, ncols=1, gridspec_kw={"height_ratios": height_ratios}
+        )
         ax = np.ravel(ax)
         fig.set_figwidth(width)
         fig.set_figheight(height)
@@ -1733,18 +1750,14 @@ def plot_drawdown(
         "{0:.2%}".format((1 - alpha))
         + " Confidence EDaR: "
         + "{0:.2%}".format(risk[4]),
-        "{0:.1%}".format((1 - alpha))
-        + " Confidence RLDaR (" + "{0:.3}".format(kappa) + "): "
+        "{0:.2%}".format((1 - alpha))
+        + " Confidence RLDaR ("
+        + "{0:.3}".format(kappa)
+        + "): "
         + "{0:.2%}".format(risk[5]),
         "Maximum Drawdown: " + "{0:.2%}".format(risk[6]),
     ]
-    color2 = ["b",
-              "r",
-              "fuchsia",
-              "limegreen",
-              "dodgerblue",
-              "slateblue",
-              "darkgrey"]
+    color2 = ["b", "r", "fuchsia", "limegreen", "dodgerblue", "slateblue", "darkgrey"]
 
     j = 0
 

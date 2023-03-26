@@ -451,7 +451,9 @@ class Portfolio(object):
             elif a.shape[0] == 1 and a.shape[1] == self.numassets:
                 a = a.T
             else:
-                raise NameError("The vector of risk contribution constraints must have a size equal than the assets' number")
+                raise NameError(
+                    "The vector of risk contribution constraints must have a size equal than the assets' number"
+                )
         return a
 
     @b.setter
@@ -463,7 +465,9 @@ class Portfolio(object):
             elif a.shape[0] == 1 and a.shape[1] == self.numassets:
                 a = a.T
             else:
-                raise NameError("The vector of risk contribution constraints must have a size equal than the assets' number")
+                raise NameError(
+                    "The vector of risk contribution constraints must have a size equal than the assets' number"
+                )
         self._b = a
 
     @property
@@ -473,11 +477,15 @@ class Portfolio(object):
     @kappa.setter
     def kappa(self, value):
         a = value
-        if a >= 1 :
-            print("kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99")
+        if a >= 1:
+            print(
+                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99"
+            )
             self._kappa = 0.99
         elif a <= 0:
-            print("kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01")
+            print(
+                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01"
+            )
             self._kappa = 0.01
         else:
             self._kappa = a
@@ -1597,12 +1605,24 @@ class Portfolio(object):
         epsilon3 = cp.Variable((T, 1))
 
         rlvarconstraints = [
-            cp.constraints.power.PowCone3D(s3 * (1+kappa)/(2*kappa) * onesvec, psi3 * (1+kappa)/kappa, epsilon7, 1/(1+kappa)),
-            cp.constraints.power.PowCone3D(omega3/(1-kappa), theta3/kappa, -s3/(2*kappa) * onesvec, (1-kappa)),
+            cp.constraints.power.PowCone3D(
+                s3 * (1 + kappa) / (2 * kappa) * onesvec,
+                psi3 * (1 + kappa) / kappa,
+                epsilon3,
+                1 / (1 + kappa),
+            ),
+            cp.constraints.power.PowCone3D(
+                omega3 / (1 - kappa),
+                theta3 / kappa,
+                -s3 / (2 * kappa) * onesvec,
+                (1 - kappa),
+            ),
             -X * 1000 - t3 * 1000 + epsilon3 * 1000 + omega3 * 1000 <= 0,
-            ]
+        ]
 
-        ln_k = ((1/(alpha*T))**kappa-(1/(alpha*T))**(-kappa))/(2*kappa)
+        ln_k = ((1 / (alpha * T)) ** kappa - (1 / (alpha * T)) ** (-kappa)) / (
+            2 * kappa
+        )
         risk21 = t3 + ln_k * s3 + cp.sum(psi3 + theta3)
 
         # Relativistic Drawdown at Risk Variables
@@ -1615,10 +1635,20 @@ class Portfolio(object):
         epsilon4 = cp.Variable((T, 1))
 
         rldarconstraints = [
-            cp.constraints.power.PowCone3D(s4 * (1+kappa)/(2*kappa) * onesvec, psi4 * (1+kappa)/kappa, epsilon4, 1/(1+kappa)),
-            cp.constraints.power.PowCone3D(omega4/(1-kappa), theta4/kappa, -s4/(2*kappa) * onesvec, (1-kappa)),
+            cp.constraints.power.PowCone3D(
+                s4 * (1 + kappa) / (2 * kappa) * onesvec,
+                psi4 * (1 + kappa) / kappa,
+                epsilon4,
+                1 / (1 + kappa),
+            ),
+            cp.constraints.power.PowCone3D(
+                omega4 / (1 - kappa),
+                theta4 / kappa,
+                -s4 / (2 * kappa) * onesvec,
+                (1 - kappa),
+            ),
             U[1:] * 1000 - t4 * 1000 + epsilon4 * 1000 + omega4 * 1000 <= 0,
-            ]
+        ]
 
         risk22 = t4 + ln_k * s4 + cp.sum(psi4 + theta4)
 
@@ -2218,7 +2248,7 @@ class Portfolio(object):
         else:
             self.b = b.copy()
             rb = self.b
-        
+
         returns = np.array(returns, ndmin=2)
         w = cp.Variable((N, 1))
         k = cp.Variable((1, 1))
@@ -2447,12 +2477,24 @@ class Portfolio(object):
         epsilon3 = cp.Variable((T, 1))
 
         rlvarconstraints = [
-            cp.constraints.power.PowCone3D(s3 * (1+kappa)/(2*kappa) * onesvec, psi3 * (1+kappa)/kappa, epsilon3, 1/(1+kappa)),
-            cp.constraints.power.PowCone3D(omega3/(1-kappa), theta3/kappa, -s3/(2*kappa) * onesvec, (1-kappa)),
+            cp.constraints.power.PowCone3D(
+                s3 * (1 + kappa) / (2 * kappa) * onesvec,
+                psi3 * (1 + kappa) / kappa,
+                epsilon3,
+                1 / (1 + kappa),
+            ),
+            cp.constraints.power.PowCone3D(
+                omega3 / (1 - kappa),
+                theta3 / kappa,
+                -s3 / (2 * kappa) * onesvec,
+                (1 - kappa),
+            ),
             -X * 1000 - t3 * 1000 + epsilon3 * 1000 + omega3 * 1000 <= 0,
-            ]
+        ]
 
-        ln_k = ((1/(alpha*T))**kappa-(1/(alpha*T))**(-kappa))/(2*kappa)
+        ln_k = ((1 / (alpha * T)) ** kappa - (1 / (alpha * T)) ** (-kappa)) / (
+            2 * kappa
+        )
         risk21 = t3 + ln_k * s3 + onesvec.T @ psi3 + onesvec.T @ theta3
 
         # Relativistic Drawdown at Risk Variables
@@ -2465,10 +2507,20 @@ class Portfolio(object):
         epsilon4 = cp.Variable((T, 1))
 
         rldarconstraints = [
-            cp.constraints.power.PowCone3D(s4 * (1+kappa)/(2*kappa) * onesvec, psi4 * (1+kappa)/kappa, epsilon4, 1/(1+kappa)),
-            cp.constraints.power.PowCone3D(omega4/(1-kappa), theta4/kappa, -s4/(2*kappa) * onesvec, (1-kappa)),
+            cp.constraints.power.PowCone3D(
+                s4 * (1 + kappa) / (2 * kappa) * onesvec,
+                psi4 * (1 + kappa) / kappa,
+                epsilon4,
+                1 / (1 + kappa),
+            ),
+            cp.constraints.power.PowCone3D(
+                omega4 / (1 - kappa),
+                theta4 / kappa,
+                -s4 / (2 * kappa) * onesvec,
+                (1 - kappa),
+            ),
             U[1:] * 1000 - t4 * 1000 + epsilon4 * 1000 + omega4 * 1000 <= 0,
-            ]
+        ]
 
         risk22 = t4 + ln_k * s4 + onesvec.T @ psi4 + onesvec.T @ theta4
         # Problem Linear Constraints
@@ -3484,7 +3536,8 @@ class Portfolio(object):
             raise NameError("The limits of the frontier can't be found")
 
     def efficient_frontier(
-        self, model="Classic",
+        self,
+        model="Classic",
         rm="MV",
         kelly=False,
         points=20,
@@ -3878,10 +3931,10 @@ class Portfolio(object):
         self._factors = None
         self.B = None
         self.alpha = 0.05
-        self.a_sim = 100,
-        self.beta = None,
-        self.b_sim = None,
-        self.kappa = 0.30,
+        self.a_sim = 100
+        self.beta = None
+        self.b_sim = None
+        self.kappa = 0.30
         self.kindbench = True
         self.benchindex = None
         self._benchweights = None

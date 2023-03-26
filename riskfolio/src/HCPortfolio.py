@@ -128,11 +128,15 @@ class HCPortfolio(object):
     @kappa.setter
     def kappa(self, value):
         a = value
-        if a >= 1 :
-            print("kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99")
+        if a >= 1:
+            print(
+                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99"
+            )
             self._kappa = 0.99
         elif a <= 0:
-            print("kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01")
+            print(
+                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01"
+            )
             self._kappa = 0.01
         else:
             self._kappa = a
@@ -163,7 +167,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver
+                        solver=self.solver,
                     )
                 else:
                     risk = rk.Sharpe_Risk(
@@ -177,7 +181,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver
+                        solver=self.solver,
                     )
                 inv_risk[k, 0] = risk
 
@@ -330,7 +334,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver
+                        solver=self.solver,
                     )
                 else:
                     left_risk = rk.Sharpe_Risk(
@@ -344,7 +348,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver
+                        solver=self.solver,
                     )
                     if rm == "MV":
                         left_risk = np.power(left_risk, 2)
@@ -366,7 +370,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver
+                        solver=self.solver,
                     )
                 else:
                     right_risk = rk.Sharpe_Risk(
@@ -380,7 +384,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver
+                        solver=self.solver,
                     )
                     if rm == "MV":
                         right_risk = np.power(right_risk, 2)
@@ -472,7 +476,7 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
-                                    solver=self.solver
+                                    solver=self.solver,
                                 )
                             else:
                                 left_risk_ = rk.Sharpe_Risk(
@@ -486,7 +490,7 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
-                                    solver=self.solver
+                                    solver=self.solver,
                                 )
                                 if rm == "MV":
                                     left_risk_ = np.power(left_risk_, 2)
@@ -513,7 +517,7 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
-                                    solver=self.solver
+                                    solver=self.solver,
                                 )
                             else:
                                 right_risk_ = rk.Sharpe_Risk(
@@ -527,7 +531,7 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
-                                    solver=self.solver
+                                    solver=self.solver,
                                 )
                                 if rm == "MV":
                                     right_risk_ = np.power(right_risk_, 2)

@@ -211,21 +211,20 @@ def jupyter_report(
         ax=ax[3],
     )
 
-    ax[4] = plf.plot_hist(returns=returns,
-                          w=w,
-                          alpha=alpha,
-                          a_sim=a_sim,
-                          kappa=kappa,
-                          solver=solver,
-                          bins=bins,
-                          ax=ax[4])
+    ax[4] = plf.plot_hist(
+        returns=returns,
+        w=w,
+        alpha=alpha,
+        a_sim=a_sim,
+        kappa=kappa,
+        solver=solver,
+        bins=bins,
+        ax=ax[4],
+    )
 
-    ax[[1, 5]] = plf.plot_drawdown(returns=returns,
-                                   w=w,
-                                   alpha=alpha,
-                                   kappa=kappa,
-                                   solver=solver,
-                                   ax=ax[[1, 5]])
+    ax[[1, 5]] = plf.plot_drawdown(
+        returns=returns, w=w, alpha=alpha, kappa=kappa, solver=solver, ax=ax[[1, 5]]
+    )
 
     year = str(datetime.datetime.now().year)
 

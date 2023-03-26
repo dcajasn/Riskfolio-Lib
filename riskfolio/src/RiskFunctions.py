@@ -478,7 +478,7 @@ def EVaR_Hist(X, alpha=0.05):
         EVaR of a returns series and value of z that minimize EVaR.
 
     """
-    warnings.filterwarnings('ignore')
+    warnings.filterwarnings("ignore")
 
     a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
@@ -488,17 +488,13 @@ def EVaR_Hist(X, alpha=0.05):
 
     bnd = Bounds([-1e-24], [np.inf])
     result = minimize(
-        _Entropic_RM,
-        [1],
-        args=(X, alpha),
-        method="SLSQP",
-        bounds=bnd,
-        tol=1e-12
+        _Entropic_RM, [1], args=(X, alpha), method="SLSQP", bounds=bnd, tol=1e-12
     )
     t = result.x
     t = t.item()
     value = _Entropic_RM(t, X, alpha)
     return (value, t)
+
 
 def RLVaR_Hist(X, alpha=0.05, kappa=0.01, solver=None):
     r"""
@@ -559,22 +555,29 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.01, solver=None):
     theta = cp.Variable((T, 1))
     nu = cp.Variable((T, 1))
 
-    ones = np.ones((T,1))
+    ones = np.ones((T, 1))
     constraints = [
-        cp.constraints.power.PowCone3D(z * (1+kappa)/(2*kappa) * ones, psi * (1+kappa)/kappa, nu, 1/(1+kappa)),
-        cp.constraints.power.PowCone3D(omega/(1-kappa), theta/kappa, -z/(2*kappa) * ones, (1-kappa)),
+        cp.constraints.power.PowCone3D(
+            z * (1 + kappa) / (2 * kappa) * ones,
+            psi * (1 + kappa) / kappa,
+            nu,
+            1 / (1 + kappa),
+        ),
+        cp.constraints.power.PowCone3D(
+            omega / (1 - kappa), theta / kappa, -z / (2 * kappa) * ones, (1 - kappa)
+        ),
         -a * 1000 - t * 1000 + nu * 1000 + omega * 1000 <= 0,
         z >= 0,
-        ]
+    ]
 
-    c = ((1/(alpha*T))**kappa-(1/(alpha*T))**(-kappa))/(2*kappa)
+    c = ((1 / (alpha * T)) ** kappa - (1 / (alpha * T)) ** (-kappa)) / (2 * kappa)
     risk = t + c * z + cp.sum(psi + theta)
 
     objective = cp.Minimize(risk * 1000)
     prob = cp.Problem(objective, constraints)
 
     try:
-        if solver in ['CLARABEL', 'MOSEK', 'SCS']:
+        if solver in ["CLARABEL", "MOSEK", "SCS"]:
             prob.solve(solver=solver)
         else:
             prob.solve()
@@ -1423,7 +1426,7 @@ def L_Moment(X, k=2):
     return value
 
 
-def L_Moment_CRM(X, k=4, method='MSD', g=0.5, max_phi=0.5, solver=None):
+def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver=None):
     r"""
     Calculate a custom convex risk measure that is a weighted average of
     first k-th l-moments.
@@ -1463,15 +1466,17 @@ def L_Moment_CRM(X, k=4, method='MSD', g=0.5, max_phi=0.5, solver=None):
         Custom convex risk measure that is a weighted average of first k-th l-moments of a returns series.
 
     """
-    if k < 2 or (not isinstance(k,int)):
+    if k < 2 or (not isinstance(k, int)):
         raise ValueError("k must be an integer higher equal than 2")
-    if method not in ['CRRA', 'ME', 'MSS', 'MSD']:
+    if method not in ["CRRA", "ME", "MSS", "MSD"]:
         raise ValueError("Available methods are 'CRRA', 'ME', 'MSS' and 'MSD'")
     if g >= 1 or g <= 0:
         raise ValueError("The risk aversion coefficient mus be between 0 and 1")
     if max_phi >= 1 or max_phi <= 0:
-        raise ValueError("The constraint on maximum weight of L-moments must be between 0 and 1")
-    
+        raise ValueError(
+            "The constraint on maximum weight of L-moments must be between 0 and 1"
+        )
+
     a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
@@ -1479,12 +1484,9 @@ def L_Moment_CRM(X, k=4, method='MSD', g=0.5, max_phi=0.5, solver=None):
         raise ValueError("returns must have Tx1 size")
 
     T = a.shape[0]
-    w_ = owa.owa_l_moment_crm(T,
-                              k=k,
-                              method=method,
-                              g=g,
-                              max_phi=max_phi,
-                              solver=solver)
+    w_ = owa.owa_l_moment_crm(
+        T, k=k, method=method, g=g, max_phi=max_phi, solver=solver
+    )
     value = (w_.T @ np.sort(a, axis=0)).item()
 
     return value
@@ -1965,7 +1967,7 @@ def Sharpe(
         beta=beta,
         b_sim=b_sim,
         kappa=kappa,
-        solver=solver
+        solver=solver,
     )
 
     value = (ret - rf) / risk
@@ -2082,7 +2084,7 @@ def Risk_Contribution(
         returns_ = np.array(returns, ndmin=2)
 
     RC = []
-    if rm in ['RLVaR', 'RLDaR']:
+    if rm in ["RLVaR", "RLDaR"]:
         d_i = 0.0001
     else:
         d_i = 0.0000001

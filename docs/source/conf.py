@@ -19,15 +19,13 @@ sys.path.insert(1, os.path.abspath('../../riskfolio'))
 sys.path.insert(2, os.path.abspath('../../riskfolio/src'))
 sys.path.insert(3, os.path.abspath('../../riskfolio/external'))
 
-import riskfolio
-
 # -- Project information -----------------------------------------------------
 
 project = 'Riskfolio-Lib'
 copyright = '2020-2023, Dany Cajas'
 author = 'Dany Cajas'
 
-__version__ = riskfolio.__version__
+__version__ = "4.1.0"
 
 # The short X.Y version
 version = '.'.join(__version__.split('.')[:2])
