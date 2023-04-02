@@ -2186,11 +2186,11 @@ def Risk_Contribution(
             risk_1 = UCI_Rel(a_1)
             risk_2 = UCI_Rel(a_2)
         elif rm == "KT":
-            risk_1 = Kurtosis(a_1)
-            risk_2 = Kurtosis(a_2)
+            risk_1 = Kurtosis(a_1) * 0.5
+            risk_2 = Kurtosis(a_2) * 0.5
         elif rm == "SKT":
-            risk_1 = SemiKurtosis(a_1)
-            risk_2 = SemiKurtosis(a_2)
+            risk_1 = SemiKurtosis(a_1) * 0.5
+            risk_2 = SemiKurtosis(a_2) * 0.5
 
         RC_i = (risk_1 - risk_2) / (2 * d_i) * w_[i, 0]
         RC.append(RC_i)

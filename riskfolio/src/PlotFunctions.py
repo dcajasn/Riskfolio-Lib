@@ -1923,6 +1923,7 @@ def plot_table(
         "Value at Risk (VaR) (2)",
         "Conditional Value at Risk (CVaR) (2)",
         "Entropic Value at Risk (EVaR) (2)",
+        "Tail Gini of Losses (TG) (2)",
         "Relativistic Value at Risk (RLVaR ) (2)",
         "Worst Realization (2)",
         "Skewness",

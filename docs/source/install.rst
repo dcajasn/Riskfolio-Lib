@@ -73,7 +73,7 @@ Riskfolio-Lib has the following dependencies:
 * scipy>=1.1.0
 * pandas>=1.0.0
 * matplotlib>=3.5.0
-* cvxpy>=1.1.7
+* cvxpy>=1.3.1
 * scikit-learn>=1.0.0
 * statsmodels>=0.10.1
 * arch>=4.15

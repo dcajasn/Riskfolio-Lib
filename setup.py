@@ -8,7 +8,7 @@ from setuptools import setup
 
 MAJOR = 4
 MINOR = 1
-MICRO = 0
+MICRO = 1
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 def write_version_py(filename='riskfolio/version.py'):
@@ -43,7 +43,7 @@ INSTALL_REQUIRES = [
     'scipy>=1.0.1',
     'pandas>=1.0.0',
     'matplotlib>=3.3.0',
-    'cvxpy>=1.0.25',
+    'cvxpy>=1.3.1',
     'scikit-learn>=0.22.0',
     'statsmodels>=0.10.1',
     'arch>=4.15',
