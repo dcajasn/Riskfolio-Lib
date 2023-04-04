@@ -507,7 +507,7 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
                     "Drop {} with p-value {:.6}".format(pvalues.idxmax(), pvalues.max())
                 )
 
-        included = pvalues.index.tolist()
+        included = pvalues[pvalues.index != "const"].index.tolist()
 
         # This part is how to deal when there isn't an asset with pvalue lower than threshold
         if len(included) == 0:

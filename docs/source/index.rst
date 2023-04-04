@@ -83,12 +83,12 @@ Some of key functionalities that Riskfolio-Lib offers:
 
     **Drawdown Risk Measures:**
 
-    - Maximum Drawdown (Calmar Ratio) for uncompounded cumulative returns.
     - Average Drawdown for uncompounded cumulative returns.
+    - Ulcer Index for uncompounded cumulative returns.
     - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
     - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
     - Relativistic Drawdown at Risk (RLDaR) for uncompounded cumulative returns.
-    - Ulcer Index for uncompounded cumulative returns.
+    - Maximum Drawdown (Calmar Ratio) for uncompounded cumulative returns.
 
 - Risk Parity Portfolio Optimization with 18 convex risk measures:
 
@@ -114,10 +114,10 @@ Some of key functionalities that Riskfolio-Lib offers:
 
     **Drawdown Risk Measures:**
 
+    - Ulcer Index for uncompounded cumulative returns.
     - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
     - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
     - Relativistic Drawdown at Risk (RLDaR) for uncompounded cumulative returns.
-    - Ulcer Index for uncompounded cumulative returns.
 
 - Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 32 risk measures using naive risk parity:
 

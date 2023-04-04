@@ -31,9 +31,9 @@ Return Risk Portfolio Optimization Models
 * `Ordered Weighted Averaging (OWA) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2037%20-%20OWA%20Portfolio%20Optimization.ipynb>`_.
 * `Kurtosis Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2038%20-%20Mean%20Kurtosis%20Optimization.ipynb>`_.
 * `Semi Kurtosis Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2039%20-%20Mean%20Semi%20Kurtosis%20Optimization.ipynb>`_.
-* `Relativistic Value at Risk (RLVaR) Portfolio Optimization for Mean Risk and Risk Parity <https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2040%20-%20Mean%20Relativistic%20Value%20at%20Risk%20(RLVaR)%20Optimization.ipynb>`_.
-* `Relativistic Drawdown at Risk (RLDaR) Portfolio Optimization for Mean Risk and Risk Parity <https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2041%20-%20Mean%20Relativistic%20Drawdown%20at%20Risk%20(RLDaR)%20Optimization.ipynb>`_.
-* `Higher L-Moments OWA Portfolio Optimization for Mean Risk and Risk Parity <https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2041%20-%20Mean%20Relativistic%20Drawdown%20at%20Risk%20(RLDaR)%20Optimization.ipynb>`_.
+* `Relativistic Value at Risk (RLVaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2040%20-%20Mean%20Relativistic%20Value%20at%20Risk%20(RLVaR)%20Optimization.ipynb>`_.
+* `Relativistic Drawdown at Risk (RLDaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2041%20-%20Mean%20Relativistic%20Drawdown%20at%20Risk%20(RLDaR)%20Optimization.ipynb>`_.
+* `Higher L-Moments OWA Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2042%20-%20Higher%20L-Moments%20OWA%20Portfolio%20Optimization.ipynb>`_.
 
 
 Special Constraints
@@ -64,7 +64,7 @@ Risk Parity Models
 * `Vanilla Risk Parity Portfolio Optimization using historical estimates <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2010%20-%20Risk%20Parity%20Portfolio%20Optimization.ipynb>`_.
 * `Relaxed Risk Parity Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2032%20-%20Relaxed%20Risk%20Parity%20Portfolio%20Optimization.ipynb>`_.
 * `Risk Parity with Constraints using the Risk Budgeting Approach <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2033%20-%20Risk%20Parity%20with%20Constraints%20using%20the%20Risk%20Budgeting%20Approach.ipynb>`_.
-* `Risk Parity with a Risk Constraint per Classes <https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2041%20-%20Mean%20Relativistic%20Drawdown%20at%20Risk%20(RLDaR)%20Optimization.ipynb>`_.
+* `Risk Parity with a Risk Constraint per Classes <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2043%20-%20Risk%20Parity%20with%20a%20Risk%20Constraint%20per%20Classes.ipynb>`_.
 
 
 Hierarchical Clustering Portfolio Optimization
