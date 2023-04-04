@@ -96,9 +96,9 @@ rmeasures = [
 ]
 
 
-def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
+def plot_series(returns, w, cmap="tab20", n_colors=20, height=6, width=10, ax=None):
     r"""
-    Create a chart with the compound cumulated of the portfolios.
+    Create a chart with the compounded cumulative of the portfolios.
 
     Parameters
     ----------
@@ -107,8 +107,12 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     w : DataFrame of shape (n_assets, n_portfolios)
         Portfolio weights.
     cmap : cmap, optional
-        Colorscale that represents the risk adjusted return ratio.
+        Colorscale used to plot each portfolio compounded cumulative return.
         The default is 'tab20'.
+    n_colors : int, optional
+        Number of distinct colors per color cycle. If there are more assets
+        than n_colors, the chart is going to start to repeat the color cycle.
+        The default is 20.
     height : float, optional
         Height of the image in inches. The default is 6.
     width : float, optional
@@ -163,7 +167,7 @@ def plot_series(returns, w, cmap="tab20", height=6, width=10, ax=None):
     labels = w.columns.tolist()
 
     colormap = cm.get_cmap(cmap)
-    colormap = colormap(np.linspace(0, 1, 20))
+    colormap = colormap(np.linspace(0, 1, n_colors))
 
     if cmap == "gist_rainbow":
         colormap = colormap[::-1]
@@ -552,7 +556,7 @@ def plot_frontier(
 
 
 def plot_pie(
-    w, title="", others=0.05, nrow=25, cmap="tab20", height=6, width=8, ax=None
+    w, title="", others=0.05, nrow=25, cmap="tab20", n_colors=20, height=6, width=8, ax=None
 ):
     r"""
     Create a pie chart with portfolio weights.
@@ -570,6 +574,10 @@ def plot_pie(
     cmap : cmap, optional
         Color scale used to plot each asset weight.
         The default is 'tab20'.
+    n_colors : int, optional
+        Number of distinct colors per color cycle. If there are more assets
+        than n_colors, the chart is going to start to repeat the color cycle.
+        The default is 20.
     height : float, optional
         Height of the image in inches. The default is 10.
     width : float, optional
@@ -649,7 +657,7 @@ def plot_pie(
     ax.set_title(title)
 
     colormap = cm.get_cmap(cmap)
-    colormap = colormap(np.linspace(0, 1, 20))
+    colormap = colormap(np.linspace(0, 1, n_colors))
 
     if cmap == "gist_rainbow":
         colormap = colormap[::-1]
@@ -948,7 +956,7 @@ def plot_bar(
     return ax
 
 
-def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax=None):
+def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", n_colors=20, height=6, width=10, ax=None):
     r"""
     Create a chart with the asset composition of the efficient frontier.
 
@@ -961,6 +969,10 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
     cmap : cmap, optional
         Color scale used to plot each asset weight.
         The default is 'tab20'.
+    n_colors : int, optional
+        Number of distinct colors per color cycle. If there are more assets
+        than n_colors, the chart is going to start to repeat the color cycle.
+        The default is 20.
     height : float, optional
         Height of the image in inches. The default is 6.
     width : float, optional
@@ -1005,7 +1017,7 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", height=6, width=10, ax
     labels = w_frontier.index.tolist()
 
     colormap = cm.get_cmap(cmap)
-    colormap = colormap(np.linspace(0, 1, 20))
+    colormap = colormap(np.linspace(0, 1, n_colors))
 
     if cmap == "gist_rainbow":
         colormap = colormap[::-1]
@@ -1841,14 +1853,14 @@ def plot_table(
     t_factor : float, optional
         Factor used to annualize expected return and expected risks for
         risk measures based on returns (not drawdowns). The default is 252.
-        
+
         .. math::
-            
+
             \begin{align}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
             \end{align}
-        
+
     ini_days : float, optional
         If provided, it is the number of days of compounding for first return.
         It is used to calculate Compound Annual Growth Rate (CAGR). This value
@@ -2078,8 +2090,9 @@ def plot_clusters(
     alpha_tail=0.05,
     gs_threshold=0.5,
     leaf_order=True,
+    show_clusters=True,
     dendrogram=True,
-    cmap="viridis",
+    cmap="RdYlBu",
     linecolor="fuchsia",
     title="",
     height=12,
@@ -2150,6 +2163,8 @@ def plot_clusters(
     leaf_order : bool, optional
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
+    show_clusters : bool, optional
+        Indicates if clusters are plot. The default is True.
     dendrogram : bool, optional
         Indicates if the plot has or not a dendrogram. The default is True.
     cmap : str or cmap, optional
@@ -2180,7 +2195,7 @@ def plot_clusters(
     -------
     ::
 
-        ax = rp.plot_clusters(returns=Y, correlation='spearman',
+        ax = rp.plot_clusters(returns=Y, codependence='spearman',
                               linkage='ward', k=None, max_k=10,
                               leaf_order=True, dendrogram=True, ax=None)
 
@@ -2277,7 +2292,15 @@ def plot_clusters(
     ax.yaxis.set_label_position("right")
     ax.yaxis.tick_right()
 
-    if linecolor is not None:
+    flag = False
+    if show_clusters is True:
+        if linecolor is None:
+            linecolor = 'fuchsia'
+            flag = True
+        elif linecolor is not None:
+            flag = True
+
+    if flag:
         for cluster_id, cluster in clusters.items():
 
             amin = permutation.index(cluster[0])
@@ -2311,15 +2334,17 @@ def plot_clusters(
 
         ax1 = fig.add_axes([0.3, 0.71, 0.6, 0.2])
 
-        root, nodes = hr.to_tree(clustering, rd=True)
-        nodes = [i.dist for i in nodes]
-        nodes.sort()
-        nodes = nodes[::-1][: k - 1]
-        color_threshold = np.min(nodes)
+        if show_clusters is False:
+            color_threshold = 0
+        elif show_clusters is True:
+            root, nodes = hr.to_tree(clustering, rd=True)
+            nodes = [i.dist for i in nodes]
+            nodes.sort()
+            nodes = nodes[::-1][: k - 1]
+            color_threshold = np.min(nodes)
+            colors = af.color_list(k)
+            hr.set_link_color_palette(colors)
 
-        colors = af.color_list(k)
-
-        hr.set_link_color_palette(colors)
         hr.dendrogram(
             clustering,
             color_threshold=color_threshold,
@@ -2330,25 +2355,26 @@ def plot_clusters(
         ax1.xaxis.set_major_locator(mticker.FixedLocator(np.arange(codep.shape[0])))
         ax1.set_xticklabels(labels[permutation], rotation=90, ha="center")
 
-        i = 0
-        for coll in ax1.collections[:-1]:  # the last collection is the ungrouped level
-            xmin, xmax = np.inf, -np.inf
-            ymax = -np.inf
-            for p in coll.get_paths():
-                (x0, _), (x1, y1) = p.get_extents().get_points()
-                xmin = min(xmin, x0)
-                xmax = max(xmax, x1)
-                ymax = max(ymax, y1)
-            rec = plt.Rectangle(
-                (xmin - 4, 0),
-                xmax - xmin + 8,
-                ymax * 1.05,
-                facecolor=colors[i],  # coll.get_color()[0],
-                alpha=0.2,
-                edgecolor="none",
-            )
-            ax1.add_patch(rec)
-            i += 1
+        if show_clusters is True:
+            i = 0
+            for coll in ax1.collections[:-1]:  # the last collection is the ungrouped level
+                xmin, xmax = np.inf, -np.inf
+                ymax = -np.inf
+                for p in coll.get_paths():
+                    (x0, _), (x1, y1) = p.get_extents().get_points()
+                    xmin = min(xmin, x0)
+                    xmax = max(xmax, x1)
+                    ymax = max(ymax, y1)
+                rec = plt.Rectangle(
+                    (xmin - 4, 0),
+                    xmax - xmin + 8,
+                    ymax * 1.05,
+                    facecolor=colors[i],  # coll.get_color()[0],
+                    alpha=0.2,
+                    edgecolor="none",
+                )
+                ax1.add_patch(rec)
+                i += 1
 
         ax1.set_xticks([])
         ax1.set_yticks([])
@@ -2359,7 +2385,9 @@ def plot_clusters(
 
         ax2 = fig.add_axes([0.09, 0.1, 0.2, 0.6])
 
-        hr.set_link_color_palette(colors)
+        if show_clusters is True:
+            hr.set_link_color_palette(colors)
+
         hr.dendrogram(
             clustering,
             color_threshold=color_threshold,
@@ -2372,25 +2400,26 @@ def plot_clusters(
         ax2.xaxis.set_major_locator(mticker.FixedLocator(np.arange(codep.shape[0])))
         ax2.set_xticklabels(labels[permutation], rotation=90, ha="center")
 
-        i = 0
-        for coll in ax2.collections[:-1]:  # the last collection is the ungrouped level
-            ymin, ymax = np.inf, -np.inf
-            xmax = -np.inf
-            for p in coll.get_paths():
-                (_, y0), (x1, y1) = p.get_extents().get_points()
-                ymin = min(ymin, y0)
-                ymax = max(ymax, y1)
-                xmax = max(xmax, x1)
-            rec = plt.Rectangle(
-                (0, ymin - 4),
-                xmax * 1.05,
-                ymax - ymin + 8,
-                facecolor=colors[i],  # coll.get_color()[0],
-                alpha=0.2,
-                edgecolor="none",
-            )
-            ax2.add_patch(rec)
-            i += 1
+        if show_clusters is True:
+            i = 0
+            for coll in ax2.collections[:-1]:  # the last collection is the ungrouped level
+                ymin, ymax = np.inf, -np.inf
+                xmax = -np.inf
+                for p in coll.get_paths():
+                    (_, y0), (x1, y1) = p.get_extents().get_points()
+                    ymin = min(ymin, y0)
+                    ymax = max(ymax, y1)
+                    xmax = max(xmax, x1)
+                rec = plt.Rectangle(
+                    (0, ymin - 4),
+                    xmax * 1.05,
+                    ymax - ymin + 8,
+                    facecolor=colors[i],  # coll.get_color()[0],
+                    alpha=0.2,
+                    edgecolor="none",
+                )
+                ax2.add_patch(rec)
+                i += 1
 
         ax2.set_xticks([])
         ax2.set_yticks([])
@@ -2432,6 +2461,7 @@ def plot_dendrogram(
     alpha_tail=0.05,
     gs_threshold=0.5,
     leaf_order=True,
+    show_clusters=True,
     title="",
     height=5,
     width=12,
@@ -2501,6 +2531,8 @@ def plot_dendrogram(
     leaf_order : bool, optional
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
+    show_clusters : bool, optional
+        Indicates if clusters are plot. The default is True.
     title : str, optional
         Title of the chart. The default is "".
     height : float, optional
@@ -2524,7 +2556,7 @@ def plot_dendrogram(
     -------
     ::
 
-        ax = rp.plot_dendrogram(returns=Y, correlation='spearman',
+        ax = rp.plot_dendrogram(returns=Y, codependence='spearman',
                                 linkage='ward', k=None, max_k=10,
                                 leaf_order=True, ax=None)
 
@@ -2594,19 +2626,21 @@ def plot_dendrogram(
     permutation = hr.leaves_list(clustering)
     permutation = permutation.tolist()
 
-    # optimal number of clusters
-    if k is None:
-        k = af.two_diff_gap_stat(codep, dist, clustering, max_k)
+    if show_clusters is False:
+        color_threshold = 0
+    elif show_clusters is True:
+        # optimal number of clusters
+        if k is None:
+            k = af.two_diff_gap_stat(codep, dist, clustering, max_k)
 
-    root, nodes = hr.to_tree(clustering, rd=True)
-    nodes = [i.dist for i in nodes]
-    nodes.sort()
-    nodes = nodes[::-1][: k - 1]
-    color_threshold = np.min(nodes)
+        root, nodes = hr.to_tree(clustering, rd=True)
+        nodes = [i.dist for i in nodes]
+        nodes.sort()
+        nodes = nodes[::-1][: k - 1]
+        color_threshold = np.min(nodes)
+        colors = af.color_list(k)  # color list
+        hr.set_link_color_palette(colors)
 
-    colors = af.color_list(k)  # color list
-
-    hr.set_link_color_palette(colors)
     hr.dendrogram(
         clustering, color_threshold=color_threshold, above_threshold_color="grey", ax=ax
     )
@@ -2614,25 +2648,26 @@ def plot_dendrogram(
 
     ax.set_xticklabels(labels[permutation], rotation=90, ha="center")
 
-    i = 0
-    for coll in ax.collections[:-1]:  # the last collection is the ungrouped level
-        xmin, xmax = np.inf, -np.inf
-        ymax = -np.inf
-        for p in coll.get_paths():
-            (x0, _), (x1, y1) = p.get_extents().get_points()
-            xmin = min(xmin, x0)
-            xmax = max(xmax, x1)
-            ymax = max(ymax, y1)
-        rec = plt.Rectangle(
-            (xmin - 4, 0),
-            xmax - xmin + 8,
-            ymax * 1.05,
-            facecolor=colors[i],  # coll.get_color()[0],
-            alpha=0.2,
-            edgecolor="none",
-        )
-        ax.add_patch(rec)
-        i += 1
+    if show_clusters is True:
+        i = 0
+        for coll in ax.collections[:-1]:  # the last collection is the ungrouped level
+            xmin, xmax = np.inf, -np.inf
+            ymax = -np.inf
+            for p in coll.get_paths():
+                (x0, _), (x1, y1) = p.get_extents().get_points()
+                xmin = min(xmin, x0)
+                xmax = max(xmax, x1)
+                ymax = max(ymax, y1)
+            rec = plt.Rectangle(
+                (xmin - 4, 0),
+                xmax - xmin + 8,
+                ymax * 1.05,
+                facecolor=colors[i],  # coll.get_color()[0],
+                alpha=0.2,
+                edgecolor="none",
+            )
+            ax.add_patch(rec)
+            i += 1
 
     ax.set_yticks([])
     ax.set_yticklabels([])
