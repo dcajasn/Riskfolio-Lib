@@ -156,10 +156,12 @@ Some of key functionalities that Riskfolio-Lib offers:
 - Portfolio optimization with constraints on tracking error and turnover.
 - Portfolio optimization with short positions and leveraged portfolios.
 - Portfolio optimization with constraints on number of assets and number of effective assets.
-- Tools to build efficient frontier for 18 risk measures.
+- Tools to build efficient frontier for 22 convex risk measures.
 - Tools to build linear constraints on assets, asset classes and risk factors.
 - Tools to build views on assets and asset classes.
 - Tools to build views on risk factors.
+- Tools to build risk contribution constraints per asset classes.
+- Tools to build bounds constraints for Hierarchical Clustering Portfolios.
 - Tools to calculate risk measures.
 - Tools to calculate risk contributions per asset.
 - Tools to calculate uncertainty sets for mean vector and covariance matrix.
@@ -209,7 +211,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 ```
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (4.1.0)},
+      title = {Riskfolio-Lib (4.2.0)},
       year  = {2023},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }
