@@ -20,7 +20,7 @@ __all__ = [
 ]
 
 
-__LICENSE__ = """Copyright (c) 2020-2023, Dany Cajas 
+__LICENSE__ = """Copyright (c) 2020-2023, Dany Cajas
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -86,7 +86,7 @@ def jupyter_report(
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
-        - 'RLDaR': Relativistc Drawdown at Risk of uncompounded cumulative returns.
+        - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns.
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
     rf : float, optional
@@ -118,9 +118,9 @@ def jupyter_report(
     t_factor : float, optional
         Factor used to annualize expected return and expected risks for
         risk measures based on returns (not drawdowns). The default is 252.
-        
+
         .. math::
-            
+
             \begin{align}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
@@ -154,8 +154,15 @@ def jupyter_report(
     -------
     ::
 
-        ax = rp.jupyter_report(returns, w, rm='MV', rf=0, alpha=0.05, height=6, width=14,
-                               others=0.05, nrow=25)
+        ax = rp.jupyter_report(returns,
+                               w,
+                               rm='MV',
+                               rf=0,
+                               alpha=0.05,
+                               height=6,
+                               width=14,
+                               others=0.05,
+                               nrow=25)
 
     .. image:: images/Report_1.png
     .. image:: images/Report_2.png
@@ -265,9 +272,9 @@ def excel_report(
     t_factor : float, optional
         Factor used to annualize expected return and expected risks for
         risk measures based on returns (not drawdowns). The default is 252.
-        
+
         .. math::
-            
+
             \begin{align}
             \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
             \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
@@ -296,7 +303,14 @@ def excel_report(
     -------
     ::
 
-        rp.excel_report(returns, w, MAR=0, alpha=0.05, name='report', files=None)
+        rp.excel_report(returns,
+                        w,
+                        rf=0,
+                        alpha=0.05,
+                        t_factor=252,
+                        ini_days=1,
+                        days_per_year=252,
+                        name="report")
 
     .. image:: images/Excel.png
 
@@ -518,7 +532,7 @@ def excel_report(
         )
         EVaR = (
             "="
-            + str(rk.EVaR_Hist(returns @ w, alpha=alpha)[0])
+            + str(rk.EVaR_Hist(returns @ w.iloc[:, j], alpha=alpha)[0])
             + " * SQRT("
             + str(t_factor)
             + ")"
@@ -553,7 +567,7 @@ def excel_report(
             + DaR[2:]
             + ")"
         )
-        EDaR = "=" + str(rk.EDaR_Abs(returns @ w, alpha=alpha)[0])
+        EDaR = "=" + str(rk.EDaR_Abs(returns @ w.iloc[:, j], alpha=alpha)[0])
         UCI = "=SQRT(SUMSQ(Drawdown!" + r_2 + ")/COUNT(Drawdown!" + r_2 + "))"
         MAR = "=" + str(rf)
         FLPM = "=AVERAGE(devBelowTarget!" + r_2 + ") * SQRT(" + str(t_factor) + ")"
@@ -632,5 +646,4 @@ def excel_report(
     worksheet1.write(33, 0, "(3) Based on uncompounded cumulated returns")
     worksheet1.write(0, 0, "Riskfolio-Lib Report", cell_format2)
 
-    writer.save()
     workbook.close()

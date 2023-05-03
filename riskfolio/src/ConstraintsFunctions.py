@@ -1028,7 +1028,7 @@ def risk_constraint(asset_classes, kind="vanilla", classes_col=None):
                                 kind='classes',
                                 classes_col='Class 1')
 
-                                
+
     """
     if not isinstance(asset_classes, pd.DataFrame):
         raise ValueError("asset_classes must be a DataFrame")

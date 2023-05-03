@@ -76,7 +76,8 @@ Hierarchical Clustering Portfolio Optimization
 * `Hierarchical Risk Parity with Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2029%20-%20Hierarchical%20Risk%20Parity%20(HRP)%20Portfolio%20Optimization%20with%20Constraints.ipynb>`_.
 * `Nested Clustered Optimization (NCO) <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2030%20-%20Nested%20Clustered%20Optimization%20(NCO).ipynb>`_.
 * `Hierarchical Portfolios with Custom Covariance <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2031%20-%20Hierarchical%20Portfolios%20with%20Custom%20Covariance.ipynb>`_.
-
+* `Hierarchical Equal Risk Contribution (HERC) with Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2044%20-%20Hierarchical%20Equal%20Risk%20Contribution%20(HERC)%20Portfolio%20Optimization%20with%20Constraints.ipynb>`_.
+* `Nested Clustered Optimization (NCO) with Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2045%20-%20Nested%20Clustered%20Optimization%20(NCO)%20Portfolio%20Optimization%20with%20Constraints.ipynb>`_.
 
 Backtesting
 -----------

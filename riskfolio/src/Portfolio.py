@@ -2611,8 +2611,11 @@ class Portfolio(object):
             constraints += rldarconstraints
         # Risk budgeting constraint
 
+        log_w = cp.Variable((N, 1))
         constraints += [
-            rb.T @ cp.log(w) >= 1,
+            # rb.T @ cp.log(w) >= 1,
+            rb.T @ log_w >= 1,
+            cp.ExpCone(log_w * 1000, np.ones((N, 1)) * 1000, w * 1000),
             w * 1000 >= 0,
             cp.sum(w) * 1000 == k * 1000,
         ]

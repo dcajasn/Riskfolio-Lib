@@ -134,11 +134,14 @@ def plot_series(returns, w, cmap="tab20", n_colors=20, height=6, width=10, ax=No
     -------
     ::
 
-        ax = rp.plot_series(returns=Y, w=ws, cmap='tab20', height=6, width=10,
+        ax = rp.plot_series(returns=Y,
+                            w=ws,
+                            cmap='tab20',
+                            height=6,
+                            width=10,
                             ax=None)
 
     .. image:: images/Port_Series.png
-
 
     """
     if not isinstance(returns, pd.DataFrame):
@@ -343,10 +346,23 @@ def plot_frontier(
         cov = port.cov
         returns = port.returns
 
-        ax = rp.plot_frontier(w_frontier=ws, mu=mu, cov=cov, returns=returns,
-                               rm=rm, rf=0, alpha=0.05, cmap='viridis', w=w1,
-                               label=label, marker='*', s=16, c='r',
-                               height=6, width=10, t_factor=252, ax=None)
+        ax = rp.plot_frontier(w_frontier=ws,
+                              mu=mu,
+                              cov=cov,
+                              returns=returns,
+                              rm=rm,
+                              rf=0,
+                              alpha=0.05,
+                              cmap='viridis',
+                              w=w1,
+                              label=label,
+                              marker='*',
+                              s=16,
+                              c='r',
+                              height=6,
+                              width=10,
+                              t_factor=252,
+                              ax=None)
 
     .. image:: images/MSV_Frontier.png
 
@@ -556,7 +572,15 @@ def plot_frontier(
 
 
 def plot_pie(
-    w, title="", others=0.05, nrow=25, cmap="tab20", n_colors=20, height=6, width=8, ax=None
+    w,
+    title="",
+    others=0.05,
+    nrow=25,
+    cmap="tab20",
+    n_colors=20,
+    height=6,
+    width=8,
+    ax=None,
 ):
     r"""
     Create a pie chart with portfolio weights.
@@ -599,8 +623,12 @@ def plot_pie(
     -------
     ::
 
-        ax = rp.plot_pie(w=w1, title='Portfolio', height=6, width=10,
-                         cmap="tab20", ax=None)
+        ax = rp.plot_pie(w=w1,
+                         title='Portfolio',
+                         height=6,
+                         width=10,
+                         cmap="tab20",
+                         ax=None)
 
     .. image:: images/Pie_Chart.png
 
@@ -640,7 +668,7 @@ def plot_pie(
         item = pd.DataFrame(["Others", a1, a2]).T
         item.columns = ["labels", "abs_values", "values"]
         sizes2 = sizes2[sizes2.index <= l]
-        sizes2 = sizes2.append(item)
+        sizes2 = pd.concat([sizes2, item], axis=0)
 
     abs_sizes = sizes2["abs_values"].tolist()
     sizes = sizes2["values"].tolist()
@@ -777,8 +805,14 @@ def plot_bar(
     -------
     ::
 
-        ax = rp.plot_bar(w, title='Portfolio', kind="v", others=0.05,
-                         nrow=25, height=6, width=10, ax=None)
+        ax = rp.plot_bar(w,
+                         title='Portfolio',
+                         kind="v",
+                         others=0.05,
+                         nrow=25,
+                         height=6,
+                         width=10,
+                         ax=None)
 
     .. image:: images/Bar_Chart.png
 
@@ -956,7 +990,9 @@ def plot_bar(
     return ax
 
 
-def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", n_colors=20, height=6, width=10, ax=None):
+def plot_frontier_area(
+    w_frontier, nrow=25, cmap="tab20", n_colors=20, height=6, width=10, ax=None
+):
     r"""
     Create a chart with the asset composition of the efficient frontier.
 
@@ -994,8 +1030,11 @@ def plot_frontier_area(w_frontier, nrow=25, cmap="tab20", n_colors=20, height=6,
     -------
     ::
 
-        ax = rp.plot_frontier_area(w_frontier=ws, cmap="tab20", height=6,
-                                   width=10, ax=None)
+        ax = rp.plot_frontier_area(w_frontier=ws,
+                                   cmap="tab20",
+                                   height=6,
+                                   width=10,
+                                   ax=None)
 
     .. image:: images/Area_Frontier.png
 
@@ -1061,6 +1100,7 @@ def plot_risk_con(
     b_sim=None,
     kappa=0.30,
     solver=None,
+    percentage=False,
     color="tab:blue",
     height=6,
     width=10,
@@ -1123,6 +1163,8 @@ def plot_risk_con(
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
+    percentage : bool, optional
+        If risk contribution per asset is expressed as percentage or as a value. The default is False.
     color : str, optional
         Color used to plot each asset risk contribution.
         The default is 'tab:blue'.
@@ -1158,9 +1200,17 @@ def plot_risk_con(
     -------
     ::
 
-        ax = rp.plot_risk_con(w=w2, cov=cov, returns=returns, rm=rm,
-                              rf=0, alpha=0.05, color="tab:blue", height=6,
-                              width=10, t_factor=252, ax=None)
+        ax = rp.plot_risk_con(w=w2,
+                              cov=cov,
+                              returns=returns,
+                              rm=rm,
+                              rf=0,
+                              alpha=0.05,
+                              color="tab:blue",
+                              height=6,
+                              width=10,
+                              t_factor=252,
+                              ax=None)
 
     .. image:: images/Risk_Con.png
 
@@ -1194,6 +1244,8 @@ def plot_risk_con(
         title += ", $\\kappa = $" + "{0:.2}".format(kappa)
 
     title += ") Contribution per Asset"
+    if percentage:
+        title += " (%)"
     ax.set_title(r"{}".format(title))
 
     X = w.index.tolist()
@@ -1214,6 +1266,9 @@ def plot_risk_con(
 
     if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
         RC = RC * t_factor**0.5
+
+    if percentage:
+        RC = RC / np.sum(RC)
 
     ax.bar(X, RC, alpha=0.7, color=color, edgecolor="black")
 
@@ -1286,8 +1341,13 @@ def plot_hist(
     -------
     ::
 
-        ax = rp.plot_hist(returns=Y, w=w1, alpha=0.05, bins=50, height=6,
-                          width=10, ax=None)
+        ax = rp.plot_hist(returns=Y,
+                          w=w1,
+                          alpha=0.05,
+                          bins=50,
+                          height=6,
+                          width=10,
+                          ax=None)
 
     .. image:: images/Histogram.png
 
@@ -1480,8 +1540,16 @@ def plot_range(
     -------
     ::
 
-        ax = plot_range(returns=Y, w=w1, alpha=0.05, a_sim=100, beta=None,
-                        b_sim=None, bins=50, height=6, width=10, ax=None)
+        ax = plot_range(returns=Y,
+                        w=w1,
+                        alpha=0.05,
+                        a_sim=100,
+                        beta=None,
+                        b_sim=None,
+                        bins=50,
+                        height=6,
+                        width=10,
+                        ax=None)
 
     .. image:: images/Range.png
 
@@ -1672,7 +1740,12 @@ def plot_drawdown(
     -------
     ::
 
-        ax = rp.plot_drawdown(returns=Y, w=w1, alpha=0.05, height=8, width=10, ax=None)
+        ax = rp.plot_drawdown(returns=Y,
+                              w=w1,
+                              alpha=0.05,
+                              height=8,
+                              width=10,
+                              ax=None)
 
     .. image:: images/Drawdown.png
 
@@ -1887,7 +1960,11 @@ def plot_table(
     -------
     ::
 
-        ax = rp.plot_table(returns=Y, w=w1, MAR=0, alpha=0.05, ax=None)
+        ax = rp.plot_table(returns=Y,
+                           w=w1,
+                           MAR=0,
+                           alpha=0.05,
+                           ax=None)
 
     .. image:: images/Port_Table.png
 
@@ -2195,9 +2272,14 @@ def plot_clusters(
     -------
     ::
 
-        ax = rp.plot_clusters(returns=Y, codependence='spearman',
-                              linkage='ward', k=None, max_k=10,
-                              leaf_order=True, dendrogram=True, ax=None)
+        ax = rp.plot_clusters(returns=Y,
+                              codependence='spearman',
+                              linkage='ward',
+                              k=None,
+                              max_k=10,
+                              leaf_order=True,
+                              dendrogram=True,
+                              ax=None)
 
     .. image:: images/Assets_Clusters.png
 
@@ -2295,7 +2377,7 @@ def plot_clusters(
     flag = False
     if show_clusters is True:
         if linecolor is None:
-            linecolor = 'fuchsia'
+            linecolor = "fuchsia"
             flag = True
         elif linecolor is not None:
             flag = True
@@ -2357,7 +2439,9 @@ def plot_clusters(
 
         if show_clusters is True:
             i = 0
-            for coll in ax1.collections[:-1]:  # the last collection is the ungrouped level
+            for coll in ax1.collections[
+                :-1
+            ]:  # the last collection is the ungrouped level
                 xmin, xmax = np.inf, -np.inf
                 ymax = -np.inf
                 for p in coll.get_paths():
@@ -2402,7 +2486,9 @@ def plot_clusters(
 
         if show_clusters is True:
             i = 0
-            for coll in ax2.collections[:-1]:  # the last collection is the ungrouped level
+            for coll in ax2.collections[
+                :-1
+            ]:  # the last collection is the ungrouped level
                 ymin, ymax = np.inf, -np.inf
                 xmax = -np.inf
                 for p in coll.get_paths():
@@ -2556,9 +2642,13 @@ def plot_dendrogram(
     -------
     ::
 
-        ax = rp.plot_dendrogram(returns=Y, codependence='spearman',
-                                linkage='ward', k=None, max_k=10,
-                                leaf_order=True, ax=None)
+        ax = rp.plot_dendrogram(returns=Y,
+                                codependence='spearman',
+                                linkage='ward',
+                                k=None,
+                                max_k=10,
+                                leaf_order=True,
+                                ax=None)
 
     .. image:: images/Assets_Dendrogram.png
 
@@ -2823,11 +2913,15 @@ def plot_network(
     -------
     ::
 
-        ax = rp.plot_network(returns=Y, codependence="pearson",
-                             linkage="ward", k=None, max_k=10,
-                             alpha_tail=0.05, leaf_order=True,
-                             kind='spring', ax=None)
-
+        ax = rp.plot_network(returns=Y,
+                             codependence="pearson",
+                             linkage="ward",
+                             k=None,
+                             max_k=10,
+                             alpha_tail=0.05,
+                             leaf_order=True,
+                             kind='spring',
+                             ax=None)
 
     .. image:: images/Assets_Network.png
 

@@ -46,8 +46,11 @@ class HCPortfolio(object):
         The default is None.
     kappa : float, optional
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
-    solver: str, optional
+    solver_rl: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
+    solvers: list, optional
+        List of solvers available for CVXPY used for the selected NCO method.
         The default value is None.
     w_max : Series, optional
         Upper bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
@@ -76,7 +79,8 @@ class HCPortfolio(object):
         beta=None,
         b_sim=None,
         kappa=0.30,
-        solver=None,
+        solver_rl=None,
+        solvers=None,
         w_max=None,
         w_min=None,
         alpha_tail=0.05,
@@ -89,7 +93,8 @@ class HCPortfolio(object):
         self.beta = beta
         self.b_sim = b_sim
         self._kappa = kappa
-        self.solver = solver
+        self.solver_rl = solver_rl
+        self.solvers = solvers
         self.alpha_tail = alpha_tail
         self.gs_threshold = gs_threshold
         self.bins_info = bins_info
@@ -147,7 +152,7 @@ class HCPortfolio(object):
         n = len(assets)
 
         if rm == "equal":
-            weight = np.ones((n, 1)) * 1 / n
+            weights = np.ones((n, 1)) * 1 / n
         else:
             inv_risk = np.zeros((n, 1))
             for i in assets:
@@ -167,7 +172,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver,
+                        solver=self.solver_rl,
                     )
                 else:
                     risk = rk.Sharpe_Risk(
@@ -181,7 +186,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver,
+                        solver=self.solver_rl,
                     )
                 inv_risk[k, 0] = risk
 
@@ -189,39 +194,41 @@ class HCPortfolio(object):
                 inv_risk = 1 / np.power(inv_risk, 2)
             else:
                 inv_risk = 1 / inv_risk
-            weight = inv_risk * (1 / np.sum(inv_risk))
+            weights = inv_risk * (1 / np.sum(inv_risk))
 
-        weight = weight.reshape(-1, 1)
+        weights = weights.reshape(-1, 1)
 
-        return weight
+        return weights
 
     # get optimal weights
     def _opt_w(self, returns, mu, cov, obj="MinRisk", rm="MV", rf=0, l=2):
         if returns.shape[1] == 1:
-            weight = np.array([1]).reshape(-1, 1)
+            weights = np.array([1]).reshape(-1, 1)
         else:
             if obj in {"MinRisk", "Utility", "Sharpe"}:
                 port = rp.Portfolio(returns=returns)
                 port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
                 port.cov = cov
-                port.solvers = [self.solver]
+                if self.solvers is not None:
+                    port.solvers = self.solvers
                 if mu is not None:
                     port.mu = mu
-                weight = port.optimization(
+                weights = port.optimization(
                     model="Classic", rm=rm, obj=obj, rf=rf, l=l, hist=True
                 ).to_numpy()
             elif obj in {"ERC"}:
                 port = rp.Portfolio(returns=returns)
                 port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
                 port.cov = cov
-                port.solvers = [self.solver]
-                weight = port.rp_optimization(
+                if self.solvers is not None:
+                    port.solvers = self.solvers
+                weights = port.rp_optimization(
                     model="Classic", rm=rm, rf=rf, b=None, hist=True
                 ).to_numpy()
 
-        weight = weight.reshape(-1, 1)
+        weights = weights.reshape(-1, 1)
 
-        return weight
+        return weights
 
     # Create hierarchical clustering
     def _hierarchical_clustering(
@@ -288,17 +295,16 @@ class HCPortfolio(object):
         return hr.leaves_list(clusters)
 
     # compute HRP weight allocation through recursive bisection
-    def _recursive_bisection(self, sort_order, rm="MV", rf=0):
+    def _recursive_bisection(
+        self,
+        sort_order,
+        rm="MV",
+        rf=0,
+        upper_bound=None,
+        lower_bound=None,
+    ):
 
-        if isinstance(self.w_max, pd.Series) and isinstance(self.w_min, pd.Series):
-            if (self.w_max >= self.w_min).all().item():
-                flag = True
-            else:
-                raise NameError("All upper bounds must be higher than lower bounds")
-        else:
-            flag = False
-
-        weight = pd.Series(1, index=sort_order)  # set initial weights to 1
+        weights = pd.Series(1, index=self.assetslist)  # set initial weights to 1
         items = [sort_order]
 
         while len(items) > 0:  # loop while weights is under 100%
@@ -320,11 +326,11 @@ class HCPortfolio(object):
                 # Left cluster
                 left_cov = self.cov.iloc[left_cluster, left_cluster]
                 left_returns = self.returns.iloc[:, left_cluster]
-                left_weight = self._naive_risk(left_returns, left_cov, rm=rm, rf=rf)
+                left_weights = self._naive_risk(left_returns, left_cov, rm=rm, rf=rf)
 
                 if rm == "vol":
                     left_risk = rk.Sharpe_Risk(
-                        left_weight,
+                        left_weights,
                         cov=left_cov,
                         returns=left_returns,
                         rm="MV",
@@ -334,11 +340,11 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver,
+                        solver=self.solver_rl,
                     )
                 else:
                     left_risk = rk.Sharpe_Risk(
-                        left_weight,
+                        left_weights,
                         cov=left_cov,
                         returns=left_returns,
                         rm=rm,
@@ -348,7 +354,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver,
+                        solver=self.solver_rl,
                     )
                     if rm == "MV":
                         left_risk = np.power(left_risk, 2)
@@ -356,11 +362,11 @@ class HCPortfolio(object):
                 # Right cluster
                 right_cov = self.cov.iloc[right_cluster, right_cluster]
                 right_returns = self.returns.iloc[:, right_cluster]
-                right_weight = self._naive_risk(right_returns, right_cov, rm=rm, rf=rf)
+                right_weights = self._naive_risk(right_returns, right_cov, rm=rm, rf=rf)
 
                 if rm == "vol":
                     right_risk = rk.Sharpe_Risk(
-                        right_weight,
+                        right_weights,
                         cov=right_cov,
                         returns=right_returns,
                         rm="MV",
@@ -370,11 +376,11 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver,
+                        solver=self.solver_rl,
                     )
                 else:
                     right_risk = rk.Sharpe_Risk(
-                        right_weight,
+                        right_weights,
                         cov=right_cov,
                         returns=right_returns,
                         rm=rm,
@@ -384,7 +390,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
-                        solver=self.solver,
+                        solver=self.solver_rl,
                     )
                     if rm == "MV":
                         right_risk = np.power(right_risk, 2)
@@ -393,35 +399,44 @@ class HCPortfolio(object):
                 alpha_1 = 1 - left_risk / (left_risk + right_risk)
 
                 # Weights constraints
-                if flag:
-                    a1 = np.sum(self.w_max[left_cluster]) / weight[left_cluster[0]]
+                if (upper_bound < weights.loc[self.asset_order]).any().item() or (
+                    lower_bound > weights.loc[self.asset_order]
+                ).any().item():
+
+                    a1 = np.sum(upper_bound[left_cluster]) / weights[left_cluster[0]]
                     a2 = np.max(
                         [
-                            np.sum(self.w_min[left_cluster]) / weight[left_cluster[0]],
+                            np.sum(lower_bound[left_cluster])
+                            / weights[left_cluster[0]],
                             alpha_1,
                         ]
                     )
                     alpha_1 = np.min([a1, a2])
-                    a1 = np.sum(self.w_max[right_cluster]) / weight[right_cluster[0]]
+                    a1 = np.sum(upper_bound[right_cluster]) / weights[right_cluster[0]]
                     a2 = np.max(
                         [
-                            np.sum(self.w_min[right_cluster])
-                            / weight[right_cluster[0]],
+                            np.sum(lower_bound[right_cluster])
+                            / weights[right_cluster[0]],
                             1 - alpha_1,
                         ]
                     )
                     alpha_1 = 1 - np.min([a1, a2])
 
-                weight[left_cluster] *= alpha_1  # weight 1
-                weight[right_cluster] *= 1 - alpha_1  # weight 2
+                weights.iloc[left_cluster] *= alpha_1  # weight 1
+                weights.iloc[right_cluster] *= 1 - alpha_1  # weight 2
 
-        weight.index = self.asset_order
-
-        return weight
+        return weights
 
     # compute HRP weight allocation through cluster-based bisection
     def _hierarchical_recursive_bisection(
-        self, Z, rm="MV", rf=0, linkage="ward", model="HERC"
+        self,
+        Z,
+        rm="MV",
+        rf=0,
+        linkage="ward",
+        model="HERC",
+        upper_bound=None,
+        lower_bound=None,
     ):
 
         # Transform linkage to tree and reverse order
@@ -430,8 +445,7 @@ class HCPortfolio(object):
         nodes_1 = np.array([i.dist for i in nodes])
         idx = np.argsort(nodes_1)
         nodes = nodes[idx][::-1].tolist()
-
-        weight = pd.Series(1, index=self.cov.index)  # Set initial weights to 1
+        weights = pd.Series(1, index=self.assetslist)  # Set initial weights to 1
 
         clustering_inds = hr.fcluster(Z, self.k, criterion="maxclust")
         clusters = {
@@ -449,6 +463,8 @@ class HCPortfolio(object):
                 right_set = set(right)
                 left_risk = 0
                 right_risk = 0
+                left_cluster = []
+                right_cluster = []
 
                 # Allocate weight to clusters
                 if rm == "equal":
@@ -460,13 +476,13 @@ class HCPortfolio(object):
                             # Left cluster
                             left_cov = self.cov.iloc[clusters[j], clusters[j]]
                             left_returns = self.returns.iloc[:, clusters[j]]
-                            left_weight = self._naive_risk(
+                            left_weights = self._naive_risk(
                                 left_returns, left_cov, rm=rm, rf=rf
                             )
 
                             if rm == "vol":
                                 left_risk_ = rk.Sharpe_Risk(
-                                    left_weight,
+                                    left_weights,
                                     cov=left_cov,
                                     returns=left_returns,
                                     rm="MV",
@@ -476,11 +492,11 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
-                                    solver=self.solver,
+                                    solver=self.solver_rl,
                                 )
                             else:
                                 left_risk_ = rk.Sharpe_Risk(
-                                    left_weight,
+                                    left_weights,
                                     cov=left_cov,
                                     returns=left_returns,
                                     rm=rm,
@@ -490,24 +506,25 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
-                                    solver=self.solver,
+                                    solver=self.solver_rl,
                                 )
                                 if rm == "MV":
                                     left_risk_ = np.power(left_risk_, 2)
 
                             left_risk += left_risk_
+                            left_cluster += clusters[j]
 
                         elif set(clusters[j]).issubset(right_set):
                             # Right cluster
                             right_cov = self.cov.iloc[clusters[j], clusters[j]]
                             right_returns = self.returns.iloc[:, clusters[j]]
-                            right_weight = self._naive_risk(
+                            right_weights = self._naive_risk(
                                 right_returns, right_cov, rm=rm, rf=rf
                             )
 
                             if rm == "vol":
                                 right_risk_ = rk.Sharpe_Risk(
-                                    right_weight,
+                                    right_weights,
                                     cov=right_cov,
                                     returns=right_returns,
                                     rm="MV",
@@ -517,11 +534,11 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
-                                    solver=self.solver,
+                                    solver=self.solver_rl,
                                 )
                             else:
                                 right_risk_ = rk.Sharpe_Risk(
-                                    right_weight,
+                                    right_weights,
                                     cov=right_cov,
                                     returns=right_returns,
                                     rm=rm,
@@ -531,17 +548,46 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
-                                    solver=self.solver,
+                                    solver=self.solver_rl,
                                 )
                                 if rm == "MV":
                                     right_risk_ = np.power(right_risk_, 2)
 
                             right_risk += right_risk_
+                            right_cluster += clusters[j]
 
                     alpha_1 = 1 - left_risk / (left_risk + right_risk)
 
-                weight[left] *= alpha_1  # weight 1
-                weight[right] *= 1 - alpha_1  # weight 2
+                    # Weights constraints
+                    if (upper_bound < weights.loc[self.asset_order]).any().item() or (
+                        lower_bound > weights.loc[self.asset_order]
+                    ).any().item():
+                        a1 = (
+                            np.sum(upper_bound[left_cluster]) / weights[left_cluster[0]]
+                        )
+                        a2 = np.max(
+                            [
+                                np.sum(lower_bound[left_cluster])
+                                / weights[left_cluster[0]],
+                                alpha_1,
+                            ]
+                        )
+                        alpha_1 = np.min([a1, a2])
+                        a1 = (
+                            np.sum(upper_bound[right_cluster])
+                            / weights[right_cluster[0]]
+                        )
+                        a2 = np.max(
+                            [
+                                np.sum(lower_bound[right_cluster])
+                                / weights[right_cluster[0]],
+                                1 - alpha_1,
+                            ]
+                        )
+                        alpha_1 = 1 - np.min([a1, a2])
+
+                weights.iloc[left] *= alpha_1  # weight 1
+                weights.iloc[right] *= 1 - alpha_1  # weight 2
 
         # Get constituents of k clusters
         clustered_assets = pd.Series(
@@ -559,6 +605,7 @@ class HCPortfolio(object):
                     ).flatten(),
                     index=cluster_cov.index,
                 )
+
             elif model == "HERC2":
                 cluster_weights = pd.Series(
                     self._naive_risk(
@@ -566,9 +613,9 @@ class HCPortfolio(object):
                     ).flatten(),
                     index=cluster_cov.index,
                 )
-            weight.loc[cluster_weights.index] *= cluster_weights
+            weights.loc[cluster_weights.index] *= cluster_weights
 
-        return weight
+        return weights
 
     # compute intra-cluster weights
     def _intra_weights(self, Z, obj="MinRisk", rm="MV", rf=0, l=2):
@@ -598,7 +645,16 @@ class HCPortfolio(object):
         intra_weights = intra_weights.fillna(0)
         return intra_weights
 
-    def _inter_weights(self, intra_weights, obj="MinRisk", rm="MV", rf=0, l=2):
+    def _inter_weights(
+        self,
+        intra_weights,
+        obj="MinRisk",
+        rm="MV",
+        rf=0,
+        l=2,
+        upper_bound=None,
+        lower_bound=None,
+    ):
         # inter-cluster mean vector
         if self.mu is not None:
             tot_mu = self.mu @ intra_weights
@@ -616,6 +672,7 @@ class HCPortfolio(object):
         )
         # determine the weight on each cluster by multiplying the intra-cluster weight with the inter-cluster weight
         weights = intra_weights.mul(inter_weights, axis=1).sum(axis=1).sort_index()
+
         return weights
 
     # Allocate weights
@@ -870,20 +927,42 @@ class HCPortfolio(object):
             index=self.asset_order, columns=self.asset_order
         )
 
-        if isinstance(self.w_max, pd.Series) and isinstance(self.w_min, pd.Series):
-            self.w_max = self.w_max.reindex(index=self.asset_order)
-            self.w_max.index = self.sort_order
-            self.w_min = self.w_min.reindex(index=self.asset_order)
-            self.w_min.index = self.sort_order
+        # Step-2.1: Bound creation
+        if self.w_max is None:
+            upper_bound = pd.Series(1, index=self.asset_order)
+        elif isinstance(self.w_max, pd.Series):
+            upper_bound = np.minimum(1, self.w_max).loc[self.asset_order]
+            if upper_bound.sum() < 1:
+                raise NameError("Sum of upper bounds must be higher equal than 1")
+
+        if self.w_min is None:
+            lower_bound = pd.Series(0, index=self.asset_order)
+        elif isinstance(self.w_min, pd.Series):
+            lower_bound = np.maximum(0, self.w_min).loc[self.asset_order]
+
+        if (upper_bound >= lower_bound).all().item() is False:
+            raise NameError("All upper bounds must be higher than lower bounds")
 
         # Step-3: Recursive bisection
         if model == "HRP":
             # Recursive bisection
-            weights = self._recursive_bisection(self.sort_order, rm=rm, rf=rf)
+            weights = self._recursive_bisection(
+                self.sort_order,
+                rm=rm,
+                rf=rf,
+                upper_bound=upper_bound,
+                lower_bound=lower_bound,
+            )
         elif model in ["HERC", "HERC2"]:
             # Cluster-based Recursive bisection
             weights = self._hierarchical_recursive_bisection(
-                self.clusters, rm=rm, rf=rf, linkage=linkage, model=model
+                self.clusters,
+                rm=rm,
+                rf=rf,
+                linkage=linkage,
+                model=model,
+                upper_bound=upper_bound,
+                lower_bound=lower_bound,
             )
         elif model == "NCO":
             # Step-3.1: Determine intra-cluster weights
@@ -894,11 +973,31 @@ class HCPortfolio(object):
             # Step-3.2: Determine inter-cluster weights and multiply with 􏰁→ intra-cluster weights
             weights = self._inter_weights(intra_weights, obj=obj, rm=rm, rf=rf, l=l)
 
-        if isinstance(self.w_max, pd.Series) and isinstance(self.w_min, pd.Series):
-            self.w_max = self.w_max.sort_index()
-            self.w_max.index = self.assetslist
-            self.w_min = self.w_min.sort_index()
-            self.w_min.index = self.assetslist
+        weights = weights.loc[self.asset_order]
+
+        # Step-4: Fit weights to constraints
+        if (upper_bound < weights).any().item() or (lower_bound > weights).any().item():
+            max_iter = 100
+            j = 0
+            while (
+                (upper_bound < weights).any().item()
+                or (lower_bound > weights).any().item()
+            ) and (j < max_iter):
+                weights_original = weights.copy()
+                weights = np.maximum(np.minimum(weights, upper_bound), lower_bound)
+                tickers_mod = weights[
+                    (weights < upper_bound) & (weights > lower_bound)
+                ].index.tolist()
+                weights_add = np.maximum(weights_original - upper_bound, 0).sum()
+                weights_sub = np.minimum(weights_original - lower_bound, 0).sum()
+                delta = weights_add + weights_sub
+
+                if delta != 0:
+                    weights[tickers_mod] += (
+                        delta * weights[tickers_mod] / weights[tickers_mod].sum()
+                    )
+
+                j += 1
 
         weights = weights.loc[self.assetslist].to_frame()
         weights.columns = ["weights"]

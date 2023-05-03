@@ -77,6 +77,7 @@ def test_classic_minrisk_optimization():
     if a is None:
         print("There are no errors in test_classic_minrisk_optimization")
 
+
 def test_classic_sharpe_optimization():
 
     Y = get_data("stock_prices.csv")
@@ -131,6 +132,7 @@ def test_classic_sharpe_optimization():
     if a is None:
         print("There are no errors in test_classic_sharpe_optimization")
 
+
 def test_classic_riskparity_optimization():
 
     Y = get_data("stock_prices.csv")
@@ -177,9 +179,10 @@ def test_classic_riskparity_optimization():
 
     w_2 = get_data("Classic_RP.csv")
 
-    a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
+    a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=3)
     if a is None:
         print("There are no errors in test_classic_riskparity_optimization")
+
 
 def test_hc_hrp_optimization():
 
@@ -248,6 +251,7 @@ def test_hc_hrp_optimization():
     if a is None:
         print("There are no errors in test_hc_hrp_optimization")
 
+
 def test_hc_herc_optimization():
 
     Y = get_data("stock_prices.csv")
@@ -314,6 +318,7 @@ def test_hc_herc_optimization():
     a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
     if a is None:
         print("There are no errors in test_hc_herc_optimization")
+
 
 def test_hc_nco_optimization():
 

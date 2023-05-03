@@ -13,6 +13,14 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+
+Version 4.2.0
+=============
+
+- Implements constraints for the Hierarchical Equal Risk Contribution (HERC) and Nested Clustered Optimization (NCO) portfolio models.
+- Add the option to show risk contributions as a percentage of total risk in risk contribution plot.
+- Repairs some bugs.
+
 Version 4.1.0
 =============
 

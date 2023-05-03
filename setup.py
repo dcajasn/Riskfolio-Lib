@@ -7,8 +7,8 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
 MAJOR = 4
-MINOR = 1
-MICRO = 1
+MINOR = 2
+MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 def write_version_py(filename='riskfolio/version.py'):
@@ -36,12 +36,12 @@ URL = 'https://github.com/dcajasn/Riskfolio-Lib'
 LICENSE = 'BSD (3-clause)'
 KEYWORDS = 'finance, portfolio, optimization, quant, asset, allocation, investing'
 DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
-PYTHON_REQUIRES = ">=3.7"
+PYTHON_REQUIRES = ">=3.8"
 
 INSTALL_REQUIRES = [
     'numpy>=1.17.0',
     'scipy>=1.0.1',
-    'pandas>=1.0.0',
+    'pandas>=2.0.1',
     'matplotlib>=3.3.0',
     'cvxpy>=1.3.1',
     'scikit-learn>=0.22.0',
@@ -62,9 +62,9 @@ PACKAGES = [
 CLASSIFIERS = [
     'Intended Audience :: Financial and Insurance Industry',
     'Intended Audience :: Science/Research',
-    'Programming Language :: Python :: 3.7',
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
     'License :: OSI Approved :: BSD License',
     'Topic :: Office/Business :: Financial :: Investment',
     'Topic :: Office/Business :: Financial',
