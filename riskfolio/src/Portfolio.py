@@ -506,9 +506,12 @@ class Portfolio(object):
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+            - 'JS': James-Stein estimator. For more information see :cite:`a-Meucci2005` and :cite:`a-Feng2016`.
+            - 'BS': Bayes-Stein estimator. For more information see :cite:`a-Jorion1986`.
+            - 'BOP': BOP estimator. For more information see :cite:`a-Bodnar2019`.
 
         method_cov : str, optional
-            The method used to estimate the covariance matrix:
+            The method used to estimate the covariance matrix.
             The default is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
@@ -646,9 +649,11 @@ class Portfolio(object):
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
-
+            - 'JS': James-Stein estimator. For more information see :cite:`a-Meucci2005` and :cite:`a-Feng2016`.
+            - 'BS': Bayes-Stein estimator. For more information see :cite:`a-Jorion1986`.
+            - 'BOP': BOP estimator. For more information see :cite:`a-Bodnar2019`.
         method_cov : str, optional
-            The method used to estimate the covariance matrix:
+            The method used to estimate the covariance matrix.
             The default is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
@@ -664,7 +669,6 @@ class Portfolio(object):
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`a-Gerber2021`.
             - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`a-Gerber2021`.
-
         **kwargs : dict
             Other variables related to the covariance estimation.
 
@@ -739,9 +743,11 @@ class Portfolio(object):
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
-
+            - 'JS': James-Stein estimator. For more information see :cite:`a-Meucci2005` and :cite:`a-Feng2016`.
+            - 'BS': Bayes-Stein estimator. For more information see :cite:`a-Jorion1986`.
+            - 'BOP': BOP estimator. For more information see :cite:`a-Bodnar2019`.
         method_cov : str, optional
-            The method used to estimate the covariance matrix:
+            The method used to estimate the covariance matrix.
             The default is 'hist'. Possible values are:
 
             - 'hist': use historical estimates.
@@ -876,7 +882,9 @@ class Portfolio(object):
             - 'hist': use historical estimates.
             - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
             - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
-
+            - 'JS': James-Stein estimator. For more information see :cite:`a-Meucci2005` and :cite:`a-Feng2016`.
+            - 'BS': Bayes-Stein estimator. For more information see :cite:`a-Jorion1986`.
+            - 'BOP': BOP estimator. For more information see :cite:`a-Bodnar2019`.
         method_cov : str, optional
             The method used to estimate the covariance matrix:
             The default is 'hist'. Possible values are:
@@ -1171,23 +1179,23 @@ class Portfolio(object):
         This method that calculates the optimal portfolio according to the
         optimization model selected by the user. The general problem that
         solves is:
-        
+
         .. math::
             \begin{align}
             &\underset{w}{\text{optimize}} & & F(w)\\
             &\text{s. t.} & & Aw \geq B\\
             & & & \phi_{i}(w) \leq c_{i}\\
             \end{align}
-        
+
         Where:
-            
+
         :math:`F(w)` is the objective function.
-    
+
         :math:`Aw \geq B` is a set of linear constraints.
-    
+
         :math:`\phi_{i}(w) \leq c_{i}` are constraints on maximum values of
         several risk measures.
-        
+
         Parameters
         ----------
         model : str can be {'Classic', 'BL', 'FM' or 'BLFM'}
@@ -1198,11 +1206,11 @@ class Portfolio(object):
             - 'BL': use estimates of expected return vector and covariance matrix based on the Black Litterman model.
             - 'FM': use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.
             - 'BLFM': use estimates of expected return vector and covariance matrix based on Black Litterman applied to a Risk Factor model specified by the user.
-            
+
         rm : str, optional
             The risk measure used to optimize the portfolio.
             The default is 'MV'. Possible values are:
-            
+
             - 'MV': Standard Deviation.
             - 'KT': Square Root of Kurtosis.
             - 'MAD': Mean Absolute Deviation.
@@ -1225,7 +1233,7 @@ class Portfolio(object):
             - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
             - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns.
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
-            
+
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
             Objective function of the optimization model.
             The default is 'Sharpe'. Possible values are:
@@ -1234,7 +1242,7 @@ class Portfolio(object):
             - 'Utility': Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
             - 'Sharpe': Maximize the risk adjusted return ratio based on the selected risk measure.
             - 'MaxRet': Maximize the expected return of the portfolio.
-                
+
         kelly : str, optional
             Method used to calculate mean return. Possible values are False for
             arithmetic mean return, "approx" for approximate mean logarithmic
@@ -1527,72 +1535,63 @@ class Portfolio(object):
             S_2 = self.S_2
             Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
             Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
-            g1 = cp.Variable(nonneg=True)
-            risk19 = g1
-            ktconstraints = []
+            g2 = cp.Variable(nonneg=True)
+            risk19 = g2
+            W = cp.Variable((N, N), symmetric=True)
 
-            W1 = cp.Variable((N, N), symmetric=True)
-            if self.n_max_kurt > N:
-                ktconstraints += [W1 >= 0]
-
-            M11 = cp.vstack([W1, w.T])
-            if obj == "Sharpe":
-                M21 = cp.vstack([w, k])
-            else:
-                M21 = cp.vstack([w, np.ones((1, 1))])
-
-            M31 = cp.hstack([M11, M21])
-            z1 = L_2 @ cp.reshape(cp.vec(W1), (N * N, 1))
-            ktconstraints += [
-                M31 >> 0,
-                cp.SOC(g1, Sqrt_Sigma_4 @ z1),
+            z = L_2 @ cp.reshape(cp.vec(W), (N * N, 1))
+            L_i = np.linalg.cholesky(sigma).T
+            ktconstraints = [
+                cp.SOC(g2, Sqrt_Sigma_4 @ z),
             ]
 
-            L_i = np.linalg.cholesky(sigma).T
-            if self.n_max_kurt < N:
-                v1 = cp.Variable()
+            if N > self.n_max_kurt:
+                ktconstraints += [W >= 0]
+                v = cp.trace(sigma.T @ W)
+                ktconstraints += [
+                    cp.SOC(1 + v, cp.vstack([np.ones((1, 1)) - v, 2 * L_i @ w]))
+                ]
+            else:
+                M1 = cp.vstack([W, w.T])
                 if obj == "Sharpe":
-                    ktconstraints += [cp.SOC(1 + v1, cp.vstack([k - v1, 2 * L_i @ w]))]
+                    M2 = cp.vstack([w, k])
                 else:
-                    ktconstraints += [
-                        cp.SOC(1 + v1, cp.vstack([np.ones((1, 1)) - v1, 2 * L_i @ w]))
-                    ]
-                ktconstraints += [cp.sum(cp.multiply(sigma.T, W1)) == v1]
+                    M2 = cp.vstack([w, np.ones((1, 1))])
+                M3 = cp.hstack([M1, M2])
+                ktconstraints += [
+                    M3 >> 0,
+                ]
 
         # Semi Kurtosis Model Variables
         if self.skurt is not None:
             Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
             Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
-            g2 = cp.Variable(nonneg=True)
-            risk20 = g2
+            sg2 = cp.Variable(nonneg=True)
+            risk20 = sg2
             sktconstraints = []
-            W2 = cp.Variable((N, N), symmetric=True)
+            SW = cp.Variable((N, N), symmetric=True)
 
-            if self.n_max_kurt > N:
-                sktconstraints += [W2 >= 0]
-
-            M12 = cp.vstack([W2, w.T])
-            if obj == "Sharpe":
-                M22 = cp.vstack([w, k])
-            else:
-                M22 = cp.vstack([w, np.ones((1, 1))])
-
-            M32 = cp.hstack([M12, M22])
-            z2 = L_2 @ cp.reshape(cp.vec(W2), (N * N, 1))
-            sktconstraints += [
-                M32 >> 0,
-                cp.SOC(g2, Sqrt_SSigma_4 @ z2),
+            sz = L_2 @ cp.reshape(cp.vec(SW), (N * N, 1))
+            sktconstraints = [
+                cp.SOC(sg2, Sqrt_SSigma_4 @ sz),
             ]
 
-            if self.n_max_kurt < N:
-                v2 = cp.Variable()
+            if N > self.n_max_kurt:
+                sktconstraints += [SW >= 0]
+                sv = cp.trace(sigma.T @ SW)
+                sktconstraints += [
+                    cp.SOC(1 + sv, cp.vstack([np.ones((1, 1)) - sv, 2 * L_i @ w]))
+                ]
+            else:
+                SM1 = cp.vstack([SW, w.T])
                 if obj == "Sharpe":
-                    sktconstraints += [cp.SOC(1 + v2, cp.vstack([k - v2, 2 * L_i @ w]))]
+                    SM2 = cp.vstack([w, k])
                 else:
-                    sktconstraints += [
-                        cp.SOC(1 + v2, cp.vstack([np.ones((1, 1)) - v2, 2 * L_i @ w]))
-                    ]
-                sktconstraints += [cp.sum(cp.multiply(sigma.T, W2)) == v2]
+                    SM2 = cp.vstack([w, np.ones((1, 1))])
+                SM3 = cp.hstack([SM1, SM2])
+                sktconstraints += [
+                    SM3 >> 0,
+                ]
 
         # Relativistic Value at Risk Variables
 
@@ -2143,7 +2142,7 @@ class Portfolio(object):
         budgeting approach :cite:`a-Roncalli` :cite:`a-RichardRoncalli`,
         according to the optimization model selected by the user. The general
         problem that solves is:
-        
+
         .. math::
             \begin{aligned}
             &\underset{w}{\min} & & \phi(w)\\
@@ -2152,21 +2151,21 @@ class Portfolio(object):
             & & & Aw \geq B \\
             & & & w \geq 0 \\
             \end{aligned}
-        
+
         Where:
-        
+
         :math:`w` are the weights of the portfolio.
-        
+
         :math:`\mu`: is the vector of expected returns.
-    
+
         :math:`b` is a vector of risk constraints.
-        
+
         :math:`Aw \geq B`: is a set of linear constraints.
-        
+
         :math:`\phi(w)`: is a risk measure.
-        
+
         :math:`c`: is an arbitrary constant.
-        
+
         Parameters
         ----------
         model : str can be 'Classic' or 'FM'
@@ -2175,11 +2174,11 @@ class Portfolio(object):
 
             - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
             - 'FM': use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.
-            
+
         rm : str, optional
             The risk measure used to optimize the portfolio.
             The default is 'MV'. Possible values are:
-            
+
             - 'MV': Standard Deviation.
             - 'KT': Square Root of Kurtosis.
             - 'MAD': Mean Absolute Deviation.
@@ -2212,7 +2211,7 @@ class Portfolio(object):
             If model = 'FM', True means historical covariance and returns and
             False means Risk Factor model for covariance and returns. The
             default is True.
-            
+
         Returns
         -------
         w : DataFrame
@@ -2418,24 +2417,25 @@ class Portfolio(object):
             risk19 = g2
             W = cp.Variable((N, N), symmetric=True)
 
-            if self.n_max_kurt > N:
-                ktconstraints = [W >= 0]
-
-            M1 = cp.vstack([W, w.T])
-            M2 = cp.vstack([w, np.ones((1, 1))])
-            M3 = cp.hstack([M1, M2])
             z = L_2 @ cp.reshape(cp.vec(W), (N * N, 1))
-            ktconstraints += [
-                M3 >> 0,
+
+            ktconstraints = [
                 cp.SOC(g2, Sqrt_Sigma_4 @ z),
             ]
 
-            if self.n_max_kurt > N:
-                v = cp.Variable()
+            if N > self.n_max_kurt:
+                ktconstraints += [W >= 0]
+                v = cp.trace(sigma.T @ W)
                 L_i = np.linalg.cholesky(sigma).T
                 ktconstraints += [
                     cp.SOC(1 + v, cp.vstack([np.ones((1, 1)) - v, 2 * L_i @ w])),
-                    cp.sum(cp.multiply(sigma.T, W)) == v,
+                ]
+            else:
+                M1 = cp.vstack([W, w.T])
+                M2 = cp.vstack([w, np.ones((1, 1))])
+                M3 = cp.hstack([M1, M2])
+                ktconstraints += [
+                    M3 >> 0,
                 ]
 
         # Semi Kurtosis Model Variables
@@ -2447,24 +2447,25 @@ class Portfolio(object):
             risk20 = sg2
             SW = cp.Variable((N, N), symmetric=True)
 
-            if self.n_max_kurt > N:
-                sktconstraints = [SW >= 0]
-
-            SM1 = cp.vstack([SW, w.T])
-            SM2 = cp.vstack([w, np.ones((1, 1))])
-            SM = cp.hstack([SM1, SM2])
             sz = L_2 @ cp.reshape(cp.vec(SW), (N * N, 1))
-            sktconstraints += [
-                SM >> 0,
+
+            sktconstraints = [
                 cp.SOC(sg2, Sqrt_SSigma_4 @ sz),
             ]
 
-            if self.n_max_kurt > N:
-                sv = cp.Variable()
+            if N > self.n_max_kurt:
+                sktconstraints += [SW >= 0]
+                sv = cp.trace(sigma.T @ SW)
                 sktconstraints += [
                     cp.SOC(1 + sv, cp.vstack([np.ones((1, 1)) - sv, 2 * L_i @ w]))
                 ]
-                sktconstraints += [cp.sum(cp.multiply(sigma.T, SW)) == sv]
+            else:
+                SM1 = cp.vstack([SW, w.T])
+                SM2 = cp.vstack([w, np.ones((1, 1))])
+                SM3 = cp.hstack([SM1, SM2])
+                sktconstraints += [
+                    SM3 >> 0,
+                ]
 
         # Relativistic Value at Risk Variables
 
@@ -2677,43 +2678,45 @@ class Portfolio(object):
         r"""
         This method that calculates the relaxed risk parity portfolio according
         to the optimization model and version selected by the user
-        :cite:`a-RichardRoncalli`. The general problem that solves is:
-        
+        :cite:`a-GambetaKwon`. The general problem that solves is:
+
         .. math::
             \begin{aligned}
             &\underset{w}{\min} & & \psi - \gamma & \\
             &\text{s.t.} & & \zeta = \Sigma w \\
-            & & & w^{T} \Sigma w \leq N \left ( \psi^{2} - \rho^{2} \right ) & \\
-            & & & w_{i} \zeta_{i} \geq \gamma^{2} & \forall i=1 , \ldots , N \\
+            & & & w^{T} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) & \\
+            & & & w_{i} \zeta_{i} \geq \gamma^{2} b_{i} & \forall i=1 , \ldots , N \\
             & & & \lambda x^{T} \Theta x \leq \rho^{2} & \\
             & & & \mu w \geq \overline{\mu} & \\
             & & & Aw \geq B & \\
             & & & \sum^{N}_{i=1} w_{i} = 1 & \\
             & & & \psi, \gamma, \rho, w  \geq 0 & \\
             \end{aligned}
-        
+
         Where:
-    
+
         :math:`w`: is the vector of weights of the optimum portfolio.
-        
+
         :math:`\mu`: is the vector of expected returns.
-        
+
         :math:`\Sigma`: is the covariance matrix of assets returns.
-        
+
         :math:`\psi`: is the average risk of the portfolio.
-        
+
         :math:`\gamma`: is the lower bound of each asset risk constribution.
-        
+
+        :math:`b`: is the risk constribution constraint vector.
+
         :math:`\zeta_{i}`: is the marginal risk of asset :math:`i`.
-        
+
         :math:`\rho`: is a regularization variable.
-        
+
         :math:`\lambda`: is a penalty parameter of :math:`\rho`.
-        
+
         :math:`\Theta = \text{diag}(\Sigma)`
-        
+
         :math:`Aw \geq B`: is a set of linear constraints.
-        
+
         Parameters
         ----------
         model : str can be 'Classic' or 'FM'
@@ -2722,15 +2725,15 @@ class Portfolio(object):
 
             - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
             - 'FM': use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.
-            
+
         version : str can be 'A', 'B' or 'C'
             Relaxed risk parity model version proposed in :cite:`a-RichardRoncalli`.
             The default is 'A'. Possible values are:
-                
+
             - 'A': without regularization and penalization constraints.
             - 'B': with regularization constraint but without penalization constraint.
             - 'C': with regularization and penalization constraints.
-            
+
         l : float, optional
             The penalization factor of penalization constraints. Only used with
             version 'C'. The default is 1.
@@ -2738,11 +2741,11 @@ class Portfolio(object):
             The vector of risk constraints per asset.
             The default is 1/n (number of assets).
         hist : bool, optional
-            Indicate what kind of covariance matrix is used. 
+            Indicate what kind of covariance matrix is used.
             If model = 'FM', True means historical covariance and
             False means Risk Factor model for covariance. The default is
             True.
-            
+
         Returns
         -------
         w : DataFrame
@@ -2770,13 +2773,17 @@ class Portfolio(object):
 
         # General Model Variables
 
+        T, N = returns.shape
+
         if b is None:
-            b = np.ones((1, mu.shape[1]))
-            b = b / mu.shape[1]
+            rb = np.ones((N, 1))
+            rb = rb / N
+        else:
+            self.b = b.copy()
+            rb = self.b
 
         returns = np.array(returns, ndmin=2)
         w = cp.Variable((mu.shape[1], 1))
-        n = returns.shape[1]
         ret = mu @ w
 
         # RRP Model Variables
@@ -2804,32 +2811,31 @@ class Portfolio(object):
         for i in range(mu.shape[1]):
             constraints += [
                 cp.SOC(
-                    w[i, 0] + zeta[i, 0], cp.vstack([2 * gamma, w[i, 0] - zeta[i, 0]])
+                    w[i, 0] + zeta[i, 0],
+                    cp.vstack([2 * gamma * rb[i] ** 0.5, w[i, 0] - zeta[i, 0]]),
                 )
             ]
 
         # Specific Model Constraints
 
         if version == "A":
-            constraints += [cp.SOC(n**0.5 * psi, G.T @ w)]
+            constraints += [cp.SOC(psi, G.T @ w)]
         elif version == "B":
             constraints += [
                 cp.SOC(
-                    2 * n**0.5 * psi,
-                    cp.vstack([2 * G.T @ w, -2 * n**0.5 * rho * np.ones((1, 1))]),
+                    2 * psi,
+                    cp.vstack([2 * G.T @ w, -2 * rho * np.ones((1, 1))]),
                 )
             ]
             constraints += [cp.SOC(rho, G.T @ w)]
-            constraints += [rho >= 0]
         elif version == "C":
             constraints += [
                 cp.SOC(
-                    2 * n**0.5 * psi,
-                    cp.vstack([2 * G.T @ w, -2 * n**0.5 * rho * np.ones((1, 1))]),
+                    2 * psi,
+                    cp.vstack([2 * G.T @ w, -2 * rho * np.ones((1, 1))]),
                 )
             ]
             constraints += [cp.SOC(rho, l**0.5 * Theta.T @ w)]
-            constraints += [rho >= 0]
 
         # Problem Linear Constraints
 
@@ -3178,19 +3184,19 @@ class Portfolio(object):
         This method that calculates the owa optimal portfolio according to the
         weight vector given by the user. The general problem that
         solves is:
-        
+
         .. math::
             \begin{align}
             &\underset{w}{\text{optimize}} & & F(w)\\
             &\text{s. t.} & & Aw \geq B\\
             \end{align}
-        
+
         Where:
-            
+
         :math:`F(w)` is the objective function based on an owa risk measure.
-    
+
         :math:`Aw \geq B` is a set of linear constraints.
-        
+
         Parameters
         ----------
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
@@ -3200,7 +3206,7 @@ class Portfolio(object):
             - 'MinRisk': Minimize the selected risk measure.
             - 'Utility': Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
             - 'Sharpe': Maximize the risk adjusted return ratio based on the selected risk measure.
-            
+
         owa_w : 1darray, optional
             The owa weight used to define the owa risk measure.
             The default is 'MV'. Possible values are:

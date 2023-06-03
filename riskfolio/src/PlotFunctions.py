@@ -1101,7 +1101,9 @@ def plot_risk_con(
     kappa=0.30,
     solver=None,
     percentage=False,
+    erc_line=True,
     color="tab:blue",
+    erc_linecolor="r",
     height=6,
     width=10,
     t_factor=252,
@@ -1165,9 +1167,15 @@ def plot_risk_con(
         The default value is None.
     percentage : bool, optional
         If risk contribution per asset is expressed as percentage or as a value. The default is False.
+    erc_line : bool, optional
+        If equal risk contribution line is plotted.
+        The default is False.
     color : str, optional
         Color used to plot each asset risk contribution.
         The default is 'tab:blue'.
+    erc_linecolor : str, optional
+        Color used to plot equal risk contribution line.
+        The default is 'r'.
     height : float, optional
         Height of the image in inches. The default is 6.
     width : float, optional
@@ -1279,6 +1287,31 @@ def plot_risk_con(
     ax.set_yticks(ax.get_yticks())
     ax.set_yticklabels(["{:3.4%}".format(x) for x in ticks_loc])
     ax.grid(linestyle=":")
+
+    if erc_line:
+        if percentage:
+            erc = 1 / len(RC)
+        else:
+            erc = rk.Sharpe_Risk(
+                w,
+                cov=cov,
+                returns=returns,
+                rm=rm,
+                rf=rf,
+                alpha=alpha,
+                a_sim=a_sim,
+                beta=beta,
+                b_sim=b_sim,
+                kappa=kappa,
+                solver=solver,
+            )
+
+            if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
+                erc = erc / len(RC) * t_factor**0.5
+            else:
+                erc = erc / len(RC)
+
+        ax.axhline(y=erc, color=erc_linecolor, linestyle="-")
 
     try:
         fig.tight_layout()

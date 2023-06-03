@@ -52,9 +52,9 @@ class HCPortfolio(object):
     solvers: list, optional
         List of solvers available for CVXPY used for the selected NCO method.
         The default value is None.
-    w_max : Series, optional
+    w_max : pd.Series or float, optional
         Upper bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
-    w_min : Series, optional
+    w_min : pd.Series or float, optional
         Lower bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
@@ -930,6 +930,11 @@ class HCPortfolio(object):
         # Step-2.1: Bound creation
         if self.w_max is None:
             upper_bound = pd.Series(1, index=self.asset_order)
+        elif isinstance(self.w_max, float):
+            upper_bound = pd.Series(self.w_max, index=self.asset_order)
+            upper_bound = np.minimum(1, upper_bound).loc[self.asset_order]
+            if upper_bound.sum() < 1:
+                raise NameError("Sum of upper bounds must be higher equal than 1")
         elif isinstance(self.w_max, pd.Series):
             upper_bound = np.minimum(1, self.w_max).loc[self.asset_order]
             if upper_bound.sum() < 1:
@@ -937,6 +942,9 @@ class HCPortfolio(object):
 
         if self.w_min is None:
             lower_bound = pd.Series(0, index=self.asset_order)
+        elif isinstance(self.w_min, float):
+            lower_bound = pd.Series(self.w_min, index=self.asset_order)
+            lower_bound = np.maximum(0, lower_bound).loc[self.asset_order]
         elif isinstance(self.w_min, pd.Series):
             lower_bound = np.maximum(0, self.w_min).loc[self.asset_order]
 

@@ -37,7 +37,7 @@ __all__ = [
 ]
 
 
-def mean_vector(X, method="hist", d=0.94):
+def mean_vector(X, method="hist", d=0.94, target="b1"):
     r"""
     Calculate the expected returns vector using the selected method.
 
@@ -50,12 +50,24 @@ def mean_vector(X, method="hist", d=0.94):
         The method used to estimate the expected returns.
         The default value is 'hist'. Possible values are:
 
-        - 'hist': use historical estimates.
+        - 'hist': use historical estimator.
         - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
         - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
+        - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
+        - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
+
     d : scalar
         The smoothing factor of ewma methods.
         The default is 0.94.
+
+    target : str, optional
+        The target mean vector. The default value is 'b1'.
+        Possible values are:
+
+        - 'b1': grand mean.
+        - 'b2': volatility weighted grand mean.
+        - 'b3': mean square error of sample mean.
 
     Returns
     -------
@@ -80,6 +92,46 @@ def mean_vector(X, method="hist", d=0.94):
         mu = np.array(X.ewm(alpha=1 - d).mean().iloc[-1, :], ndmin=2)
     elif method == "ewma2":
         mu = np.array(X.ewm(alpha=1 - d, adjust=False).mean().iloc[-1, :], ndmin=2)
+    elif method == "ewma2":
+        mu = np.array(X.ewm(alpha=1 - d, adjust=False).mean().iloc[-1, :], ndmin=2)
+    elif method in ["JS", "BS", "BOP"]:
+        T, n = X.shape
+        ones = np.ones((n, 1))
+        mu = np.array(X.mean(), ndmin=2).reshape(-1, 1)
+        Sigma = np.cov(X.T)
+        Sigma_inv = np.linalg.inv(Sigma)
+        eigvals = np.linalg.eigvals(Sigma)
+
+        # Calculate target vector
+        if target == "b1":
+            b = ones.T @ mu / n * ones
+        elif target == "b2":
+            b = ones.T @ Sigma_inv @ mu / (ones.T @ Sigma_inv @ ones) * ones
+        elif target == "b3":
+            b = np.trace(Sigma) / T * ones
+
+        # Calculate Estimators
+        if method == "JS":
+            alpha_1 = (
+                1
+                / T
+                * (n * np.mean(eigvals) - 2 * np.max(eigvals))
+                / ((mu - b).T @ (mu - b))
+            )
+            mu = (1 - alpha_1) * mu + alpha_1 * b
+        elif method == "BS":
+            alpha_1 = (n + 2) / ((n + 2) + T * (mu - b).T @ Sigma_inv @ (mu - b))
+            mu = (1 - alpha_1) * mu + alpha_1 * b
+        elif method == "BOP":
+            alpha_1 = (mu.T @ Sigma_inv @ mu - n / (T - n)) * b.T @ Sigma_inv @ b - (
+                mu.T @ Sigma_inv @ b
+            ) ** 2
+            alpha_1 /= (mu.T @ Sigma_inv @ mu) * (b.T @ Sigma_inv @ b) - (
+                mu.T @ Sigma_inv @ b
+            ) ** 2
+            beta_1 = (1 - alpha_1) * (mu.T @ Sigma_inv @ b) / (mu.T @ Sigma_inv @ mu)
+            mu = alpha_1 * mu + beta_1 * b
+        mu = mu.T
 
     mu = pd.DataFrame(np.array(mu, ndmin=2), columns=assets)
 
@@ -785,8 +837,8 @@ def risk_factors(
         \mu_{f} & = \alpha +BE(F) \\
         \Sigma_{f} & = B \Sigma_{F} B^{T} + \Sigma_{\epsilon} \\
         \end{aligned}
-        
-        
+
+
     where:
 
     :math:`R` is the series returns.
@@ -821,7 +873,34 @@ def risk_factors(
     const : bool, optional
         Indicate if the loadings matrix has a constant.
         The default is False.
-    method: str, 'stepwise' or 'PCR', optional
+    method_mu : str, optional
+        The method used to estimate the expected returns of factors.
+        The default value is 'hist'. Possible values are:
+
+        - 'hist': use historical estimates.
+        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
+        - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
+        - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
+    method_cov : str, optional
+        The method used to estimate the covariance matrix of factors.
+        The default is 'hist'. Possible values are:
+
+        - 'hist': use historical estimates.
+        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ledoit': use the Ledoit and Wolf Shrinkage method.
+        - 'oas': use the Oracle Approximation Shrinkage method.
+        - 'shrunk': use the basic Shrunk Covariance method.
+        - 'gl': use the basic Graphical Lasso Covariance method.
+        - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`b-jLogo`.
+        - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
+        - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
+    feature_selection: str, 'stepwise' or 'PCR', optional
         Indicate the method used to estimate the loadings matrix.
         The default is 'stepwise'.
     stepwise: str, 'Forward' or 'Backward'
@@ -971,13 +1050,16 @@ def black_litterman(
     eq : bool, optional
         Indicate if use equilibrium or historical excess returns.
         The default is True.
-    method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+    method_mu : str, optional
         The method used to estimate the expected returns.
         The default value is 'hist'.
 
         - 'hist': use historical estimates.
         - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
         - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
+        - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
+        - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
     method_cov : str, optional
         The method used to estimate the covariance matrix:
         The default is 'hist'. Possible values are:
@@ -1099,25 +1181,25 @@ def augmented_black_litterman(
     :math:`\delta` is the risk aversion factor.
 
     :math:`B` is the loadings matrix.
-    
+
     :math:`\Sigma` is the covariance matrix of assets.
-    
+
     :math:`\Sigma_{F}` is the covariance matrix of factors.
 
     :math:`\Sigma^{a}` is the augmented covariance matrix.
-    
+
     :math:`P` is the assets views matrix.
 
     :math:`Q` is the assets views returns matrix.
-    
+
     :math:`P_{F}` is the factors views matrix.
 
-    :math:`Q_{F}` is the factors views returns matrix.    
+    :math:`Q_{F}` is the factors views returns matrix.
 
     :math:`P^{a}` is the augmented views matrix.
-    
+
     :math:`Q^{a}` is the augmented views returns matrix.
-    
+
     :math:`\Pi^{a}` is the augmented equilibrium excess returns.
 
     :math:`\Omega` is the covariance matrix of errors of assets views.
@@ -1143,7 +1225,7 @@ def augmented_black_litterman(
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     B : DataFrame of shape (n_assets, n_features), optional
-        Loadings matrix. The default is None.    
+        Loadings matrix. The default is None.
     P : DataFrame of shape (n_views, n_assets)
         Analyst's views matrix, can be relative or absolute.
     Q : DataFrame of shape (n_views, 1)
@@ -1162,15 +1244,18 @@ def augmented_black_litterman(
     const : bool, optional
         Indicate if use equilibrium or historical excess returns.
         The default is True.
-    method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+    method_mu : str, optional
         The method used to estimate the expected returns.
         The default value is 'hist'.
 
         - 'hist': use historical estimates.
         - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
         - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
+        - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
+        - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
     method_cov : str, optional
-        The method used to estimate the covariance matrix:
+        The method used to estimate the covariance matrix.
         The default is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
@@ -1349,14 +1434,14 @@ def black_litterman_bayesian(
     :math:`\Pi_{F}` is the equilibrium excess returns of factors.
 
     :math:`\overline{\Pi}_{F}` is the posterior excess returns of factors.
-    
+
     :math:`\Sigma_{F}` is the covariance matrix of factors.
 
     :math:`\overline{\Sigma}_{F}` is the posterior covariance matrix of factors.
-    
+
     :math:`P_{F}` is the factors views matrix.
 
-    :math:`Q_{F}` is the factors views returns matrix.    
+    :math:`Q_{F}` is the factors views returns matrix.
 
     :math:`\Omega_{F}` is the covariance matrix of errors of factors views.
 
@@ -1392,16 +1477,19 @@ def black_litterman_bayesian(
         The default is True.
     diag : bool, optional
         Indicate if we use the diagonal matrix to calculate covariance matrix
-        of factor model, only useful when we work with a factor model based on 
+        of factor model, only useful when we work with a factor model based on
         a regresion model (only equity portfolio).
         The default is True.
-    method_mu : str, can be {'hist', 'ewma1' or 'ewma2'}
+    method_mu : str, optional
         The method used to estimate the expected returns.
         The default value is 'hist'.
 
         - 'hist': use historical estimates.
         - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
         - 'ewma2': use ewma with adjust=False, For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
+        - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
+        - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
     method_cov : str, optional
         The method used to estimate the covariance matrix:
         The default is 'hist'. Possible values are:

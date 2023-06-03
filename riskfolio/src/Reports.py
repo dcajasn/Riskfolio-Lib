@@ -42,8 +42,13 @@ def jupyter_report(
     b_sim=None,
     kappa=0.30,
     solver=None,
+    percentage=False,
+    erc_line=True,
+    color="tab:blue",
+    erc_linecolor="r",
     others=0.05,
     nrow=25,
+    cmap="tab20",
     height=6,
     width=14,
     t_factor=252,
@@ -107,10 +112,24 @@ def jupyter_report(
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
+    percentage : bool, optional
+        If risk contribution per asset is expressed as percentage or as a value. The default is False.
+    erc_line : bool, optional
+        If equal risk contribution line is plotted.
+        The default is False.
+    color : str, optional
+        Color used to plot each asset risk contribution.
+        The default is 'tab:blue'.
+    erc_linecolor : str, optional
+        Color used to plot equal risk contribution line.
+        The default is 'r'.
     others : float, optional
         Percentage of others section. The default is 0.05.
     nrow : int, optional
         Number of rows of the legend. The default is 25.
+    cmap : cmap, optional
+        Color scale used to plot each asset weight.
+        The default is 'tab20'.
     height : float, optional
         Average height of charts in the image in inches. The default is 6.
     width : float, optional
@@ -198,7 +217,7 @@ def jupyter_report(
         title="Portfolio Composition",
         others=others,
         nrow=nrow,
-        cmap="tab20",
+        cmap=cmap,
         ax=ax[2],
     )
 
@@ -215,6 +234,10 @@ def jupyter_report(
         kappa=kappa,
         solver=solver,
         t_factor=t_factor,
+        percentage=percentage,
+        erc_line=erc_line,
+        color=color,
+        erc_linecolor=erc_linecolor,
         ax=ax[3],
     )
 

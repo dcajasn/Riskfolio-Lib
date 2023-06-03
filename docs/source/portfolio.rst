@@ -178,8 +178,8 @@ the relaxed risk parity model :cite:`a-GambetaKwon`:
     \begin{aligned}
     &\underset{w}{\min} & & \psi - \gamma & \\
     &\text{s.t.} & & \zeta = \Sigma w \\
-    & & & w^{T} \Sigma w \leq N \left ( \psi^{2} - \rho^{2} \right ) & \\
-    & & & w_{i} \zeta_{i} \geq \gamma^{2} & \forall i=1 , \ldots , N \\
+    & & & w^{T} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) & \\
+    & & & w_{i} \zeta_{i} \geq \gamma^{2} b_{i} & \forall i=1 , \ldots , N \\
     & & & \lambda x^{T} \Theta x \leq \rho^{2} & \\
     & & & \mu w \geq \overline{\mu} & \\
     & & & Aw \geq B & \\
@@ -199,6 +199,8 @@ Where:
 :math:`\psi`: is the average risk of the portfolio.
 
 :math:`\gamma`: is the lower bound of each asset risk contribution.
+
+:math:`b`: is the risk contribution vector constraint.
 
 :math:`\zeta_{i}`: is the marginal risk of asset :math:`i`.
 
