@@ -7,7 +7,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
 MAJOR = 4
-MINOR = 3
+MINOR = 4
 MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
@@ -39,12 +39,12 @@ DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
 PYTHON_REQUIRES = ">=3.7"
 
 INSTALL_REQUIRES = [
-    'numpy>=1.17.0',
-    'scipy>=1.0.1',
+    'numpy>=1.18.0',
+    'scipy>=1.1.0',
     'pandas>=1.0.0',
-    'matplotlib>=3.3.0',
+    'matplotlib>=3.5.0',
     'cvxpy>=1.3.1',
-    'scikit-learn>=0.22.0',
+    'scikit-learn>=1.0.0',
     'statsmodels>=0.10.1',
     'arch>=4.15',
     'xlsxwriter>=1.3.7',

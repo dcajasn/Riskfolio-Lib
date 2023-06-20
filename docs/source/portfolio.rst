@@ -93,7 +93,7 @@ measures are:
 - Conditional Value at Risk Range :cite:`a-Cajas3`.
 - Tail Gini Range :cite:`a-Cajas3`.
 - Semi Standard Deviation :cite:`a-Mansini3`.
-- Square Root Semi Kurtosis :cite:`a-Cajas4`.
+- Square Root Semi Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas6`.
 - First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.
@@ -153,7 +153,7 @@ measures are:
 - Conditional Value at Risk Range :cite:`a-Cajas3`.
 - Tail Gini Range :cite:`a-Cajas3`.
 - Semi Standard Deviation :cite:`a-Mansini3`.
-- Square Root Semi Kurtosis :cite:`a-Cajas4`.
+- Square Root Semi Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas5`.
 - First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.

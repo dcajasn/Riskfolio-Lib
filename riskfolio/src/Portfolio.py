@@ -73,7 +73,6 @@ class Portfolio(object):
         The default is None.
     kappa : float, optional
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
-
     n_max_kurt : int, optional
         Maximum number of assets to use Kurtosis model based on semidefinte formulation. If number of
         assets is higher than n_max_kurt, it uses relaxed kurtosis model based on second order cone.
@@ -1531,67 +1530,77 @@ class Portfolio(object):
         # Kurtosis Model Variables
 
         if self.kurt is not None:
-            L_2 = self.L_2
-            S_2 = self.S_2
-            Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
-            Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
-            g2 = cp.Variable(nonneg=True)
-            risk19 = g2
             W = cp.Variable((N, N), symmetric=True)
-
-            z = L_2 @ cp.reshape(cp.vec(W), (N * N, 1))
-            L_i = np.linalg.cholesky(sigma).T
-            ktconstraints = [
-                cp.SOC(g2, Sqrt_Sigma_4 @ z),
-            ]
+            M1 = cp.vstack([W, w.T])
+            if obj == "Sharpe":
+                M2 = cp.vstack([w, k])
+            else:
+                M2 = cp.vstack([w, np.ones((1, 1))])
+            M3 = cp.hstack([M1, M2])
+            ktconstraints = [M3 >> 0]
 
             if N > self.n_max_kurt:
-                ktconstraints += [W >= 0]
-                v = cp.trace(sigma.T @ W)
-                ktconstraints += [
-                    cp.SOC(1 + v, cp.vstack([np.ones((1, 1)) - v, 2 * L_i @ w]))
-                ]
+                K = 2 * N
+                g2 = cp.Variable((K, 1))
+                risk19 = cp.pnorm(g2, p=2)
+                A = af.block_vec_pq(self.kurt, N, N)
+                s_A, V_A = np.linalg.eig(A)
+                s_A = np.clip(s_A, 0, np.inf)
+
+                Bi = []
+                for i in range(K):
+                    B = s_A[i] ** 0.5 * V_A[:, i]
+                    B = B.reshape((N, N), order="F").real
+                    Bi.append(B)
+
+                for i in range(K):
+                    ktconstraints += [g2[i, 0] == cp.trace(Bi[i] @ W)]
             else:
-                M1 = cp.vstack([W, w.T])
-                if obj == "Sharpe":
-                    M2 = cp.vstack([w, k])
-                else:
-                    M2 = cp.vstack([w, np.ones((1, 1))])
-                M3 = cp.hstack([M1, M2])
-                ktconstraints += [
-                    M3 >> 0,
-                ]
+                L_2 = self.L_2
+                S_2 = self.S_2
+                Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
+                Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
+                g2 = cp.Variable(nonneg=True)
+                risk19 = g2
+                z = L_2 @ cp.reshape(cp.vec(W), (N * N, 1))
+                ktconstraints += [cp.SOC(g2, Sqrt_Sigma_4 @ z)]
 
         # Semi Kurtosis Model Variables
-        if self.skurt is not None:
-            Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
-            Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
-            sg2 = cp.Variable(nonneg=True)
-            risk20 = sg2
-            sktconstraints = []
-            SW = cp.Variable((N, N), symmetric=True)
 
-            sz = L_2 @ cp.reshape(cp.vec(SW), (N * N, 1))
-            sktconstraints = [
-                cp.SOC(sg2, Sqrt_SSigma_4 @ sz),
-            ]
+        if self.skurt is not None:
+            SW = cp.Variable((N, N), symmetric=True)
+            SM1 = cp.vstack([SW, w.T])
+            if obj == "Sharpe":
+                SM2 = cp.vstack([w, k])
+            else:
+                SM2 = cp.vstack([w, np.ones((1, 1))])
+            SM3 = cp.hstack([SM1, SM2])
+            sktconstraints = [SM3 >> 0]
 
             if N > self.n_max_kurt:
-                sktconstraints += [SW >= 0]
-                sv = cp.trace(sigma.T @ SW)
-                sktconstraints += [
-                    cp.SOC(1 + sv, cp.vstack([np.ones((1, 1)) - sv, 2 * L_i @ w]))
-                ]
+                K = 2 * N
+                sg2 = cp.Variable((K, 1))
+                risk20 = cp.pnorm(sg2, p=2)
+                SA = af.block_vec_pq(self.skurt, N, N)
+                s_SA, V_SA = np.linalg.eig(SA)
+                s_SA = np.clip(s_SA, 0, np.inf)
+
+                SBi = []
+                for i in range(K):
+                    SB = s_SA[i] ** 0.5 * V_SA[:, i]
+                    SB = SB.reshape((N, N), order="F").real
+                    SBi.append(SB)
+
+                for i in range(K):
+                    sktconstraints += [sg2[i, 0] == cp.trace(SBi[i] @ SW)]
+
             else:
-                SM1 = cp.vstack([SW, w.T])
-                if obj == "Sharpe":
-                    SM2 = cp.vstack([w, k])
-                else:
-                    SM2 = cp.vstack([w, np.ones((1, 1))])
-                SM3 = cp.hstack([SM1, SM2])
-                sktconstraints += [
-                    SM3 >> 0,
-                ]
+                Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
+                Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
+                sg2 = cp.Variable(nonneg=True)
+                risk20 = sg2
+                sz = L_2 @ cp.reshape(cp.vec(SW), (N * N, 1))
+                sktconstraints += [cp.SOC(sg2, Sqrt_SSigma_4 @ sz)]
 
         # Relativistic Value at Risk Variables
 
@@ -2409,63 +2418,71 @@ class Portfolio(object):
         # Kurtosis Model Variables
 
         if self.kurt is not None:
-            L_2 = self.L_2
-            S_2 = self.S_2
-            Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
-            Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
-            g2 = cp.Variable()
-            risk19 = g2
             W = cp.Variable((N, N), symmetric=True)
-
-            z = L_2 @ cp.reshape(cp.vec(W), (N * N, 1))
-
-            ktconstraints = [
-                cp.SOC(g2, Sqrt_Sigma_4 @ z),
-            ]
+            M1 = cp.vstack([W, w.T])
+            M2 = cp.vstack([w, np.ones((1, 1))])
+            M3 = cp.hstack([M1, M2])
+            ktconstraints = [M3 >> 0]
 
             if N > self.n_max_kurt:
-                ktconstraints += [W >= 0]
-                v = cp.trace(sigma.T @ W)
-                L_i = np.linalg.cholesky(sigma).T
-                ktconstraints += [
-                    cp.SOC(1 + v, cp.vstack([np.ones((1, 1)) - v, 2 * L_i @ w])),
-                ]
+                K = 2 * N
+                g2 = cp.Variable((K, 1))
+                risk19 = cp.pnorm(g2, p=2)
+                A = af.block_vec_pq(self.kurt, N, N)
+                s_A, V_A = np.linalg.eig(A)
+                s_A = np.clip(s_A, 0, np.inf)
+
+                Bi = []
+                for i in range(K):
+                    B = s_A[i] ** 0.5 * V_A[:, i]
+                    B = B.reshape((N, N), order="F").real
+                    Bi.append(B)
+
+                for i in range(K):
+                    ktconstraints += [g2[i, 0] == cp.trace(Bi[i] @ W)]
             else:
-                M1 = cp.vstack([W, w.T])
-                M2 = cp.vstack([w, np.ones((1, 1))])
-                M3 = cp.hstack([M1, M2])
-                ktconstraints += [
-                    M3 >> 0,
-                ]
+                L_2 = self.L_2
+                S_2 = self.S_2
+                Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
+                Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
+                g2 = cp.Variable(nonneg=True)
+                risk19 = g2
+                z = L_2 @ cp.reshape(cp.vec(W), (N * N, 1))
+                ktconstraints += [cp.SOC(g2, Sqrt_Sigma_4 @ z)]
 
         # Semi Kurtosis Model Variables
 
         if self.skurt is not None:
-            Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
-            Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
-            sg2 = cp.Variable()
-            risk20 = sg2
             SW = cp.Variable((N, N), symmetric=True)
-
-            sz = L_2 @ cp.reshape(cp.vec(SW), (N * N, 1))
-
-            sktconstraints = [
-                cp.SOC(sg2, Sqrt_SSigma_4 @ sz),
-            ]
+            SM1 = cp.vstack([SW, w.T])
+            SM2 = cp.vstack([w, np.ones((1, 1))])
+            SM3 = cp.hstack([SM1, SM2])
+            sktconstraints = [SM3 >> 0]
 
             if N > self.n_max_kurt:
-                sktconstraints += [SW >= 0]
-                sv = cp.trace(sigma.T @ SW)
-                sktconstraints += [
-                    cp.SOC(1 + sv, cp.vstack([np.ones((1, 1)) - sv, 2 * L_i @ w]))
-                ]
+                K = 2 * N
+                sg2 = cp.Variable((K, 1))
+                risk20 = cp.pnorm(sg2, p=2)
+                SA = af.block_vec_pq(self.skurt, N, N)
+                s_SA, V_SA = np.linalg.eig(SA)
+                s_SA = np.clip(s_SA, 0, np.inf)
+
+                SBi = []
+                for i in range(K):
+                    SB = s_SA[i] ** 0.5 * V_SA[:, i]
+                    SB = SB.reshape((N, N), order="F").real
+                    SBi.append(SB)
+
+                for i in range(K):
+                    sktconstraints += [sg2[i, 0] == cp.trace(SBi[i] @ SW)]
+
             else:
-                SM1 = cp.vstack([SW, w.T])
-                SM2 = cp.vstack([w, np.ones((1, 1))])
-                SM3 = cp.hstack([SM1, SM2])
-                sktconstraints += [
-                    SM3 >> 0,
-                ]
+                Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
+                Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
+                sg2 = cp.Variable(nonneg=True)
+                risk20 = sg2
+                sz = L_2 @ cp.reshape(cp.vec(SW), (N * N, 1))
+                sktconstraints += [cp.SOC(sg2, Sqrt_SSigma_4 @ sz)]
 
         # Relativistic Value at Risk Variables
 

@@ -14,6 +14,12 @@ Changelog
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 
+Version 4.4.0
+=============
+
+- Implements the approximate Kurtosis model through sum of squared quadratic forms for large scale kurtosis optimization.
+- Add the block vectorization operator.
+
 Version 4.3.0
 =============
 

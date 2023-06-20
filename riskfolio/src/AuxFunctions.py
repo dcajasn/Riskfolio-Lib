@@ -351,6 +351,56 @@ def semi_cokurtosis_matrix(Y):
     return SK4
 
 
+def block_vec_pq(A, p, q):
+    r"""
+    Calculates block vectorization operator as shown in :cite:`d-Loan1992`
+    and :cite:`d-Ojeda2015`.
+
+    Parameters
+    ----------
+    A : ndarray
+        Matrix that will be block vectorized.
+    p : int
+        Order p of block vectorization operator.
+    q : int
+        Order q of block vectorization operator.
+
+    Returns
+    -------
+    bvec_A : ndarray
+        The block vectorized matrix.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    if isinstance(A, pd.DataFrame):
+        A_ = A.to_numpy()
+
+    mp, nq = A_.shape
+    if mp % p == 0 and nq % q == 0:
+        m = int(mp / p)
+        n = int(nq / q)
+        bvec_A = np.empty((0, p * q))
+        for j in range(n):
+            Aj = np.empty((0, p * q))
+            for i in range(m):
+                Aij = (
+                    A_[i * p : (i + 1) * p, j * q : (j + 1) * q]
+                    .reshape(-1, 1, order="F")
+                    .T
+                )
+                Aj = np.vstack([Aj, Aij])
+            bvec_A = np.vstack([bvec_A, Aj])
+    else:
+        raise ValueError(
+            "Dimensions p and q give non integer values for dimensions m and n."
+        )
+
+    return bvec_A
+
+
 ###############################################################################
 # Aditional Codependence Functions
 ###############################################################################
