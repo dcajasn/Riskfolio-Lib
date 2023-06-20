@@ -713,7 +713,7 @@ def ltdi_matrix(X, alpha=0.05):
 
     m = X1.shape[0]
     n = X1.shape[1]
-    k = np.int(np.ceil(m * alpha))
+    k = np.int32(np.ceil(m * alpha))
     mat = np.ones((n, n))
 
     if k > 0:
