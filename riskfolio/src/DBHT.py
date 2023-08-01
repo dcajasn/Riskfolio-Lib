@@ -438,7 +438,6 @@ def CliqHierarchyTree2s(Apm, method1):
     del n
 
     if method1.lower() == "uniqueroot":
-
         if len(Root) > 1:
             Pred = np.append(Pred[:], -1)
             Pred[Root] = len(Pred) - 1
@@ -777,7 +776,7 @@ def BubbleCluster8s(Rpm, Dpm, Hb, Mb, Mv, CliqList):
             d[indx[n]] = 0
             (r, c, _) = sp.find(Mv[:, d != -1] != 0)
             Adjv[np.unique(r), n] = 1
-            del d, r, c  #%, dt, p
+            del d, r, c  # %, dt, p
 
         Tc = -1 * np.ones(N)  # Set the discrete cluster membership vector at default
         Bubv = Mv[:, indx]  # Gather the list of vertices in the converging bubbles

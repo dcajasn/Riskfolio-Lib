@@ -239,7 +239,6 @@ class HCPortfolio(object):
         max_k=10,
         leaf_order=True,
     ):
-
         # Calculating distance
         if codependence in {
             "pearson",
@@ -303,7 +302,6 @@ class HCPortfolio(object):
         upper_bound=None,
         lower_bound=None,
     ):
-
         weights = pd.Series(1, index=self.assetslist)  # set initial weights to 1
         items = [sort_order]
 
@@ -402,7 +400,6 @@ class HCPortfolio(object):
                 if (upper_bound < weights.loc[self.asset_order]).any().item() or (
                     lower_bound > weights.loc[self.asset_order]
                 ).any().item():
-
                     a1 = np.sum(upper_bound[left_cluster]) / weights[left_cluster[0]]
                     a2 = np.max(
                         [
@@ -438,7 +435,6 @@ class HCPortfolio(object):
         upper_bound=None,
         lower_bound=None,
     ):
-
         # Transform linkage to tree and reverse order
         root, nodes = hr.to_tree(Z, rd=True)
         nodes = np.array(nodes)

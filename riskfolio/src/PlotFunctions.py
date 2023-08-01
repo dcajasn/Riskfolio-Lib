@@ -864,7 +864,7 @@ def plot_bar(
         item.columns = ["labels", "abs_values", "values"]
         sizes2 = sizes2[sizes2.index <= l1]
         sizes2 = sizes2.sort_values(by=["values"], ascending=False)
-        sizes2 = sizes2.append(item)
+        sizes2 = pd.concat([sizes2, item], axis=0)
     elif l2 > 0:
         a1 = sizes2["abs_values"].sum() - sizes2[sizes2.index <= l2]["abs_values"].sum()
         a2 = sizes2["values"].sum() - sizes2[sizes2.index <= l2]["values"].sum()
@@ -872,7 +872,7 @@ def plot_bar(
         item.columns = ["labels", "abs_values", "values"]
         sizes2 = sizes2[sizes2.index <= l2]
         sizes2 = sizes2.sort_values(by=["values"], ascending=False)
-        sizes2 = sizes2.append(item)
+        sizes2 = pd.concat([sizes2, item], axis=0)
     else:
         sizes2 = sizes2.sort_values(by=["values"], ascending=False)
 
@@ -2417,7 +2417,6 @@ def plot_clusters(
 
     if flag:
         for cluster_id, cluster in clusters.items():
-
             amin = permutation.index(cluster[0])
             xmin, xmax = amin, amin + len(cluster)
             ymin, ymax = amin, amin + len(cluster)
@@ -2446,7 +2445,6 @@ def plot_clusters(
     plt.colorbar(im, cax=axcolor)
 
     if dendrogram == True:
-
         ax1 = fig.add_axes([0.3, 0.71, 0.6, 0.2])
 
         if show_clusters is False:

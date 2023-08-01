@@ -210,7 +210,6 @@ class Portfolio(object):
         upperRLDaR=None,
         upperuci=None,
     ):
-
         # Optimization Models Options
 
         self._returns = returns
