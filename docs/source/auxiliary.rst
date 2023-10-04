@@ -1,5 +1,5 @@
 #########################################
-DBHT, OWA Weights and Auxiliary Functions
+DBHT, OWA Weights, Gerber Statistic, CPP  and Auxiliary Functions
 #########################################
 
 .. image:: https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86
@@ -16,6 +16,8 @@ DBHT, OWA Weights and Auxiliary Functions
 The DBHT module has functions that allows us to use the Direct Bubble Hierarchical Tree (DBHT) :cite:`d-Song`, a new linkage method; and the j-LoGo :cite:`d-jLogo` covariance estimation method.  
 
 The OwaWeights module has functions that allows us to build the weights of some special cases of the OWA Portfolio optimization model :cite:`d-Cajas3`.
+
+The GerberStatistic module has functions that allows us to use the Gerber Statistic :cite:`d-Gerber2021`.
 
 The cppfunctions module has functions that allows us to build some special matrixes defined in :cite:`d-Magnus1980` and :cite:`d-Cajas4`.
 
@@ -37,8 +39,16 @@ OWA Weights Functions
    :private-members:
    :member-order: bysource
 
+Gerber Statistic Functions
+==========================
+
+.. automodule:: GerberStatistic
+   :members:
+   :private-members:
+   :member-order: bysource
+
 CPP Functions
-===================
+=============
 
 .. automodule:: cppfunctions
    :members:

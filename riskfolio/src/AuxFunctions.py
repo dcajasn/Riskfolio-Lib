@@ -32,6 +32,7 @@ __all__ = [
     "commutation_matrix",
     "cokurtosis_matrix",
     "semi_cokurtosis_matrix",
+    "block_vec_pq",
     "dcorr",
     "dcorr_matrix",
     "numBins",
