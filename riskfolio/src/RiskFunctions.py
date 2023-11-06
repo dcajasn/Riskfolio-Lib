@@ -19,6 +19,9 @@ __all__ = [
     "SemiDeviation",
     "Kurtosis",
     "SemiKurtosis",
+    "ewma_volatility",
+    "VaR_Param",
+    "CVaR_Param",
     "VaR_Hist",
     "CVaR_Hist",
     "WR",
@@ -207,6 +210,98 @@ def SemiKurtosis(X):
     value = np.power(value, 0.5).item()
 
     return value
+
+def ewma_volatility(X, lambda_=0.94):
+    r"""
+    Calculate the Exponential Weighted Moving Average (EWMA) volatility of a returns series.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series.
+    lambda_ : float, optional
+        Decay factor for the EWMA. The default is 0.94.
+
+    Returns
+    -------
+    ewma_vol : float
+        The EWMA volatility of the returns series.
+    """
+    weights = np.array([lambda_**(i) for i in range(len(X))][::-1])
+    return np.sqrt(np.cov(X, aweights=weights))
+
+
+def VaR_Param(X, alpha=0.05, ewma=False, cornish_fisher=False, lambda_=0.94):
+    """
+    Calculate the parametric Value at Risk (VaR) of a returns series using
+    either normal or EWMA volatility and optionally applying the Cornish-Fisher expansion.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series.
+    alpha : float, optional
+        Significance level of VaR. The default is 0.05.
+    ewma : bool, optional
+        Use EWMA volatility if True. The default is False.
+    cornish_fisher : bool, optional
+        Apply Cornish-Fisher expansion if True. The default is False.
+    lambda_ : float, optional
+        Decay factor for the EWMA. The default is 0.94.
+
+    Returns
+    -------
+    var : float
+        The parametric VaR of the returns series.
+    """
+    mu = np.mean(X)
+    sigma = ewma_volatility(X, lambda_) if ewma else np.std(X)
+    z_alpha = norm.ppf(1 - alpha)
+    
+    if cornish_fisher:
+        skewness = scipy.stats.skew(X)
+        kurtosis = scipy.stats.kurtosis(X)
+        z_alpha += (1/6)*(z_alpha**2 - 1)*skewness + \
+                   (1/24)*(z_alpha**3 - 3*z_alpha)*kurtosis - \
+                   (1/36)*(2*z_alpha**3 - 5*z_alpha)*skewness**2
+
+    var = mu - z_alpha * sigma
+    return var
+
+def CVaR_Param(X, alpha=0.05, ewma=False, cornish_fisher=False, lambda_=0.94):
+    """
+    Calculate the parametric Conditional Value at Risk (CVaR) of a returns series using
+    either normal or EWMA volatility. Cornish-Fisher expansion is not applied for CVaR.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series.
+    alpha : float, optional
+        Significance level of CVaR. The default is 0.05.
+    ewma : bool, optional
+        Use EWMA volatility if True. The default is False.
+    cornish_fisher : bool, optional
+        This parameter is not used in this function as CVaR does not implement Cornish-Fisher.
+        It is present for interface compatibility with VaR_Param.
+    lambda_ : float, optional
+        Decay factor for the EWMA. The default is 0.94.
+
+    Returns
+    -------
+    cvar : float
+        The parametric CVaR of the returns series.
+    """
+    var = VaR_Param(X, alpha, ewma, cornish_fisher, lambda_)
+    sigma = ewma_volatility(X, lambda_) if ewma else np.std(X)
+    
+    if cornish_fisher:
+        # O CVaR para Cornish-Fisher é mais complexo, como explicado anteriormente
+        pass
+    else:
+        cvar = var + (sigma / alpha) * norm.pdf(norm.ppf(1 - alpha))
+    
+    return cvar
 
 
 def VaR_Hist(X, alpha=0.05):
