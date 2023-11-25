@@ -1486,11 +1486,10 @@ def plot_hist(
         y,
         "--",
         color="orange",
-        label="Normal: $\mu="
-        + "{0:.2%}".format(mu)
-        + "$%, $\sigma="
-        + "{0:.2%}".format(sigma)
-        + "$%",
+        label='Normal: $\mu=$'
+        + '{0:.2%}'.format(mu)
+        + ', $\sigma=$'
+        + '{0:.2%}'.format(sigma),
     )
 
     factor = (np.max(a) - np.min(a)) / bins
