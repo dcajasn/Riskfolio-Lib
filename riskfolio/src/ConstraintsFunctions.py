@@ -1,6 +1,6 @@
 """"""  #
 """
-Copyright (c) 2020-2023, Dany Cajas
+Copyright (c) 2020-2024, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -8,6 +8,7 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 
 import numpy as np
 import pandas as pd
+import networkx as nx
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
 import riskfolio.src.AuxFunctions as af
@@ -22,6 +23,11 @@ __all__ = [
     "assets_clusters",
     "hrp_constraints",
     "risk_constraint",
+    "connection_matrix",
+    "centrality_vector",
+    "clusters_matrix",
+    "connected_assets",
+    "related_assets",
 ]
 
 
@@ -278,8 +284,8 @@ def assets_constraints(constraints, asset_classes):
                         A.append(A3)
                         B.append([0])
 
-    A = np.array(A, ndmin=2)
-    B = np.array(B, ndmin=2)
+    A = np.array(A, ndmin=2, dtype=float)
+    B = np.array(B, ndmin=2, dtype=float)
 
     return A, B
 
@@ -386,8 +392,8 @@ def factors_constraints(constraints, loadings):
             C.append(C1 * d)
             D.append([data[i][3] * d])
 
-    C = np.array(C, ndmin=2)
-    D = np.array(D, ndmin=2)
+    C = np.array(C, ndmin=2, dtype=float)
+    D = np.array(D, ndmin=2, dtype=float)
 
     return C, D
 
@@ -558,13 +564,13 @@ def assets_views(views, asset_classes):
                         P.append(P1)
                         Q.append([data[i][5] * d])
 
-    P = np.array(P, ndmin=2)
-    Q = np.array(Q, ndmin=2)
+    P = np.array(P, ndmin=2, dtype=float)
+    Q = np.array(Q, ndmin=2, dtype=float)
 
     for i in range(len(Q)):
         if Q[i, 0] < 0:
-            P[i, :] = -1 * P[i, :]
-            Q[i, :] = -1 * Q[i, :]
+            P[i, :] = -1.0 * P[i, :]
+            Q[i, :] = -1.0 * Q[i, :]
 
     return P, Q
 
@@ -634,7 +640,9 @@ def factors_views(views, loadings, const=True):
 
     ::
 
-        P, Q = rp.factors_views(factorsviews, loadings, const=True)
+        P, Q = rp.factors_views(factorsviews,
+                                loadings,
+                                const=True)
 
 
     The matrixes P and Q looks like this:
@@ -674,20 +682,22 @@ def factors_views(views, loadings, const=True):
             P.append(P1)
             Q.append([data[i][3] * d])
 
-    P = np.array(P, ndmin=2)
-    Q = np.array(Q, ndmin=2)
+    P = np.array(P, ndmin=2, dtype=float)
+    Q = np.array(Q, ndmin=2, dtype=float)
 
     return P, Q
 
 
 def assets_clusters(
     returns,
+    custom_cov=None,
     codependence="pearson",
     linkage="ward",
     k=None,
     max_k=10,
     bins_info="KN",
     alpha_tail=0.05,
+    gs_threshold=0.5,
     leaf_order=True,
 ):
     r"""
@@ -697,17 +707,25 @@ def assets_clusters(
     ----------
     returns : DataFrame
         Assets returns.
-    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info' or 'tail'}
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
         The codependence or similarity matrix used to build the distance
         metric and clusters. The default is 'pearson'. Possible values are:
 
         - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
         - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
-        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{pearson}_{i,j}|)}`.
-        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{spearman}_{i,j}|)}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
         - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
         - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
         - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
 
     linkage : string, optional
         Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
@@ -741,6 +759,8 @@ def assets_clusters(
 
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
     leaf_order : bool, optional
         Indicates if the cluster are ordered so that the distance between
         successive leaves is minimal. The default is True.
@@ -759,9 +779,13 @@ def assets_clusters(
 
     ::
 
-        clusters = rp.assets_clusters(returns, codependence='pearson',
-                                      linkage='ward', k=None, max_k=10,
-                                      alpha_tail=0.05, leaf_order=True)
+        clusters = rp.assets_clusters(returns,
+                                      codependence='pearson',
+                                      linkage='ward',
+                                      k=None,
+                                      max_k=10,
+                                      alpha_tail=0.05,
+                                      leaf_order=True)
 
 
     The clusters dataframe looks like this:
@@ -774,22 +798,14 @@ def assets_clusters(
         raise ValueError("returns must be a DataFrame")
 
     # Calculating codependence matrix and distance metric
-    if codependence in {"pearson", "spearman"}:
-        codep = returns.corr(method=codependence)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-    elif codependence in {"abs_pearson", "abs_spearman"}:
-        codep = np.abs(returns.corr(method=codependence[4:]))
-        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
-    elif codependence in {"distance"}:
-        codep = af.dcorr_matrix(returns).astype(float)
-        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
-    elif codependence in {"mutual_info"}:
-        codep = af.mutual_info_matrix(returns, bins_info).astype(float)
-        dist = af.var_info_matrix(returns, bins_info).astype(float)
-    elif codependence in {"tail"}:
-        codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
-        dist = -np.log(codep)
-
+    codep, dist = af.codep_dist(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+    )
     # Hierarchical clustering
     dist = dist.to_numpy()
     dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
@@ -809,7 +825,7 @@ def assets_clusters(
 
     # Optimal number of clusters
     if k is None:
-        k = af.two_diff_gap_stat(codep, dist, clustering, max_k)
+        k = af.two_diff_gap_stat(dist, clustering, max_k)
 
     # Building clusters
     clusters_inds = hr.fcluster(clustering, k, criterion="maxclust")
@@ -919,8 +935,8 @@ def hrp_constraints(constraints, asset_classes):
     data = constraints.fillna("").copy()
     assetslist = asset_classes.iloc[:, 0].values.tolist()
 
-    w_max = pd.Series(1, index=assetslist)
-    w_min = pd.Series(0, index=assetslist)
+    w_max = pd.Series(1.0, index=assetslist)
+    w_min = pd.Series(0.0, index=assetslist)
 
     for i in range(0, n):
         if data.loc[i, "Disabled"] == False:
@@ -1072,3 +1088,634 @@ def risk_constraint(asset_classes, kind="vanilla", classes_col=None):
         )
 
     return rb
+
+
+def connection_matrix(
+    returns,
+    custom_cov=None,
+    codependence="pearson",
+    graph="MST",
+    walk_size=1,
+    bins_info="KN",
+    alpha_tail=0.05,
+    gs_threshold=0.5,
+):
+    r"""
+    Create a connection matrix of walks of a specific size  based on :cite:`e-Cajas10` formula..
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Possible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+
+    graph : string, optional
+        Graph used to build the adjacency matrix. The default is 'MST'.
+        Possible values are:
+
+        - 'MST': Minimum Spanning Tree.
+        - 'TMFG': Plannar Maximally Filtered Graph.
+
+    walk_size : int, optional
+        Size of the walk represented by the adjacency matrix. The default is 1.
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Possible values are:
+
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
+
+    Returns
+    -------
+    A_p : DataFrame
+        Adjacency matrix of walks of size lower and equal than 'walk_size'.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+
+    ::
+
+        A_p = rp.connection_matrix(returns,
+                                   codependence="pearson",
+                                   graph="MST",
+                                   walk_size=1)
+
+    The connection matrix dataframe looks like this:
+
+    .. image:: images/Connection_df.png
+
+    """
+
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
+
+    assets = returns.columns.tolist()
+
+    # Calculating codependence matrix and distance metric
+    codep, dist = af.codep_dist(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+    )
+
+    # Adjacency Matrix Construction
+    dist = dist.to_numpy()
+    dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
+    if graph == "TMFG":
+        # different choices for D, S give different outputs!
+        D = dist.to_numpy()  # dissimilarity matrix
+        if codependence in {"pearson", "spearman"}:
+            S = (1 - dist**2).to_numpy()
+        else:
+            S = codep.copy().to_numpy()
+        (_, Rpm, _, _, _, clustering) = db.DBHTs(D, S)  # DBHT clustering
+        MAdj = pd.DataFrame(Rpm, index=assets, columns=assets)
+        G = nx.from_pandas_adjacency(MAdj)
+    elif graph == "MST":
+        MAdj = nx.from_pandas_adjacency(dist)
+        G = nx.minimum_spanning_tree(MAdj)
+    else:
+        raise ValueError("Only TMFG or MST graphs are available")
+
+    A = nx.adjacency_matrix(G).toarray()
+    A = np.where(A != 0, 1, 0)
+
+    A_p = np.zeros_like(A)
+    for i in range(walk_size + 1):
+        A_p += np.linalg.matrix_power(A, i)
+
+    n, n = A.shape
+    A_p = np.clip(A_p, 0, 1) - np.identity(n)
+    A_p = np.ceil(A_p)
+
+    return A_p
+
+
+def centrality_vector(
+    returns,
+    measure="Degree",
+    custom_cov=None,
+    codependence="pearson",
+    graph="MST",
+    bins_info="KN",
+    alpha_tail=0.05,
+    gs_threshold=0.5,
+):
+    r"""
+    Create a centrality vector from the adjacency matrix of an asset network based on :cite:`e-Cajas10` formula.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    measure : str, optional
+        Centrality measure. The default is 'Degree'. Possible values are:
+
+        - 'Degre': Node's degree centrality. Number of edges connected to a node.
+        - 'Eigenvector': Eigenvector centrality. See more in `eigenvector_centrality_numpy <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.eigenvector_centrality_numpy.html#eigenvector-centrality-numpy>`_.
+        - 'Katz': Katz centrality. See more in `katz_centrality_numpy <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.katz_centrality_numpy.html#katz-centrality-numpy>`_.
+        - 'Closeness': Closeness centrality. See more in `closeness_centrality <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.closeness_centrality.html#closeness-centrality>`_.
+        - 'Betweeness': Betweeness centrality. See more in `betweenness_centrality <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.betweenness_centrality.html#betweenness-centrality>`_.
+        - 'Communicability': Communicability betweeness centrality. See more in `communicability_betweenness_centrality <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.communicability_betweenness_centrality.html#communicability-betweenness-centrality>`_.
+        - 'Subgraph': Subgraph centrality. See more in `subgraph_centrality <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.subgraph_centrality.html#subgraph-centrality>`_.
+        - 'Laplacian': Laplacian centrality. See more in `laplacian_centrality <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.laplacian_centrality.html#laplacian-centrality>`_.
+
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Possible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+
+    graph : string, optional
+        Graph used to build the adjacency matrix. The default is 'MST'.
+        Possible values are:
+
+        - 'MST': Minimum Spanning Tree.
+        - 'TMFG': Plannar Maximally Filtered Graph.
+
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Possible values are:
+
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
+
+    Returns
+    -------
+    A_p : DataFrame
+        Adjacency matrix of walks of size 'walk_size'.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+
+    ::
+
+        C_v = rp.centrality_vector(returns,
+                                   measure='Degree',
+                                   codependence="pearson",
+                                   graph="MST")
+
+    The neighborhood matrix looks like this:
+
+    .. image:: images/Centrality_df.png
+
+    """
+
+    Adj = connection_matrix(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        graph=graph,
+        walk_size=1,
+        bins_info=bins_info,
+        gs_threshold=gs_threshold,
+    )
+
+    n, n = Adj.shape
+    G = nx.from_numpy_array(Adj)
+    if measure == "Degree":
+        CM = np.ones((1, n)) @ Adj
+    elif measure == "Eigenvector":
+        CM = nx.eigenvector_centrality_numpy(G)
+    elif measure == "Katz":
+        CM = nx.katz_centrality_numpy(G)
+    elif measure == "Closeness":
+        CM = nx.closeness_centrality(G)
+    elif measure == "Betweeness":
+        CM = nx.betweenness_centrality(G)
+    elif measure == "Communicability":
+        CM = nx.communicability_betweenness_centrality(G)
+    elif measure == "Subgraph":
+        CM = nx.subgraph_centrality(G)
+    elif measure == "Laplacian":
+        CM = nx.laplacian_centrality(G)
+
+    if measure != "Degree":
+        CM = pd.Series(CM).to_numpy().reshape(1, -1)
+
+    return CM
+
+
+def clusters_matrix(
+    returns,
+    custom_cov=None,
+    codependence="pearson",
+    linkage="ward",
+    k=None,
+    max_k=10,
+    bins_info="KN",
+    alpha_tail=0.05,
+    gs_threshold=0.5,
+    leaf_order=True,
+):
+    r"""
+    Creates an adjacency matrix that represents the clusters from the hierarchical
+    clustering process based on :cite:`e-Cajas11` formula.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Possible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+
+    linkage : string, optional
+        Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+        The default is 'ward'. Possible values are:
+
+        - 'single'.
+        - 'complete'.
+        - 'average'.
+        - 'weighted'.
+        - 'centroid'.
+        - 'median'.
+        - 'ward'.
+        - 'DBHT'. Direct Bubble Hierarchical Tree.
+
+    k : int, optional
+        Number of clusters. This value is took instead of the optimal number
+        of clusters calculated with the two difference gap statistic.
+        The default is None.
+    max_k : int, optional
+        Max number of clusters used by the two difference gap statistic
+        to find the optimal number of clusters. The default is 10.
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Possible values are:
+
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
+    leaf_order : bool, optional
+        Indicates if the cluster are ordered so that the distance between
+        successive leaves is minimal. The default is True.
+
+    Returns
+    -------
+    A_c : ndarray
+        Adjacency matrix of clusters.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+
+    ::
+
+        C_M = rp.clusters_matrix(returns,
+                                 codependence='pearson',
+                                 linkage='ward',
+                                 k=None,
+                                 max_k=10)
+
+
+    The clusters matrix looks like this:
+
+    .. image:: images/Clusters_matrix_df.png
+
+    """
+
+    assets = returns.columns.tolist()
+    n = len(assets)
+    clusters = assets_clusters(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        linkage=linkage,
+        k=k,
+        max_k=max_k,
+        bins_info="KN",
+        alpha_tail=alpha_tail,
+        gs_threshold=0.5,
+        leaf_order=leaf_order,
+    )
+
+    df = pd.DataFrame([], index=assets)
+
+    for i in clusters["Clusters"].unique():
+        labels = clusters[clusters["Clusters"] == i]["Assets"].tolist()
+        df1 = pd.Series(np.zeros((n,)), index=assets)
+        df1[labels] = 1
+        df = pd.concat([df, df1], axis=1)
+
+    A_c = df.to_numpy()
+    A_c = A_c @ A_c.T - np.identity(n)
+
+    return A_c
+
+
+def connected_assets(
+    returns,
+    w,
+    custom_cov=None,
+    codependence="pearson",
+    graph="MST",
+    walk_size=1,
+    bins_info="KN",
+    alpha_tail=0.05,
+    gs_threshold=0.5,
+):
+    r"""
+    Calculates the percentage invested in connected assets based on :cite:`e-Cajas10` formula.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Possible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+
+    graph : string, optional
+        Graph used to build the adjacency matrix. The default is 'MST'.
+        Possible values are:
+
+        - 'MST': Minimum Spanning Tree.
+        - 'TMFG': Plannar Maximally Filtered Graph.
+
+    walk_size : int, optional
+        Size of the walk represented by the adjacency matrix. The default is 1.
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Possible values are:
+
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
+
+    Returns
+    -------
+    CA : float
+        Percentage invested in connected assets.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+
+    ::
+
+        ca = rp.connected_assets(returns,
+                                 w,
+                                 codependence="pearson",
+                                 graph="MST",
+                                 walk_size=1)
+
+    """
+
+    A_p = connection_matrix(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        graph=graph,
+        walk_size=walk_size,
+        bins_info=bins_info,
+        gs_threshold=gs_threshold,
+    )
+
+    n, n = A_p.shape
+    ones = np.ones((n, 1))
+    w_ = np.array(w)
+    wwt = np.abs(w_ @ w_.T)
+    ca = ones.T @ (A_p * wwt) @ ones
+    ca /= ones.T @ wwt @ ones
+
+    return ca.item()
+
+
+def related_assets(
+    returns,
+    w,
+    custom_cov=None,
+    codependence="pearson",
+    linkage="ward",
+    k=None,
+    max_k=10,
+    bins_info="KN",
+    alpha_tail=0.05,
+    gs_threshold=0.5,
+    leaf_order=True,
+):
+    r"""
+    Calculates the percentage invested in related assets based on :cite:`e-Cajas11` formula.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Possible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+
+    linkage : string, optional
+        Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+        The default is 'ward'. Possible values are:
+
+        - 'single'.
+        - 'complete'.
+        - 'average'.
+        - 'weighted'.
+        - 'centroid'.
+        - 'median'.
+        - 'ward'.
+        - 'DBHT'. Direct Bubble Hierarchical Tree.
+
+    k : int, optional
+        Number of clusters. This value is took instead of the optimal number
+        of clusters calculated with the two difference gap statistic.
+        The default is None.
+    max_k : int, optional
+        Max number of clusters used by the two difference gap statistic
+        to find the optimal number of clusters. The default is 10.
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Possible values are:
+
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
+    leaf_order : bool, optional
+        Indicates if the cluster are ordered so that the distance between
+        successive leaves is minimal. The default is True.
+
+    Returns
+    -------
+    RA : float
+        Percentage invested in related assets.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+
+    ::
+
+        ra = rp.related_assets(returns,
+                               w,
+                               codependence="pearson",
+                               linkage="ward",
+                               k=None,
+                               max_k=10)
+
+    """
+
+    L_a = clusters_matrix(
+        returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        linkage=linkage,
+        k=k,
+        max_k=max_k,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+        leaf_order=leaf_order,
+    )
+
+    n, n = L_a.shape
+    ones = np.ones((n, 1))
+    w_ = np.array(w)
+    wwt = np.abs(w_ @ w_.T)
+    ra = ones.T @ (L_a * wwt) @ ones
+    ra /= ones.T @ wwt @ ones
+
+    return ra.item()

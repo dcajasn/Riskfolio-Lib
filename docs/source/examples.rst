@@ -23,8 +23,8 @@ Return Risk Portfolio Optimization Models
 * `Entropic Value at Risk (EVaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2015%20-%20Mean%20Entropic%20Value%20at%20Risk%20(EVaR)%20Optimization.ipynb>`_.
 * `Riskfolio-Lib with MOSEK for Real Applications (612 assets and 4943 observations) <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2017%20-%20Riskfolio-Lib%20with%20MOSEK%20for%20Real%20Applications%20(612%20assets%20and%204943%20observations).ipynb>`_.
 * `Entropic Drawdown at Risk (EDaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2019%20-%20Mean%20Entropic%20Drawdown%20at%20Risk%20(EDaR)%20Optimization.ipynb>`_.
-* `Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2022.ipynb>`_.
-* `Worst Case Mean Variance Portfolio Optimization using box and elliptical uncertainty sets <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2022%20-%20Logarithmic%20Mean%20Risk%20Optimization%20(Kelly%20Criterion).ipynb>`_.
+* `Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2022%20-%20Logarithmic%20Mean%20Risk%20Optimization%20(Kelly%20Criterion).ipynb>`_.
+* `Worst Case Mean Variance Portfolio Optimization using box and elliptical uncertainty sets <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2012%20-%20Worst%20Case%20Mean%20Variance%20Portfolio%20Optimization.ipynb>`_.
 * `Comparing Covariance Estimates Methods <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2034%20-%20Comparing%20Covariance%20Estimators%20Methods.ipynb>`_.
 * `Gini Mean Difference (GMD) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2035%20-%20Gini%20Mean%20Difference%20(GMD)%20Optimization.ipynb>`_.
 * `Tail Gini Range Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2036%20-%20Mean%20Tail%20Gini%20Range%20Optimization.ipynb>`_.
@@ -72,12 +72,16 @@ Hierarchical Clustering Portfolio Optimization
 * `Hierarchical Risk Parity (HRP) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2024%20-%20Hierarchical%20Risk%20Parity%20(HRP)%20Portfolio%20Optimization.ipynb>`_.
 * `Hierarchical Equal Risk Contribution (HERC) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2025%20-%20Hierarchical%20Equal%20Risk%20Contribution%20(HERC)%20Portfolio%20Optimization.ipynb>`_.
 * `Hierarchical Equal Risk Contribution with equally weights within clusters (HERC2) Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2027%20-%20HERC%20with%20Equal%20Weights%20within%20Clusters%20(HERC2).ipynb>`_.
-* `Hierarchical Clustering and Networks <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2028%20-%20Hierarchical%20Clustering%20and%20Networks.ipynb>`_.
 * `Hierarchical Risk Parity with Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2029%20-%20Hierarchical%20Risk%20Parity%20(HRP)%20Portfolio%20Optimization%20with%20Constraints.ipynb>`_.
 * `Nested Clustered Optimization (NCO) <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2030%20-%20Nested%20Clustered%20Optimization%20(NCO).ipynb>`_.
 * `Hierarchical Portfolios with Custom Covariance <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2031%20-%20Hierarchical%20Portfolios%20with%20Custom%20Covariance.ipynb>`_.
 * `Hierarchical Equal Risk Contribution (HERC) with Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2044%20-%20Hierarchical%20Equal%20Risk%20Contribution%20(HERC)%20Portfolio%20Optimization%20with%20Constraints.ipynb>`_.
 * `Nested Clustered Optimization (NCO) with Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2045%20-%20Nested%20Clustered%20Optimization%20(NCO)%20Portfolio%20Optimization%20with%20Constraints.ipynb>`_.
+
+Graph Theory Constraints
+------------------------
+* `Hierarchical Clustering and Networks <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2028%20-%20Hierarchical%20Clustering%20and%20Networks.ipynb>`_.
+* `Classic Mean Risk Optimization with Network and Dendrogram Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2046%20-%20Classic%20Mean%20Risk%20Optimization%20with%20Network%20and%20Dendrogram%20Constraints.ipynb>`_.
 
 Backtesting
 -----------

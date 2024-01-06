@@ -1,0 +1,216 @@
+.build:linux:base:
+  stage: build
+  image: ubuntu:18.04
+  before_script:
+    - apt-get update -y
+    - apt-get install -y --no-install-recommends software-properties-common
+    - add-apt-repository -y  ppa:ubuntu-toolchain-r/test
+    - apt-get update
+    - apt-get install --no-install-recommends -y ${EIGEN_CI_CXX_COMPILER}
+      ${EIGEN_CI_CC_COMPILER} cmake ninja-build
+  script:
+    - mkdir -p ${BUILDDIR} && cd ${BUILDDIR}
+    - CXX=${EIGEN_CI_CXX_COMPILER} CC=${EIGEN_CI_CC_COMPILER} cmake -G
+      ${EIGEN_CI_CMAKE_GENEATOR} -DEIGEN_TEST_CXX11=${EIGEN_TEST_CXX11}
+      ${EIGEN_CI_ADDITIONAL_ARGS} ..
+    - cmake --build . --target buildtests
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    paths:
+      - ${BUILDDIR}/
+    expire_in: 5 days
+  only:
+    - schedules
+
+######## x86-64 ################################################################
+# GCC-4.8 (the oldest compiler we support)
+build:x86-64:linux:gcc-4.8:cxx11-off:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-4.8"
+    EIGEN_CI_CC_COMPILER: "gcc-4.8"
+    EIGEN_TEST_CXX11: "off"
+  tags:
+    - eigen-runner
+    - linux
+    - x86-64
+
+build:x86-64:linux:gcc-4.8:cxx11-on:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-4.8"
+    EIGEN_CI_CC_COMPILER: "gcc-4.8"
+    EIGEN_TEST_CXX11: "on"
+  tags:
+    - eigen-runner
+    - linux
+    - x86-64
+
+# GCC-9
+build:x86-64:linux:gcc-9:cxx11-off:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-9"
+    EIGEN_CI_CC_COMPILER: "gcc-9"
+    EIGEN_TEST_CXX11: "off"
+  tags:
+    - eigen-runner
+    - linux
+    - x86-64
+
+build:x86-64:linux:gcc-9:cxx11-on:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-9"
+    EIGEN_CI_CC_COMPILER: "gcc-9"
+    EIGEN_TEST_CXX11: "on"
+  tags:
+    - eigen-runner
+    - linux
+    - x86-64
+
+# GCC-10
+build:x86-64:linux:gcc-10:cxx11-off:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-10"
+    EIGEN_CI_CC_COMPILER: "gcc-10"
+    EIGEN_TEST_CXX11: "off"
+  tags:
+    - eigen-runner
+    - linux
+    - x86-64
+
+build:x86-64:linux:gcc-10:cxx11-on:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-10"
+    EIGEN_CI_CC_COMPILER: "gcc-10"
+    EIGEN_TEST_CXX11: "on"
+  tags:
+    - eigen-runner
+    - linux
+    - x86-64
+
+# Clang-10
+build:x86-64:linux:clang-10:cxx11-off:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "clang++-10"
+    EIGEN_CI_CC_COMPILER: "clang-10"
+    EIGEN_TEST_CXX11: "off"
+  tags:
+    - eigen-runner
+    - linux
+    - x86-64
+
+build:x86-64:linux:clang-10:cxx11-on:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "clang++-10"
+    EIGEN_CI_CC_COMPILER: "clang-10"
+    EIGEN_TEST_CXX11: "on"
+  tags:
+    - eigen-runner
+    - linux
+    - x86-64
+
+######## AArch64 ###############################################################
+# GCC-10
+build:aarch64:linux:gcc-10:cxx11-off:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-10"
+    EIGEN_CI_CC_COMPILER: "gcc-10"
+    EIGEN_TEST_CXX11: "off"
+  tags:
+    - eigen-runner
+    - linux
+    - aarch64
+
+build:aarch64:linux:gcc-10:cxx11-on:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-10"
+    EIGEN_CI_CC_COMPILER: "gcc-10"
+    EIGEN_TEST_CXX11: "on"
+  tags:
+    - eigen-runner
+    - linux
+    - aarch64
+
+# Clang-10
+build:aarch64:linux:clang-10:cxx11-off:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "clang++-10"
+    EIGEN_CI_CC_COMPILER: "clang-10"
+    EIGEN_TEST_CXX11: "off"
+  tags:
+    - eigen-runner
+    - linux
+    - aarch64
+
+build:aarch64:linux:clang-10:cxx11-on:
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "clang++-10"
+    EIGEN_CI_CC_COMPILER: "clang-10"
+    EIGEN_TEST_CXX11: "on"
+  tags:
+    - eigen-runner
+    - linux
+    - aarch64
+
+######## ppc64le ###############################################################
+# Currently all ppc64le jobs are allowed to fail
+
+# GCC-10
+build:ppc64le:linux:gcc-10:cxx11-off:
+  allow_failure: true
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-10"
+    EIGEN_CI_CC_COMPILER: "gcc-10"
+    EIGEN_TEST_CXX11: "off"
+  tags:
+    - eigen-runner
+    - linux
+    - ppc64le
+
+build:ppc64le:linux:gcc-10:cxx11-on:
+  allow_failure: true
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-10"
+    EIGEN_CI_CC_COMPILER: "gcc-10"
+    EIGEN_TEST_CXX11: "on"
+  tags:
+    - eigen-runner
+    - linux
+    - ppc64le
+
+# # Clang-10
+build:ppc64le:linux:clang-10:cxx11-off:
+  allow_failure: true
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "clang++-10"
+    EIGEN_CI_CC_COMPILER: "clang-10"
+    EIGEN_TEST_CXX11: "off"
+  tags:
+    - eigen-runner
+    - linux
+    - ppc64le
+
+build:ppc64le:linux:clang-10:cxx11-on:
+  allow_failure: true
+  extends: .build:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "clang++-10"
+    EIGEN_CI_CC_COMPILER: "clang-10"
+    EIGEN_TEST_CXX11: "on"
+  tags:
+    - eigen-runner
+    - linux
+    - ppc64le

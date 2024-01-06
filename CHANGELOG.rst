@@ -14,6 +14,18 @@ Changelog
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 
+Version 5.0.0
+=============
+
+- Implements new kind of constraints that incorporates the information from networks like the Minimum Spanning Tree and Maximally Filtered Graph into the portfolio optimization models: return-risk portfolio, owa portfolio and worst case portfolio.
+- Implements new kind of constraints that incorporates the information from dendrograms  into the portfolio optimization models: return-risk portfolio, owa portfolio and worst case portfolio.
+- Improves the speed of several functions using the c++ linear algebra library Eigen and c++ eigenvalues library Spectra.
+- Add new functions that allow us to plot the relationship between graphs and asset allocation.
+- Add new functions that allow us to create constraints based on graphs information.
+- Add a new example about applications of networks and dendrograms constraints in portfolio optimization problems.
+- Fixed some errors related to HCPortfolio with constraints.
+- Fixed some errors in some plots.
+
 Version 4.4.0
 =============
 

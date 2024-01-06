@@ -22,10 +22,10 @@ sys.path.insert(3, os.path.abspath('../../riskfolio/external'))
 # -- Project information -----------------------------------------------------
 
 project = 'Riskfolio-Lib'
-copyright = '2020-2023, Dany Cajas'
+copyright = '2020-2024, Dany Cajas'
 author = 'Dany Cajas'
 
-__version__ = "4.4.1"
+__version__ = "5.0.0"
 
 # The short X.Y version
 version = '.'.join(__version__.split('.')[:2])

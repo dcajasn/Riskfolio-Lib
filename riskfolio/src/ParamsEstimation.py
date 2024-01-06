@@ -1,6 +1,6 @@
 """"""  #
 """
-Copyright (c) 2020-2023, Dany Cajas
+Copyright (c) 2020-2024, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -286,11 +286,11 @@ def cokurt_matrix(X, method="hist", **kwargs):
     cols = [y + " - " + x for x, y in cols]
 
     if method == "hist":
-        kurt = af.cokurtosis_matrix(X)
+        kurt = cf.cokurtosis_matrix(X)
     if method == "semi":
-        kurt = af.semi_cokurtosis_matrix(X)
+        kurt = cf.semi_cokurtosis_matrix(X)
     elif method in ["fixed", "spectral", "shrink"]:
-        kurt = cf.kurtosis_matrix(X)
+        kurt = cf.cokurtosis_matrix(X)
         T, N = X.shape
         q = T / N
         kurt = af.denoiseCov(kurt, q, kind=method, **kwargs)

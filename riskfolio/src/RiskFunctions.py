@@ -1,6 +1,6 @@
 """"""  #
 """
-Copyright (c) 2020-2023, Dany Cajas
+Copyright (c) 2020-2024, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -834,7 +834,7 @@ def EDaR_Abs(X, alpha=0.05):
     (value, z) : tuple
         EDaR of an uncompounded cumulative returns series
         and value of z that minimize EDaR.
-        
+
     """
 
     a = np.array(X, ndmin=2)
@@ -1383,115 +1383,6 @@ def GMD(X):
     return value
 
 
-def L_Moment(X, k=2):
-    r"""
-    Calculate the kth l-moment of a returns series.
-
-    .. math:
-        \lambda_k = {\tbinom{T}{k}}^{-1} \mathop{\sum \sum \ldots \sum}_{1
-        \leq i_{1} < i_{2} \cdots < i_{k} \leq n} \frac{1}{k}
-        \sum^{k-1}_{j=0} (-1)^{j} \binom{k-1}{j} y_{[i_{k-j}]} \\
-
-    Where $y_{[i]}$ is the ith-ordered statistic.
-
-    Parameters
-    ----------
-    X : 1d-array
-        Returns series, must have Tx1 size.
-    k : int
-        Order of the l-moment. Must be an integer higher or equal than 1.
-
-    Raises
-    ------
-    ValueError
-        When the value cannot be calculated.
-
-    Returns
-    -------
-    value : float
-        Kth l-moment of a returns series.
-
-    """
-
-    a = np.array(X, ndmin=2)
-    if a.shape[0] == 1 and a.shape[1] > 1:
-        a = a.T
-    if a.shape[0] > 1 and a.shape[1] > 1:
-        raise ValueError("returns must have Tx1 size")
-
-    T = a.shape[0]
-    w_ = owa.owa_l_moment(T, k=k)
-    value = (w_.T @ np.sort(a, axis=0)).item()
-
-    return value
-
-
-def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver=None):
-    r"""
-    Calculate a custom convex risk measure that is a weighted average of
-    first k-th l-moments.
-
-    Parameters
-    ----------
-    X : 1d-array
-        Returns series, must have Tx1 size.
-    k : int
-        Order of the l-moment. Must be an integer higher or equal than 2.
-    method : str, optional
-        Method to calculate the weights used to combine the l-moments with
-        order higher than 2. The default value is 'MSD'. Possible values are:
-
-        - 'CRRA': Normalized Constant Relative Risk Aversion coefficients.
-        - 'ME': Maximum Entropy.
-        - 'MSS': Minimum Sum Squares.
-        - 'MSD': Minimum Square Distance.
-
-    g : float, optional
-        Risk aversion coefficient of CRRA utility function. The default is 0.5.
-    max_phi : float, optional
-        Maximum weight constraint of L-moments.
-        The default is 0.5.
-    solver: str, optional
-        Solver available for CVXPY. Used to calculate 'ME', 'MSS' and 'MSD' weights.
-        The default value is None.
-
-    Raises
-    ------
-    ValueError
-        When the value cannot be calculated.
-
-    Returns
-    -------
-    value : float
-        Custom convex risk measure that is a weighted average of first k-th l-moments of a returns series.
-
-    """
-    if k < 2 or (not isinstance(k, int)):
-        raise ValueError("k must be an integer higher equal than 2")
-    if method not in ["CRRA", "ME", "MSS", "MSD"]:
-        raise ValueError("Available methods are 'CRRA', 'ME', 'MSS' and 'MSD'")
-    if g >= 1 or g <= 0:
-        raise ValueError("The risk aversion coefficient mus be between 0 and 1")
-    if max_phi >= 1 or max_phi <= 0:
-        raise ValueError(
-            "The constraint on maximum weight of L-moments must be between 0 and 1"
-        )
-
-    a = np.array(X, ndmin=2)
-    if a.shape[0] == 1 and a.shape[1] > 1:
-        a = a.T
-    if a.shape[0] > 1 and a.shape[1] > 1:
-        raise ValueError("returns must have Tx1 size")
-
-    T = a.shape[0]
-    w_ = owa.owa_l_moment_crm(
-        T, k=k, method=method, g=g, max_phi=max_phi, solver=solver
-    )
-    value = (w_.T @ np.sort(a, axis=0)).item()
-
-    return value
-
-
 def TG(X, alpha=0.05, a_sim=100):
     r"""
     Calculate the Tail Gini of a returns series.
@@ -1642,6 +1533,115 @@ def TGRG(X, alpha=0.05, a_sim=100, beta=None, b_sim=None):
 
     T = a.shape[0]
     w_ = owa.owa_tgrg(T, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+    value = (w_.T @ np.sort(a, axis=0)).item()
+
+    return value
+
+
+def L_Moment(X, k=2):
+    r"""
+    Calculate the kth l-moment of a returns series.
+
+    .. math:
+        \lambda_k = {\tbinom{T}{k}}^{-1} \mathop{\sum \sum \ldots \sum}_{1
+        \leq i_{1} < i_{2} \cdots < i_{k} \leq n} \frac{1}{k}
+        \sum^{k-1}_{j=0} (-1)^{j} \binom{k-1}{j} y_{[i_{k-j}]} \\
+
+    Where $y_{[i]}$ is the ith-ordered statistic.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    k : int
+        Order of the l-moment. Must be an integer higher or equal than 1.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Kth l-moment of a returns series.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_l_moment(T, k=k)
+    value = (w_.T @ np.sort(a, axis=0)).item()
+
+    return value
+
+
+def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver=None):
+    r"""
+    Calculate a custom convex risk measure that is a weighted average of
+    first k-th l-moments.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    k : int
+        Order of the l-moment. Must be an integer higher or equal than 2.
+    method : str, optional
+        Method to calculate the weights used to combine the l-moments with
+        order higher than 2. The default value is 'MSD'. Possible values are:
+
+        - 'CRRA': Normalized Constant Relative Risk Aversion coefficients.
+        - 'ME': Maximum Entropy.
+        - 'MSS': Minimum Sum Squares.
+        - 'MSD': Minimum Square Distance.
+
+    g : float, optional
+        Risk aversion coefficient of CRRA utility function. The default is 0.5.
+    max_phi : float, optional
+        Maximum weight constraint of L-moments.
+        The default is 0.5.
+    solver: str, optional
+        Solver available for CVXPY. Used to calculate 'ME', 'MSS' and 'MSD' weights.
+        The default value is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Custom convex risk measure that is a weighted average of first k-th l-moments of a returns series.
+
+    """
+    if k < 2 or (not isinstance(k, int)):
+        raise ValueError("k must be an integer higher equal than 2")
+    if method not in ["CRRA", "ME", "MSS", "MSD"]:
+        raise ValueError("Available methods are 'CRRA', 'ME', 'MSS' and 'MSD'")
+    if g >= 1 or g <= 0:
+        raise ValueError("The risk aversion coefficient mus be between 0 and 1")
+    if max_phi >= 1 or max_phi <= 0:
+        raise ValueError(
+            "The constraint on maximum weight of L-moments must be between 0 and 1"
+        )
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_l_moment_crm(
+        T, k=k, method=method, g=g, max_phi=max_phi, solver=solver
+    )
     value = (w_.T @ np.sort(a, axis=0)).item()
 
     return value
@@ -1971,6 +1971,115 @@ def Sharpe(
     )
 
     value = (ret - rf) / risk
+
+    return value
+
+
+def L_Moment(X, k=2):
+    r"""
+    Calculate the kth l-moment of a returns series.
+
+    .. math:
+        \lambda_k = {\tbinom{T}{k}}^{-1} \mathop{\sum \sum \ldots \sum}_{1
+        \leq i_{1} < i_{2} \cdots < i_{k} \leq n} \frac{1}{k}
+        \sum^{k-1}_{j=0} (-1)^{j} \binom{k-1}{j} y_{[i_{k-j}]} \\
+
+    Where $y_{[i]}$ is the ith-ordered statistic.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    k : int
+        Order of the l-moment. Must be an integer higher or equal than 1.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Kth l-moment of a returns series.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_l_moment(T, k=k)
+    value = (w_.T @ np.sort(a, axis=0)).item()
+
+    return value
+
+
+def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver=None):
+    r"""
+    Calculate a custom convex risk measure that is a weighted average of
+    first k-th l-moments.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    k : int
+        Order of the l-moment. Must be an integer higher or equal than 2.
+    method : str, optional
+        Method to calculate the weights used to combine the l-moments with
+        order higher than 2. The default value is 'MSD'. Possible values are:
+
+        - 'CRRA': Normalized Constant Relative Risk Aversion coefficients.
+        - 'ME': Maximum Entropy.
+        - 'MSS': Minimum Sum Squares.
+        - 'MSD': Minimum Square Distance.
+
+    g : float, optional
+        Risk aversion coefficient of CRRA utility function. The default is 0.5.
+    max_phi : float, optional
+        Maximum weight constraint of L-moments.
+        The default is 0.5.
+    solver: str, optional
+        Solver available for CVXPY. Used to calculate 'ME', 'MSS' and 'MSD' weights.
+        The default value is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Custom convex risk measure that is a weighted average of first k-th l-moments of a returns series.
+
+    """
+    if k < 2 or (not isinstance(k, int)):
+        raise ValueError("k must be an integer higher equal than 2")
+    if method not in ["CRRA", "ME", "MSS", "MSD"]:
+        raise ValueError("Available methods are 'CRRA', 'ME', 'MSS' and 'MSD'")
+    if g >= 1 or g <= 0:
+        raise ValueError("The risk aversion coefficient mus be between 0 and 1")
+    if max_phi >= 1 or max_phi <= 0:
+        raise ValueError(
+            "The constraint on maximum weight of L-moments must be between 0 and 1"
+        )
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    T = a.shape[0]
+    w_ = owa.owa_l_moment_crm(
+        T, k=k, method=method, g=g, max_phi=max_phi, solver=solver
+    )
+    value = (w_.T @ np.sort(a, axis=0)).item()
 
     return value
 

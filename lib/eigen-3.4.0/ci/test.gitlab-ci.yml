@@ -1,0 +1,388 @@
+.test:linux:base:
+  stage: test
+  image: ubuntu:18.04
+  retry: 2
+  before_script:
+    - apt-get update -y
+    - apt-get install -y --no-install-recommends software-properties-common
+    - add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    - apt-get update
+    - apt-get install --no-install-recommends -y ${EIGEN_CI_CXX_COMPILER}
+      ${EIGEN_CI_CC_COMPILER} cmake ninja-build xsltproc
+  script:
+    - export CXX=${EIGEN_CI_CXX_COMPILER}
+    - export CC=${EIGEN_CI_CC_COMPILER}
+    - cd ${BUILDDIR} && ctest --output-on-failure --no-compress-output
+      --build-no-clean -T test -L ${EIGEN_CI_TEST_LABEL}
+  after_script:
+    - apt-get update -y
+    - apt-get install --no-install-recommends -y xsltproc
+    - cd ${BUILDDIR}
+    - xsltproc ../ci/CTest2JUnit.xsl Testing/`head -n 1 < Testing/TAG`/Test.xml > "JUnitTestResults_$CI_JOB_ID.xml"
+  artifacts:
+    reports:
+      junit:
+        - ${BUILDDIR}/JUnitTestResults_$CI_JOB_ID.xml
+    expire_in: 5 days
+  only:
+    - schedules
+
+##### x86-64 ###################################################################
+# GCC-4.8
+.test:x86-64:linux:gcc-4.8:cxx11-off:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-4.8
+    EIGEN_CI_CC_COMPILER: gcc-4.8
+  needs: [ "build:x86-64:linux:gcc-4.8:cxx11-off" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - x86-64
+
+test:x86-64:linux:gcc-4.8:cxx11-off:official:
+  extends: .test:x86-64:linux:gcc-4.8:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:x86-64:linux:gcc-4.8:cxx11-off:unsupported:
+  extends: .test:x86-64:linux:gcc-4.8:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+.test:x86-64:linux:gcc-4.8:cxx11-on:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-4.8
+    EIGEN_CI_CC_COMPILER: gcc-4.8
+  needs: [ "build:x86-64:linux:gcc-4.8:cxx11-on" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - x86-64
+
+test:x86-64:linux:gcc-4.8:cxx11-on:official:
+  extends: .test:x86-64:linux:gcc-4.8:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:x86-64:linux:gcc-4.8:cxx11-on:unsupported:
+  extends: .test:x86-64:linux:gcc-4.8:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+# GCC-9
+.test:x86-64:linux:gcc-9:cxx11-off:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-9
+    EIGEN_CI_CC_COMPILER: gcc-9
+  needs: [ "build:x86-64:linux:gcc-9:cxx11-off" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - x86-64
+
+test:x86-64:linux:gcc-9:cxx11-off:official:
+  extends: .test:x86-64:linux:gcc-9:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:x86-64:linux:gcc-9:cxx11-off:unsupported:
+  extends: .test:x86-64:linux:gcc-9:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+.test:x86-64:linux:gcc-9:cxx11-on:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-9
+    EIGEN_CI_CC_COMPILER: gcc-9
+  needs: [ "build:x86-64:linux:gcc-9:cxx11-on" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - x86-64
+
+test:x86-64:linux:gcc-9:cxx11-on:official:
+  extends: .test:x86-64:linux:gcc-9:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:x86-64:linux:gcc-9:cxx11-on:unsupported:
+  extends: .test:x86-64:linux:gcc-9:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+# GCC-10
+.test:x86-64:linux:gcc-10:cxx11-off:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-10
+    EIGEN_CI_CC_COMPILER: gcc-10
+  needs: [ "build:x86-64:linux:gcc-10:cxx11-off" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - x86-64
+
+test:x86-64:linux:gcc-10:cxx11-off:official:
+  extends: .test:x86-64:linux:gcc-10:cxx11-off
+  allow_failure: true
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:x86-64:linux:gcc-10:cxx11-off:unsupported:
+  extends: .test:x86-64:linux:gcc-10:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+.test:x86-64:linux:gcc-10:cxx11-on:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-10
+    EIGEN_CI_CC_COMPILER: gcc-10
+  needs: [ "build:x86-64:linux:gcc-10:cxx11-on" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - x86-64
+
+test:x86-64:linux:gcc-10:cxx11-on:official:
+  extends: .test:x86-64:linux:gcc-10:cxx11-on
+  allow_failure: true
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:x86-64:linux:gcc-10:cxx11-on:unsupported:
+  extends: .test:x86-64:linux:gcc-10:cxx11-on
+  allow_failure: true
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+# Clang 10
+.test:x86-64:linux:clang-10:cxx11-off:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: clang++-10
+    EIGEN_CI_CC_COMPILER: clang-10
+  needs: [ "build:x86-64:linux:clang-10:cxx11-off" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - x86-64
+
+test:x86-64:linux:clang-10:cxx11-off:official:
+  extends: .test:x86-64:linux:clang-10:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:x86-64:linux:clang-10:cxx11-off:unsupported:
+  extends: .test:x86-64:linux:clang-10:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+.test:x86-64:linux:clang-10:cxx11-on:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: clang++-10
+    EIGEN_CI_CC_COMPILER: clang-10
+  needs: [ "build:x86-64:linux:clang-10:cxx11-on" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - x86-64
+
+test:x86-64:linux:clang-10:cxx11-on:official:
+  extends: .test:x86-64:linux:clang-10:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:x86-64:linux:clang-10:cxx11-on:unsupported:
+  extends: .test:x86-64:linux:clang-10:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+##### AArch64 ##################################################################
+# GCC-10
+.test:aarch64:linux:gcc-10:cxx11-off:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-10
+    EIGEN_CI_CC_COMPILER: gcc-10
+  needs: [ "build:aarch64:linux:gcc-10:cxx11-off" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - aarch64
+
+test:aarch64:linux:gcc-10:cxx11-off:official:
+  extends: .test:aarch64:linux:gcc-10:cxx11-off
+  allow_failure: true
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:aarch64:linux:gcc-10:cxx11-off:unsupported:
+  extends: .test:aarch64:linux:gcc-10:cxx11-off
+  allow_failure: true
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+.test:aarch64:linux:gcc-10:cxx11-on:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-10
+    EIGEN_CI_CC_COMPILER: gcc-10
+  needs: [ "build:aarch64:linux:gcc-10:cxx11-on" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - aarch64
+
+test:aarch64:linux:gcc-10:cxx11-on:official:
+  extends: .test:aarch64:linux:gcc-10:cxx11-on
+  allow_failure: true
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:aarch64:linux:gcc-10:cxx11-on:unsupported:
+  extends: .test:aarch64:linux:gcc-10:cxx11-on
+  allow_failure: true
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+# Clang 10
+.test:aarch64:linux:clang-10:cxx11-off:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: clang++-10
+    EIGEN_CI_CC_COMPILER: clang-10
+  needs: [ "build:aarch64:linux:clang-10:cxx11-off" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - aarch64
+
+test:aarch64:linux:clang-10:cxx11-off:official:
+  extends: .test:aarch64:linux:clang-10:cxx11-off
+  allow_failure: true
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:aarch64:linux:clang-10:cxx11-off:unsupported:
+  extends: .test:aarch64:linux:clang-10:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+.test:aarch64:linux:clang-10:cxx11-on:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: clang++-10
+    EIGEN_CI_CC_COMPILER: clang-10
+  needs: [ "build:aarch64:linux:clang-10:cxx11-on" ]
+  tags: 
+    - eigen-runner
+    - linux
+    - aarch64
+
+test:aarch64:linux:clang-10:cxx11-on:official:
+  extends: .test:aarch64:linux:clang-10:cxx11-on
+  allow_failure: true
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:aarch64:linux:clang-10:cxx11-on:unsupported:
+  extends: .test:aarch64:linux:clang-10:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+##### ppc64le ##################################################################
+# GCC-10
+.test:ppc64le:linux:gcc-10:cxx11-off:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-10
+    EIGEN_CI_CC_COMPILER: gcc-10
+  needs: [ "build:ppc64le:linux:gcc-10:cxx11-off" ]
+  allow_failure: true
+  tags: 
+    - eigen-runner
+    - linux
+    - ppc64le
+
+test:ppc64le:linux:gcc-10:cxx11-off:official:
+  extends: .test:ppc64le:linux:gcc-10:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:ppc64le:linux:gcc-10:cxx11-off:unsupported:
+  extends: .test:ppc64le:linux:gcc-10:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+.test:ppc64le:linux:gcc-10:cxx11-on:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-10
+    EIGEN_CI_CC_COMPILER: gcc-10
+  needs: [ "build:ppc64le:linux:gcc-10:cxx11-on" ]
+  allow_failure: true
+  tags: 
+    - eigen-runner
+    - linux
+    - ppc64le
+
+test:ppc64le:linux:gcc-10:cxx11-on:official:
+  extends: .test:ppc64le:linux:gcc-10:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:ppc64le:linux:gcc-10:cxx11-on:unsupported:
+  extends: .test:ppc64le:linux:gcc-10:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+# # Clang 10
+.test:ppc64le:linux:clang-10:cxx11-off:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: clang++-10
+    EIGEN_CI_CC_COMPILER: clang-10
+  needs: [ "build:ppc64le:linux:clang-10:cxx11-off" ]
+  allow_failure: true
+  tags: 
+    - eigen-runner
+    - linux
+    - ppc64le
+
+test:ppc64le:linux:clang-10:cxx11-off:official:
+  extends: .test:ppc64le:linux:clang-10:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:ppc64le:linux:clang-10:cxx11-off:unsupported:
+  extends: .test:ppc64le:linux:clang-10:cxx11-off
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"
+
+.test:ppc64le:linux:clang-10:cxx11-on:
+  extends: .test:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: clang++-10
+    EIGEN_CI_CC_COMPILER: clang-10
+  needs: [ "build:ppc64le:linux:clang-10:cxx11-on" ]
+  allow_failure: true
+  tags: 
+    - eigen-runner
+    - linux
+    - ppc64le
+
+test:ppc64le:linux:clang-10:cxx11-on:official:
+  extends: .test:ppc64le:linux:clang-10:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Official"
+
+test:ppc64le:linux:clang-10:cxx11-on:unsupported:
+  extends: .test:ppc64le:linux:clang-10:cxx11-on
+  variables:
+    EIGEN_CI_TEST_LABEL: "Unsupported"

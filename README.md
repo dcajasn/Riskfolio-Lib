@@ -156,6 +156,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 - Portfolio optimization with constraints on tracking error and turnover.
 - Portfolio optimization with short positions and leveraged portfolios.
 - Portfolio optimization with constraints on number of assets and number of effective assets.
+- Portfolio optimization with constraints based on graph information.
 - Tools to build efficient frontier for 22 convex risk measures.
 - Tools to build linear constraints on assets, asset classes and risk factors.
 - Tools to build views on assets and asset classes.
@@ -189,6 +190,7 @@ Installation requires:
 - [scipy](https://www.scipy.org/) >= 1.1.0
 - [pandas](https://pandas.pydata.org/) >= 1.0.0
 - [matplotlib](https://matplotlib.org/) >= 3.3.0
+- [clarabel](https://oxfordcontrol.github.io/ClarabelDocs/stable/) >= 0.6.0
 - [cvxpy](https://www.cvxpy.org/) >= 1.0.15
 - [scikit-learn](https://scikit-learn.org/stable/) >= 1.0.0
 - [statsmodels](https://www.statsmodels.org/) >= 0.10.1
@@ -211,8 +213,8 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 ```
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (4.4.1)},
-      year  = {2023},
+      title = {Riskfolio-Lib (5.0.0)},
+      year  = {2024},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }
 ```

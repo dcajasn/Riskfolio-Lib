@@ -1,0 +1,15 @@
+*.o
+*.a
+*.out
+*~
+.project
+.cproject
+.vscode
+.settings
+.idea/
+cmake-build*/
+build/*
+issues/*
+legacy/*
+include/Eigen/*
+

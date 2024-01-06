@@ -1,6 +1,6 @@
 """"""  #
 """
-Copyright (c) 2020-2023, Dany Cajas
+Copyright (c) 2020-2024, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -283,7 +283,7 @@ class HCPortfolio(object):
 
         if model in {"HERC", "HERC2", "NCO"}:
             # optimal number of clusters
-            k = af.two_diff_gap_stat(self.codep, dist, clustering, max_k)
+            k = af.two_diff_gap_stat(dist, clustering, max_k)
         else:
             k = None
 
@@ -302,7 +302,7 @@ class HCPortfolio(object):
         upper_bound=None,
         lower_bound=None,
     ):
-        weights = pd.Series(1, index=self.assetslist)  # set initial weights to 1
+        weights = pd.Series(1.0, index=self.assetslist)  # set initial weights to 1
         items = [sort_order]
 
         while len(items) > 0:  # loop while weights is under 100%
@@ -312,7 +312,7 @@ class HCPortfolio(object):
                 for j, k in (
                     (0, len(i) // 2),
                     (len(i) // 2, len(i)),
-                )  # get cluster indi
+                )  # get cluster indices
                 if len(i) > 1
             ]
 
@@ -397,23 +397,29 @@ class HCPortfolio(object):
                 alpha_1 = 1 - left_risk / (left_risk + right_risk)
 
                 # Weights constraints
-                if (upper_bound < weights.loc[self.asset_order]).any().item() or (
-                    lower_bound > weights.loc[self.asset_order]
+                if (upper_bound < weights).any().item() or (
+                    lower_bound > weights
                 ).any().item():
-                    a1 = np.sum(upper_bound[left_cluster]) / weights[left_cluster[0]]
+                    a1 = (
+                        np.sum(upper_bound.iloc[left_cluster])
+                        / weights.iloc[left_cluster[0]]
+                    )
                     a2 = np.max(
                         [
-                            np.sum(lower_bound[left_cluster])
-                            / weights[left_cluster[0]],
+                            np.sum(lower_bound.iloc[left_cluster])
+                            / weights.iloc[left_cluster[0]],
                             alpha_1,
                         ]
                     )
                     alpha_1 = np.min([a1, a2])
-                    a1 = np.sum(upper_bound[right_cluster]) / weights[right_cluster[0]]
+                    a1 = (
+                        np.sum(upper_bound.iloc[right_cluster])
+                        / weights.iloc[right_cluster[0]]
+                    )
                     a2 = np.max(
                         [
-                            np.sum(lower_bound[right_cluster])
-                            / weights[right_cluster[0]],
+                            np.sum(lower_bound.iloc[right_cluster])
+                            / weights.iloc[right_cluster[0]],
                             1 - alpha_1,
                         ]
                     )
@@ -424,7 +430,7 @@ class HCPortfolio(object):
 
         return weights
 
-    # compute HRP weight allocation through cluster-based bisection
+    # compute HERC weight allocation through cluster-based bisection
     def _hierarchical_recursive_bisection(
         self,
         Z,
@@ -441,7 +447,7 @@ class HCPortfolio(object):
         nodes_1 = np.array([i.dist for i in nodes])
         idx = np.argsort(nodes_1)
         nodes = nodes[idx][::-1].tolist()
-        weights = pd.Series(1, index=self.assetslist)  # Set initial weights to 1
+        weights = pd.Series(1.0, index=self.assetslist)  # Set initial weights to 1
 
         clustering_inds = hr.fcluster(Z, self.k, criterion="maxclust")
         clusters = {
@@ -555,35 +561,36 @@ class HCPortfolio(object):
                     alpha_1 = 1 - left_risk / (left_risk + right_risk)
 
                     # Weights constraints
-                    if (upper_bound < weights.loc[self.asset_order]).any().item() or (
-                        lower_bound > weights.loc[self.asset_order]
+                    if (upper_bound < weights).any().item() or (
+                        lower_bound > weights
                     ).any().item():
                         a1 = (
-                            np.sum(upper_bound[left_cluster]) / weights[left_cluster[0]]
+                            np.sum(upper_bound.iloc[left_cluster])
+                            / weights.iloc[left_cluster[0]]
                         )
                         a2 = np.max(
                             [
-                                np.sum(lower_bound[left_cluster])
-                                / weights[left_cluster[0]],
+                                np.sum(lower_bound.iloc[left_cluster])
+                                / weights.iloc[left_cluster[0]],
                                 alpha_1,
                             ]
                         )
                         alpha_1 = np.min([a1, a2])
                         a1 = (
-                            np.sum(upper_bound[right_cluster])
-                            / weights[right_cluster[0]]
+                            np.sum(upper_bound.iloc[right_cluster])
+                            / weights.iloc[right_cluster[0]]
                         )
                         a2 = np.max(
                             [
-                                np.sum(lower_bound[right_cluster])
-                                / weights[right_cluster[0]],
+                                np.sum(lower_bound.iloc[right_cluster])
+                                / weights.iloc[right_cluster[0]],
                                 1 - alpha_1,
                             ]
                         )
                         alpha_1 = 1 - np.min([a1, a2])
 
-                weights.iloc[left] *= alpha_1  # weight 1
-                weights.iloc[right] *= 1 - alpha_1  # weight 2
+                    weights.iloc[left] *= alpha_1  # weight 1
+                    weights.iloc[right] *= 1 - alpha_1  # weight 2
 
         # Get constituents of k clusters
         clustered_assets = pd.Series(
@@ -916,8 +923,8 @@ class HCPortfolio(object):
 
         # Step-2: Seriation (Quasi-Diagnalization)
         self.sort_order = self._seriation(self.clusters)
-        asset_order = self.assetslist
-        asset_order[:] = [self.assetslist[i] for i in self.sort_order]
+        # asset_order = self.assetslist
+        asset_order = [self.assetslist[i] for i in self.sort_order]
         self.asset_order = asset_order.copy()
         self.codep_sorted = self.codep.reindex(
             index=self.asset_order, columns=self.asset_order
@@ -925,24 +932,24 @@ class HCPortfolio(object):
 
         # Step-2.1: Bound creation
         if self.w_max is None:
-            upper_bound = pd.Series(1, index=self.asset_order)
-        elif isinstance(self.w_max, float):
-            upper_bound = pd.Series(self.w_max, index=self.asset_order)
-            upper_bound = np.minimum(1, upper_bound).loc[self.asset_order]
+            upper_bound = pd.Series(1.0, index=self.assetslist)
+        elif isinstance(self.w_max, int) or isinstance(self.w_max, float):
+            upper_bound = pd.Series(self.w_max, index=self.assetslist)
+            upper_bound = np.minimum(1.0, upper_bound).loc[self.assetslist]
             if upper_bound.sum() < 1:
                 raise NameError("Sum of upper bounds must be higher equal than 1")
         elif isinstance(self.w_max, pd.Series):
-            upper_bound = np.minimum(1, self.w_max).loc[self.asset_order]
-            if upper_bound.sum() < 1:
+            upper_bound = np.minimum(1.0, self.w_max).loc[self.assetslist]
+            if upper_bound.sum() < 1.0:
                 raise NameError("Sum of upper bounds must be higher equal than 1")
 
         if self.w_min is None:
-            lower_bound = pd.Series(0, index=self.asset_order)
-        elif isinstance(self.w_min, float):
-            lower_bound = pd.Series(self.w_min, index=self.asset_order)
-            lower_bound = np.maximum(0, lower_bound).loc[self.asset_order]
+            lower_bound = pd.Series(0.0, index=self.assetslist)
+        elif isinstance(self.w_min, int) or isinstance(self.w_min, float):
+            lower_bound = pd.Series(self.w_min, index=self.assetslist)
+            lower_bound = np.maximum(0.0, lower_bound).loc[self.assetslist]
         elif isinstance(self.w_min, pd.Series):
-            lower_bound = np.maximum(0, self.w_min).loc[self.asset_order]
+            lower_bound = np.maximum(0.0, self.w_min).loc[self.assetslist]
 
         if (upper_bound >= lower_bound).all().item() is False:
             raise NameError("All upper bounds must be higher than lower bounds")
@@ -977,7 +984,7 @@ class HCPortfolio(object):
             # Step-3.2: Determine inter-cluster weights and multiply with 􏰁→ intra-cluster weights
             weights = self._inter_weights(intra_weights, obj=obj, rm=rm, rf=rf, l=l)
 
-        weights = weights.loc[self.asset_order]
+        weights = weights.loc[self.assetslist]
 
         # Step-4: Fit weights to constraints
         if (upper_bound < weights).any().item() or (lower_bound > weights).any().item():
@@ -992,6 +999,7 @@ class HCPortfolio(object):
                 tickers_mod = weights[
                     (weights < upper_bound) & (weights > lower_bound)
                 ].index.tolist()
+
                 weights_add = np.maximum(weights_original - upper_bound, 0).sum()
                 weights_sub = np.minimum(weights_original - lower_bound, 0).sum()
                 delta = weights_add + weights_sub

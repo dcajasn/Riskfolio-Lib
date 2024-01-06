@@ -1,0 +1,107 @@
+.buildsmoketests:linux:base:
+  stage: buildsmoketests
+  image: ubuntu:18.04
+  before_script:
+    - apt-get update -y
+    - apt-get install -y --no-install-recommends software-properties-common
+    - add-apt-repository -y  ppa:ubuntu-toolchain-r/test
+    - apt-get update
+    - apt-get install --no-install-recommends -y ${EIGEN_CI_CXX_COMPILER}
+      ${EIGEN_CI_CC_COMPILER} cmake ninja-build
+  script:
+    - mkdir -p ${BUILDDIR} && cd ${BUILDDIR}
+    - CXX=${EIGEN_CI_CXX_COMPILER} CC=${EIGEN_CI_CC_COMPILER} cmake -G
+      ${EIGEN_CI_CMAKE_GENEATOR} -DEIGEN_TEST_CXX11=${EIGEN_TEST_CXX11}
+      ${EIGEN_CI_ADDITIONAL_ARGS} ..
+    - cmake --build . --target buildsmoketests
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_COMMIT_REF_NAME"
+    paths:
+      - ${BUILDDIR}/
+    expire_in: 5 days
+  only:
+    - merge_requests
+
+buildsmoketests:x86-64:linux:gcc-10:cxx11-off:
+  extends: .buildsmoketests:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-10"
+    EIGEN_CI_CC_COMPILER: "gcc-10"
+    EIGEN_TEST_CXX11: "off"
+
+buildsmoketests:x86-64:linux:gcc-10:cxx11-on:
+  extends: .buildsmoketests:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "g++-10"
+    EIGEN_CI_CC_COMPILER: "gcc-10"
+    EIGEN_TEST_CXX11: "on"
+
+buildsmoketests:x86-64:linux:clang-10:cxx11-off:
+  extends: .buildsmoketests:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "clang++-10"
+    EIGEN_CI_CC_COMPILER: "clang-10"
+    EIGEN_TEST_CXX11: "off"
+
+buildsmoketests:x86-64:linux:clang-10:cxx11-on:
+  extends: .buildsmoketests:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: "clang++-10"
+    EIGEN_CI_CC_COMPILER: "clang-10"
+    EIGEN_TEST_CXX11: "on"
+
+.smoketests:linux:base:
+  stage: smoketests
+  image: ubuntu:18.04
+  before_script:
+    - apt-get update -y
+    - apt-get install -y --no-install-recommends software-properties-common
+    - add-apt-repository -y ppa:ubuntu-toolchain-r/test
+    - apt-get update
+    - apt-get install --no-install-recommends -y ${EIGEN_CI_CXX_COMPILER}
+      ${EIGEN_CI_CC_COMPILER} cmake ninja-build xsltproc
+  script:
+    - export CXX=${EIGEN_CI_CXX_COMPILER}
+    - export CC=${EIGEN_CI_CC_COMPILER}
+    - cd ${BUILDDIR} && ctest --output-on-failure --no-compress-output
+      --build-no-clean -T test -L smoketest
+  after_script:
+    - apt-get update -y
+    - apt-get install --no-install-recommends -y xsltproc
+    - cd ${BUILDDIR}
+    - xsltproc ../ci/CTest2JUnit.xsl Testing/`head -n 1 < Testing/TAG`/Test.xml > "JUnitTestResults_$CI_JOB_ID.xml"
+  artifacts:
+    reports:
+      junit:
+        - ${BUILDDIR}/JUnitTestResults_$CI_JOB_ID.xml
+    expire_in: 5 days
+  only:
+    - merge_requests
+
+smoketests:x86-64:linux:gcc-10:cxx11-off:
+  extends: .smoketests:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-10
+    EIGEN_CI_CC_COMPILER: gcc-10
+  needs: [ "buildsmoketests:x86-64:linux:gcc-10:cxx11-off" ]
+
+smoketests:x86-64:linux:gcc-10:cxx11-on:
+  extends: .smoketests:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: g++-10
+    EIGEN_CI_CC_COMPILER: gcc-10
+  needs: [ "buildsmoketests:x86-64:linux:gcc-10:cxx11-on" ]
+
+smoketests:x86-64:linux:clang-10:cxx11-off:
+  extends: .smoketests:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: clang++-10
+    EIGEN_CI_CC_COMPILER: clang-10
+  needs: [ "buildsmoketests:x86-64:linux:clang-10:cxx11-off" ]
+
+smoketests:x86-64:linux:clang-10:cxx11-on:
+  extends: .smoketests:linux:base
+  variables:
+    EIGEN_CI_CXX_COMPILER: clang++-10
+    EIGEN_CI_CC_COMPILER: clang-10
+  needs: [ "buildsmoketests:x86-64:linux:clang-10:cxx11-on" ]

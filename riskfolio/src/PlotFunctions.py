@@ -1,6 +1,6 @@
 """"""  #
 """
-Copyright (c) 2020-2023, Dany Cajas
+Copyright (c) 2020-2024, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -23,6 +23,7 @@ import riskfolio.src.RiskFunctions as rk
 import riskfolio.src.AuxFunctions as af
 import riskfolio.src.DBHT as db
 import riskfolio.src.GerberStatistic as gs
+import riskfolio.src.ConstraintsFunctions as ct
 
 
 __all__ = [
@@ -39,6 +40,9 @@ __all__ = [
     "plot_clusters",
     "plot_dendrogram",
     "plot_network",
+    "plot_network_allocation",
+    "plot_clusters_network",
+    "plot_clusters_network_allocation",
 ]
 
 rm_names = [
@@ -1486,11 +1490,11 @@ def plot_hist(
         y,
         "--",
         color="orange",
-        label="Normal: $\mu="
+        label=r"Normal: \$\mu="
         + "{0:.2%}".format(mu)
-        + "$%, $\sigma="
+        + "\$%, \$\sigma="
         + "{0:.2%}".format(sigma)
-        + "$%",
+        + "\$%",
     )
 
     factor = (np.max(a) - np.min(a)) / bins
@@ -2264,7 +2268,7 @@ def plot_clusters(
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
         - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
         - 'HGR': Hacine-Gharbi and Ravier' choice method.
-        - int: integer value choice by user.
+        - int: integer value chosen by user.
 
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
@@ -2334,36 +2338,24 @@ def plot_clusters(
     labels = np.array(returns.columns.tolist())
 
     vmin, vmax = 0, 1
+    if codependence in {
+        "pearson",
+        "spearman",
+        "kendall",
+        "gerber1",
+        "gerber2",
+    }:
+        vmin, vmax = -1, 1
+
     # Calculating codependence matrix and distance metric
-    if codependence in {"pearson", "spearman", "kendall"}:
-        codep = returns.corr(method=codependence)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-        vmin, vmax = -1, 1
-    elif codependence == "gerber1":
-        codep = gs.gerber_cov_stat1(returns, threshold=gs_threshold)
-        codep = af.cov2corr(codep)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-        vmin, vmax = -1, 1
-    elif codependence == "gerber2":
-        codep = gs.gerber_cov_stat2(returns, threshold=gs_threshold)
-        codep = af.cov2corr(codep)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-        vmin, vmax = -1, 1
-    elif codependence in {"abs_pearson", "abs_spearman", "abs_kendall"}:
-        codep = np.abs(returns.corr(method=codependence[4:]))
-        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
-    elif codependence in {"distance"}:
-        codep = af.dcorr_matrix(returns).astype(float)
-        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
-    elif codependence in {"mutual_info"}:
-        codep = af.mutual_info_matrix(returns, bins_info).astype(float)
-        dist = af.var_info_matrix(returns, bins_info).astype(float)
-    elif codependence in {"tail"}:
-        codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
-        dist = -np.log(codep)
-    elif codependence in {"custom_cov"}:
-        codep = af.cov2corr(custom_cov).astype(float)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    codep, dist = af.codep_dist(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+    )
 
     # Hierarchical clustering
     dist = dist.to_numpy()
@@ -2390,7 +2382,7 @@ def plot_clusters(
 
     # optimal number of clusters
     if k is None:
-        k = af.two_diff_gap_stat(codep, dist, clustering, max_k)
+        k = af.two_diff_gap_stat(dist, clustering, max_k)
 
     clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
     clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
@@ -2639,7 +2631,7 @@ def plot_dendrogram(
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
         - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
         - 'HGR': Hacine-Gharbi and Ravier' choice method.
-        - int: integer value choice by user.
+        - int: integer value chosen by user.
 
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
@@ -2699,32 +2691,14 @@ def plot_dendrogram(
     labels = np.array(returns.columns.tolist())
 
     # Calculating codependence matrix and distance metric
-    if codependence in {"pearson", "spearman", "kendall"}:
-        codep = returns.corr(method=codependence)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-    elif codependence == "gerber1":
-        codep = gs.gerber_cov_stat1(returns, threshold=gs_threshold)
-        codep = af.cov2corr(codep)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-    elif codependence == "gerber2":
-        codep = gs.gerber_cov_stat2(returns, threshold=gs_threshold)
-        codep = af.cov2corr(codep)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-    elif codependence in {"abs_pearson", "abs_spearman", "abs_kendall"}:
-        codep = np.abs(returns.corr(method=codependence[4:]))
-        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
-    elif codependence in {"distance"}:
-        codep = af.dcorr_matrix(returns).astype(float)
-        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
-    elif codependence in {"mutual_info"}:
-        codep = af.mutual_info_matrix(returns, bins_info).astype(float)
-        dist = af.var_info_matrix(returns, bins_info).astype(float)
-    elif codependence in {"tail"}:
-        codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
-        dist = -np.log(codep)
-    elif codependence in {"custom_cov"}:
-        codep = af.cov2corr(custom_cov).astype(float)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    codep, dist = af.codep_dist(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+    )
 
     # Hierarchical clustering
     dist = dist.to_numpy()
@@ -2752,7 +2726,7 @@ def plot_dendrogram(
     elif show_clusters is True:
         # optimal number of clusters
         if k is None:
-            k = af.two_diff_gap_stat(codep, dist, clustering, max_k)
+            k = af.two_diff_gap_stat(dist, clustering, max_k)
 
         root, nodes = hr.to_tree(clustering, rd=True)
         nodes = [i.dist for i in nodes]
@@ -2893,7 +2867,7 @@ def plot_network(
         - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
         - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
         - 'HGR': Hacine-Gharbi and Ravier' choice method.
-        - int: integer value choice by user.
+        - int: integer value chosen by user.
 
     alpha_tail : float, optional
         Significance level for lower tail dependence index. The default is 0.05.
@@ -2909,7 +2883,7 @@ def plot_network(
         - 'spring': networkx spring_layout.
         - 'planar'. networkx planar_layout.
         - 'circular'. networkx circular_layout.
-        - 'kamada'. networkx kamada_kawai_layout. Only available for positive codependence metrics. Not pearson or spearman except when linkage is DBHT.
+        - 'kamada'. networkx kamada_kawai_layout.
 
     seed : int, optional
         Seed for networkx spring layout. The default value is 0.
@@ -2951,7 +2925,7 @@ def plot_network(
                              max_k=10,
                              alpha_tail=0.05,
                              leaf_order=True,
-                             kind='spring',
+                             kind='kamada',
                              ax=None)
 
     .. image:: images/Assets_Network.png
@@ -2972,32 +2946,14 @@ def plot_network(
     labels = np.array(returns.columns.tolist())
 
     # Calculating codependence matrix and distance metric
-    if codependence in {"pearson", "spearman", "kendall"}:
-        codep = returns.corr(method=codependence)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-    elif codependence == "gerber1":
-        codep = gs.gerber_cov_stat1(returns, threshold=gs_threshold)
-        codep = af.cov2corr(codep)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-    elif codependence == "gerber2":
-        codep = gs.gerber_cov_stat2(returns, threshold=gs_threshold)
-        codep = af.cov2corr(codep)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-    elif codependence in {"abs_pearson", "abs_spearman", "abs_kendall"}:
-        codep = np.abs(returns.corr(method=codependence[4:]))
-        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
-    elif codependence in {"distance"}:
-        codep = af.dcorr_matrix(returns).astype(float)
-        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
-    elif codependence in {"mutual_info"}:
-        codep = af.mutual_info_matrix(returns, bins_info).astype(float)
-        dist = af.var_info_matrix(returns, bins_info).astype(float)
-    elif codependence in {"tail"}:
-        codep = af.ltdi_matrix(returns, alpha_tail).astype(float)
-        dist = -np.log(codep)
-    elif codependence in {"custom_cov"}:
-        codep = af.cov2corr(custom_cov).astype(float)
-        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    codep, dist = af.codep_dist(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+    )
 
     # Hierarchical clustering
     dist = dist.to_numpy()
@@ -3017,12 +2973,12 @@ def plot_network(
     else:
         p_dist = squareform(dist, checks=False)
         clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
-        T = nx.from_pandas_adjacency(codep)  # create a graph G from a numpy matrix
+        T = nx.from_pandas_adjacency(dist)  # create a graph G from a numpy matrix
         G = nx.minimum_spanning_tree(T)
 
     # optimal number of clusters
     if k is None:
-        k = af.two_diff_gap_stat(codep, dist, clustering, max_k)
+        k = af.two_diff_gap_stat(dist, clustering, max_k)
 
     clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
     clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
@@ -3048,10 +3004,6 @@ def plot_network(
     elif kind == "circular":
         pos = nx.circular_layout(G)
     elif kind == "kamada":
-        if codependence in {"pearson", "spearman"} and linkage != "DBHT":
-            raise NameError(
-                "kamada layout only works with positive codependence measures except when linkage is DBHT."
-            )
         pos = nx.kamada_kawai_layout(G)
 
     # Plotting
@@ -3094,6 +3046,875 @@ def plot_network(
                 + kind
                 + " layout)"
             )
+
+    ax.set_title(title)
+
+    try:
+        fig.tight_layout()
+    except:
+        pass
+
+    return ax
+
+
+def plot_network_allocation(
+    returns,
+    w,
+    custom_cov=None,
+    codependence="pearson",
+    linkage="ward",
+    bins_info="KN",
+    alpha_tail=0.05,
+    gs_threshold=0.5,
+    leaf_order=True,
+    kind="spring",
+    seed=0,
+    node_labels=True,
+    max_node_size=2000,
+    color_lng="tab:blue",
+    color_sht="tab:red",
+    label_v=0.08,
+    label_h=0,
+    font_size=10,
+    title="",
+    height=8,
+    width=10,
+    ax=None,
+):
+    r"""
+    Create a network plot with node size of the nodes and color represents the
+    amount invested and direction (long-short) respectively. The Planar Maximally
+    Filtered Graph (PMFG) for DBHT linkage and Minimum Spanning Tree (MST)
+    for other linkage methods.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Possible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+
+    linkage : string, optional
+        Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+        The default is 'ward'. Possible values are:
+
+        - 'single'.
+        - 'complete'.
+        - 'average'.
+        - 'weighted'.
+        - 'centroid'.
+        - 'median'.
+        - 'ward'.
+        - 'DBHT': Direct Bubble Hierarchical Tree.
+
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Possible values are:
+
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value chosen by user.
+
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
+    leaf_order : bool, optional
+        Indicates if the cluster are ordered so that the distance between
+        successive leaves is minimal. The default is True.
+    kind : str, optional
+        Kind of networkx layout. The default value is 'spring'. Possible values
+        are:
+
+        - 'spring': networkx spring_layout.
+        - 'planar'. networkx planar_layout.
+        - 'circular'. networkx circular_layout.
+        - 'kamada'. networkx kamada_kawai_layout.
+
+    seed : int, optional
+        Seed for networkx spring layout. The default value is 0.
+    node_labels : bool, optional
+        Specify if node lables are visible. The default value is True.
+    max_node_size : float, optional
+        Size of the node with maximum weight in absolute value. The default
+        value is 2000.
+    color_lng : str, optional
+        Color of assets with long positions. The default value is 'tab:blue'.
+    color_sht : str, optional
+        Color of assets with short positions. The default value is 'tab:red'.
+    label_v : float, optional
+        Vertical distance the label is offset from the center. The default value is 0.08.
+    label_h : float, optional
+        Horizontal distance the label is offset from the center. The default value is 0.
+    font_size : float, optional
+        Font size of node labels. The default value is 12.
+    title : str, optional
+        Title of the chart. The default is "".
+    height : float, optional
+        Height of the image in inches. The default is 5.
+    width : float, optional
+        Width of the image in inches. The default is 12.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax : matplotlib axis
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = rp.plot_network_allocation(returns=Y,
+                                        w=w1,
+                                        codependence="pearson",
+                                        linkage="ward",
+                                        alpha_tail=0.05,
+                                        leaf_order=True,
+                                        kind='kamada',
+                                        ax=None)
+
+    .. image:: images/Assets_Network_Allocation.png
+
+
+    """
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
+
+    if ax is None:
+        fig = plt.gcf()
+        ax = fig.gca()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
+
+    labels = np.array(returns.columns.tolist())
+
+    # Calculating codependence matrix and distance metric
+    codep, dist = af.codep_dist(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+    )
+
+    # Hierarchical clustering
+    dist = dist.to_numpy()
+    dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
+    if linkage == "DBHT":
+        # different choices for D, S give different outputs!
+        D = dist.to_numpy()  # dissimilarity matrix
+        if codependence in {"pearson", "spearman", "custom_cov"}:
+            S = (1 - dist**2).to_numpy()
+        else:
+            S = codep.copy().to_numpy()  # similarity matrix
+        (_, Rpm, _, _, _, clustering) = db.DBHTs(
+            D, S, leaf_order=leaf_order
+        )  # DBHT clustering
+        MAdj = pd.DataFrame(Rpm, index=labels, columns=labels)
+        G = nx.from_pandas_adjacency(MAdj)
+    else:
+        T = nx.from_pandas_adjacency(dist)  # create a graph G from a numpy matrix
+        G = nx.minimum_spanning_tree(T)
+
+    label_options = {"ec": "k", "fc": "white", "alpha": 0.7}
+
+    if kind == "spring":
+        pos = nx.spring_layout(G, seed=seed)
+    elif kind == "planar":
+        pos = nx.planar_layout(G)
+    elif kind == "circular":
+        pos = nx.circular_layout(G)
+    elif kind == "kamada":
+        pos = nx.kamada_kawai_layout(G)
+
+    # Plotting
+    nx.draw_networkx_edges(G, pos=pos, ax=ax, edge_color="grey")
+
+    clusters_1 = w.loc[w.iloc[:, 0] > 1e-6]
+    clusters_2 = w.loc[(w.iloc[:, 0] <= 1e-6) & (w.iloc[:, 0] >= -1e-6)]
+    clusters_3 = w.loc[w.iloc[:, 0] < -1e-6]
+
+    label_options = {"ec": "k", "fc": "white", "alpha": 0.7}
+
+    font_options = {
+        "font_size": font_size,
+        "font_color": "k",
+    }
+
+    node_w = np.abs(w) * max_node_size / np.abs(w).sum().item()
+    if node_labels == True:
+        labels = {}
+        labels_pos = {}
+        for node in G.nodes():
+            if node in list(clusters_1.index):
+                labels[node] = node
+                labels_pos[node] = pos[node] + np.array([label_h, label_v])
+
+    nx.draw_networkx_nodes(
+        G,
+        pos=pos,
+        nodelist=list(clusters_1.index),
+        node_color=color_lng,
+        alpha=0.8,
+        ax=ax,
+        node_size=node_w.loc[clusters_1.index],
+    )
+    nx.draw_networkx_nodes(
+        G,
+        pos=pos,
+        nodelist=list(clusters_2.index),
+        node_color="lightgrey",
+        alpha=0.5,
+        ax=ax,
+        node_size=100,
+    )
+
+    if len(clusters_3) > 0:
+        nx.draw_networkx_nodes(
+            G,
+            pos=pos,
+            nodelist=list(clusters_3.index),
+            node_color=color_sht,
+            alpha=0.6,
+            ax=ax,
+            node_size=node_w.loc[clusters_3.index],
+        )
+        if node_labels == True:
+            for node in G.nodes():
+                if node in list(clusters_3.index):
+                    labels[node] = node
+                    labels_pos[node] = pos[node] + np.array([label_h, label_v])
+
+    if node_labels == True:
+        nx.draw_networkx_labels(
+            G, pos=labels_pos, labels=labels, ax=ax, bbox=label_options, **font_options
+        )
+
+    ax.set_yticks([])
+    ax.set_yticklabels([])
+    for i in {"right", "left", "top", "bottom"}:
+        side = ax.spines[i]
+        side.set_visible(False)
+
+    if title == "":
+        if linkage == "DBHT":
+            title = (
+                "Planar Maximally Filtered Graph Asset Allocation("
+                + codependence.capitalize()
+                + " & "
+                + kind
+                + " layout)"
+            )
+        else:
+            title = (
+                "Minimun Spanning Tree Asset Allocation ("
+                + codependence.capitalize()
+                + " & "
+                + kind
+                + " layout)"
+            )
+
+    ax.set_title(title)
+
+    try:
+        fig.tight_layout()
+    except:
+        pass
+
+    return ax
+
+
+def plot_clusters_network(
+    returns,
+    custom_cov=None,
+    codependence="pearson",
+    linkage="ward",
+    k=None,
+    max_k=10,
+    bins_info="KN",
+    alpha_tail=0.05,
+    gs_threshold=0.5,
+    leaf_order=True,
+    seed=0,
+    node_labels=True,
+    node_size=2000,
+    node_alpha=0.7,
+    scale=10,
+    subscale=5,
+    font_size=10,
+    title="",
+    height=8,
+    width=10,
+    ax=None,
+):
+    r"""
+    Create a network plot. The Planar Maximally Filtered Graph (PMFG) for DBHT
+    linkage and Minimum Spanning Tree (MST) for other linkage methods.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Possible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+
+    linkage : string, optional
+        Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+        The default is 'ward'. Possible values are:
+
+        - 'single'.
+        - 'complete'.
+        - 'average'.
+        - 'weighted'.
+        - 'centroid'.
+        - 'median'.
+        - 'ward'.
+        - 'DBHT': Direct Bubble Hierarchical Tree.
+
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Possible values are:
+
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value chosen by user.
+
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
+    leaf_order : bool, optional
+        Indicates if the cluster are ordered so that the distance between
+        successive leaves is minimal. The default is True.
+    seed : int, optional
+        Seed for networkx spring layout. The default value is 0.
+    node_labels : bool, optional
+        Specify if node lables are visible. The default value is True.
+    max_node_size : float, optional
+        Size of the node with maximum weight in absolute value. The default
+        value is 2000.
+    node_alpha : float, optional
+        Alpha parameter or transparency of nodes. The default value is 0.7.
+    scale : float, optional
+        Scale of whole graph. The default value is 10.
+    subscale : float, optional
+        Scale of clusters. The default value is 5.
+    font_size : float, optional
+        Font size of node labels. The default value is 12.
+    title : str, optional
+        Title of the chart. The default is "".
+    height : float, optional
+        Height of the image in inches. The default is 5.
+    width : float, optional
+        Width of the image in inches. The default is 12.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax : matplotlib axis
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = rp.plot_clusters_network(returns=Y,
+                                      codependence="pearson",
+                                      linkage="ward",
+                                      k=None,
+                                      max_k=10,
+                                      ax=None)
+
+    .. image:: images/Assets_Clusters_Network.png
+
+
+    """
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
+
+    if ax is None:
+        fig = plt.gcf()
+        ax = fig.gca()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
+
+    labels = np.array(returns.columns.tolist())
+
+    # Calculating codependence matrix and distance metric
+    codep, dist = af.codep_dist(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+    )
+    # Hierarchical clustering
+    dist = dist.to_numpy()
+    dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
+    if linkage == "DBHT":
+        # different choices for D, S give different outputs!
+        D = dist.to_numpy()  # dissimilarity matrix
+        if codependence in {"pearson", "spearman", "custom_cov"}:
+            S = (1 - dist**2).to_numpy()
+        else:
+            S = codep.copy().to_numpy()  # similarity matrix
+        (_, Rpm, _, _, _, clustering) = db.DBHTs(
+            D, S, leaf_order=leaf_order
+        )  # DBHT clustering
+    else:
+        p_dist = squareform(dist, checks=False)
+        clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+
+    if k is None:
+        k = af.two_diff_gap_stat(dist, clustering, max_k)
+
+    # Calculating adjacency matrix based on hierarchical clustering
+    D = ct.clusters_matrix(
+        returns,
+        codependence=codependence,
+        linkage=linkage,
+        k=k,
+        max_k=max_k,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+        leaf_order=leaf_order,
+    )
+
+    # Build Adjacency matrix
+    MAdj = pd.DataFrame(D, index=labels, columns=labels)
+    G = nx.from_pandas_adjacency(MAdj)
+
+    # optimal number of clusters
+    if k is None:
+        k = af.two_diff_gap_stat(dist, clustering, max_k)
+
+    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
+    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    for i, v in enumerate(clustering_inds):
+        clusters[v].append(labels[i])
+
+    # Build clusters super nodes positions
+    supergraph = nx.cycle_graph(len(clusters))
+    superpos = nx.spring_layout(supergraph, scale=scale, seed=seed)
+
+    # Use the "supernode" positions as the center of each node cluster
+    centers = list(superpos.values())
+    pos = {}
+    for center, key in zip(centers, clusters.keys()):
+        pos.update(
+            nx.spring_layout(
+                nx.subgraph(G, clusters[key]), center=center, scale=subscale, seed=seed
+            )
+        )
+
+    colors = af.color_list(k)
+
+    label_options = {"ec": "k", "fc": "white", "alpha": 0.7}
+
+    node_options = {
+        "node_size": node_size,
+        "alpha": node_alpha,
+    }
+    font_options = {
+        "font_size": font_size,
+        "font_color": "k",
+    }
+    # Nodes colored by cluster
+    for key, clr in zip(clusters.keys(), colors):
+        nx.draw_networkx_nodes(
+            G, pos=pos, nodelist=clusters[key], node_color=clr, **node_options
+        )
+    nx.draw_networkx_edges(G, pos=pos, ax=ax, edge_color="grey")
+
+    if node_labels == True:
+        nx.draw_networkx_labels(G, pos=pos, ax=ax, bbox=label_options, **font_options)
+
+    ax.set_yticks([])
+    ax.set_yticklabels([])
+    for i in {"right", "left", "top", "bottom"}:
+        side = ax.spines[i]
+        side.set_visible(False)
+
+    if title == "":
+        title = (
+            "Cluster Network ("
+            + codependence.capitalize()
+            + " & "
+            + linkage
+            + " linkage)"
+        )
+
+    ax.set_title(title)
+
+    try:
+        fig.tight_layout()
+    except:
+        pass
+
+    return ax
+
+
+def plot_clusters_network_allocation(
+    returns,
+    w,
+    custom_cov=None,
+    codependence="pearson",
+    linkage="ward",
+    k=None,
+    max_k=10,
+    bins_info="KN",
+    alpha_tail=0.05,
+    gs_threshold=0.5,
+    leaf_order=True,
+    seed=0,
+    node_labels=True,
+    max_node_size=2000,
+    color_lng="tab:blue",
+    color_sht="tab:red",
+    scale=10,
+    subscale=5,
+    label_v=1.5,
+    label_h=0,
+    font_size=10,
+    title="",
+    height=8,
+    width=10,
+    ax=None,
+):
+    r"""
+    Creates a network plot for each cluster obtained from the dendrogram. The
+    size of the nodes and color represents the amount invested and direction
+    (long-short) respectively.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Possible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+
+    linkage : string, optional
+        Linkage method of hierarchical clustering, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+        The default is 'ward'. Possible values are:
+
+        - 'single'.
+        - 'complete'.
+        - 'average'.
+        - 'weighted'.
+        - 'centroid'.
+        - 'median'.
+        - 'ward'.
+        - 'DBHT': Direct Bubble Hierarchical Tree.
+
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Possible values are:
+
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value chosen by user.
+
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
+    leaf_order : bool, optional
+        Indicates if the cluster are ordered so that the distance between
+        successive leaves is minimal. The default is True.
+    seed : int, optional
+        Seed for networkx spring layout. The default value is 0.
+    node_labels : bool, optional
+        Specify if node lables are visible. The default value is True.
+    max_node_size : float, optional
+        Size of the node with maximum weight in absolute value. The default
+        value is 2000.
+    color_lng : str, optional
+        Color of assets with long positions. The default value is 'tab:blue'.
+    color_sht : str, optional
+        Color of assets with short positions. The default value is 'tab:red'.
+    scale : float, optional
+        Scale of whole graph. The default value is 10.
+    subscale : float, optional
+        Scale of clusters. The default value is 5.
+    label_v : float, optional
+        Vertical distance the label is offset from the center. The default value is 1.5.
+    label_h : float, optional
+        Horizontal distance the label is offset from the center. The default value is 0.
+    font_size : float, optional
+        Font size of node labels. The default value is 12.
+    title : str, optional
+        Title of the chart. The default is "".
+    height : float, optional
+        Height of the image in inches. The default is 5.
+    width : float, optional
+        Width of the image in inches. The default is 12.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax : matplotlib axis
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = rp.plot_clusters_network_allocation(returns=Y,
+                                                 w=w1,
+                                                 codependence="pearson",
+                                                 linkage="ward",
+                                                 k=None,
+                                                 max_k=10,
+                                                 ax=None)
+
+    .. image:: images/Assets_Clusters_Network_Allocation.png
+
+
+    """
+    if not isinstance(returns, pd.DataFrame):
+        raise ValueError("returns must be a DataFrame")
+
+    if ax is None:
+        fig = plt.gcf()
+        ax = fig.gca()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
+
+    labels = np.array(returns.columns.tolist())
+
+    # Calculating codependence matrix and distance metric
+    codep, dist = af.codep_dist(
+        returns=returns,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+    )
+
+    # Hierarchical clustering
+    dist = dist.to_numpy()
+    dist = pd.DataFrame(dist, columns=codep.columns, index=codep.index)
+    if linkage == "DBHT":
+        # different choices for D, S give different outputs!
+        D = dist.to_numpy()  # dissimilarity matrix
+        if codependence in {"pearson", "spearman", "custom_cov"}:
+            S = (1 - dist**2).to_numpy()
+        else:
+            S = codep.copy().to_numpy()  # similarity matrix
+        (_, Rpm, _, _, _, clustering) = db.DBHTs(
+            D, S, leaf_order=leaf_order
+        )  # DBHT clustering
+    else:
+        p_dist = squareform(dist, checks=False)
+        clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
+
+    if k is None:
+        k = af.two_diff_gap_stat(dist, clustering, max_k)
+
+    # Calculating adjacency matrix based on hierarchical clustering
+    D = ct.clusters_matrix(
+        returns,
+        codependence=codependence,
+        linkage=linkage,
+        k=k,
+        max_k=max_k,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+        leaf_order=leaf_order,
+    )
+
+    # Build Adjacency matrix
+    MAdj = pd.DataFrame(D, index=labels, columns=labels)
+    G = nx.from_pandas_adjacency(MAdj)
+
+    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
+    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    for i, v in enumerate(clustering_inds):
+        clusters[v].append(labels[i])
+
+    # Build clusters super nodes positions
+    supergraph = nx.cycle_graph(len(clusters))
+    superpos = nx.spring_layout(supergraph, scale=scale, seed=seed)
+
+    # Use the "supernode" positions as the center of each node cluster
+    centers = list(superpos.values())
+    pos = {}
+    for center, key in zip(centers, clusters.keys()):
+        pos.update(
+            nx.spring_layout(
+                nx.subgraph(G, clusters[key]), center=center, scale=subscale, seed=seed
+            )
+        )
+
+    label_options = {"ec": "k", "fc": "white", "alpha": 0.7}
+
+    font_options = {
+        "font_size": font_size,
+        "font_color": "k",
+    }
+
+    clusters_1 = set(w.loc[w.iloc[:, 0] > 1e-6].index)
+    clusters_2 = set(w.loc[(w.iloc[:, 0] <= 1e-6) & (w.iloc[:, 0] >= -1e-6)].index)
+    clusters_3 = set(w.loc[w.iloc[:, 0] < -1e-6].index)
+    node_w = np.abs(w) * max_node_size / np.abs(w).sum().item()
+
+    # Nodes colored by cluster
+    for key in clusters.keys():
+        nodes_pos = list(clusters_1.intersection(clusters[key]))
+        nodes_0 = list(clusters_2.intersection(clusters[key]))
+        nx.draw_networkx_nodes(
+            G,
+            pos=pos,
+            nodelist=nodes_pos,
+            node_color=color_lng,
+            alpha=0.8,
+            ax=ax,
+            node_size=node_w.loc[nodes_pos],
+        )
+        nx.draw_networkx_nodes(
+            G,
+            pos=pos,
+            nodelist=nodes_0,
+            node_color="lightgrey",
+            alpha=0.5,
+            ax=ax,
+            node_size=100,
+        )
+        if len(clusters_3) > 0:
+            nodes_neg = list(clusters_3.intersection(clusters[key]))
+            nx.draw_networkx_nodes(
+                G,
+                pos=pos,
+                nodelist=nodes_neg,
+                node_color=color_sht,
+                alpha=0.6,
+                ax=ax,
+                node_size=node_w.loc[nodes_neg],
+            )
+
+    nx.draw_networkx_edges(G, pos=pos, ax=ax, edge_color="grey")
+
+    if node_labels == True:
+        label_w = list(w.loc[np.abs(w.iloc[:, 0]) >= 1e-6].index)
+        labels = {}
+        labels_pos = {}
+        for node in G.nodes():
+            if node in label_w:
+                labels[node] = node
+                labels_pos[node] = pos[node] + np.array([label_h, label_v])
+
+    if node_labels == True:
+        nx.draw_networkx_labels(
+            G, pos=labels_pos, labels=labels, ax=ax, bbox=label_options, **font_options
+        )
+
+    ax.set_yticks([])
+    ax.set_yticklabels([])
+    for i in {"right", "left", "top", "bottom"}:
+        side = ax.spines[i]
+        side.set_visible(False)
+
+    if title == "":
+        title = (
+            "Clusters Network Asset Allocation ("
+            + codependence.capitalize()
+            + " & "
+            + linkage
+            + " linkage)"
+        )
 
     ax.set_title(title)
 

@@ -1,0 +1,77 @@
+language: cpp
+
+matrix:
+  include:
+    - os: linux
+      dist: focal
+      name: Linux, GCC 9
+      env: CC=gcc-9 CXX=g++-9
+      sudo: true
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-9
+            - g++-9
+    - os: linux
+      dist: focal
+      name: Linux, Clang 9
+      env: CC=clang-9 CXX=clang++-9
+      sudo: true
+      addons:
+        apt:
+          packages:
+            - clang-9
+          sources:
+            - ubuntu-toolchain-r-test
+            - llvm-toolchain-focal-9
+
+before_cache:
+  - rm -rf $HOME/miniconda/locks $HOME/miniconda/pkgs $HOME/miniconda/var $HOME/miniconda/conda-meta/history
+  - pip uninstall -y cardboardlint
+
+# Cache miniconda for faster build procedures
+cache:
+  directories:
+    - $HOME/miniconda
+    - $HOME/download
+
+before_install:
+  - |
+    set -ex
+    if [ -d $HOME/miniconda/bin ]; then
+      echo "Miniconda already installed.";
+    else
+      echo "Installing miniconda.";
+      rm -rf $HOME/miniconda;
+      mkdir -p $HOME/download;
+      wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O $HOME/download/miniconda.sh;
+      bash $HOME/download/miniconda.sh -b -p $HOME/miniconda
+    fi
+    set +ex
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+
+install:
+  # Configure conda
+  - source $HOME/miniconda/bin/activate
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+
+  # Install a recent version of CMake and Eigen if they are not yet installed
+  - if [ ! -f $HOME/miniconda/bin/cmake ]; then
+      conda install -c conda-forge cmake=3.13 eigen;
+    else
+      echo "Using already installed packages.";
+    fi
+  - export PATH=${HOME}/miniconda/bin:${PATH} # Use conda CMake
+
+# Run the build script
+script:
+  - cd ${TRAVIS_BUILD_DIR}
+  - mkdir build && cd build
+  - cmake .. -DCMAKE_PREFIX_PATH=${HOME}/miniconda -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Release
+  - make -j2 VERBOSE=1 && make test ARGS=-j2 && sudo make install
+

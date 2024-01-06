@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Dany Cajas
+# Copyright (C) 2020-2024 Dany Cajas
 
 import os
 import numpy as np
@@ -6,9 +6,9 @@ import numpy as np
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
-MAJOR = 4
-MINOR = 4
-MICRO = 1
+MAJOR = 5
+MINOR = 0
+MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 def write_version_py(filename='riskfolio/version.py'):
@@ -43,6 +43,7 @@ INSTALL_REQUIRES = [
     'scipy>=1.1.0',
     'pandas>=1.0.0',
     'matplotlib>=3.5.0',
+    'clarabel>=0.6.0',
     'cvxpy>=1.3.1',
     'scikit-learn>=1.0.0',
     'statsmodels>=0.10.1',
@@ -66,6 +67,7 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.8',
     'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
     'License :: OSI Approved :: BSD License',
     'Topic :: Office/Business :: Financial :: Investment',
     'Topic :: Office/Business :: Financial',
@@ -91,22 +93,25 @@ if __name__ == "__main__":
         numpy_include = np.get_numpy_include()
 
     WIN = sys.platform.startswith("win32")
-    armadillo_path = os.path.abspath(os.path.join('.', 'lib', 'armadillo-11.4.1', 'include'))
-    carma_path = os.path.abspath(os.path.join('.', 'lib', 'carma-0.6.6', 'include'))
-    lpack_path = os.path.abspath(os.path.join('.', 'lib', 'armadillo-11.4.1', 'lib_win64'))
+    eigen_path = os.path.abspath(os.path.join('.', 'lib', 'eigen-3.4.0', 'Eigen'))
+    eigen_core_path = os.path.abspath(os.path.join('.', 'lib', 'eigen-3.4.0'))
+    eigen_unsupported_path = os.path.abspath(os.path.join('.', 'lib', 'eigen-3.4.0', 'unsupported'))
+    spectra_path = os.path.abspath(os.path.join('.', 'lib', 'spectra-1.0.1', 'include'))
     external_path = os.path.abspath(os.path.join('.', 'riskfolio', 'external'))
 
+    sources = [os.path.join('riskfolio', 'external', 'cpp_functions_bindings.cpp')]
     if WIN:
         external_module = Pybind11Extension('riskfolio.external.functions',
-            sources=[os.path.join('riskfolio', 'external', 'cpp_functions_bindings.cpp')],
-            include_dirs = [numpy_include, armadillo_path, carma_path, external_path],
+            sources=sources,
+            include_dirs = [numpy_include, eigen_path, eigen_core_path, eigen_unsupported_path, spectra_path,external_path,external_path],
+            extra_compile_args = ['-O2', '-Ofast', '-msse2'],
             define_macros = [('VERSION_INFO', VERSION)],
             )
     else:
         external_module = Pybind11Extension('riskfolio.external.functions',
-            sources=[os.path.join('riskfolio', 'external', 'cpp_functions_bindings.cpp')],
-            include_dirs = [numpy_include, armadillo_path, carma_path, external_path],
-            extra_compile_args = ['-DARMA_DONT_USE_WRAPPER'],
+            sources=sources,
+            include_dirs = [numpy_include, eigen_path, eigen_core_path, eigen_unsupported_path, spectra_path, external_path,external_path],
+            extra_compile_args = ['-O2', '-Ofast'],
             define_macros = [('VERSION_INFO', VERSION)],
             )
 

@@ -35,6 +35,7 @@ def test_classic_minrisk_optimization():
 
     port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
     port.alpha = 0.05
+    port.solvers = ['CLARABEL']
 
     model = "Classic"
     obj = "MinRisk"
@@ -72,7 +73,7 @@ def test_classic_minrisk_optimization():
     w_1.columns = rms
 
     w_2 = get_data("Classic_MinRisk.csv")
-            
+
     a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
     if a is None:
         print("There are no errors in test_classic_minrisk_optimization")
@@ -90,6 +91,7 @@ def test_classic_sharpe_optimization():
 
     port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
     port.alpha = 0.05
+    port.solvers = ['CLARABEL']
 
     model = "Classic"
     obj = "Sharpe"
@@ -125,7 +127,7 @@ def test_classic_sharpe_optimization():
         w_1 = pd.concat([w_1, w], axis=1)
 
     w_1.columns = rms
-    
+
     w_2 = get_data("Classic_Sharpe.csv")
 
     a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
@@ -145,6 +147,7 @@ def test_classic_riskparity_optimization():
 
     port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
     port.alpha = 0.05
+    port.solvers = ['CLARABEL', 'ECOS', 'SCS']
 
     model = "Classic"
     hist = True
@@ -179,7 +182,7 @@ def test_classic_riskparity_optimization():
 
     w_2 = get_data("Classic_RP.csv")
 
-    a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=3)
+    a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
     if a is None:
         print("There are no errors in test_classic_riskparity_optimization")
 
@@ -244,7 +247,7 @@ def test_hc_hrp_optimization():
         w_1 = pd.concat([w_1, w], axis=1)
 
     w_1.columns = rms
-    
+
     w_2 = get_data("HC_HRP.csv")
 
     a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)
@@ -312,7 +315,7 @@ def test_hc_herc_optimization():
         w_1 = pd.concat([w_1, w], axis=1)
 
     w_1.columns = rms
-    
+
     w_2 = get_data("HC_HERC.csv")
 
     a = np.testing.assert_array_almost_equal(w_1.to_numpy(), w_2.to_numpy(), decimal=6)

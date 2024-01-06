@@ -1,6 +1,6 @@
 """"""  #
 """
-Copyright (c) 2020-2023, Dany Cajas
+Copyright (c) 2020-2024, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -21,6 +21,9 @@ from sklearn.metrics import mutual_info_score
 from sklearn.neighbors import KernelDensity
 from astropy.stats import knuth_bin_width, freedman_bin_width, scott_bin_width
 from itertools import product
+import riskfolio.external.cppfunctions as cf
+import riskfolio.src.GerberStatistic as gs
+import re
 
 
 __all__ = [
@@ -29,9 +32,7 @@ __all__ = [
     "corr2cov",
     "cov_fix",
     "cov_returns",
-    "commutation_matrix",
-    "cokurtosis_matrix",
-    "semi_cokurtosis_matrix",
+    "block_vec_pq",
     "dcorr",
     "dcorr_matrix",
     "numBins",
@@ -51,7 +52,6 @@ __all__ = [
     "weights_discretizetion",
     "color_list",
 ]
-
 
 ###############################################################################
 # Additional Matrix Functions
@@ -238,119 +238,6 @@ def cov_returns(cov, seed=0):
     return a
 
 
-def commutation_matrix(cov):
-    r"""
-    Generate the commutation matrix of the covariance matrix cov.
-
-    Parameters
-    ----------
-    cov : ndarray
-        Covariance matrix of shape n_features x n_features, where
-        n_features is the number of features.
-
-    Returns
-    -------
-    K : ndarray
-        The commutation matrix of the covariance matrix cov.
-
-    Raises
-    ------
-        ValueError when the value cannot be calculated.
-
-    """
-    (m, n) = cov.shape
-    row = np.arange(m * n)
-    col = row.reshape((m, n), order="F").ravel()
-    data = np.ones(m * n, dtype=np.int8)
-    K = csr_matrix((data, (row, col)), shape=(m * n, m * n))
-    K = K.toarray()
-
-    return K
-
-
-def cokurtosis_matrix(Y):
-    r"""
-    Calculates cokurtosis square matrix as shown in :cite:`d-Cajas4`.
-
-    Parameters
-    ----------
-    Y : ndarray
-        Returns series of shape n_sample x n_features.
-
-    Returns
-    -------
-    K : ndarray
-        The cokurtosis square matrix.
-
-    Raises
-    ------
-        ValueError when the value cannot be calculated.
-
-    """
-    flag = False
-    if isinstance(Y, pd.DataFrame):
-        assets = Y.columns.tolist()
-        cols = list(product(assets, assets))
-        cols = [str(y) + " - " + str(x) for x, y in cols]
-        flag = True
-
-    Y_ = np.array(Y, ndmin=2)
-    T, n = Y_.shape
-    mu = np.mean(Y_, axis=0).reshape(1, -1)
-    mu = np.repeat(mu, T, axis=0)
-    x = Y_ - mu
-    ones = np.ones((1, n))
-    z = np.kron(ones, x) * np.kron(x, ones)
-    S4 = 1 / T * z.T @ z
-
-    if flag:
-        S4 = pd.DataFrame(S4, index=cols, columns=cols)
-
-    return S4
-
-
-def semi_cokurtosis_matrix(Y):
-    r"""
-    Calculates semi cokurtosis square matrix as shown in :cite:`d-Cajas4`.
-
-    Parameters
-    ----------
-    Y : ndarray
-        Returns series of shape n_sample x n_features.
-
-    Returns
-    -------
-    SK : ndarray
-        The semi cokurtosis square matrix.
-
-    Raises
-    ------
-        ValueError when the value cannot be calculated.
-
-    """
-    flag = False
-    if isinstance(Y, pd.DataFrame):
-        assets = Y.columns.tolist()
-        cols = list(product(assets, assets))
-        cols = [y + " - " + x for x, y in cols]
-        flag = True
-
-    Y_ = np.array(Y, ndmin=2)
-    T, n = Y_.shape
-    mu = np.mean(Y_, axis=0).reshape(1, -1)
-    mu = np.repeat(mu, T, axis=0)
-    x = Y_ - mu
-    x = np.minimum(x, np.zeros_like(x))
-    ones = np.ones((1, n))
-    z = np.kron(ones, x) * np.kron(x, ones)
-    SK4 = 1 / T * z.T @ z
-
-    if flag:
-        SK4 = pd.DataFrame(SK4, index=cols, columns=cols)
-
-    return SK4
-
-
 def block_vec_pq(A, p, q):
     r"""
     Calculates block vectorization operator as shown in :cite:`d-Loan1992`
@@ -443,15 +330,7 @@ def dcorr(X, Y):
     if Y.shape[0] != X.shape[0]:
         raise ValueError("Number of samples must match")
 
-    a = squareform(pdist(X))
-    b = squareform(pdist(Y))
-    A = a - a.mean(axis=0)[None, :] - a.mean(axis=1)[:, None] + a.mean()
-    B = b - b.mean(axis=0)[None, :] - b.mean(axis=1)[:, None] + b.mean()
-
-    dcov2_xy = (A * B).sum() / float(n * n)
-    dcov2_xx = (A * A).sum() / float(n * n)
-    dcov2_yy = (B * B).sum() / float(n * n)
-    value = np.sqrt(dcov2_xy) / np.sqrt(np.sqrt(dcov2_xx) * np.sqrt(dcov2_yy))
+    value = cf.d_corr(X, Y)
 
     return value
 
@@ -483,13 +362,7 @@ def dcorr_matrix(X):
     else:
         X1 = X.copy()
 
-    n = X1.shape[1]
-    corr = np.ones((n, n))
-    indices = np.triu_indices(n, 1)
-
-    for i, j in zip(indices[0], indices[1]):
-        corr[i, j] = dcorr(X1[:, i], X1[:, j])
-        corr[j, i] = corr[i, j]
+    corr = cf.d_corr_matrix(X1)
 
     if flag:
         corr = pd.DataFrame(corr, index=cols, columns=cols)
@@ -798,7 +671,7 @@ def ltdi_matrix(X, alpha=0.05):
     return mat
 
 
-def two_diff_gap_stat(codep, dist, clusters, max_k=10):
+def two_diff_gap_stat(dist, clusters, max_k=10):
     r"""
     Calculate the optimal number of clusters based on the two difference gap
     statistic :cite:`d-twogap`.
@@ -826,7 +699,7 @@ def two_diff_gap_stat(codep, dist, clusters, max_k=10):
 
     """
     # cluster levels over from 1 to N-1 clusters
-    cluster_lvls = pd.DataFrame(hr.cut_tree(clusters), index=codep.columns)
+    cluster_lvls = pd.DataFrame(hr.cut_tree(clusters), index=dist.columns)
     num_k = cluster_lvls.columns  # save column with number of clusters
     cluster_lvls = cluster_lvls.iloc[:, ::-1]  # reverse order to start with 1 cluster
     cluster_lvls.columns = num_k  # set columns to number of cluster
@@ -850,7 +723,7 @@ def two_diff_gap_stat(codep, dist, clusters, max_k=10):
         W_list.append(W_k)
 
     W_list = pd.Series(W_list)
-    n = codep.shape[0]
+    n = dist.shape[0]
     limit_k = int(min(max_k, np.sqrt(n)))
     gaps = W_list.shift(2) + W_list - 2 * W_list.shift(1)
     gaps = gaps[0:limit_k]
@@ -860,6 +733,100 @@ def two_diff_gap_stat(codep, dist, clusters, max_k=10):
         k = int(gaps.idxmax() + 2)
 
     return k
+
+
+def codep_dist(
+    returns,
+    custom_cov=None,
+    codependence="pearson",
+    bins_info="KN",
+    alpha_tail=0.05,
+    gs_threshold=0.5,
+):
+    r"""
+    Calculate the codependence and distance matrix according the selected method.
+
+    Parameters
+    ----------
+    returns : DataFrame
+        Assets returns.
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Possible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Possible values are:
+
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
+
+    Returns
+    -------
+    codep : DataFrame
+        Codependence matrix.
+    dist : DataFrame
+        Distance matrix.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    """
+    if codependence in {"pearson", "spearman", "kendall"}:
+        codep = returns.corr(method=codependence)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+        codep = 1 - dist**2
+    elif codependence == "gerber1":
+        codep = gs.gerber_cov_stat1(returns, threshold=gs_threshold)
+        codep = cov2corr(codep)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    elif codependence == "gerber2":
+        codep = gs.gerber_cov_stat2(returns, threshold=gs_threshold)
+        codep = cov2corr(codep)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+    elif codependence in {"abs_pearson", "abs_spearman", "abs_kendall"}:
+        codep = np.abs(returns.corr(method=codependence[4:]))
+        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
+    elif codependence in {"distance"}:
+        codep = dcorr_matrix(returns).astype(float)
+        dist = np.sqrt(np.clip((1 - codep), a_min=0.0, a_max=1.0))
+    elif codependence in {"mutual_info"}:
+        codep = mutual_info_matrix(returns, bins_info).astype(float)
+        dist = var_info_matrix(returns, bins_info).astype(float)
+    elif codependence in {"tail"}:
+        codep = ltdi_matrix(returns, alpha_tail).astype(float)
+        dist = -np.log(codep)
+    elif codependence in {"custom_cov"}:
+        codep = cov2corr(custom_cov).astype(float)
+        dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
+
+    return codep, dist
 
 
 ###############################################################################

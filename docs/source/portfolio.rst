@@ -87,13 +87,13 @@ Where:
 measures are:
 
 - Standard Deviation :cite:`a-Markowitz`.
-- Square Root Kurtosis :cite:`a-Cajas4`.
+- Square Root Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas7`.
 - Mean Absolute Deviation :cite:`a-Konno`.
 - Gini Mean Difference :cite:`a-Yitzhaki1`, :cite:`a-Cajas3`.
 - Conditional Value at Risk Range :cite:`a-Cajas3`.
 - Tail Gini Range :cite:`a-Cajas3`.
 - Semi Standard Deviation :cite:`a-Mansini3`.
-- Square Root Semi Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas6`.
+- Square Root Semi Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas7`.
 - First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.
@@ -147,13 +147,13 @@ Where:
 measures are:
 
 - Standard Deviation :cite:`a-Markowitz`.
-- Square Root Kurtosis :cite:`a-Cajas4`.
+- Square Root Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas7`.
 - Mean Absolute Deviation :cite:`a-Konno`.
 - Gini Mean Difference :cite:`a-Yitzhaki1`, :cite:`a-Cajas3`.
 - Conditional Value at Risk Range :cite:`a-Cajas3`.
 - Tail Gini Range :cite:`a-Cajas3`.
 - Semi Standard Deviation :cite:`a-Mansini3`.
-- Square Root Semi Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas5`.
+- Square Root Semi Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas7`.
 - First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
 - Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
 - Conditional Value at Risk :cite:`a-Rockafellar`.

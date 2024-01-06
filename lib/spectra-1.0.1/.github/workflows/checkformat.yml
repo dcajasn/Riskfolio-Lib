@@ -1,0 +1,22 @@
+name: check format
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc]
+    steps:
+    - uses: actions/checkout@v2 
+    - name: dependencies
+      run: sudo apt install libeigen3-dev clang-format-9
+    - name: cmake
+      run: cmake -B builddir
+    - name: Format
+      run: cmake --build builddir --target format && git diff --exit-code
