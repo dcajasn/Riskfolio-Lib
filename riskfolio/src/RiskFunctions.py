@@ -496,7 +496,7 @@ def EVaR_Hist(X, alpha=0.05):
     return (value, t)
 
 
-def RLVaR_Hist(X, alpha=0.05, kappa=0.01, solver=None):
+def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
     r"""
     Calculate the Relativistic Value at Risk (RLVaR) of a returns series.
     I recommend only use this function with MOSEK solver.
@@ -523,10 +523,10 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.01, solver=None):
     alpha : float, optional
         Significance level of EVaR. The default is 0.05.
     kappa : float, optional
-        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.01.
+        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is None.
+        The default value is 'CLARABEL'.
 
     Raises
     ------
@@ -858,7 +858,7 @@ def EDaR_Abs(X, alpha=0.05):
     return (value, t)
 
 
-def RLDaR_Abs(X, alpha=0.05, kappa=0.01, solver=None):
+def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
     r"""
     Calculate the Relativistic Drawdown at Risk (RLDaR) of a returns series
     using uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
@@ -875,10 +875,10 @@ def RLDaR_Abs(X, alpha=0.05, kappa=0.01, solver=None):
     alpha : float, optional
         Significance level of EVaR. The default is 0.05.
     kappa : float, optional
-        Deformation parameter of RLDaR, must be between 0 and 1. The default is 0.01.
+        Deformation parameter of RLDaR, must be between 0 and 1. The default is 0.3.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is None.
+        The default value is 'CLARABEL'.
 
     Raises
     ------
@@ -1239,7 +1239,7 @@ def EDaR_Rel(X, alpha=0.05):
     return (value, t)
 
 
-def RLDaR_Rel(X, alpha=0.05, kappa=0.01, solver=None):
+def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
     r"""
     Calculate the Relativistic Drawdown at Risk (RLDaR) of a returns series
     using compounded cumulative returns. I recommend only use this function with MOSEK solver.
@@ -1256,10 +1256,10 @@ def RLDaR_Rel(X, alpha=0.05, kappa=0.01, solver=None):
     alpha : float, optional
         Significance level of RLDaR. The default is 0.05.
     kappa : float, optional
-        Deformation parameter of RLDaR, must be between 0 and 1. The default is 0.01.
+        Deformation parameter of RLDaR, must be between 0 and 1. The default is 0.3.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is None.
+        The default value is 'CLARABEL'.
 
     Raises
     ------
@@ -1581,7 +1581,7 @@ def L_Moment(X, k=2):
     return value
 
 
-def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver=None):
+def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver='CLARABEL'):
     r"""
     Calculate a custom convex risk measure that is a weighted average of
     first k-th l-moments.
@@ -1662,8 +1662,8 @@ def Sharpe_Risk(
     a_sim=100,
     beta=None,
     b_sim=None,
-    kappa=0.01,
-    solver=None,
+    kappa=0.3,
+    solver='CLARABEL',
 ):
     r"""
     Calculate the risk measure available on the Sharpe function.
@@ -1726,10 +1726,10 @@ def Sharpe_Risk(
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.01.
+        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is None.
+        The default value is 'CLARABEL'.
 
     Raises
     ------
@@ -1835,8 +1835,8 @@ def Sharpe(
     a_sim=100,
     beta=None,
     b_sim=None,
-    kappa=0.01,
-    solver=None,
+    kappa=0.3,
+    solver='CLARABEL',
 ):
     r"""
     Calculate the Risk Adjusted Return Ratio from a portfolio returns series.
@@ -1916,7 +1916,7 @@ def Sharpe(
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.01.
+        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
@@ -2018,7 +2018,7 @@ def L_Moment(X, k=2):
     return value
 
 
-def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver=None):
+def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver='CLARABEL'):
     r"""
     Calculate a custom convex risk measure that is a weighted average of
     first k-th l-moments.
@@ -2045,7 +2045,7 @@ def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver=None):
         The default is 0.5.
     solver: str, optional
         Solver available for CVXPY. Used to calculate 'ME', 'MSS' and 'MSD' weights.
-        The default value is None.
+        The default value is 'CLARABEL'.
 
     Raises
     ------
@@ -2099,8 +2099,8 @@ def Risk_Contribution(
     a_sim=100,
     beta=None,
     b_sim=None,
-    kappa=0.01,
-    solver=None,
+    kappa=0.3,
+    solver='CLARABEL',
 ):
     r"""
     Calculate the risk contribution for each asset based on the risk measure
@@ -2164,7 +2164,7 @@ def Risk_Contribution(
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.01.
+        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.

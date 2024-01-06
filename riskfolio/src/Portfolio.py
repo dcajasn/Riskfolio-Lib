@@ -3967,7 +3967,7 @@ class Portfolio(object):
         kelly=False,
         points=20,
         rf=0,
-        solver=None,
+        solver='CLARABEL',
         hist=True,
     ):
         r"""
@@ -4019,7 +4019,7 @@ class Portfolio(object):
             Risk free rate. The default is 0.
         solver: str, optional
             Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-            The default value is None.
+            The default value is 'CLARABEL'.
         hist : bool, optional
             Indicate what kind of returns are used to calculate risk measures
             that depends on scenarios (All except 'MV' risk measure).
@@ -4304,6 +4304,12 @@ class Portfolio(object):
 
         self.ainequality = None
         self.binequality = None
+        self.b = None
+        self.network_sdp = None
+        self.network_penalty = 0.05
+        self.network_ip = None
+        self.acentrality = None
+        self.bcentrality = None
 
     def reset_inputs(self):
         r"""
@@ -4360,9 +4366,10 @@ class Portfolio(object):
         self.beta = None
         self.b_sim = None
         self.kappa = 0.30
+        self.n_max_kurt = 50
         self.kindbench = True
         self.benchindex = None
-        self._benchweights = None
+        self.benchweights = None
         self.allowTO = False
         self.turnover = 0.05
         self.allowTE = False

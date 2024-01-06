@@ -223,7 +223,7 @@ def plot_frontier(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver=None,
+    solver='CLARABEL',
     cmap="viridis",
     w=None,
     label="Portfolio",
@@ -298,7 +298,7 @@ def plot_frontier(
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is None.
+        The default value is 'CLARABEL'.
     cmap : cmap, optional
         Colorscale that represents the risk adjusted return ratio.
         The default is 'viridis'.
@@ -1103,7 +1103,7 @@ def plot_risk_con(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver=None,
+    solver='CLARABEL',
     percentage=False,
     erc_line=True,
     color="tab:blue",
@@ -1168,7 +1168,7 @@ def plot_risk_con(
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is None.
+        The default value is 'CLARABEL'.
     percentage : bool, optional
         If risk contribution per asset is expressed as percentage or as a value. The default is False.
     erc_line : bool, optional
@@ -1331,7 +1331,7 @@ def plot_hist(
     alpha=0.05,
     a_sim=100,
     kappa=0.30,
-    solver=None,
+    solver='CLARABEL',
     bins=50,
     height=6,
     width=10,
@@ -1354,7 +1354,7 @@ def plot_hist(
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is None.
+        The default value is 'CLARABEL'.
     bins : float, optional
         Number of bins of the histogram. The default is 50.
     height : float, optional
@@ -1490,11 +1490,11 @@ def plot_hist(
         y,
         "--",
         color="orange",
-        label=r"Normal: \$\mu="
+        label=r"Normal: $\mu="
         + "{0:.2%}".format(mu)
-        + "\$%, \$\sigma="
+        + "$%, $\sigma="
         + "{0:.2%}".format(sigma)
-        + "\$%",
+        + "$%",
     )
 
     factor = (np.max(a) - np.min(a)) / bins
@@ -1730,7 +1730,7 @@ def plot_drawdown(
     w,
     alpha=0.05,
     kappa=0.30,
-    solver=None,
+    solver='CLARABEL',
     height=8,
     width=10,
     height_ratios=[2, 3],
@@ -1751,7 +1751,7 @@ def plot_drawdown(
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is None.
+        The default value is 'CLARABEL'.
     height : float, optional
         Height of the image in inches. The default is 8.
     width : float, optional
@@ -1920,7 +1920,7 @@ def plot_table(
     alpha=0.05,
     a_sim=100,
     kappa=0.30,
-    solver=None,
+    solver='CLARABEL',
     height=9,
     width=12,
     t_factor=252,
@@ -1955,7 +1955,7 @@ def plot_table(
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is None.
+        The default value is 'CLARABEL'.
     height : float, optional
         Height of the image in inches. The default is 9.
     width : float, optional

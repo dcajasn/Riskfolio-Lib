@@ -51,7 +51,7 @@ class HCPortfolio(object):
         The default value is None.
     solvers: list, optional
         List of solvers available for CVXPY used for the selected NCO method.
-        The default value is None.
+        The default value is ['CLARABEL', 'SCS', 'ECOS'].
     w_max : pd.Series or float, optional
         Upper bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
     w_min : pd.Series or float, optional
@@ -79,8 +79,8 @@ class HCPortfolio(object):
         beta=None,
         b_sim=None,
         kappa=0.30,
-        solver_rl=None,
-        solvers=None,
+        solver_rl='CLARABEL',
+        solvers=['CLARABEL', 'SCS', 'ECOS'],
         w_max=None,
         w_min=None,
         alpha_tail=0.05,

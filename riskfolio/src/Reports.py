@@ -41,7 +41,7 @@ def jupyter_report(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver=None,
+    solver='CLARABEL',
     percentage=False,
     erc_line=True,
     color="tab:blue",
@@ -111,7 +111,7 @@ def jupyter_report(
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is None.
+        The default value is 'CLARABEL'.
     percentage : bool, optional
         If risk contribution per asset is expressed as percentage or as a value. The default is False.
     erc_line : bool, optional
@@ -204,8 +204,8 @@ def jupyter_report(
         MAR=rf,
         alpha=alpha,
         a_sim=a_sim,
-        kappa=0.30,
-        solver=None,
+        kappa=kappa,
+        solver=solver,
         t_factor=t_factor,
         ini_days=ini_days,
         days_per_year=days_per_year,
