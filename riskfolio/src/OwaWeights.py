@@ -306,7 +306,7 @@ def owa_tgrg(T, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     return w_
 
 
-def owa_l_moment_crm(T, k=4, method="MSD", g=0.5, max_phi=0.5, solver='CLARABEL'):
+def owa_l_moment_crm(T, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"):
     r"""
     Calculate the OWA weights to calculate a convex risk measure that considers
     higher linear moments or L-moments as shown in :cite:`d-Cajas6`.

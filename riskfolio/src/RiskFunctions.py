@@ -448,7 +448,7 @@ def _Entropic_RM(z, X, alpha=0.05):
     return value
 
 
-def EVaR_Hist(X, alpha=0.05):
+def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
     r"""
     Calculate the Entropic Value at Risk (EVaR) of a returns series.
 
@@ -466,6 +466,9 @@ def EVaR_Hist(X, alpha=0.05):
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of EVaR. The default is 0.05.
+    solver: str, optional
+        Solver available for CVXPY that supports exponential cone programming.
+        Used to calculate EVaR and EDaR. The default value is 'CLARABEL'.
 
     Raises
     ------
@@ -478,7 +481,6 @@ def EVaR_Hist(X, alpha=0.05):
         EVaR of a returns series and value of z that minimize EVaR.
 
     """
-    warnings.filterwarnings("ignore")
 
     a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
@@ -486,17 +488,52 @@ def EVaR_Hist(X, alpha=0.05):
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
 
-    bnd = Bounds([-1e-24], [np.inf])
-    result = minimize(
-        _Entropic_RM, [1], args=(X, alpha), method="SLSQP", bounds=bnd, tol=1e-12
-    )
-    t = result.x
-    t = t.item()
-    value = _Entropic_RM(t, X, alpha)
+    T, N = a.shape
+
+    # Primal Formulation
+    t = cp.Variable((1, 1))
+    z = cp.Variable((1, 1), nonneg=True)
+    ui = cp.Variable((T, 1))
+    ones = np.ones((T, 1))
+
+    constraints = [
+        cp.sum(ui) <= z,
+        cp.constraints.ExpCone(-a * 1000 - t * 1000, ones @ z * 1000, ui * 1000),
+    ]
+
+    risk = t + z * np.log(1 / (alpha * T))
+    objective = cp.Minimize(risk * 1000)
+    prob = cp.Problem(objective, constraints)
+
+    try:
+        if solver in ["CLARABEL", "MOSEK", "SCS"]:
+            prob.solve(solver=solver)
+        else:
+            prob.solve()
+    except:
+        pass
+
+    if risk.value is None:
+        value = None
+    else:
+        value = risk.value.item()
+        t = z.value
+
+    if value is None:
+        warnings.filterwarnings("ignore")
+
+        bnd = Bounds([-1e-24], [np.inf])
+        result = minimize(
+            _Entropic_RM, [1], args=(X, alpha), method="SLSQP", bounds=bnd, tol=1e-12
+        )
+        t = result.x
+        t = t.item()
+        value = _Entropic_RM(t, X, alpha)
+
     return (value, t)
 
 
-def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
+def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     r"""
     Calculate the Relativistic Value at Risk (RLVaR) of a returns series.
     I recommend only use this function with MOSEK solver.
@@ -525,8 +562,8 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
     kappa : float, optional
         Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
     solver: str, optional
-        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is 'CLARABEL'.
+        Solver available for CVXPY that supports power cone programming. Used
+        to calculate RLVaR and RLDaR. The default value is 'CLARABEL'.
 
     Raises
     ------
@@ -548,43 +585,80 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
 
     T, N = a.shape
 
-    t = cp.Variable((1, 1))
-    z = cp.Variable((1, 1))
-    omega = cp.Variable((T, 1))
-    psi = cp.Variable((T, 1))
-    theta = cp.Variable((T, 1))
+    # Dual Formulation
+    Z = cp.Variable((T, 1))
     nu = cp.Variable((T, 1))
-
+    tau = cp.Variable((T, 1))
     ones = np.ones((T, 1))
-    constraints = [
-        cp.constraints.power.PowCone3D(
-            z * (1 + kappa) / (2 * kappa) * ones,
-            psi * (1 + kappa) / kappa,
-            nu,
-            1 / (1 + kappa),
-        ),
-        cp.constraints.power.PowCone3D(
-            omega / (1 - kappa), theta / kappa, -z / (2 * kappa) * ones, (1 - kappa)
-        ),
-        -a * 1000 - t * 1000 + nu * 1000 + omega * 1000 <= 0,
-        z >= 0,
-    ]
 
     c = ((1 / (alpha * T)) ** kappa - (1 / (alpha * T)) ** (-kappa)) / (2 * kappa)
-    risk = t + c * z + cp.sum(psi + theta)
 
-    objective = cp.Minimize(risk * 1000)
+    constraints = [
+        cp.sum(Z) == 1,
+        cp.sum(nu - tau) / (2 * kappa) <= c,
+        cp.PowCone3D(nu, ones, Z, 1 / (1 + kappa)),
+        cp.PowCone3D(Z, ones, tau, 1 - kappa),
+    ]
+    risk = Z.T @ (-a)
+
+    objective = cp.Maximize(risk * 1000)
     prob = cp.Problem(objective, constraints)
 
     try:
         if solver in ["CLARABEL", "MOSEK", "SCS"]:
             prob.solve(solver=solver)
         else:
-            prob.solve()
+            prob.solve(verbose=True)
     except:
         pass
 
-    value = risk.value.item()
+    if risk.value is None:
+        value = None
+    else:
+        value = risk.value.item()
+
+    if value is None:
+        # Primal Formulation
+        t = cp.Variable((1, 1))
+        z = cp.Variable((1, 1))
+        omega = cp.Variable((T, 1))
+        psi = cp.Variable((T, 1))
+        theta = cp.Variable((T, 1))
+        nu = cp.Variable((T, 1))
+
+        ones = np.ones((T, 1))
+        constraints = [
+            cp.PowCone3D(
+                z * (1 + kappa) / (2 * kappa) * ones,
+                psi * (1 + kappa) / kappa,
+                nu,
+                1 / (1 + kappa),
+            ),
+            cp.PowCone3D(
+                omega / (1 - kappa), theta / kappa, -z / (2 * kappa) * ones, (1 - kappa)
+            ),
+            -a - t + nu + omega <= 0,
+            z >= 0,
+        ]
+
+        c = ((1 / (alpha * T)) ** kappa - (1 / (alpha * T)) ** (-kappa)) / (2 * kappa)
+        risk = t + c * z + cp.sum(psi + theta)
+
+        objective = cp.Minimize(risk)
+        prob = cp.Problem(objective, constraints)
+
+        try:
+            if solver in ["CLARABEL", "MOSEK", "SCS"]:
+                prob.solve(solver=solver)
+            else:
+                prob.solve(verbose=True)
+        except:
+            pass
+
+        if risk.value is None:
+            value = 0
+        else:
+            value = risk.value.item()
 
     return value
 
@@ -858,7 +932,7 @@ def EDaR_Abs(X, alpha=0.05):
     return (value, t)
 
 
-def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
+def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     r"""
     Calculate the Relativistic Drawdown at Risk (RLDaR) of a returns series
     using uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
@@ -1239,7 +1313,7 @@ def EDaR_Rel(X, alpha=0.05):
     return (value, t)
 
 
-def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
+def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     r"""
     Calculate the Relativistic Drawdown at Risk (RLDaR) of a returns series
     using compounded cumulative returns. I recommend only use this function with MOSEK solver.
@@ -1581,7 +1655,7 @@ def L_Moment(X, k=2):
     return value
 
 
-def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver='CLARABEL'):
+def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"):
     r"""
     Calculate a custom convex risk measure that is a weighted average of
     first k-th l-moments.
@@ -1663,7 +1737,7 @@ def Sharpe_Risk(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver='CLARABEL',
+    solver="CLARABEL",
 ):
     r"""
     Calculate the risk measure available on the Sharpe function.
@@ -1836,7 +1910,7 @@ def Sharpe(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver='CLARABEL',
+    solver="CLARABEL",
 ):
     r"""
     Calculate the Risk Adjusted Return Ratio from a portfolio returns series.
@@ -2018,7 +2092,7 @@ def L_Moment(X, k=2):
     return value
 
 
-def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver='CLARABEL'):
+def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"):
     r"""
     Calculate a custom convex risk measure that is a weighted average of
     first k-th l-moments.
@@ -2100,7 +2174,7 @@ def Risk_Contribution(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver='CLARABEL',
+    solver="CLARABEL",
 ):
     r"""
     Calculate the risk contribution for each asset based on the risk measure

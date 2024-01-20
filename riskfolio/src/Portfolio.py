@@ -3967,7 +3967,7 @@ class Portfolio(object):
         kelly=False,
         points=20,
         rf=0,
-        solver='CLARABEL',
+        solver="CLARABEL",
         hist=True,
     ):
         r"""
@@ -4142,8 +4142,8 @@ class Portfolio(object):
             risk_min = rk.UCI_Abs(returns @ w_min)
             risk_max = rk.UCI_Abs(returns @ w_max)
         elif rm == "EVaR":
-            risk_min = rk.EVaR_Hist(returns @ w_min, alpha)[0]
-            risk_max = rk.EVaR_Hist(returns @ w_max, alpha)[0]
+            risk_min = rk.EVaR_Hist(returns @ w_min, alpha, solver)[0]
+            risk_max = rk.EVaR_Hist(returns @ w_max, alpha, solver)[0]
         elif rm == "EDaR":
             risk_min = rk.EDaR_Abs(returns @ w_min, alpha)[0]
             risk_max = rk.EDaR_Abs(returns @ w_max, alpha)[0]

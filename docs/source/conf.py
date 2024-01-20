@@ -25,7 +25,7 @@ project = 'Riskfolio-Lib'
 copyright = '2020-2024, Dany Cajas'
 author = 'Dany Cajas'
 
-__version__ = "5.0.0"
+__version__ = "5.0.1"
 
 # The short X.Y version
 version = '.'.join(__version__.split('.')[:2])

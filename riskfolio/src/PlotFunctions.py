@@ -223,7 +223,7 @@ def plot_frontier(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     cmap="viridis",
     w=None,
     label="Portfolio",
@@ -1103,7 +1103,7 @@ def plot_risk_con(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     percentage=False,
     erc_line=True,
     color="tab:blue",
@@ -1331,7 +1331,7 @@ def plot_hist(
     alpha=0.05,
     a_sim=100,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     bins=50,
     height=6,
     width=10,
@@ -1353,8 +1353,9 @@ def plot_hist(
     kappa : float, optional
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
     solver: str, optional
-        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is 'CLARABEL'.
+        Solver available for CVXPY that supports power cone programming and exponential cone
+        programming. Used to calculate EVaR, EDaR, RLVaR and RLDaR. The default value
+        is 'CLARABEL'.
     bins : float, optional
         Number of bins of the histogram. The default is 50.
     height : float, optional
@@ -1430,7 +1431,7 @@ def plot_hist(
         -rk.VaR_Hist(a, alpha),
         -rk.CVaR_Hist(a, alpha),
         -rk.TG(a, alpha, a_sim),
-        -rk.EVaR_Hist(a, alpha)[0],
+        -rk.EVaR_Hist(a, alpha, solver)[0],
         -rk.RLVaR_Hist(a, alpha, kappa, solver),
         -rk.WR(a),
     ]
@@ -1730,7 +1731,7 @@ def plot_drawdown(
     w,
     alpha=0.05,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     height=8,
     width=10,
     height_ratios=[2, 3],
@@ -1920,7 +1921,7 @@ def plot_table(
     alpha=0.05,
     a_sim=100,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     height=9,
     width=12,
     t_factor=252,
@@ -2084,7 +2085,7 @@ def plot_table(
         rk.VaR_Hist(X, alpha=alpha) * t_factor**0.5,
         rk.CVaR_Hist(X, alpha=alpha) * t_factor**0.5,
         rk.TG(X, alpha=alpha, a_sim=a_sim) * t_factor**0.5,
-        rk.EVaR_Hist(X, alpha=alpha)[0] * t_factor**0.5,
+        rk.EVaR_Hist(X, alpha=alpha, solver=solver)[0] * t_factor**0.5,
         rk.RLVaR_Hist(X, alpha=alpha, kappa=kappa, solver=solver) * t_factor**0.5,
         rk.WR(X) * t_factor**0.5,
         st.skew(X, bias=False),

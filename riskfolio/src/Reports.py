@@ -41,7 +41,7 @@ def jupyter_report(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     percentage=False,
     erc_line=True,
     color="tab:blue",
@@ -110,8 +110,8 @@ def jupyter_report(
     kappa : float, optional
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
     solver: str, optional
-        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is 'CLARABEL'.
+        Solver available for CVXPY that supports power cone programming and exponential cone programming.
+        Used to calculate EVaR, EDaR, RLVaR and RLDaR. The default value is 'CLARABEL'.
     percentage : bool, optional
         If risk contribution per asset is expressed as percentage or as a value. The default is False.
     erc_line : bool, optional
@@ -272,6 +272,7 @@ def excel_report(
     w,
     rf=0,
     alpha=0.05,
+    solver="CLARABEL",
     t_factor=252,
     ini_days=1,
     days_per_year=252,
@@ -292,6 +293,9 @@ def excel_report(
     alpha : float, optional
         Significance level of VaR, CVaR, EVaR, DaR and CDaR.
         The default is 0.05.
+    solver: str, optional
+        Solver available for CVXPY that supports exponential cone programming.
+        Used to calculate EVaR and EDaR. The default value is 'CLARABEL'.
     t_factor : float, optional
         Factor used to annualize expected return and expected risks for
         risk measures based on returns (not drawdowns). The default is 252.
@@ -555,7 +559,7 @@ def excel_report(
         )
         EVaR = (
             "="
-            + str(rk.EVaR_Hist(returns @ w.iloc[:, j], alpha=alpha)[0])
+            + str(rk.EVaR_Hist(returns @ w.iloc[:, j], alpha=alpha, solver=solver)[0])
             + " * SQRT("
             + str(t_factor)
             + ")"
