@@ -234,7 +234,7 @@ that results from optimize one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & \underset{\Sigma \, \in \, U_{\Sigma}}{\max} w^{T} \Sigma w\\
+    &\underset{w}{\min} & & \underset{\Sigma \, \in \, U_{\Sigma}}{\max} w^{T} \Sigma w\\
     &\text{s.t.} & & Aw \geq B\\
     \end{aligned}
 
