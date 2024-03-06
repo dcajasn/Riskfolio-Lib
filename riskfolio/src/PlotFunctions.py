@@ -224,7 +224,7 @@ def plot_frontier(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     cmap="viridis",
     w=None,
     label="Portfolio",
@@ -354,7 +354,7 @@ def plot_frontier(
         ax = rp.plot_frontier(w_frontier=ws,
                               mu=mu,
                               cov=cov,
-                              returns=returns,
+                              returns=Y,
                               rm=rm,
                               rf=0,
                               alpha=0.05,
@@ -810,7 +810,7 @@ def plot_bar(
     -------
     ::
 
-        ax = rp.plot_bar(w,
+        ax = rp.plot_bar(w1,
                          title='Portfolio',
                          kind="v",
                          others=0.05,
@@ -1106,7 +1106,7 @@ def plot_risk_con(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     percentage=False,
     erc_line=True,
     color="tab:blue",
@@ -1217,7 +1217,7 @@ def plot_risk_con(
 
         ax = rp.plot_risk_con(w=w2,
                               cov=cov,
-                              returns=returns,
+                              returns=Y,
                               rm=rm,
                               rf=0,
                               alpha=0.05,
@@ -1342,7 +1342,7 @@ def plot_factor_risk_con(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     feature_selection="stepwise",
     stepwise="Forward",
     criterion="pvalue",
@@ -1489,10 +1489,10 @@ def plot_factor_risk_con(
     -------
     ::
 
-        ax = rp.plot_factor_risk_con(w=w2,
+        ax = rp.plot_factor_risk_con(w=w3,
                                      cov=cov,
-                                     returns=returns,
-                                     factors=factors,
+                                     returns=Y,
+                                     factors=X,
                                      B=None,
                                      const=True,
                                      rm=rm,
@@ -1510,10 +1510,10 @@ def plot_factor_risk_con(
 
     ::
 
-        ax = rp.plot_factor_risk_con(w=w2,
+        ax = rp.plot_factor_risk_con(w=w4,
                                      cov=cov,
-                                     returns=returns,
-                                     factors=factors,
+                                     returns=Y,
+                                     factors=X,
                                      B=None,
                                      const=True,
                                      rm=rm,
@@ -1586,12 +1586,12 @@ def plot_factor_risk_con(
         n_components=n_components,
     )
 
-    if feature_selection == 'PCR':
-        n = len(RC_F)-1
-        X = ['PC ' + str(i) for i in range(1, n+1)]
+    if feature_selection == "PCR":
+        n = len(RC_F) - 1
+        X = ["PC " + str(i) for i in range(1, n + 1)]
     else:
         X = factors.columns.tolist()
-    X.append('Others')
+    X.append("Others")
 
     if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
         RC_F = RC_F * t_factor**0.5
@@ -1648,7 +1648,7 @@ def plot_hist(
     alpha=0.05,
     a_sim=100,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     bins=50,
     height=6,
     width=10,
@@ -2047,7 +2047,7 @@ def plot_drawdown(
     w,
     alpha=0.05,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     height=8,
     width=10,
     height_ratios=[2, 3],
@@ -2237,7 +2237,7 @@ def plot_table(
     alpha=0.05,
     a_sim=100,
     kappa=0.30,
-    solver='CLARABEL',
+    solver="CLARABEL",
     height=9,
     width=12,
     t_factor=252,

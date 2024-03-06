@@ -1589,7 +1589,16 @@ def black_litterman_bayesian(
     return mu, cov, w
 
 
-def bootstrapping(X, kind="stationary", q=0.05, n_sim=6000, window=3, diag=False, threshold=1e-15, seed=0):
+def bootstrapping(
+    X,
+    kind="stationary",
+    q=0.05,
+    n_sim=6000,
+    window=3,
+    diag=False,
+    threshold=1e-15,
+    seed=0,
+):
     r"""
     Estimates the uncertainty sets of mean and covariance matrix through the selected
     bootstrapping method.
@@ -1664,7 +1673,7 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=6000, window=3, diag=False
     T, n = X.shape
 
     mu = X.mean().to_numpy().reshape(1, n)
-    vec_Sigma = X.cov().to_numpy().reshape((1, n ** 2), order="F")
+    vec_Sigma = X.cov().to_numpy().reshape((1, n**2), order="F")
 
     mus = np.zeros((n_sim, 1, n))
     covs = np.zeros((n_sim, n, n))
@@ -1692,8 +1701,10 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=6000, window=3, diag=False
     mu_u = pd.DataFrame(mu_u, index=[0], columns=cols)
 
     # Box Constraint for Covariance
-    cov_l = np.percentile(covs, q= q / 2 * 100, axis=0, keepdims=True).reshape(n, n)
-    cov_u = np.percentile(covs, q=(1 - q / 2) * 100, axis=0, keepdims=True).reshape(n, n)
+    cov_l = np.percentile(covs, q=q / 2 * 100, axis=0, keepdims=True).reshape(n, n)
+    cov_u = np.percentile(covs, q=(1 - q / 2) * 100, axis=0, keepdims=True).reshape(
+        n, n
+    )
     cov_l = pd.DataFrame(cov_l, index=cols, columns=cols)
     cov_u = pd.DataFrame(cov_u, index=cols, columns=cols)
 
@@ -1714,7 +1725,7 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=6000, window=3, diag=False
     cov_mu = pd.DataFrame(cov_mu, index=cols, columns=cols)
 
     # Elliptical Constraint for Covariance
-    A_Sigma = covs.reshape((n_sim, n ** 2), order="F")
+    A_Sigma = covs.reshape((n_sim, n**2), order="F")
     A_Sigma = A_Sigma - np.repeat(vec_Sigma, n_sim, axis=0)
     cov_sigma = np.cov(A_Sigma, rowvar=False)
     cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)
@@ -1788,11 +1799,11 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
 
     # Set initial parameters based on assumption of normality
     mu = X.mean().to_numpy().reshape(1, n)
-    vec_Sigma = X.cov().to_numpy().reshape((1, n ** 2), order="F")
+    vec_Sigma = X.cov().to_numpy().reshape((1, n**2), order="F")
     Sigma = X.cov().to_numpy()
-    cov_mu = Sigma/T
+    cov_mu = Sigma / T
     K = cf.commutation_matrix(T=n, n=n)
-    I = np.identity(n ** 2)
+    I = np.identity(n**2)
     cov_sigma = T * (I + K) @ np.kron(cov_mu, cov_mu)
 
     # Box Constraint for Mean
@@ -1828,7 +1839,7 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
     cov_mu = pd.DataFrame(cov_mu, index=cols, columns=cols)
 
     # Elliptical Constraint for Covariance
-    A_Sigma = covs.reshape((n_sim, n ** 2), order="F")
+    A_Sigma = covs.reshape((n_sim, n**2), order="F")
     A_Sigma = A_Sigma - np.repeat(vec_Sigma, n_sim, axis=0)
     # cov_sigma = np.cov(A_Sigma, rowvar=False)
     cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)

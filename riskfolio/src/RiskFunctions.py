@@ -456,7 +456,7 @@ def _Entropic_RM(z, X, alpha=0.05):
     return value
 
 
-def EVaR_Hist(X, alpha=0.05, solver='CLARABEL'):
+def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
     r"""
     Calculate the Entropic Value at Risk (EVaR) of a returns series.
 
@@ -504,8 +504,10 @@ def EVaR_Hist(X, alpha=0.05, solver='CLARABEL'):
     ui = cp.Variable((T, 1))
     ones = np.ones((T, 1))
 
-    constraints = [cp.sum(ui) <= z,
-                    cp.constraints.ExpCone(-a * 1000 - t * 1000, ones @ z * 1000, ui * 1000)]
+    constraints = [
+        cp.sum(ui) <= z,
+        cp.constraints.ExpCone(-a * 1000 - t * 1000, ones @ z * 1000, ui * 1000),
+    ]
 
     risk = t + z * np.log(1 / (alpha * T))
     objective = cp.Minimize(risk * 1000)
@@ -539,7 +541,7 @@ def EVaR_Hist(X, alpha=0.05, solver='CLARABEL'):
     return (value, t)
 
 
-def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
+def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     r"""
     Calculate the Relativistic Value at Risk (RLVaR) of a returns series.
     I recommend only use this function with MOSEK solver.
@@ -599,11 +601,12 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
 
     c = ((1 / (alpha * T)) ** kappa - (1 / (alpha * T)) ** (-kappa)) / (2 * kappa)
 
-    constraints = [cp.sum(Z) == 1,
-                   cp.sum(nu - tau)/(2*kappa) <= c,
-                   cp.PowCone3D(nu, ones, Z, 1/(1+kappa)),
-                   cp.PowCone3D(Z, ones, tau, 1- kappa)
-                   ]
+    constraints = [
+        cp.sum(Z) == 1,
+        cp.sum(nu - tau) / (2 * kappa) <= c,
+        cp.PowCone3D(nu, ones, Z, 1 / (1 + kappa)),
+        cp.PowCone3D(Z, ones, tau, 1 - kappa),
+    ]
     risk = Z.T @ (-a)
 
     objective = cp.Maximize(risk * 1000)
@@ -937,7 +940,7 @@ def EDaR_Abs(X, alpha=0.05):
     return (value, t)
 
 
-def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
+def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     r"""
     Calculate the Relativistic Drawdown at Risk (RLDaR) of a returns series
     using uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
@@ -1318,7 +1321,7 @@ def EDaR_Rel(X, alpha=0.05):
     return (value, t)
 
 
-def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
+def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     r"""
     Calculate the Relativistic Drawdown at Risk (RLDaR) of a returns series
     using compounded cumulative returns. I recommend only use this function with MOSEK solver.
@@ -1660,7 +1663,7 @@ def L_Moment(X, k=2):
     return value
 
 
-def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver='CLARABEL'):
+def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"):
     r"""
     Calculate a custom convex risk measure that is a weighted average of
     first k-th l-moments.
@@ -1742,7 +1745,7 @@ def Sharpe_Risk(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver='CLARABEL',
+    solver="CLARABEL",
 ):
     r"""
     Calculate the risk measure available on the Sharpe function.
@@ -1915,7 +1918,7 @@ def Sharpe(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver='CLARABEL',
+    solver="CLARABEL",
 ):
     r"""
     Calculate the Risk Adjusted Return Ratio from a portfolio returns series.
@@ -2070,7 +2073,7 @@ def Risk_Contribution(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver='CLARABEL',
+    solver="CLARABEL",
 ):
     r"""
     Calculate the risk contribution for each asset based on the risk measure
@@ -2290,7 +2293,7 @@ def Risk_Margin(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver='CLARABEL',
+    solver="CLARABEL",
 ):
     r"""
     Calculate the risk margin for each asset based on the risk measure
@@ -2513,7 +2516,7 @@ def Factors_Risk_Contribution(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver='CLARABEL',
+    solver="CLARABEL",
     feature_selection="stepwise",
     stepwise="Forward",
     criterion="pvalue",
@@ -2637,32 +2640,36 @@ def Factors_Risk_Contribution(
     if w_.shape[0] > 1 and w_.shape[1] > 1:
         raise ValueError("weights must have n_assets x 1 size")
 
-    RM = Risk_Margin(w=w,
-                     cov=cov,
-                     returns=returns,
-                     rm=rm,
-                     rf=rf,
-                     alpha=alpha,
-                     a_sim=a_sim,
-                     beta=beta,
-                     b_sim=b_sim,
-                     kappa=kappa,
-                     solver=solver).reshape(-1,1)
+    RM = Risk_Margin(
+        w=w,
+        cov=cov,
+        returns=returns,
+        rm=rm,
+        rf=rf,
+        alpha=alpha,
+        a_sim=a_sim,
+        beta=beta,
+        b_sim=b_sim,
+        kappa=kappa,
+        solver=solver,
+    ).reshape(-1, 1)
 
     if B is None:
-        B = pe.loadings_matrix(X=factors,
-                               Y=returns,
-                               feature_selection=feature_selection,
-                               stepwise=stepwise,
-                               criterion=criterion,
-                               threshold=threshold,
-                               n_components=n_components)
+        B = pe.loadings_matrix(
+            X=factors,
+            Y=returns,
+            feature_selection=feature_selection,
+            stepwise=stepwise,
+            criterion=criterion,
+            threshold=threshold,
+            n_components=n_components,
+        )
         const = True
     elif not isinstance(B, pd.DataFrame):
         raise ValueError("B must be a DataFrame")
 
     if const == True or factors.shape[1] + 1 == B.shape[1]:
-        B = B.iloc[:,1:].to_numpy()
+        B = B.iloc[:, 1:].to_numpy()
 
     if feature_selection == "PCR":
         scaler = StandardScaler()
@@ -2683,6 +2690,3 @@ def Factors_Risk_Contribution(
     RC_F = np.vstack([RC_F, RC_OF]).ravel()
 
     return RC_F
-
-
-

@@ -908,7 +908,7 @@ class Portfolio(object):
         method_cov="hist",
         d=0.94,
         B=None,
-        feature_selection='stepwise',
+        feature_selection="stepwise",
         dict_cov={},
         dict_risk={},
     ):
@@ -993,7 +993,13 @@ class Portfolio(object):
             self.feature_selection = None
 
         mu, cov, returns, B_ = pe.risk_factors(
-            X, Y, B=B, method_mu=method_mu, method_cov=method_cov, feature_selection=feature_selection, **dict_risk
+            X,
+            Y,
+            B=B,
+            method_mu=method_mu,
+            method_cov=method_cov,
+            feature_selection=feature_selection,
+            **dict_risk,
         )
 
         self.mu_fm = mu
@@ -1003,7 +1009,9 @@ class Portfolio(object):
         if B_.shape[1] == len(self.factorslist):
             self.B = pd.DataFrame(B_, index=self.assetslist, columns=self.factorslist)
         else:
-            self.B = pd.DataFrame(B_, index=self.assetslist, columns=["const"] + self.factorslist)
+            self.B = pd.DataFrame(
+                B_, index=self.assetslist, columns=["const"] + self.factorslist
+            )
 
         value = af.is_pos_def(self.cov_fm, threshold=1e-8)
         for i in range(5):
@@ -1320,22 +1328,24 @@ class Portfolio(object):
         X = self.returns
 
         if box == "s":
-            mu_l, mu_u, cov_l, cov_u, _, _, _ ,_ = pe.bootstrapping(
+            mu_l, mu_u, cov_l, cov_u, _, _, _, _ = pe.bootstrapping(
                 X, kind="stationary", q=q, n_sim=n_sim, window=window, seed=seed
             )
             d_mu = (mu_u - mu_l) / 2
         elif box == "c":
-            mu_l, mu_u, cov_l, cov_u, _, _,_ ,_  = pe.bootstrapping(
+            mu_l, mu_u, cov_l, cov_u, _, _, _, _ = pe.bootstrapping(
                 X, kind="circular", q=q, n_sim=n_sim, window=window, seed=seed
             )
             d_mu = (mu_u - mu_l) / 2
         elif box == "m":
-            mu_l, mu_u, cov_l, cov_u, _, _ ,_ ,_ = pe.bootstrapping(
+            mu_l, mu_u, cov_l, cov_u, _, _, _, _ = pe.bootstrapping(
                 X, kind="moving", q=q, n_sim=n_sim, window=window, seed=seed
             )
             d_mu = (mu_u - mu_l) / 2
         elif box == "n":
-            mu_l, mu_u, cov_l, cov_u, _, _ ,_ ,_ = pe.normal_simulation(X, q=q, n_sim=n_sim, diag=diag, threshold=threshold, seed=seed)
+            mu_l, mu_u, cov_l, cov_u, _, _, _, _ = pe.normal_simulation(
+                X, q=q, n_sim=n_sim, diag=diag, threshold=threshold, seed=seed
+            )
             d_mu = (mu_u - mu_l) / 2
         elif box == "d":
             cols = X.columns.tolist()
@@ -1361,7 +1371,9 @@ class Portfolio(object):
                 X, kind="moving", q=q, n_sim=n_sim, window=window, seed=seed
             )
         elif ellip == "n":
-            _, _, _, _, cov_mu, cov_sigma, k_mu, k_sigma = pe.normal_simulation(X, q=q, n_sim=n_sim, diag=diag, threshold=threshold, seed=seed)
+            _, _, _, _, cov_mu, cov_sigma, k_mu, k_sigma = pe.normal_simulation(
+                X, q=q, n_sim=n_sim, diag=diag, threshold=threshold, seed=seed
+            )
 
         self.cov_l = cov_l
         self.cov_u = cov_u
@@ -1369,7 +1381,7 @@ class Portfolio(object):
         self.cov_sigma = cov_sigma
         self.d_mu = d_mu
 
-        if method_k_mu == 'normal':
+        if method_k_mu == "normal":
             self.k_mu = k_mu
         elif method_k_mu == "general":
             self.k_mu = np.sqrt((1 - q) / q)
@@ -1392,14 +1404,7 @@ class Portfolio(object):
             )
 
     def optimization(
-        self,
-        model="Classic",
-        rm="MV",
-        obj="Sharpe",
-        kelly=False,
-        rf=0,
-        l=2,
-        hist=True
+        self, model="Classic", rm="MV", obj="Sharpe", kelly=False, rf=0, l=2, hist=True
     ):
         r"""
         This method that calculates the optimal portfolio according to the
@@ -1539,7 +1544,7 @@ class Portfolio(object):
 
         returns = np.array(returns, ndmin=2)
         T, N = returns.shape
-        onesvec = np.ones((T,1))
+        onesvec = np.ones((T, 1))
         w = cp.Variable((N, 1))
         k = cp.Variable((1, 1))
         rf0 = rf
@@ -1701,9 +1706,7 @@ class Portfolio(object):
             ]
         else:
             evarconstraints = [cp.sum(ui) <= s1]
-            evarconstraints += [
-                cp.constraints.ExpCone(-X - t1, onesvec @ s1, ui)
-            ]
+            evarconstraints += [cp.constraints.ExpCone(-X - t1, onesvec @ s1, ui)]
 
         # Entropic Drawdown at Risk Model Variables
 
@@ -1723,9 +1726,7 @@ class Portfolio(object):
             ]
         else:
             edarconstraints = [cp.sum(uj) <= s2]
-            edarconstraints += [
-                cp.constraints.ExpCone(U[1:] - t2, onesvec @ s2, uj)
-            ]
+            edarconstraints += [cp.constraints.ExpCone(U[1:] - t2, onesvec @ s2, uj)]
 
         # Gini Mean Difference Model Variables
 
@@ -1771,20 +1772,49 @@ class Portfolio(object):
         d54 = norm(gmd_w.flatten(), ord=p_4)
         d55 = norm(gmd_w.flatten(), ord=p_5)
 
-        risk14 = c51 * t5 - c52 * cp.sum(nu5) + d51 * Y51 + d52 * Y52 + d53 * Y53 + d54 * Y54 + d55 * Y55 + c53 * cp.sum(eta5)
+        risk14 = (
+            c51 * t5
+            - c52 * cp.sum(nu5)
+            + d51 * Y51
+            + d52 * Y52
+            + d53 * Y53
+            + d54 * Y54
+            + d55 * Y55
+            + c53 * cp.sum(eta5)
+        )
 
-        gmdconstraints = [X + t5 - nu5 + eta5 - epsilon51 - epsilon52 - epsilon53 - epsilon54 - epsilon55 == 0,
-                          Z51 + Y51 == cp.sum(psi51),
-                          Z52 + Y52 == cp.sum(psi52),
-                          Z53 + Y53 == cp.sum(psi53),
-                          Z54 + Y54 == cp.sum(psi54),
-                          Z55 + Y55 == cp.sum(psi55),
-                          cp.PowCone3D(-Z51 * p_1 * onesvec, psi51 * p_1/(p_1-1), epsilon51, 1/p_1),
-                          cp.PowCone3D(-Z52 * p_2 * onesvec, psi52 * p_2/(p_2-1), epsilon52, 1/p_2),
-                          cp.PowCone3D(-Z53 * p_3 * onesvec, psi53 * p_3/(p_3-1), epsilon53, 1/p_3),
-                          cp.PowCone3D(-Z54 * p_4 * onesvec, psi54 * p_4/(p_4-1), epsilon54, 1/p_4),
-                          cp.PowCone3D(-Z55 * p_5 * onesvec, psi55 * p_5/(p_5-1), epsilon55, 1/p_5),
-                          ]
+        gmdconstraints = [
+            X
+            + t5
+            - nu5
+            + eta5
+            - epsilon51
+            - epsilon52
+            - epsilon53
+            - epsilon54
+            - epsilon55
+            == 0,
+            Z51 + Y51 == cp.sum(psi51),
+            Z52 + Y52 == cp.sum(psi52),
+            Z53 + Y53 == cp.sum(psi53),
+            Z54 + Y54 == cp.sum(psi54),
+            Z55 + Y55 == cp.sum(psi55),
+            cp.PowCone3D(
+                -Z51 * p_1 * onesvec, psi51 * p_1 / (p_1 - 1), epsilon51, 1 / p_1
+            ),
+            cp.PowCone3D(
+                -Z52 * p_2 * onesvec, psi52 * p_2 / (p_2 - 1), epsilon52, 1 / p_2
+            ),
+            cp.PowCone3D(
+                -Z53 * p_3 * onesvec, psi53 * p_3 / (p_3 - 1), epsilon53, 1 / p_3
+            ),
+            cp.PowCone3D(
+                -Z54 * p_4 * onesvec, psi54 * p_4 / (p_4 - 1), epsilon54, 1 / p_4
+            ),
+            cp.PowCone3D(
+                -Z55 * p_5 * onesvec, psi55 * p_5 / (p_5 - 1), epsilon55, 1 / p_5
+            ),
+        ]
 
         # Tail Gini Model Variables
 
@@ -1830,21 +1860,50 @@ class Portfolio(object):
         d64 = norm(tg_w.flatten(), ord=p_4)
         d65 = norm(tg_w.flatten(), ord=p_5)
 
-        TG_L = c61 * t6 - c62 * cp.sum(nu6) + d61 * Y61 + d62 * Y62 + d63 * Y63 + d64 * Y64 + d65 * Y65 + c63 * cp.sum(eta6)
+        TG_L = (
+            c61 * t6
+            - c62 * cp.sum(nu6)
+            + d61 * Y61
+            + d62 * Y62
+            + d63 * Y63
+            + d64 * Y64
+            + d65 * Y65
+            + c63 * cp.sum(eta6)
+        )
         risk15 = TG_L
 
-        tgconstraints = [X * 100 + t6 * 100 - nu6 * 100 + eta6 * 100 - epsilon61 * 100 - epsilon62 * 100 - epsilon63 * 100 - epsilon64 * 100 - epsilon65 * 100 == 0,
-                         Z61 + Y61 == cp.sum(psi61),
-                         Z62 + Y62 == cp.sum(psi62),
-                         Z63 + Y63 == cp.sum(psi63),
-                         Z64 + Y64 == cp.sum(psi64),
-                         Z65 + Y65 == cp.sum(psi65),
-                         cp.PowCone3D(-Z61 * p_1 * onesvec, psi61 * p_1/(p_1-1), epsilon61, 1/p_1),
-                         cp.PowCone3D(-Z62 * p_2 * onesvec, psi62 * p_2/(p_2-1), epsilon62, 1/p_2),
-                         cp.PowCone3D(-Z63 * p_3 * onesvec, psi63 * p_3/(p_3-1), epsilon63, 1/p_3),
-                         cp.PowCone3D(-Z64 * p_4 * onesvec, psi64 * p_4/(p_4-1), epsilon64, 1/p_4),
-                         cp.PowCone3D(-Z65 * p_5 * onesvec, psi65 * p_5/(p_5-1), epsilon65, 1/p_5),
-                         ]
+        tgconstraints = [
+            X * 100
+            + t6 * 100
+            - nu6 * 100
+            + eta6 * 100
+            - epsilon61 * 100
+            - epsilon62 * 100
+            - epsilon63 * 100
+            - epsilon64 * 100
+            - epsilon65 * 100
+            == 0,
+            Z61 + Y61 == cp.sum(psi61),
+            Z62 + Y62 == cp.sum(psi62),
+            Z63 + Y63 == cp.sum(psi63),
+            Z64 + Y64 == cp.sum(psi64),
+            Z65 + Y65 == cp.sum(psi65),
+            cp.PowCone3D(
+                -Z61 * p_1 * onesvec, psi61 * p_1 / (p_1 - 1), epsilon61, 1 / p_1
+            ),
+            cp.PowCone3D(
+                -Z62 * p_2 * onesvec, psi62 * p_2 / (p_2 - 1), epsilon62, 1 / p_2
+            ),
+            cp.PowCone3D(
+                -Z63 * p_3 * onesvec, psi63 * p_3 / (p_3 - 1), epsilon63, 1 / p_3
+            ),
+            cp.PowCone3D(
+                -Z64 * p_4 * onesvec, psi64 * p_4 / (p_4 - 1), epsilon64, 1 / p_4
+            ),
+            cp.PowCone3D(
+                -Z65 * p_5 * onesvec, psi65 * p_5 / (p_5 - 1), epsilon65, 1 / p_5
+            ),
+        ]
 
         # Range Model Variables
 
@@ -1913,21 +1972,50 @@ class Portfolio(object):
         d74 = norm(tgrg_w.flatten(), ord=p_4)
         d75 = norm(tgrg_w.flatten(), ord=p_5)
 
-        TG_G = c71 * t7 - c72 * cp.sum(nu7) + d71 * Y71 + d72 * Y72 + d73 * Y73 + d74 * Y74 + d75 * Y75 + c73 * cp.sum(eta7)
+        TG_G = (
+            c71 * t7
+            - c72 * cp.sum(nu7)
+            + d71 * Y71
+            + d72 * Y72
+            + d73 * Y73
+            + d74 * Y74
+            + d75 * Y75
+            + c73 * cp.sum(eta7)
+        )
         risk18 = TG_L + TG_G
 
-        tgrgconstraints = [-X * 100 + t7 * 100 - nu7 * 100 + eta7 * 100 - epsilon71 * 100 - epsilon72 * 100 - epsilon73 * 100 - epsilon74 * 100 - epsilon75 * 100 == 0,
-                           Z71 + Y71 == cp.sum(psi71),
-                           Z72 + Y72 == cp.sum(psi72),
-                           Z73 + Y73 == cp.sum(psi73),
-                           Z74 + Y74 == cp.sum(psi74),
-                           Z75 + Y75 == cp.sum(psi75),
-                           cp.PowCone3D(-Z71 * p_1 * onesvec, psi71 * p_1/(p_1-1), epsilon71, 1/p_1),
-                           cp.PowCone3D(-Z72 * p_2 * onesvec, psi72 * p_2/(p_2-1), epsilon72, 1/p_2),
-                           cp.PowCone3D(-Z73 * p_3 * onesvec, psi73 * p_3/(p_3-1), epsilon73, 1/p_3),
-                           cp.PowCone3D(-Z74 * p_4 * onesvec, psi74 * p_4/(p_4-1), epsilon74, 1/p_4),
-                           cp.PowCone3D(-Z75 * p_5 * onesvec, psi75 * p_5/(p_5-1), epsilon75, 1/p_5),
-                           ]
+        tgrgconstraints = [
+            -X * 100
+            + t7 * 100
+            - nu7 * 100
+            + eta7 * 100
+            - epsilon71 * 100
+            - epsilon72 * 100
+            - epsilon73 * 100
+            - epsilon74 * 100
+            - epsilon75 * 100
+            == 0,
+            Z71 + Y71 == cp.sum(psi71),
+            Z72 + Y72 == cp.sum(psi72),
+            Z73 + Y73 == cp.sum(psi73),
+            Z74 + Y74 == cp.sum(psi74),
+            Z75 + Y75 == cp.sum(psi75),
+            cp.PowCone3D(
+                -Z71 * p_1 * onesvec, psi71 * p_1 / (p_1 - 1), epsilon71, 1 / p_1
+            ),
+            cp.PowCone3D(
+                -Z72 * p_2 * onesvec, psi72 * p_2 / (p_2 - 1), epsilon72, 1 / p_2
+            ),
+            cp.PowCone3D(
+                -Z73 * p_3 * onesvec, psi73 * p_3 / (p_3 - 1), epsilon73, 1 / p_3
+            ),
+            cp.PowCone3D(
+                -Z74 * p_4 * onesvec, psi74 * p_4 / (p_4 - 1), epsilon74, 1 / p_4
+            ),
+            cp.PowCone3D(
+                -Z75 * p_5 * onesvec, psi75 * p_5 / (p_5 - 1), epsilon75, 1 / p_5
+            ),
+        ]
 
         # Kurtosis Model Variables
 
@@ -2596,13 +2684,7 @@ class Portfolio(object):
         return self.optimal
 
     def rp_optimization(
-        self,
-        model="Classic",
-        rm="MV",
-        rf=0,
-        b=None,
-        b_f=None,
-        hist=True
+        self, model="Classic", rm="MV", rf=0, b=None, b_f=None, hist=True
     ):
         r"""
         This method that calculates the risk parity portfolio using the risk
@@ -2712,16 +2794,16 @@ class Portfolio(object):
         # General Model Variables
 
         T, N = returns.shape
-        onesvec = np.ones((T,1))
+        onesvec = np.ones((T, 1))
         returns = np.array(returns, ndmin=2)
 
-        if model == 'FC':
+        if model == "FC":
             if self.B.shape[1] == len(self.factorslist):
                 B1 = self.B.to_numpy()
             else:
-                B1 = self.B.to_numpy()[:,1:]
+                B1 = self.B.to_numpy()[:, 1:]
 
-            if self.feature_selection == 'PCR':
+            if self.feature_selection == "PCR":
                 scaler = StandardScaler()
                 scaler.fit(self.factors)
                 X_std = scaler.transform(self.factors)
@@ -2897,20 +2979,49 @@ class Portfolio(object):
         d54 = norm(gmd_w.flatten(), ord=p_4)
         d55 = norm(gmd_w.flatten(), ord=p_5)
 
-        risk14 = c51 * t5 - c52 * cp.sum(nu5) + d51 * Y51 + d52 * Y52 + d53 * Y53 + d54 * Y54 + d55 * Y55 + c53 * cp.sum(eta5)
+        risk14 = (
+            c51 * t5
+            - c52 * cp.sum(nu5)
+            + d51 * Y51
+            + d52 * Y52
+            + d53 * Y53
+            + d54 * Y54
+            + d55 * Y55
+            + c53 * cp.sum(eta5)
+        )
 
-        gmdconstraints = [X + t5 - nu5 + eta5 - epsilon51 - epsilon52 - epsilon53 - epsilon54 - epsilon55 == 0,
-                          Z51 + Y51 == cp.sum(psi51),
-                          Z52 + Y52 == cp.sum(psi52),
-                          Z53 + Y53 == cp.sum(psi53),
-                          Z54 + Y54 == cp.sum(psi54),
-                          Z55 + Y55 == cp.sum(psi55),
-                          cp.PowCone3D(-Z51 * p_1 * onesvec, psi51 * p_1/(p_1-1), epsilon51, 1/p_1),
-                          cp.PowCone3D(-Z52 * p_2 * onesvec, psi52 * p_2/(p_2-1), epsilon52, 1/p_2),
-                          cp.PowCone3D(-Z53 * p_3 * onesvec, psi53 * p_3/(p_3-1), epsilon53, 1/p_3),
-                          cp.PowCone3D(-Z54 * p_4 * onesvec, psi54 * p_4/(p_4-1), epsilon54, 1/p_4),
-                          cp.PowCone3D(-Z55 * p_5 * onesvec, psi55 * p_5/(p_5-1), epsilon55, 1/p_5),
-                          ]
+        gmdconstraints = [
+            X
+            + t5
+            - nu5
+            + eta5
+            - epsilon51
+            - epsilon52
+            - epsilon53
+            - epsilon54
+            - epsilon55
+            == 0,
+            Z51 + Y51 == cp.sum(psi51),
+            Z52 + Y52 == cp.sum(psi52),
+            Z53 + Y53 == cp.sum(psi53),
+            Z54 + Y54 == cp.sum(psi54),
+            Z55 + Y55 == cp.sum(psi55),
+            cp.PowCone3D(
+                -Z51 * p_1 * onesvec, psi51 * p_1 / (p_1 - 1), epsilon51, 1 / p_1
+            ),
+            cp.PowCone3D(
+                -Z52 * p_2 * onesvec, psi52 * p_2 / (p_2 - 1), epsilon52, 1 / p_2
+            ),
+            cp.PowCone3D(
+                -Z53 * p_3 * onesvec, psi53 * p_3 / (p_3 - 1), epsilon53, 1 / p_3
+            ),
+            cp.PowCone3D(
+                -Z54 * p_4 * onesvec, psi54 * p_4 / (p_4 - 1), epsilon54, 1 / p_4
+            ),
+            cp.PowCone3D(
+                -Z55 * p_5 * onesvec, psi55 * p_5 / (p_5 - 1), epsilon55, 1 / p_5
+            ),
+        ]
 
         # Tail Gini Model Variables
 
@@ -2955,21 +3066,50 @@ class Portfolio(object):
         d64 = norm(tg_w.flatten(), ord=p_4)
         d65 = norm(tg_w.flatten(), ord=p_5)
 
-        TG_L = c61 * t6 - c62 * cp.sum(nu6) + d61 * Y61 + d62 * Y62 + d63 * Y63 + d64 * Y64 + d65 * Y65 + c63 * cp.sum(eta6)
+        TG_L = (
+            c61 * t6
+            - c62 * cp.sum(nu6)
+            + d61 * Y61
+            + d62 * Y62
+            + d63 * Y63
+            + d64 * Y64
+            + d65 * Y65
+            + c63 * cp.sum(eta6)
+        )
         risk15 = TG_L
 
-        tgconstraints = [X * 100 + t6 * 100 - nu6 * 100 + eta6 * 100 - epsilon61 * 100 - epsilon62 * 100 - epsilon63 * 100 - epsilon64 * 100 - epsilon65 * 100 == 0,
-                         Z61 + Y61 == cp.sum(psi61),
-                         Z62 + Y62 == cp.sum(psi62),
-                         Z63 + Y63 == cp.sum(psi63),
-                         Z64 + Y64 == cp.sum(psi64),
-                         Z65 + Y65 == cp.sum(psi65),
-                         cp.PowCone3D(-Z61 * p_1 * onesvec, psi61 * p_1/(p_1-1), epsilon61, 1/p_1),
-                         cp.PowCone3D(-Z62 * p_2 * onesvec, psi62 * p_2/(p_2-1), epsilon62, 1/p_2),
-                         cp.PowCone3D(-Z63 * p_3 * onesvec, psi63 * p_3/(p_3-1), epsilon63, 1/p_3),
-                         cp.PowCone3D(-Z64 * p_4 * onesvec, psi64 * p_4/(p_4-1), epsilon64, 1/p_4),
-                         cp.PowCone3D(-Z65 * p_5 * onesvec, psi65 * p_5/(p_5-1), epsilon65, 1/p_5),
-                         ]
+        tgconstraints = [
+            X * 100
+            + t6 * 100
+            - nu6 * 100
+            + eta6 * 100
+            - epsilon61 * 100
+            - epsilon62 * 100
+            - epsilon63 * 100
+            - epsilon64 * 100
+            - epsilon65 * 100
+            == 0,
+            Z61 + Y61 == cp.sum(psi61),
+            Z62 + Y62 == cp.sum(psi62),
+            Z63 + Y63 == cp.sum(psi63),
+            Z64 + Y64 == cp.sum(psi64),
+            Z65 + Y65 == cp.sum(psi65),
+            cp.PowCone3D(
+                -Z61 * p_1 * onesvec, psi61 * p_1 / (p_1 - 1), epsilon61, 1 / p_1
+            ),
+            cp.PowCone3D(
+                -Z62 * p_2 * onesvec, psi62 * p_2 / (p_2 - 1), epsilon62, 1 / p_2
+            ),
+            cp.PowCone3D(
+                -Z63 * p_3 * onesvec, psi63 * p_3 / (p_3 - 1), epsilon63, 1 / p_3
+            ),
+            cp.PowCone3D(
+                -Z64 * p_4 * onesvec, psi64 * p_4 / (p_4 - 1), epsilon64, 1 / p_4
+            ),
+            cp.PowCone3D(
+                -Z65 * p_5 * onesvec, psi65 * p_5 / (p_5 - 1), epsilon65, 1 / p_5
+            ),
+        ]
 
         # CVaR Range Model Variables
 
@@ -3032,21 +3172,50 @@ class Portfolio(object):
         d74 = norm(tgrg_w.flatten(), ord=p_4)
         d75 = norm(tgrg_w.flatten(), ord=p_5)
 
-        TG_G = c71 * t7 - c72 * cp.sum(nu7) + d71 * Y71 + d72 * Y72 + d73 * Y73 + d74 * Y74 + d75 * Y75 + c73 * cp.sum(eta7)
+        TG_G = (
+            c71 * t7
+            - c72 * cp.sum(nu7)
+            + d71 * Y71
+            + d72 * Y72
+            + d73 * Y73
+            + d74 * Y74
+            + d75 * Y75
+            + c73 * cp.sum(eta7)
+        )
         risk18 = TG_L + TG_G
 
-        tgrgconstraints = [-X * 100 + t7 * 100 - nu7 * 100 + eta7 * 100 - epsilon71 * 100 - epsilon72 * 100 - epsilon73 * 100 - epsilon74 * 100 - epsilon75 * 100 == 0,
-                           Z71 + Y71 == cp.sum(psi71),
-                           Z72 + Y72 == cp.sum(psi72),
-                           Z73 + Y73 == cp.sum(psi73),
-                           Z74 + Y74 == cp.sum(psi74),
-                           Z75 + Y75 == cp.sum(psi75),
-                           cp.PowCone3D(-Z71 * p_1 * onesvec, psi71 * p_1/(p_1-1), epsilon71, 1/p_1),
-                           cp.PowCone3D(-Z72 * p_2 * onesvec, psi72 * p_2/(p_2-1), epsilon72, 1/p_2),
-                           cp.PowCone3D(-Z73 * p_3 * onesvec, psi73 * p_3/(p_3-1), epsilon73, 1/p_3),
-                           cp.PowCone3D(-Z74 * p_4 * onesvec, psi74 * p_4/(p_4-1), epsilon74, 1/p_4),
-                           cp.PowCone3D(-Z75 * p_5 * onesvec, psi75 * p_5/(p_5-1), epsilon75, 1/p_5),
-                           ]
+        tgrgconstraints = [
+            -X * 100
+            + t7 * 100
+            - nu7 * 100
+            + eta7 * 100
+            - epsilon71 * 100
+            - epsilon72 * 100
+            - epsilon73 * 100
+            - epsilon74 * 100
+            - epsilon75 * 100
+            == 0,
+            Z71 + Y71 == cp.sum(psi71),
+            Z72 + Y72 == cp.sum(psi72),
+            Z73 + Y73 == cp.sum(psi73),
+            Z74 + Y74 == cp.sum(psi74),
+            Z75 + Y75 == cp.sum(psi75),
+            cp.PowCone3D(
+                -Z71 * p_1 * onesvec, psi71 * p_1 / (p_1 - 1), epsilon71, 1 / p_1
+            ),
+            cp.PowCone3D(
+                -Z72 * p_2 * onesvec, psi72 * p_2 / (p_2 - 1), epsilon72, 1 / p_2
+            ),
+            cp.PowCone3D(
+                -Z73 * p_3 * onesvec, psi73 * p_3 / (p_3 - 1), epsilon73, 1 / p_3
+            ),
+            cp.PowCone3D(
+                -Z74 * p_4 * onesvec, psi74 * p_4 / (p_4 - 1), epsilon74, 1 / p_4
+            ),
+            cp.PowCone3D(
+                -Z75 * p_5 * onesvec, psi75 * p_5 / (p_5 - 1), epsilon75, 1 / p_5
+            ),
+        ]
 
         # Kurtosis Model Variables
 
@@ -3260,7 +3429,7 @@ class Portfolio(object):
 
         # Risk budgeting constraint
 
-        if model == 'FC':
+        if model == "FC":
             log_w = cp.Variable((N_f, 1))
             constraints += [
                 rb.T @ cp.log(w1) >= 1,
@@ -3315,7 +3484,7 @@ class Portfolio(object):
             if rm == "RLDaR":
                 self.z_RLDaR = s4.value
             weights = np.array(w.value, ndmin=2).T
-            if model == 'FC':
+            if model == "FC":
                 weights = weights / np.array(k.value)
             else:
                 weights = np.abs(weights) / np.sum(np.abs(weights))
@@ -3335,7 +3504,6 @@ class Portfolio(object):
             print("The problem doesn't have a solution with actual input parameters")
 
         return self.rp_optimal
-
 
     def rrp_optimization(self, model="Classic", version="A", l=1, b=None, hist=True):
         r"""
@@ -3632,21 +3800,21 @@ class Portfolio(object):
         # Uncertainty Sets for Mean Vector
 
         if Umu == "box":
-#            if obj == "Sharpe":
-#                constraints += [mu @ w - d_mu @ cp.abs(w) - rf0 * k >= 1]
-#            else:
+            #            if obj == "Sharpe":
+            #                constraints += [mu @ w - d_mu @ cp.abs(w) - rf0 * k >= 1]
+            #            else:
             ret = mu @ w - d_mu @ cp.abs(w)
         elif Umu == "ellip":
-#            if obj == "Sharpe":
-#                constraints += [
-#                    mu @ w - k_mu * cp.pnorm(sqrtm(cov_mu) @ w, 2) - rf0 * k >= 1
-#                ]
-#            else:
+            #            if obj == "Sharpe":
+            #                constraints += [
+            #                    mu @ w - k_mu * cp.pnorm(sqrtm(cov_mu) @ w, 2) - rf0 * k >= 1
+            #                ]
+            #            else:
             ret = mu @ w - k_mu * cp.pnorm(sqrtm(cov_mu) @ w, 2)
         else:
-#            if obj == "Sharpe":
-#                constraints += [mu @ w - rf0 * k >= 1]
-#            else:
+            #            if obj == "Sharpe":
+            #                constraints += [mu @ w - rf0 * k >= 1]
+            #            else:
             ret = mu @ w
 
         # SDP Model Variables
@@ -3859,7 +4027,7 @@ class Portfolio(object):
 
         # Defining objective function
         if obj == "Sharpe":
-#            objective = cp.Minimize(risk * 1000)
+            #            objective = cp.Minimize(risk * 1000)
             objective = cp.Maximize(ret * 1000 - rf0 * k * 1000)
             constraints += [risk <= 1]
         elif obj == "MinRisk":
@@ -4018,7 +4186,7 @@ class Portfolio(object):
         if owa_w is None:
             owa_w = owa.owa_gmd(T) / 2
 
-        onesvec = np.ones((N,1))
+        onesvec = np.ones((N, 1))
         constraints += [y @ owa_w.T <= onesvec @ a.T + b @ onesvec.T]
 
         # Cardinality Boolean Variables
@@ -4351,7 +4519,7 @@ class Portfolio(object):
         kelly=False,
         points=20,
         rf=0,
-        solver='CLARABEL',
+        solver="CLARABEL",
         hist=True,
     ):
         r"""

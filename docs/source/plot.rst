@@ -39,18 +39,26 @@ Example
     end = '2019-12-30'
 
     # Tickers of assets
-    tickers = ['JCI', 'TGT', 'CMCSA', 'CPB', 'MO', 'APA', 'MMC', 'JPM',
-               'ZION', 'PSA', 'BAX', 'BMY', 'LUV', 'PCAR', 'TXT', 'TMO',
-               'DE', 'MSFT', 'HPQ', 'SEE', 'VZ', 'CNP', 'NI', 'T', 'BA']
-    tickers.sort()
+    assets = ['JCI', 'TGT', 'CMCSA', 'CPB', 'MO', 'APA', 'MMC', 'JPM',
+              'ZION', 'PSA', 'BAX', 'BMY', 'LUV', 'PCAR', 'TXT', 'TMO',
+              'DE', 'MSFT', 'HPQ', 'SEE', 'VZ', 'CNP', 'NI', 'T', 'BA']
+    assets.sort()
     
+    # Tickers of factors
+    factors = ['MTUM', 'QUAL', 'VLUE', 'SIZE', 'USMV']
+    factors.sort()
+
+    tickers = assets + factors
+    tickers.sort()
+
     # Downloading the data
     data = yf.download(tickers, start = start, end = end)
     data = data.loc[:,('Adj Close', slice(None))]
     data.columns = tickers
-    assets = data.pct_change().dropna()
+    returns = data.pct_change().dropna()
 
-    Y = assets
+    Y = returns[assets]
+    X = returns[factors]
     
     # Creating the Portfolio Object
     port = rp.Portfolio(returns=Y)
@@ -67,6 +75,9 @@ Example
 
     port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
     
+    mu = port.mu
+    cov = port.cov
+
     # Estimate the portfolio that maximizes the risk adjusted return ratio
     w1 = port.optimization(model='Classic', rm=rm, obj='Sharpe', rf=0.0, l=0, hist=True)
 
@@ -76,6 +87,24 @@ Example
     # Estimate the risk parity portfolio for semi standard deviation
     w2 = port.rp_optimization(model='Classic', rm=rm, rf=0, b=None, hist=True)
 
+    # Estimate the risk parity portfolio for semi standard deviation
+    w2 = port.rp_optimization(model='Classic', rm=rm, rf=0, b=None, hist=True)
+
+    # Estimate the risk parity portfolio for risk factors
+    port.factors = X
+    port.factors_stats(method_mu=method_mu,
+                       method_cov=method_cov,
+                       feature_selection='stepwise',
+                       dict_risk=dict(stepwise='Forward'))
+    w3 = port.rp_optimization(model='FC', rm='MV', rf=0, b_f=None)
+
+    # Estimate the risk parity portfolio for principal components
+    port.factors = X
+    port.factors_stats(method_mu=method_mu,
+                       method_cov=method_cov,
+                       feature_selection='PCR',
+                       dict_risk=dict(n_components=0.95))
+    w4 = port.rp_optimization(model='FC', rm='MV', rf=0, b_f=None)
 
 
 Module Functions
