@@ -14,6 +14,16 @@ Changelog
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 
+
+Version 6.0.0
+=============
+
+- Implements risk parity optimization based on explicit risk factors and principal components.
+- Implements new formulations of Gini Mean Difference, Tail Gini, Range, CVaR Range and Tail Gini Range that improves speed compared to formulations based on the owa portfolio model.
+- Improves the calculation of elliptical uncertainty sets for worst case optimization.
+- Add new functions that allow us to calculate the risk contribution per explicit risk factors and principal components.
+- Add new functions that allow us to plot the risk contribution per explicit risk factors and principal components.
+
 Version 5.0.0
 =============
 

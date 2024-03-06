@@ -46,7 +46,7 @@ Description
 
 Riskfolio-Lib is a library for making portfolio optimization and quantitative strategic asset allocation in Python made in Peru |:peru:|. Its objective is to help students, academics and practitioners to build investment portfolios based on mathematically complex models with low effort. It is built on top of
 `CVXPY <https://www.cvxpy.org/>`_ and closely integrated
-with `pandas <https://pandas.pydata.org/>`_ data structures.
+with `Pandas <https://pandas.pydata.org/>`_ data structures.
 
 Some of key functionalities that Riskfolio-Lib offers:
 
@@ -79,7 +79,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     - Tail Gini.
     - Entropic Value at Risk (EVaR).
     - Relativistic Value at Risk (RLVaR).
-    - Worst Case Realization (Minimax).
+    - Worst Realization (Minimax).
 
     **Drawdown Risk Measures:**
 
@@ -189,6 +189,79 @@ Some of key functionalities that Riskfolio-Lib offers:
 - Option to use commercial optimization solver like MOSEK or GUROBI for large scale problems.
 
 
+Choosing a Solver
+=================
+
+Due to Riskfolio-Lib is based on CVXPY, Riskfolio-Lib can use the same solvers available for CVXPY.
+The list of solvers compatible with CVXPY is available in `Choosing a solver <https://www.cvxpy.org/tutorial/advanced/index.html#choosing-a-solver>`_ section of CVXPY's documentation.
+However, to select an adequate solver for each risk measure we can use the following table
+that specifies which type of programming technique is used to model each risk measure.
+
++---------------------------------------+----+----+------+-----+-----+-----+
+| Risk Measure                          | LP | QP | SOCP | SDP | EXP | POW |
++=======================================+====+====+======+=====+=====+=====+
+| Variance (MV)                         |    |    | X    | X*  |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Mean Absolute Deviation (MAD)         | X  |    |      |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Gini Mean Difference (GMD)            |    |    |      |     |     | X** |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Semi Variance (MSV)                   |    |    | X    |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Kurtosis (KT)                         |    |    |      | X   |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Semi Kurtosis (SKT)                   |    |    |      | X   |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| First Lower Partial Moment (FLPM)     | X  |    |      |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Second Lower Partial Moment (SLPM)    |    |    | X    |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Conditional Value at Risk (CVaR)      | X  |    |      |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Tail Gini (TG)                        |    |    |      |     |     | X** |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Entropic Value at Risk (EVaR)         |    |    |      |     | X   |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Relativistic Value at Risk (RLVaR)    |    |    |      |     |     | X** |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Worst Realization (WR)                | X  |    |      |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| CVaR Range (CVRG)                     | X  |    |      |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Tail Gini Range (TGRG)                |    |    |      |     |     | X** |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Range (RG)                            | X  |    |      |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Average Drawdown (ADD)                | X  |    |      |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Ulcer Index (UCI)                     |    |    | X    |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Conditional Drawdown at Risk (CDaR)   | X  |    |      |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Entropic Drawdown at Risk (EDaR)      |    |    |      |     | X   |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Relativistic Drawdown at Risk (RLDaR) |    |    |      |     |     | X** |
++---------------------------------------+----+----+------+-----+-----+-----+
+| Maximum Drawdown (MDD)                | X  |    |      |     |     |     |
++---------------------------------------+----+----+------+-----+-----+-----+
+
+(*) When SDP graph theory constraints are included. In the case of integer programming graph theory constraints, the model assume the SOCP formulation.
+
+(**) For these models is highly recommended to use MOSEK as solver, due to in some cases CLARABEL cannot find a solution and SCS takes too much time to solve them.
+
+LP - Linear Programming refers to problems with a linear objective function and linear constraints.
+
+QP - Quadratic Programming refers to problems with a quadratic objective function and linear constraints.
+
+SOCP - Second Order Cone Programming refers to problems with second-order cone constraints.
+
+SDP - Semidefinite Programming refers to problems with positive semidefinite constraints.
+
+EXP - refers to problems with exponential cone constraints.
+
+POW - refers to problems with 3-dimensional power cone constraints.
+
+
 Consulting Fees
 ===============
 
@@ -234,7 +307,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 
     @misc{riskfolio,
           author = {Dany Cajas},
-          title = {Riskfolio-Lib (5.0.0)},
+          title = {Riskfolio-Lib (6.0.0)},
           year  = {2024},
           url   = {https://github.com/dcajasn/Riskfolio-Lib},
           }

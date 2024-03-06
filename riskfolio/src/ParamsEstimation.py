@@ -9,12 +9,15 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm
+import scipy.stats as st
 import sklearn.covariance as skcov
 import arch.bootstrap as bs
+
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from numpy.linalg import inv
 from itertools import product
+
 import riskfolio.src.AuxFunctions as af
 import riskfolio.src.DBHT as db
 import riskfolio.src.GerberStatistic as gs
@@ -34,6 +37,7 @@ __all__ = [
     "augmented_black_litterman",
     "black_litterman_bayesian",
     "bootstrapping",
+    "normal_simulation",
 ]
 
 
@@ -98,7 +102,7 @@ def mean_vector(X, method="hist", d=0.94, target="b1"):
         T, n = X.shape
         ones = np.ones((n, 1))
         mu = np.array(X.mean(), ndmin=2).reshape(-1, 1)
-        Sigma = np.cov(X.T)
+        Sigma = np.cov(X, rowvar=False)
         Sigma_inv = np.linalg.inv(Sigma)
         eigvals = np.linalg.eigvals(Sigma)
 
@@ -191,7 +195,7 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
     assets = X.columns.tolist()
 
     if method == "hist":
-        cov = np.cov(X.T)
+        cov = np.cov(X, rowvar=False)
     if method == "semi":
         T, N = X.shape
         mu = X.mean().to_numpy().reshape(1, -1)
@@ -223,14 +227,14 @@ def covar_matrix(X, method="hist", d=0.94, **kwargs):
         gl.fit(X)
         cov = gl.covariance_
     elif method == "jlogo":
-        S = np.cov(X.T)
-        R = np.corrcoef(X.T)
+        S = np.cov(X, rowvar=False)
+        R = np.corrcoef(X, rowvar=False)
         D = np.sqrt(np.clip((1 - R) / 2, a_min=0.0, a_max=1.0))
         (_, _, separators, cliques, _) = db.PMFG_T2s(1 - D**2, nargout=4)
         cov = db.j_LoGo(S, separators, cliques)
         cov = np.linalg.inv(cov)
     elif method in ["fixed", "spectral", "shrink"]:
-        cov = np.cov(X.T)
+        cov = np.cov(X, rowvar=False)
         T, N = X.shape
         q = T / N
         cov = af.denoiseCov(cov, q, kind=method, **kwargs)
@@ -739,9 +743,12 @@ def loadings_matrix(
     Y : DataFrame of shape (n_samples, n_assets)
         Target matrix, where n_samples in the number of samples and
         n_assets is the number of assets.
-    feature_selection: str 'stepwise' or 'PCR', optional
+    feature_selection: str, 'stepwise' or 'PCR', optional
         Indicate the method used to estimate the loadings matrix.
-        The default is 'stepwise'.
+        The default is 'stepwise'.  Possible values are:
+
+        - 'stepwise': use stepwise regression to select the best factors and estimate coefficients.
+        - 'PCR': use principal components regression to estimate coefficients.
     stepwise: str 'Forward' or 'Backward', optional
         Indicate the method used for stepwise regression.
         The default is 'Forward'.
@@ -902,7 +909,10 @@ def risk_factors(
         - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
     feature_selection: str, 'stepwise' or 'PCR', optional
         Indicate the method used to estimate the loadings matrix.
-        The default is 'stepwise'.
+        The default is 'stepwise'.  Possible values are:
+
+        - 'stepwise': use stepwise regression to select the best factors and estimate coefficients.
+        - 'PCR': use principal components regression to estimate coefficients.
     stepwise: str, 'Forward' or 'Backward'
         Indicate the method used for stepwise regression.
         The default is 'Forward'.
@@ -989,7 +999,7 @@ def risk_factors(
     cov = pd.DataFrame(S, index=assets, columns=assets)
     returns = pd.DataFrame(returns, index=dates, columns=assets)
 
-    return mu, cov, returns
+    return mu, cov, returns, B
 
 
 def black_litterman(
@@ -1579,7 +1589,7 @@ def black_litterman_bayesian(
     return mu, cov, w
 
 
-def bootstrapping(X, kind="stationary", q=0.05, n_sim=3000, window=3, seed=0):
+def bootstrapping(X, kind="stationary", q=0.05, n_sim=6000, window=3, diag=False, threshold=1e-15, seed=0):
     r"""
     Estimates the uncertainty sets of mean and covariance matrix through the selected
     bootstrapping method.
@@ -1596,16 +1606,22 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=3000, window=3, seed=0):
         - 'circular': circular bootstrapping method, see `CircularBlockBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.CircularBlockBootstrap.html#arch.bootstrap.CircularBlockBootstrap>`_ for more details.
         - 'moving': moving bootstrapping method, see `MovingBlockBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.MovingBlockBootstrap.html#arch.bootstrap.MovingBlockBootstrap>`_ for more details.
     q : scalar
-        Significance level of the selected bootstrapping method.
+        Significance level for box and elliptical constraints.
         The default is 0.05.
     n_sim : scalar
         Number of simulations of the bootstrapping method.
-        The default is 3000.
-    window:
+        The default is 6000.
+    window: int
         Block size of the bootstrapping method. Must be greather than 1
         and lower than the n_samples - n_features + 1
         The default is 3.
-    seed:
+    diag: bool
+        If consider only the main diagonal of covariance matrices of estimation
+        errors following :cite:`b-fabozzi2007robust`. The default is False.
+    threshold: float
+        Parameter used to fix covariance matrices in case they are not positive semidefinite.
+        The default is 1e-15.
+    seed: int
         Seed used to generate random numbers for bootstrapping method.
         The default is 0.
 
@@ -1621,7 +1637,12 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=3000, window=3, seed=0):
         The 1-q/2 percentile of covariance matrix obtained through the selected bootstrapping method.
     cov_mu : DataFrame
         The covariance matrix of estimation errors of mean vector obtained through the selected bootstrapping method.
-        We take the diagonal of this matrix following :cite:`b-fabozzi2007robust`.
+    cov_sigma : DataFrame
+        The covariance matrix of estimation errors of covariance matrix obtained through the selected bootstrapping method.
+    k_mu : DataFrame
+        The square root of size of elliptical constraint of mean vector estimation error based on 1-q percentile.
+    k_sigma : DataFrame
+        The square root of size of elliptical constraint of covariance matrix estimation error based on 1-q percentile.
 
     Raises
     ------
@@ -1640,9 +1661,13 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=3000, window=3, seed=0):
 
     cols = X.columns.tolist()
     cols_2 = [i + "-" + j for i in cols for j in cols]
-    m = len(cols)
-    mus = np.zeros((n_sim, 1, m))
-    covs = np.zeros((n_sim, m, m))
+    T, n = X.shape
+
+    mu = X.mean().to_numpy().reshape(1, n)
+    vec_Sigma = X.cov().to_numpy().reshape((1, n ** 2), order="F")
+
+    mus = np.zeros((n_sim, 1, n))
+    covs = np.zeros((n_sim, n, n))
 
     if kind == "stationary":
         gen = bs.StationaryBootstrap(window, X, seed=seed)
@@ -1656,39 +1681,161 @@ def bootstrapping(X, kind="stationary", q=0.05, n_sim=3000, window=3, seed=0):
     i = 0
     for data in gen.bootstrap(n_sim):
         A = data[0][0]
-        mus[i] = A.mean().to_numpy().reshape(1, m)
+        mus[i] = A.mean().to_numpy().reshape(1, n)
         covs[i] = A.cov().to_numpy()
         i += 1
 
-    mu_l = np.percentile(mus, q / 2 * 100, axis=0, keepdims=True).reshape(1, m)
-    mu_u = np.percentile(mus, 100 - q / 2 * 100, axis=0, keepdims=True).reshape(1, m)
-
-    cov_l = np.percentile(covs, q / 2 * 100, axis=0, keepdims=True).reshape(m, m)
-    cov_u = np.percentile(covs, 100 - q / 2 * 100, axis=0, keepdims=True).reshape(m, m)
-
+    # Box Constraint for Mean
+    mu_l = np.percentile(mus, q=q / 2 * 100, axis=0, keepdims=True).reshape(1, n)
+    mu_u = np.percentile(mus, q=(1 - q / 2) * 100, axis=0, keepdims=True).reshape(1, n)
     mu_l = pd.DataFrame(mu_l, index=[0], columns=cols)
     mu_u = pd.DataFrame(mu_u, index=[0], columns=cols)
 
+    # Box Constraint for Covariance
+    cov_l = np.percentile(covs, q= q / 2 * 100, axis=0, keepdims=True).reshape(n, n)
+    cov_u = np.percentile(covs, q=(1 - q / 2) * 100, axis=0, keepdims=True).reshape(n, n)
     cov_l = pd.DataFrame(cov_l, index=cols, columns=cols)
     cov_u = pd.DataFrame(cov_u, index=cols, columns=cols)
 
-    cov_mu = mus.reshape(n_sim, m) - X.mean().to_numpy().reshape(1, m)
-    cov_mu = np.cov(cov_mu.T)
+    # Check and fix if upper and lower bound for Covariance are positive
+    # semidefinite and fix when they are not
+    if af.is_pos_def(cov_l) == False:
+        cov_l = af.cov_fix(cov_l, method="clipped", threshold=threshold)
+    if af.is_pos_def(cov_u) == False:
+        cov_u = af.cov_fix(cov_u, method="clipped", threshold=threshold)
 
-    cov_mu = np.diag(np.diag(cov_mu))
+    # Elliptical Constraint for Mean
+    A_mu = mus.reshape(n_sim, n) - np.repeat(mu, n_sim, axis=0)
+    cov_mu = np.cov(A_mu, rowvar=False)
+    if diag == True:
+        cov_mu = np.diag(np.diag(cov_mu))
+    k_mus = np.diag(A_mu @ inv(cov_mu) @ A_mu.T)
+    k_mu = np.percentile(k_mus, q=(1 - q) * 100) ** 0.5
     cov_mu = pd.DataFrame(cov_mu, index=cols, columns=cols)
 
-    cov_sigma = covs - X.cov().to_numpy()
-    cov_sigma = cov_sigma.reshape((n_sim, m * m), order="F")
-    cov_sigma = np.cov(cov_sigma.T)
-
-    cov_sigma = np.diag(np.diag(cov_sigma))
+    # Elliptical Constraint for Covariance
+    A_Sigma = covs.reshape((n_sim, n ** 2), order="F")
+    A_Sigma = A_Sigma - np.repeat(vec_Sigma, n_sim, axis=0)
+    cov_sigma = np.cov(A_Sigma, rowvar=False)
+    cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)
+    if diag == True:
+        cov_sigma = np.diag(np.diag(cov_sigma))
+    k_sigmas = np.diag(A_Sigma @ inv(cov_sigma) @ A_Sigma.T)
+    k_sigma = np.percentile(k_sigmas, q=(1 - q) * 100) ** 0.5
     cov_sigma = pd.DataFrame(cov_sigma, index=cols_2, columns=cols_2)
 
+    return mu_l, mu_u, cov_l, cov_u, cov_mu, cov_sigma, k_mu, k_sigma
+
+
+def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0):
+    r"""
+    Estimates the uncertainty sets of mean and covariance matrix assuming that
+    assets returns follows a multivariate normal distribution.
+
+    Parameters
+    ----------
+    X : DataFrame of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
+    q : scalar
+        Significance level for box and elliptical constraints.
+        The default is 0.05.
+    n_sim : scalar
+        Number of simulations of the bootstrapping method.
+        The default is 6000.
+    diag: bool
+        If consider only the main diagonal of covariance matrices of estimation
+        errors following :cite:`b-fabozzi2007robust`. The default is False.
+    threshold: float
+        Parameter used to fix covariance matrices in case they are not positive semidefinite.
+        The default is 1e-10.
+    seed: int
+        Seed used to generate random numbers for simulation.
+        The default is 0.
+
+    Returns
+    -------
+    mu_l : DataFrame
+        The q/2 percentile of mean vector obtained through the normal simulation.
+    mu_u : DataFrame
+        The 1-q/2 percentile of mean vector obtained through the normal simulation.
+    cov_l : DataFrame
+        The q/2 percentile of covariance matrix obtained through the normal simulation.
+    cov_u : DataFrame
+        The 1-q/2 percentile of covariance matrix obtained through the normal simulation.
+    cov_mu : DataFrame
+        The covariance matrix of estimation errors of mean vector obtained through the normal simulation.
+    cov_sigma : DataFrame
+        The covariance matrix of estimation errors of covariance matrix obtained through the normal simulation.
+    k_mu : DataFrame
+        The square root of size of elliptical constraint of mean vector estimation error based on 1-q percentile.
+    k_sigma : DataFrame
+        The square root of size of elliptical constraint of covariance matrix estimation error based on 1-q percentile.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    """
+
+    if not isinstance(X, pd.DataFrame):
+        raise ValueError("X must be a DataFrame")
+
+    cols = X.columns.tolist()
+    cols_2 = [i + "-" + j for i in cols for j in cols]
+    T, n = X.shape
+
+    # Set initial parameters based on assumption of normality
+    mu = X.mean().to_numpy().reshape(1, n)
+    vec_Sigma = X.cov().to_numpy().reshape((1, n ** 2), order="F")
+    Sigma = X.cov().to_numpy()
+    cov_mu = Sigma/T
+    K = cf.commutation_matrix(T=n, n=n)
+    I = np.identity(n ** 2)
+    cov_sigma = T * (I + K) @ np.kron(cov_mu, cov_mu)
+
+    # Box Constraint for Mean
+    delta_mu = st.norm.ppf(1 - q / 2) * np.sqrt(np.diag(cov_mu)).reshape(-1, 1)
+    mu_l = mu - delta_mu.T
+    mu_u = mu + delta_mu.T
+    mu_l = pd.DataFrame(mu_l, index=[0], columns=cols)
+    mu_u = pd.DataFrame(mu_u, index=[0], columns=cols)
+
+    # Box Constraints for Covariance
+    rs = np.random.RandomState(seed=seed)
+    covs = st.wishart.rvs(T, cov_mu, size=n_sim, random_state=rs)
+    cov_l = np.percentile(covs, q=q / 2, axis=0)
+    cov_u = np.percentile(covs, q=1 - q / 2, axis=0)
+    cov_l = pd.DataFrame(cov_l, index=cols, columns=cols)
+    cov_u = pd.DataFrame(cov_u, index=cols, columns=cols)
+
+    # Check and fix if upper and lower bound for Covariance are positive
+    # semidefinite and fix when they are not
     if af.is_pos_def(cov_l) == False:
-        cov_l = af.cov_fix(cov_l, method="clipped", threshold=1e-3)
-
+        cov_l = af.cov_fix(cov_l, method="clipped", threshold=threshold)
     if af.is_pos_def(cov_u) == False:
-        cov_u = af.cov_fix(cov_u, method="clipped", threshold=1e-3)
+        cov_u = af.cov_fix(cov_u, method="clipped", threshold=threshold)
 
-    return mu_l, mu_u, cov_l, cov_u, cov_mu, cov_sigma
+    # Elliptical Constraint for Mean
+    A_mu = rs.multivariate_normal(mu.ravel(), cov_mu, size=n_sim)
+    # cov_mu =  np.cov(A_mu - np.repeat(mu, n_sim, axis=0), rowvar=False)
+    if diag == True:
+        cov_mu = np.diag(np.diag(cov_mu))
+    k_mus = np.diag(A_mu @ inv(cov_mu) @ A_mu.T)
+    k_mu = np.percentile(k_mus, q=1 - q) ** 0.5
+    # k_mu = st.chi2.ppf(1 - q, df=n) ** 0.5
+    cov_mu = pd.DataFrame(cov_mu, index=cols, columns=cols)
+
+    # Elliptical Constraint for Covariance
+    A_Sigma = covs.reshape((n_sim, n ** 2), order="F")
+    A_Sigma = A_Sigma - np.repeat(vec_Sigma, n_sim, axis=0)
+    # cov_sigma = np.cov(A_Sigma, rowvar=False)
+    cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)
+    if diag == True:
+        cov_sigma = np.diag(np.diag(cov_sigma))
+    k_sigmas = np.diag(A_Sigma @ inv(cov_sigma) @ A_Sigma.T)
+    k_sigma = np.percentile(k_sigmas, q=1 - q) ** 0.5
+    cov_sigma = pd.DataFrame(cov_sigma, index=cols_2, columns=cols_2)
+
+    return mu_l, mu_u, cov_l, cov_u, cov_mu, cov_sigma, k_mu, k_sigma

@@ -33,6 +33,7 @@ __all__ = [
     "plot_bar",
     "plot_frontier_area",
     "plot_risk_con",
+    "plot_factor_risk_con",
     "plot_hist",
     "plot_range",
     "plot_drawdown",
@@ -223,7 +224,7 @@ def plot_frontier(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver="CLARABEL",
+    solver='CLARABEL',
     cmap="viridis",
     w=None,
     label="Portfolio",
@@ -905,6 +906,8 @@ def plot_bar(
                 labels, np.where(labels == "Others", sizes, 0), color=cothers, width=0.5
             )
             b = "Others (Abs < " + "{:.1%}".format(0.01) + ")"
+        else:
+            b = None
 
         ticks_loc = ax.get_yticks().tolist()
         ax.set_yticks(ax.get_yticks().tolist())
@@ -1103,7 +1106,7 @@ def plot_risk_con(
     beta=None,
     b_sim=None,
     kappa=0.30,
-    solver="CLARABEL",
+    solver='CLARABEL',
     percentage=False,
     erc_line=True,
     color="tab:blue",
@@ -1325,13 +1328,327 @@ def plot_risk_con(
     return ax
 
 
+def plot_factor_risk_con(
+    w,
+    cov=None,
+    returns=None,
+    factors=None,
+    B=None,
+    const=True,
+    rm="MV",
+    rf=0,
+    alpha=0.05,
+    a_sim=100,
+    beta=None,
+    b_sim=None,
+    kappa=0.30,
+    solver='CLARABEL',
+    feature_selection="stepwise",
+    stepwise="Forward",
+    criterion="pvalue",
+    threshold=0.05,
+    n_components=0.95,
+    percentage=False,
+    erc_line=True,
+    color="tab:orange",
+    erc_linecolor="r",
+    height=6,
+    width=10,
+    t_factor=252,
+    ax=None,
+):
+    r"""
+    Create a chart with the risk contribution per asset of the portfolio.
+
+    Parameters
+    ----------
+    w : DataFrame of shape (n_assets, 1)
+        Portfolio weights.
+    cov : DataFrame of shape (n_features, n_features)
+        Covariance matrix, where n_features is the number of features.
+    returns : DataFrame of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
+    factors : DataFrame or nd-array of shape (n_samples, n_factors)
+        Factors matrix, where n_samples is the number of samples and
+        n_factors is the number of factors.
+    B : DataFrame of shape (n_assets, n_features), optional
+        Loadings matrix. If is not specified, is estimated using
+        stepwise regression. The default is None.
+    const : bool, optional
+        Indicate if the loadings matrix has a constant.
+        The default is False.
+    rm : str, optional
+        Risk measure used to estimate risk contribution.
+        The default is 'MV'. Possible values are:
+
+        - 'MV': Standard Deviation.
+        - 'KT': Square Root Kurtosis.
+        - 'MAD': Mean Absolute Deviation.
+        - 'GMD': Gini Mean Difference.
+        - 'MSV': Semi Standard Deviation.
+        - 'SKT': Square Root Semi Kurtosis.
+        - 'FLPM': First Lower Partial Moment (Omega Ratio).
+        - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
+        - 'CVaR': Conditional Value at Risk.
+        - 'TG': Tail Gini.
+        - 'EVaR': Entropic Value at Risk.
+        - 'RLVaR': Relativistic Value at Risk.
+        - 'WR': Worst Realization (Minimax).
+        - 'CVRG': CVaR range of returns.
+        - 'TGRG': Tail Gini range of returns.
+        - 'RG': Range of returns.
+        - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded cumulative returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+        - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns.
+        - 'UCI': Ulcer Index of uncompounded cumulative returns.
+
+    rf : float, optional
+        Risk free rate or minimum acceptable return. The default is 0.
+    alpha : float, optional
+        Significance level of VaR, CVaR, Tail Gini, EVaR, RLVaR, CDaR, EDaR and RLDaR. The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is 'CLARABEL'.
+    feature_selection: str 'stepwise' or 'PCR', optional
+        Indicate the method used to estimate the loadings matrix.
+        The default is 'stepwise'.
+    stepwise: str 'Forward' or 'Backward', optional
+        Indicate the method used for stepwise regression.
+        The default is 'Forward'.
+    criterion : str, optional
+        The default is 'pvalue'. Possible values of the criterion used to select
+        the best features are:
+
+        - 'pvalue': select the features based on p-values.
+        - 'AIC': select the features based on lowest Akaike Information Criterion.
+        - 'SIC': select the features based on lowest Schwarz Information Criterion.
+        - 'R2': select the features based on highest R Squared.
+        - 'R2_A': select the features based on highest Adjusted R Squared.
+    threshold : scalar, optional
+        Is the maximum p-value for each variable that will be
+        accepted in the model. The default is 0.05.
+    n_components : int, float, None or str, optional
+        if 1 < n_components (int), it represents the number of components that
+        will be keep. if 0 < n_components < 1 (float), it represents the
+        percentage of variance that the is explained by the components kept.
+        See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
+        for more details. The default is 0.95.
+    percentage : bool, optional
+        If risk contribution per asset is expressed as percentage or as a value. The default is False.
+    erc_line : bool, optional
+        If equal risk contribution line is plotted.
+        The default is False.
+    color : str, optional
+        Color used to plot each asset risk contribution.
+        The default is 'tab:orange'.
+    erc_linecolor : str, optional
+        Color used to plot equal risk contribution line.
+        The default is 'r'.
+    height : float, optional
+        Height of the image in inches. The default is 6.
+    width : float, optional
+        Width of the image in inches. The default is 10.
+    t_factor : float, optional
+        Factor used to annualize expected return and expected risks for
+        risk measures based on returns (not drawdowns). The default is 252.
+
+        .. math::
+
+            \begin{align}
+            \text{Annualized Return} & = \text{Return} \, \times \, \text{t_factor} \\
+            \text{Annualized Risk} & = \text{Risk} \, \times \, \sqrt{\text{t_factor}}
+            \end{align}
+
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax :  matplotlib axis.
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = rp.plot_factor_risk_con(w=w2,
+                                     cov=cov,
+                                     returns=returns,
+                                     factors=factors,
+                                     B=None,
+                                     const=True,
+                                     rm=rm,
+                                     rf=0,
+                                     feature_selection="stepwise",
+                                     stepwise="Forward",
+                                     criterion="pvalue",
+                                     threshold=0.05,
+                                     height=6,
+                                     width=10,
+                                     t_factor=252,
+                                     ax=None)
+
+    .. image:: images/Risk_Con_RF.png
+
+    ::
+
+        ax = rp.plot_factor_risk_con(w=w2,
+                                     cov=cov,
+                                     returns=returns,
+                                     factors=factors,
+                                     B=None,
+                                     const=True,
+                                     rm=rm,
+                                     rf=0,
+                                     feature_selection="PCR",
+                                     n_components=0.95,
+                                     height=6,
+                                     width=10,
+                                     t_factor=252,
+                                     ax=None)
+
+    .. image:: images/Risk_Con_PC.png
+
+    """
+
+    if not isinstance(w, pd.DataFrame):
+        raise ValueError("w must be a DataFrame")
+
+    if beta is None:
+        beta = alpha
+    if b_sim is None:
+        b_sim = a_sim
+
+    if ax is None:
+        fig = plt.gcf()
+        ax = fig.gca()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
+
+    item = rmeasures.index(rm)
+    if rm in ["CVaR", "TG", "EVaR", "RLVaR", "CVRG", "TGRG", "CDaR", "EDaR", "RLDaR"]:
+        title = "Risk (" + rm_names[item] + " $\\alpha = $" + "{0:.2%}".format(alpha)
+    else:
+        title = "Risk (" + rm_names[item]
+    if rm in ["CVRG", "TGRG"]:
+        title += ", $\\beta = $" + "{0:.2%}".format(beta)
+    if rm in ["RLVaR", "RLDaR"]:
+        title += ", $\\kappa = $" + "{0:.2}".format(kappa)
+
+    title += ") Contribution per "
+    if feature_selection == "PCR":
+        title += "Principal Component (PC)"
+    else:
+        title += "Risk Factor"
+    if percentage:
+        title += " (%)"
+    ax.set_title(r"{}".format(title))
+
+    RC_F = rk.Factors_Risk_Contribution(
+        w,
+        cov=cov,
+        returns=returns,
+        factors=factors,
+        B=B,
+        const=const,
+        rm=rm,
+        rf=rf,
+        alpha=alpha,
+        a_sim=a_sim,
+        beta=beta,
+        b_sim=b_sim,
+        kappa=kappa,
+        solver=solver,
+        feature_selection=feature_selection,
+        stepwise=stepwise,
+        criterion=criterion,
+        threshold=threshold,
+        n_components=n_components,
+    )
+
+    if feature_selection == 'PCR':
+        n = len(RC_F)-1
+        X = ['PC ' + str(i) for i in range(1, n+1)]
+    else:
+        X = factors.columns.tolist()
+    X.append('Others')
+
+    if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
+        RC_F = RC_F * t_factor**0.5
+
+    if percentage:
+        RC_F = RC_F / np.sum(RC_F)
+
+    ax.bar(X, RC_F, alpha=0.7, color=color, edgecolor="black")
+
+    ax.set_xlim(-0.5, len(X) - 0.5)
+    ax.tick_params(axis="x", labelrotation=90)
+
+    ticks_loc = ax.get_yticks().tolist()
+    ax.set_yticks(ax.get_yticks())
+    ax.set_yticklabels(["{:3.4%}".format(x) for x in ticks_loc])
+    ax.grid(linestyle=":")
+
+    if erc_line:
+        if percentage:
+            erc = 1 / len(RC_F)
+        else:
+            erc = rk.Sharpe_Risk(
+                w,
+                cov=cov,
+                returns=returns,
+                rm=rm,
+                rf=rf,
+                alpha=alpha,
+                a_sim=a_sim,
+                beta=beta,
+                b_sim=b_sim,
+                kappa=kappa,
+                solver=solver,
+            )
+
+            if rm not in ["MDD", "ADD", "CDaR", "EDaR", "RLDaR", "UCI"]:
+                erc = erc / len(RC_F) * t_factor**0.5
+            else:
+                erc = erc / len(RC_F)
+
+        ax.axhline(y=erc, color=erc_linecolor, linestyle="-")
+
+    try:
+        fig.tight_layout()
+    except:
+        pass
+
+    return ax
+
+
 def plot_hist(
     returns,
     w,
     alpha=0.05,
     a_sim=100,
     kappa=0.30,
-    solver="CLARABEL",
+    solver='CLARABEL',
     bins=50,
     height=6,
     width=10,
@@ -1353,9 +1670,8 @@ def plot_hist(
     kappa : float, optional
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
     solver: str, optional
-        Solver available for CVXPY that supports power cone programming and exponential cone
-        programming. Used to calculate EVaR, EDaR, RLVaR and RLDaR. The default value
-        is 'CLARABEL'.
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is 'CLARABEL'.
     bins : float, optional
         Number of bins of the histogram. The default is 50.
     height : float, optional
@@ -1431,7 +1747,7 @@ def plot_hist(
         -rk.VaR_Hist(a, alpha),
         -rk.CVaR_Hist(a, alpha),
         -rk.TG(a, alpha, a_sim),
-        -rk.EVaR_Hist(a, alpha, solver)[0],
+        -rk.EVaR_Hist(a, alpha)[0],
         -rk.RLVaR_Hist(a, alpha, kappa, solver),
         -rk.WR(a),
     ]
@@ -1731,7 +2047,7 @@ def plot_drawdown(
     w,
     alpha=0.05,
     kappa=0.30,
-    solver="CLARABEL",
+    solver='CLARABEL',
     height=8,
     width=10,
     height_ratios=[2, 3],
@@ -1921,7 +2237,7 @@ def plot_table(
     alpha=0.05,
     a_sim=100,
     kappa=0.30,
-    solver="CLARABEL",
+    solver='CLARABEL',
     height=9,
     width=12,
     t_factor=252,
@@ -2085,7 +2401,7 @@ def plot_table(
         rk.VaR_Hist(X, alpha=alpha) * t_factor**0.5,
         rk.CVaR_Hist(X, alpha=alpha) * t_factor**0.5,
         rk.TG(X, alpha=alpha, a_sim=a_sim) * t_factor**0.5,
-        rk.EVaR_Hist(X, alpha=alpha, solver=solver)[0] * t_factor**0.5,
+        rk.EVaR_Hist(X, alpha=alpha)[0] * t_factor**0.5,
         rk.RLVaR_Hist(X, alpha=alpha, kappa=kappa, solver=solver) * t_factor**0.5,
         rk.WR(X) * t_factor**0.5,
         st.skew(X, bias=False),

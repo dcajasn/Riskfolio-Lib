@@ -7,10 +7,16 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 """
 
 import numpy as np
+import pandas as pd
 import cvxpy as cp
 import riskfolio.src.OwaWeights as owa
+import riskfolio.src.ParamsEstimation as pe
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
+from scipy.linalg import null_space
+from numpy.linalg import pinv
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 import warnings
 
 
@@ -50,6 +56,8 @@ __all__ = [
     "Sharpe_Risk",
     "Sharpe",
     "Risk_Contribution",
+    "Risk_Margin",
+    "Factors_Risk_Contribution",
 ]
 
 
@@ -448,7 +456,7 @@ def _Entropic_RM(z, X, alpha=0.05):
     return value
 
 
-def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
+def EVaR_Hist(X, alpha=0.05, solver='CLARABEL'):
     r"""
     Calculate the Entropic Value at Risk (EVaR) of a returns series.
 
@@ -496,10 +504,8 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
     ui = cp.Variable((T, 1))
     ones = np.ones((T, 1))
 
-    constraints = [
-        cp.sum(ui) <= z,
-        cp.constraints.ExpCone(-a * 1000 - t * 1000, ones @ z * 1000, ui * 1000),
-    ]
+    constraints = [cp.sum(ui) <= z,
+                    cp.constraints.ExpCone(-a * 1000 - t * 1000, ones @ z * 1000, ui * 1000)]
 
     risk = t + z * np.log(1 / (alpha * T))
     objective = cp.Minimize(risk * 1000)
@@ -533,7 +539,7 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
     return (value, t)
 
 
-def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
+def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
     r"""
     Calculate the Relativistic Value at Risk (RLVaR) of a returns series.
     I recommend only use this function with MOSEK solver.
@@ -593,12 +599,11 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
 
     c = ((1 / (alpha * T)) ** kappa - (1 / (alpha * T)) ** (-kappa)) / (2 * kappa)
 
-    constraints = [
-        cp.sum(Z) == 1,
-        cp.sum(nu - tau) / (2 * kappa) <= c,
-        cp.PowCone3D(nu, ones, Z, 1 / (1 + kappa)),
-        cp.PowCone3D(Z, ones, tau, 1 - kappa),
-    ]
+    constraints = [cp.sum(Z) == 1,
+                   cp.sum(nu - tau)/(2*kappa) <= c,
+                   cp.PowCone3D(nu, ones, Z, 1/(1+kappa)),
+                   cp.PowCone3D(Z, ones, tau, 1- kappa)
+                   ]
     risk = Z.T @ (-a)
 
     objective = cp.Maximize(risk * 1000)
@@ -932,7 +937,7 @@ def EDaR_Abs(X, alpha=0.05):
     return (value, t)
 
 
-def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
+def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
     r"""
     Calculate the Relativistic Drawdown at Risk (RLDaR) of a returns series
     using uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
@@ -1313,7 +1318,7 @@ def EDaR_Rel(X, alpha=0.05):
     return (value, t)
 
 
-def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
+def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver='CLARABEL'):
     r"""
     Calculate the Relativistic Drawdown at Risk (RLDaR) of a returns series
     using compounded cumulative returns. I recommend only use this function with MOSEK solver.
@@ -1655,7 +1660,7 @@ def L_Moment(X, k=2):
     return value
 
 
-def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"):
+def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver='CLARABEL'):
     r"""
     Calculate a custom convex risk measure that is a weighted average of
     first k-th l-moments.
@@ -1737,7 +1742,7 @@ def Sharpe_Risk(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver="CLARABEL",
+    solver='CLARABEL',
 ):
     r"""
     Calculate the risk measure available on the Sharpe function.
@@ -1910,7 +1915,7 @@ def Sharpe(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver="CLARABEL",
+    solver='CLARABEL',
 ):
     r"""
     Calculate the Risk Adjusted Return Ratio from a portfolio returns series.
@@ -2049,115 +2054,6 @@ def Sharpe(
     return value
 
 
-def L_Moment(X, k=2):
-    r"""
-    Calculate the kth l-moment of a returns series.
-
-    .. math:
-        \lambda_k = {\tbinom{T}{k}}^{-1} \mathop{\sum \sum \ldots \sum}_{1
-        \leq i_{1} < i_{2} \cdots < i_{k} \leq n} \frac{1}{k}
-        \sum^{k-1}_{j=0} (-1)^{j} \binom{k-1}{j} y_{[i_{k-j}]} \\
-
-    Where $y_{[i]}$ is the ith-ordered statistic.
-
-    Parameters
-    ----------
-    X : 1d-array
-        Returns series, must have Tx1 size.
-    k : int
-        Order of the l-moment. Must be an integer higher or equal than 1.
-
-    Raises
-    ------
-    ValueError
-        When the value cannot be calculated.
-
-    Returns
-    -------
-    value : float
-        Kth l-moment of a returns series.
-
-    """
-
-    a = np.array(X, ndmin=2)
-    if a.shape[0] == 1 and a.shape[1] > 1:
-        a = a.T
-    if a.shape[0] > 1 and a.shape[1] > 1:
-        raise ValueError("returns must have Tx1 size")
-
-    T = a.shape[0]
-    w_ = owa.owa_l_moment(T, k=k)
-    value = (w_.T @ np.sort(a, axis=0)).item()
-
-    return value
-
-
-def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"):
-    r"""
-    Calculate a custom convex risk measure that is a weighted average of
-    first k-th l-moments.
-
-    Parameters
-    ----------
-    X : 1d-array
-        Returns series, must have Tx1 size.
-    k : int
-        Order of the l-moment. Must be an integer higher or equal than 2.
-    method : str, optional
-        Method to calculate the weights used to combine the l-moments with
-        order higher than 2. The default value is 'MSD'. Possible values are:
-
-        - 'CRRA': Normalized Constant Relative Risk Aversion coefficients.
-        - 'ME': Maximum Entropy.
-        - 'MSS': Minimum Sum Squares.
-        - 'MSD': Minimum Square Distance.
-
-    g : float, optional
-        Risk aversion coefficient of CRRA utility function. The default is 0.5.
-    max_phi : float, optional
-        Maximum weight constraint of L-moments.
-        The default is 0.5.
-    solver: str, optional
-        Solver available for CVXPY. Used to calculate 'ME', 'MSS' and 'MSD' weights.
-        The default value is 'CLARABEL'.
-
-    Raises
-    ------
-    ValueError
-        When the value cannot be calculated.
-
-    Returns
-    -------
-    value : float
-        Custom convex risk measure that is a weighted average of first k-th l-moments of a returns series.
-
-    """
-    if k < 2 or (not isinstance(k, int)):
-        raise ValueError("k must be an integer higher equal than 2")
-    if method not in ["CRRA", "ME", "MSS", "MSD"]:
-        raise ValueError("Available methods are 'CRRA', 'ME', 'MSS' and 'MSD'")
-    if g >= 1 or g <= 0:
-        raise ValueError("The risk aversion coefficient mus be between 0 and 1")
-    if max_phi >= 1 or max_phi <= 0:
-        raise ValueError(
-            "The constraint on maximum weight of L-moments must be between 0 and 1"
-        )
-
-    a = np.array(X, ndmin=2)
-    if a.shape[0] == 1 and a.shape[1] > 1:
-        a = a.T
-    if a.shape[0] > 1 and a.shape[1] > 1:
-        raise ValueError("returns must have Tx1 size")
-
-    T = a.shape[0]
-    w_ = owa.owa_l_moment_crm(
-        T, k=k, method=method, g=g, max_phi=max_phi, solver=solver
-    )
-    value = (w_.T @ np.sort(a, axis=0)).item()
-
-    return value
-
-
 ###############################################################################
 # Risk Contribution Vectors
 ###############################################################################
@@ -2174,7 +2070,7 @@ def Risk_Contribution(
     beta=None,
     b_sim=None,
     kappa=0.3,
-    solver="CLARABEL",
+    solver='CLARABEL',
 ):
     r"""
     Calculate the risk contribution for each asset based on the risk measure
@@ -2381,3 +2277,412 @@ def Risk_Contribution(
     RC = np.array(RC, ndmin=1)
 
     return RC
+
+
+def Risk_Margin(
+    w,
+    cov=None,
+    returns=None,
+    rm="MV",
+    rf=0,
+    alpha=0.05,
+    a_sim=100,
+    beta=None,
+    b_sim=None,
+    kappa=0.3,
+    solver='CLARABEL',
+):
+    r"""
+    Calculate the risk margin for each asset based on the risk measure
+    selected.
+
+    Parameters
+    ----------
+    w : DataFrame or 1d-array of shape (n_assets, 1)
+        Weights matrix, where n_assets is the number of assets.
+    cov : DataFrame or nd-array of shape (n_features, n_features)
+        Covariance matrix, where n_features is the number of features.
+    returns : DataFrame or nd-array of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
+    rm : str, optional
+        Risk measure used in the denominator of the ratio. The default is
+        'MV'. Possible values are:
+
+        - 'MV': Standard Deviation.
+        - 'KT': Square Root Kurtosis.
+        - 'MAD': Mean Absolute Deviation.
+        - 'GMD': Gini Mean Difference.
+        - 'MSV': Semi Standard Deviation.
+        - 'SKT': Square Root Semi Kurtosis.
+        - 'FLPM': First Lower Partial Moment (Omega Ratio).
+        - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
+        - 'VaR': Value at Risk.
+        - 'CVaR': Conditional Value at Risk.
+        - 'TG': Tail Gini.
+        - 'EVaR': Entropic Value at Risk.
+        - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
+        - 'WR': Worst Realization (Minimax).
+        - 'RG': Range of returns.
+        - 'CVRG': CVaR range of returns.
+        - 'TGRG': Tail Gini range of returns.
+        - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded cumulative returns.
+        - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+        - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
+        - 'UCI': Ulcer Index of uncompounded cumulative returns.
+        - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
+        - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
+        - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
+        - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
+        - 'RLDaR_Rel': Relativistic Drawdown at Risk of compounded cumulative returns. I recommend only use this function with MOSEK solver.
+        - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
+
+    rf : float, optional
+        Risk free rate. The default is 0.
+    alpha : float, optional
+        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR and Tail Gini of losses.
+        The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Risk margin of the portfolio.
+
+    """
+
+    w_ = np.array(w, ndmin=2)
+    if w_.shape[0] == 1 and w_.shape[1] > 1:
+        w_ = w_.T
+    if w_.shape[0] > 1 and w_.shape[1] > 1:
+        raise ValueError("weights must have n_assets x 1 size")
+
+    if cov is not None:
+        cov_ = np.array(cov, ndmin=2)
+    if returns is not None:
+        returns_ = np.array(returns, ndmin=2)
+
+    RM = []
+    if rm in ["RLVaR", "RLDaR"]:
+        d_i = 0.0001
+    else:
+        d_i = 0.0000001
+
+    for i in range(0, w_.shape[0]):
+        delta = np.zeros((w_.shape[0], 1))
+        delta[i, 0] = d_i
+        w_1 = w_ + delta
+        w_2 = w_ - delta
+        a_1 = returns_ @ w_1
+        a_2 = returns_ @ w_2
+        if rm == "MV":
+            risk_1 = w_1.T @ cov_ @ w_1
+            risk_1 = np.sqrt(risk_1.item())
+            risk_2 = w_2.T @ cov_ @ w_2
+            risk_2 = np.sqrt(risk_2.item())
+        elif rm == "MAD":
+            risk_1 = MAD(a_1)
+            risk_2 = MAD(a_2)
+        elif rm == "GMD":
+            risk_1 = GMD(a_1)
+            risk_2 = GMD(a_2)
+        elif rm == "MSV":
+            risk_1 = SemiDeviation(a_1)
+            risk_2 = SemiDeviation(a_2)
+        elif rm == "FLPM":
+            risk_1 = LPM(a_1, MAR=rf, p=1)
+            risk_2 = LPM(a_2, MAR=rf, p=1)
+        elif rm == "SLPM":
+            risk_1 = LPM(a_1, MAR=rf, p=2)
+            risk_2 = LPM(a_2, MAR=rf, p=2)
+        elif rm == "VaR":
+            risk_1 = VaR_Hist(a_1, alpha=alpha)
+            risk_2 = VaR_Hist(a_2, alpha=alpha)
+        elif rm == "CVaR":
+            risk_1 = CVaR_Hist(a_1, alpha=alpha)
+            risk_2 = CVaR_Hist(a_2, alpha=alpha)
+        elif rm == "TG":
+            risk_1 = TG(a_1, alpha=alpha, a_sim=a_sim)
+            risk_2 = TG(a_2, alpha=alpha, a_sim=a_sim)
+        elif rm == "EVaR":
+            risk_1 = EVaR_Hist(a_1, alpha=alpha)[0]
+            risk_2 = EVaR_Hist(a_2, alpha=alpha)[0]
+        elif rm == "RLVaR":
+            risk_1 = RLVaR_Hist(a_1, alpha=alpha, kappa=kappa, solver=solver)
+            risk_2 = RLVaR_Hist(a_2, alpha=alpha, kappa=kappa, solver=solver)
+        elif rm == "WR":
+            risk_1 = WR(a_1)
+            risk_2 = WR(a_2)
+        elif rm == "CVRG":
+            risk_1 = CVRG(a_1, alpha=alpha, beta=beta)
+            risk_2 = CVRG(a_2, alpha=alpha, beta=beta)
+        elif rm == "TGRG":
+            risk_1 = TGRG(a_1, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+            risk_2 = TGRG(a_2, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+        elif rm == "RG":
+            risk_1 = RG(a_1)
+            risk_2 = RG(a_2)
+        elif rm == "MDD":
+            risk_1 = MDD_Abs(a_1)
+            risk_2 = MDD_Abs(a_2)
+        elif rm == "ADD":
+            risk_1 = ADD_Abs(a_1)
+            risk_2 = ADD_Abs(a_2)
+        elif rm == "DaR":
+            risk_1 = DaR_Abs(a_1, alpha=alpha)
+            risk_2 = DaR_Abs(a_2, alpha=alpha)
+        elif rm == "CDaR":
+            risk_1 = CDaR_Abs(a_1, alpha=alpha)
+            risk_2 = CDaR_Abs(a_2, alpha=alpha)
+        elif rm == "EDaR":
+            risk_1 = EDaR_Abs(a_1, alpha=alpha)[0]
+            risk_2 = EDaR_Abs(a_2, alpha=alpha)[0]
+        elif rm == "RLDaR":
+            risk_1 = RLDaR_Abs(a_1, alpha=alpha, kappa=kappa, solver=solver)
+            risk_2 = RLDaR_Abs(a_2, alpha=alpha, kappa=kappa, solver=solver)
+        elif rm == "UCI":
+            risk_1 = UCI_Abs(a_1)
+            risk_2 = UCI_Abs(a_2)
+        elif rm == "MDD_Rel":
+            risk_1 = MDD_Rel(a_1)
+            risk_2 = MDD_Rel(a_2)
+        elif rm == "ADD_Rel":
+            risk_1 = ADD_Rel(a_1)
+            risk_2 = ADD_Rel(a_2)
+        elif rm == "DaR_Rel":
+            risk_1 = DaR_Rel(a_1, alpha=alpha)
+            risk_2 = DaR_Rel(a_2, alpha=alpha)
+        elif rm == "CDaR_Rel":
+            risk_1 = CDaR_Rel(a_1, alpha=alpha)
+            risk_2 = CDaR_Rel(a_2, alpha=alpha)
+        elif rm == "EDaR_Rel":
+            risk_1 = EDaR_Rel(a_1, alpha=alpha)[0]
+            risk_2 = EDaR_Rel(a_2, alpha=alpha)[0]
+        elif rm == "RLDaR_Rel":
+            risk_1 = RLDaR_Rel(a_1, alpha=alpha, kappa=kappa, solver=solver)
+            risk_2 = RLDaR_Rel(a_2, alpha=alpha, kappa=kappa, solver=solver)
+        elif rm == "UCI_Rel":
+            risk_1 = UCI_Rel(a_1)
+            risk_2 = UCI_Rel(a_2)
+        elif rm == "KT":
+            risk_1 = Kurtosis(a_1) * 0.5
+            risk_2 = Kurtosis(a_2) * 0.5
+        elif rm == "SKT":
+            risk_1 = SemiKurtosis(a_1) * 0.5
+            risk_2 = SemiKurtosis(a_2) * 0.5
+
+        RM_i = (risk_1 - risk_2) / (2 * d_i)
+        RM.append(RM_i)
+
+    RM = np.array(RM, ndmin=1)
+
+    return RM
+
+
+def Factors_Risk_Contribution(
+    w,
+    cov=None,
+    returns=None,
+    factors=None,
+    B=None,
+    const=False,
+    rm="MV",
+    rf=0,
+    alpha=0.05,
+    a_sim=100,
+    beta=None,
+    b_sim=None,
+    kappa=0.3,
+    solver='CLARABEL',
+    feature_selection="stepwise",
+    stepwise="Forward",
+    criterion="pvalue",
+    threshold=0.05,
+    n_components=0.95,
+):
+    r"""
+    Calculate the risk contribution for each factor based on the risk measure
+    selected.
+
+    Parameters
+    ----------
+    w : DataFrame or 1d-array of shape (n_assets, 1)
+        Weights matrix, where n_assets is the number of assets.
+    cov : DataFrame or nd-array of shape (n_features, n_features)
+        Covariance matrix, where n_features is the number of features.
+    returns : DataFrame or nd-array of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
+    factors : DataFrame or nd-array of shape (n_samples, n_factors)
+        Factors matrix, where n_samples is the number of samples and
+        n_factors is the number of factors.
+    B : DataFrame of shape (n_assets, n_features), optional
+        Loadings matrix. If is not specified, is estimated using
+        stepwise regression. The default is None.
+    const : bool, optional
+        Indicate if the loadings matrix has a constant.
+        The default is False.
+    rm : str, optional
+        Risk measure used in the denominator of the ratio. The default is
+        'MV'. Possible values are:
+
+        - 'MV': Standard Deviation.
+        - 'KT': Square Root Kurtosis.
+        - 'MAD': Mean Absolute Deviation.
+        - 'GMD': Gini Mean Difference.
+        - 'MSV': Semi Standard Deviation.
+        - 'SKT': Square Root Semi Kurtosis.
+        - 'FLPM': First Lower Partial Moment (Omega Ratio).
+        - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
+        - 'VaR': Value at Risk.
+        - 'CVaR': Conditional Value at Risk.
+        - 'TG': Tail Gini.
+        - 'EVaR': Entropic Value at Risk.
+        - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
+        - 'WR': Worst Realization (Minimax).
+        - 'RG': Range of returns.
+        - 'CVRG': CVaR range of returns.
+        - 'TGRG': Tail Gini range of returns.
+        - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
+        - 'ADD': Average Drawdown of uncompounded cumulative returns.
+        - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
+        - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
+        - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
+        - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
+        - 'UCI': Ulcer Index of uncompounded cumulative returns.
+        - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
+        - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
+        - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
+        - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
+        - 'RLDaR_Rel': Relativistic Drawdown at Risk of compounded cumulative returns. I recommend only use this function with MOSEK solver.
+        - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
+
+    rf : float, optional
+        Risk free rate. The default is 0.
+    alpha : float, optional
+        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR and Tail Gini of losses.
+        The default is 0.05.
+    a_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
+    beta : float, optional
+        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
+        The default is None.
+    b_sim : float, optional
+        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        The default value is None.
+    feature_selection: str 'stepwise' or 'PCR', optional
+        Indicate the method used to estimate the loadings matrix.
+        The default is 'stepwise'.
+    stepwise: str 'Forward' or 'Backward', optional
+        Indicate the method used for stepwise regression.
+        The default is 'Forward'.
+    criterion : str, optional
+        The default is 'pvalue'. Possible values of the criterion used to select
+        the best features are:
+
+        - 'pvalue': select the features based on p-values.
+        - 'AIC': select the features based on lowest Akaike Information Criterion.
+        - 'SIC': select the features based on lowest Schwarz Information Criterion.
+        - 'R2': select the features based on highest R Squared.
+        - 'R2_A': select the features based on highest Adjusted R Squared.
+    threshold : scalar, optional
+        Is the maximum p-value for each variable that will be
+        accepted in the model. The default is 0.05.
+    n_components : int, float, None or str, optional
+        if 1 < n_components (int), it represents the number of components that
+        will be keep. if 0 < n_components < 1 (float), it represents the
+        percentage of variance that the is explained by the components kept.
+        See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
+        for more details. The default is 0.95.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Risk measure of the portfolio.
+
+    """
+    w_ = np.array(w, ndmin=2)
+    if w_.shape[0] == 1 and w_.shape[1] > 1:
+        w_ = w_.T
+    if w_.shape[0] > 1 and w_.shape[1] > 1:
+        raise ValueError("weights must have n_assets x 1 size")
+
+    RM = Risk_Margin(w=w,
+                     cov=cov,
+                     returns=returns,
+                     rm=rm,
+                     rf=rf,
+                     alpha=alpha,
+                     a_sim=a_sim,
+                     beta=beta,
+                     b_sim=b_sim,
+                     kappa=kappa,
+                     solver=solver).reshape(-1,1)
+
+    if B is None:
+        B = pe.loadings_matrix(X=factors,
+                               Y=returns,
+                               feature_selection=feature_selection,
+                               stepwise=stepwise,
+                               criterion=criterion,
+                               threshold=threshold,
+                               n_components=n_components)
+        const = True
+    elif not isinstance(B, pd.DataFrame):
+        raise ValueError("B must be a DataFrame")
+
+    if const == True or factors.shape[1] + 1 == B.shape[1]:
+        B = B.iloc[:,1:].to_numpy()
+
+    if feature_selection == "PCR":
+        scaler = StandardScaler()
+        scaler.fit(factors)
+        factors_std = scaler.transform(factors)
+        pca = PCA(n_components=n_components)
+        pca.fit(factors_std)
+        V_p = pca.components_.T
+        std = np.array(np.std(factors, axis=0, ddof=1), ndmin=2)
+        B = (pinv(V_p) @ (B.T * std.T)).T
+
+    B1 = pinv(B.T)
+    B2 = pinv(null_space(B.T).T)
+    B3 = pinv(B2.T)
+
+    RC_F = (B.T @ w_) * (B1.T @ RM)
+    RC_OF = np.array(((B2.T @ w.to_numpy()) * (B3.T @ RM)).sum(), ndmin=2)
+    RC_F = np.vstack([RC_F, RC_OF]).ravel()
+
+    return RC_F
+
+
+

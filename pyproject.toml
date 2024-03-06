@@ -1,7 +1,6 @@
 [build-system]
 requires = [
     "pybind11>=2.10.1",
-    "numpy>=1.18,<1.19; python_version=='3.7'",
     "numpy>=1.18,<1.19; python_version=='3.8'",
     "numpy>=1.19,<1.20; python_version=='3.9' and (platform_machine!='arm64' or platform_system!='Darwin')",
     "numpy>=1.21.4,<1.22; python_version=='3.9' and (platform_machine=='arm64' and platform_system=='Darwin')",

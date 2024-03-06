@@ -23,8 +23,8 @@
 
 Riskfolio-Lib is a library for making quantitative strategic asset allocation
 or portfolio optimization in Python made in Peru &#x1F1F5;&#x1F1EA;. Its objective is to help students, academics and practitioners to build investment portfolios based on mathematically complex models with low effort. It is built on top of
-[cvxpy](https://www.cvxpy.org/) and closely integrated
-with [pandas](https://pandas.pydata.org/) data structures.
+[CVXPY](https://www.cvxpy.org/) and closely integrated
+with [Pandas](https://pandas.pydata.org/) data structures.
 
 Some of key functionalities that Riskfolio-Lib offers:
 
@@ -181,23 +181,69 @@ The docs include a [tutorial](https://riskfolio-lib.readthedocs.io/en/latest/exa
 with examples that shows the capacities of Riskfolio-Lib.
 
 
+## Choosing a Solver
+
+Due to Riskfolio-Lib is based on CVXPY, Riskfolio-Lib can use the same solvers available for CVXPY. The list of solvers compatible with CVXPY is available in [Choosing a solver](https://www.cvxpy.org/tutorial/advanced/index.html#choosing-a-solver) section of CVXPY's documentation. However, to select an adequate solver for each risk measure we can use the following table that specifies which type of programming technique is used to model each risk measure.
+
+| Risk Measure                          | LP | QP | SOCP | SDP | EXP | POW |
+|---------------------------------------|----|----|------|-----|-----|-----|
+| Variance (MV)                         |    |    | X    | X*  |     |     |
+| Mean Absolute Deviation (MAD)         | X  |    |      |     |     |     |
+| Gini Mean Difference (GMD)            |    |    |      |     |     | X** |
+| Semi Variance (MSV)                   |    |    | X    |     |     |     |
+| Kurtosis (KT)                         |    |    |      | X   |     |     |
+| Semi Kurtosis (SKT)                   |    |    |      | X   |     |     |
+| First Lower Partial Moment (FLPM)     | X  |    |      |     |     |     |
+| Second Lower Partial Moment (SLPM)    |    |    | X    |     |     |     |
+| Conditional Value at Risk (CVaR)      | X  |    |      |     |     |     |
+| Tail Gini (TG)                        |    |    |      |     |     | X** |
+| Entropic Value at Risk (EVaR)         |    |    |      |     | X   |     |
+| Relativistic Value at Risk (RLVaR)    |    |    |      |     |     | X** |
+| Worst Realization (WR)                | X  |    |      |     |     |     |
+| CVaR Range (CVRG)                     | X  |    |      |     |     |     |
+| Tail Gini Range (TGRG)                |    |    |      |     |     | X** |
+| Range (RG)                            | X  |    |      |     |     |     |
+| Average Drawdown (ADD)                | X  |    |      |     |     |     |
+| Ulcer Index (UCI)                     |    |    | X    |     |     |     |
+| Conditional Drawdown at Risk (CDaR)   | X  |    |      |     |     |     |
+| Entropic Drawdown at Risk (EDaR)      |    |    |      |     | X   |     |
+| Relativistic Drawdown at Risk (RLDaR) |    |    |      |     |     | X** |
+| Maximum Drawdown (MDD)                | X  |    |      |     |     |     |
+
+(*) When SDP graph theory constraints are included. In the case of integer programming graph theory constraints, the model assume the SOCP formulation.
+
+(**) For these models is highly recommended to use MOSEK as solver, due to in some cases CLARABEL cannot find a solution and SCS takes too much time to solve them.
+
+LP - Linear Programming refers to problems with a linear objective function and linear constraints.
+
+QP - Quadratic Programming refers to problems with a quadratic objective function and linear constraints.
+
+SOCP - Second Order Cone Programming refers to problems with second-order cone constraints.
+
+SDP - Semidefinite Programming refers to problems with positive semidefinite constraints.
+
+EXP - refers to problems with exponential cone constraints.
+
+POW - refers to problems with 3-dimensional power cone constraints.
+
+
 ## Dependencies
 
-Riskfolio-Lib supports Python 3.7+.
+Riskfolio-Lib supports Python 3.8|.
 
 Installation requires:
-- [numpy](http://www.numpy.org/) >= 1.17.0
-- [scipy](https://www.scipy.org/) >= 1.1.0
-- [pandas](https://pandas.pydata.org/) >= 1.0.0
-- [matplotlib](https://matplotlib.org/) >= 3.3.0
+- [numpy](http://www.numpy.org/) >= 1.24.0
+- [scipy](https://www.scipy.org/) >= 1.10.0
+- [pandas](https://pandas.pydata.org/) >= 2.0.0
+- [matplotlib](https://matplotlib.org/) >= 3.7.0
 - [clarabel](https://oxfordcontrol.github.io/ClarabelDocs/stable/) >= 0.6.0
-- [cvxpy](https://www.cvxpy.org/) >= 1.0.15
-- [scikit-learn](https://scikit-learn.org/stable/) >= 1.0.0
-- [statsmodels](https://www.statsmodels.org/) >= 0.10.1
-- [arch](https://bashtage.github.io/arch/) >= 4.15
-- [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 1.3.7
-- [networkx](https://networkx.org) >= 2.5.1
-- [astropy](https://www.astropy.org) >= 4.3.1
+- [cvxpy](https://www.cvxpy.org/) >= 1.4.0
+- [scikit-learn](https://scikit-learn.org/stable/) >= 1.3.0
+- [statsmodels](https://www.statsmodels.org/) >= 0.13.5
+- [arch](https://bashtage.github.io/arch/) >= 5.4
+- [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 3.1.2
+- [networkx](https://networkx.org) >= 3.0
+- [astropy](https://www.astropy.org) >= 5.1
 - [pybind11](https://pybind11.readthedocs.io/en/stable/) >= 2.10.1
 
 ## Installation
@@ -213,7 +259,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 ```
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (5.0.0)},
+      title = {Riskfolio-Lib (6.0.0)},
       year  = {2024},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }
