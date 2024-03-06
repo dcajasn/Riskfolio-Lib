@@ -65,6 +65,7 @@ Risk Parity Models
 * `Relaxed Risk Parity Portfolio Optimization <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2032%20-%20Relaxed%20Risk%20Parity%20Portfolio%20Optimization.ipynb>`_.
 * `Risk Parity with Constraints using the Risk Budgeting Approach <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2033%20-%20Risk%20Parity%20with%20Constraints%20using%20the%20Risk%20Budgeting%20Approach.ipynb>`_.
 * `Risk Parity with a Risk Constraint per Classes <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2043%20-%20Risk%20Parity%20with%20a%20Risk%20Constraint%20per%20Classes.ipynb>`_.
+* `Risk Parity with Risk Factors <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2047%20-%20Risk%20Parity%20with%20Risk%20Factors.ipynb>`_.
 
 
 Hierarchical Clustering Portfolio Optimization
