@@ -50,7 +50,7 @@ INSTALL_REQUIRES = [
     'arch>=5.4',
     'xlsxwriter>=3.1.2',
     'networkx>=3.0',
-    'astropy>=5.1,
+    'astropy>=5.1',
     'pybind11>=2.10.1',
 ]
 
