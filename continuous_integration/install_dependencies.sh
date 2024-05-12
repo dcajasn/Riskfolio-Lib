@@ -37,22 +37,27 @@ if [[ "$PYTHON_VERSION" == "3.12" ]]; then
   python -m pip install coptpy gurobipy piqp osqp clarabel
 elif [[ "$PYTHON_VERSION" == "3.11" ]]; then
   python -m pip install coptpy gurobipy cplex piqp osqp diffcp "ortools>=9.7,<9.10" clarabel
-# Python 3.8 on Windows will uninstall NumPy 1.16 and install NumPy 1.24 without the exception.
-elif [[ "$RUNNER_OS" == "Windows" ]] && [[ "$PYTHON_VERSION" == "3.8" ]]; then
-  python -m pip install gurobipy clarabel osqp 
 elif [[ "$PYTHON_VERSION" == "3.8" ]] && [[ "$RUNNER_OS" != "macos-11" ]]; then
   python -m pip install gurobipy clarabel piqp
 else
   python -m pip install "ortools>=9.3,<9.10" coptpy sdpa-python diffcp gurobipy clarabel sdpa-python
 fi
 
-# cylp has wheels for all versions 3.7 - 3.10, except for 3.7 on Windows
+if [[ "$PYTHON_VERSION" != "3.8" ]]; then
+  if [[ "$RUNNER_OS" == "Windows" ]]; then
+    # SDPA with OpenBLAS backend does not pass LP5 on Windows
+    python -m pip install sdpa-multiprecision
+  else
+    python -m pip install sdpa-python
+  fi
+fi
+
 if [[ "$PYTHON_VERSION" != "3.11" ]] && [[ "$RUNNER_OS" != "Windows" ]]; then
   python -m pip install cylp
 fi
 
 # SCIP only works with scipy >= 1.5 due to dependency conflicts when installing on Linux/macOS
-if [[ "$PYTHON_VERSION" == "3.9" ]] || [[ "$RUNNER_OS" == "Windows" ]]; then
+if [[ "$PYTHON_VERSION" == "3.9" ]] && [[ "$RUNNER_OS" == "Windows" ]]; then
   conda install pyscipopt
 fi
 
