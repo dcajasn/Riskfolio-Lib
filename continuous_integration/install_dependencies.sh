@@ -11,7 +11,7 @@ conda config --set remote_backoff_factor 2
 conda config --set remote_read_timeout_secs 120.0
 
 if [[ "$PYTHON_VERSION" == "3.8" ]] && [[ "$RUNNER_OS" == "macos-11" ]]; then
-  conda install scipy=1.3 numpy=1.18 mkl pip pytest pytest-cov lapack ecos scs osqp cvxopt proxsuite setuptools pybind11
+  conda install scipy=1.3 numpy=1.18 mkl pip pytest pytest-cov lapack ecos scs osqp cvxopt proxsuite "setuptools>65.5.1" pybind11
 elif [[ "$PYTHON_VERSION" == "3.8" ]]; then
   conda install scipy=1.3 numpy=1.18 mkl pip pytest pytest-cov lapack ecos scs osqp cvxopt proxsuite "setuptools>65.5.1" pybind11
 elif [[ "$PYTHON_VERSION" == "3.9" ]]; then
@@ -38,7 +38,7 @@ elif [[ "$PYTHON_VERSION" == "3.11" ]]; then
   python -m pip install coptpy gurobipy cplex piqp osqp diffcp "ortools>=9.7,<9.10" clarabel
 # Python 3.8 on Windows will uninstall NumPy 1.16 and install NumPy 1.24 without the exception.
 elif [[ "$RUNNER_OS" == "Windows" ]] && [[ "$PYTHON_VERSION" == "3.8" ]]; then
-  python -m pip install gurobipy clarabel osqp
+  python -m pip install gurobipy clarabel osqp 
 elif [[ "$PYTHON_VERSION" == "3.8" ]] && [[ "$RUNNER_OS" != "macos-11" ]]; then
   python -m pip install gurobipy clarabel piqp
 else
