@@ -42,6 +42,7 @@ __all__ = [
     "ltdi_matrix",
     "two_diff_gap_stat",
     "std_silhouette_score",
+    "codep_dist",
     "fitKDE",
     "mpPDF",
     "errPDFs",
