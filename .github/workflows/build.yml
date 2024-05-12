@@ -22,8 +22,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
-        with:
-          python-version: 3.8
+#        with:
+#          python-version: 3.8
       - run: pip install -r requirements.txt
 
 
@@ -37,7 +37,7 @@ jobs:
       matrix:
         os: [ ubuntu-20.04, macos-11, windows-2022 ]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-        include:
+#        include:
 #          - os: ubuntu-20.04
 #            python-version: 3.8
 #            openmp: "True"
