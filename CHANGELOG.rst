@@ -15,6 +15,12 @@ Changelog
 
 
 
+Version 6.1.0
+=============
+
+- Implements standarized silhouette score to determine the optimal number of clusters.
+- Fix plot_clusters function to plot clusters and heatmap in same order of codependence matrix. Originally it plots the codependece matrix with axis x inverted.
+
 Version 6.0.0
 =============
 

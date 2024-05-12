@@ -693,6 +693,7 @@ def assets_clusters(
     custom_cov=None,
     codependence="pearson",
     linkage="ward",
+    opt_k_method="twodiff",
     k=None,
     max_k=10,
     bins_info="KN",
@@ -739,6 +740,13 @@ def assets_clusters(
         - 'median'.
         - 'ward'.
         - 'DBHT'. Direct Bubble Hierarchical Tree.
+
+    opt_k_method : str
+        Method used to calculate the optimum number of clusters.
+        The default is 'twodiff'. Possible values are:
+
+        - 'twodiff': two difference gap statistic.
+        - 'stdsil': standarized silhouette score.
 
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
@@ -823,9 +831,14 @@ def assets_clusters(
         p_dist = squareform(dist, checks=False)
         clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
 
-    # Optimal number of clusters
+    # optimal number of clusters
     if k is None:
-        k = af.two_diff_gap_stat(dist, clustering, max_k)
+        if opt_k_method == "twodiff":
+            k = af.two_diff_gap_stat(dist, clustering, max_k)
+        elif opt_k_method == "stdsil":
+            k = af.std_silhouette_score(dist, clustering, max_k)
+        else:
+            raise ValueError('The only opt_k_method available are twodiff and stdsil')
 
     # Building clusters
     clusters_inds = hr.fcluster(clustering, k, criterion="maxclust")
@@ -1360,6 +1373,7 @@ def clusters_matrix(
     custom_cov=None,
     codependence="pearson",
     linkage="ward",
+    opt_k_method="twodiff",
     k=None,
     max_k=10,
     bins_info="KN",
@@ -1407,6 +1421,13 @@ def clusters_matrix(
         - 'median'.
         - 'ward'.
         - 'DBHT'. Direct Bubble Hierarchical Tree.
+
+    opt_k_method : str
+        Method used to calculate the optimum number of clusters.
+        The default is 'twodiff'. Possible values are:
+
+        - 'twodiff': two difference gap statistic.
+        - 'stdsil': standarized silhouette score.
 
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
@@ -1467,6 +1488,7 @@ def clusters_matrix(
         custom_cov=custom_cov,
         codependence=codependence,
         linkage=linkage,
+        opt_k_method=opt_k_method,
         k=k,
         max_k=max_k,
         bins_info="KN",
@@ -1601,6 +1623,7 @@ def related_assets(
     custom_cov=None,
     codependence="pearson",
     linkage="ward",
+    opt_k_method="twodiff",
     k=None,
     max_k=10,
     bins_info="KN",
@@ -1649,6 +1672,13 @@ def related_assets(
         - 'median'.
         - 'ward'.
         - 'DBHT'. Direct Bubble Hierarchical Tree.
+
+    opt_k_method : str
+        Method used to calculate the optimum number of clusters.
+        The default is 'twodiff'. Possible values are:
+
+        - 'twodiff': two difference gap statistic.
+        - 'stdsil': standarized silhouette score.
 
     k : int, optional
         Number of clusters. This value is took instead of the optimal number

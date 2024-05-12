@@ -285,8 +285,8 @@ Riskfolio-Lib is an open-source project, however due it's a project that is not 
 
 You can contact me through:
 
-- __`LinkedIn <https://www.linkedin.com/in/dany-cajas/>´__
-- __`Gmail <dcajasn@gmail.com>`__
+- `LinkedIn <https://www.linkedin.com/in/dany-cajas/>`
+- `Gmail <dcajasn@gmail.com>`
 
 You can pay using one of the following channels:
 
@@ -307,7 +307,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 
     @misc{riskfolio,
           author = {Dany Cajas},
-          title = {Riskfolio-Lib (6.0.0)},
+          title = {Riskfolio-Lib (6.1.0)},
           year  = {2024},
           url   = {https://github.com/dcajasn/Riskfolio-Lib},
           }

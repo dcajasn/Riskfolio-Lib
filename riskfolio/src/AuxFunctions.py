@@ -19,6 +19,7 @@ from scipy.spatial.distance import pdist, squareform
 from scipy.optimize import minimize
 from sklearn.metrics import mutual_info_score
 from sklearn.neighbors import KernelDensity
+from sklearn.metrics import silhouette_samples
 from astropy.stats import knuth_bin_width, freedman_bin_width, scott_bin_width
 from itertools import product
 import riskfolio.external.cppfunctions as cf
@@ -40,6 +41,7 @@ __all__ = [
     "var_info_matrix",
     "ltdi_matrix",
     "two_diff_gap_stat",
+    "std_silhouette_score",
     "fitKDE",
     "mpPDF",
     "errPDFs",
@@ -678,8 +680,6 @@ def two_diff_gap_stat(dist, clusters, max_k=10):
 
     Parameters
     ----------
-    codep : DataFrame
-        A codependence matrix.
     dist : str, optional
         A distance measure based on the codependence matrix.
     clusters : str, optional
@@ -731,6 +731,56 @@ def two_diff_gap_stat(dist, clusters, max_k=10):
         k = len(gaps)
     else:
         k = int(gaps.idxmax() + 2)
+
+    return k
+
+
+def std_silhouette_score(dist, clusters, max_k=10):
+    r"""
+    Calculate the optimal number of clusters based on the standarized silhouette
+    score index :cite:`d-Prado2`.
+
+    Parameters
+    ----------
+    dist : str, optional
+        A distance measure based on the codependence matrix.
+    clusters : str, optional
+        The hierarchical clustering encoded as a linkage matrix, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
+    max_k : int, optional
+        Max number of clusters used by the standarized silhouette score
+        to find the optimal number of clusters. The default is 10.
+
+    Returns
+    -------
+    k : int
+        The optimal number of clusters based on the standarized silhouette score.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    # cluster levels over from 1 to N-1 clusters
+    cluster_lvls = pd.DataFrame(hr.cut_tree(clusters), index=dist.columns)
+    num_k = cluster_lvls.columns  # save column with number of clusters
+    cluster_lvls = cluster_lvls.iloc[:, ::-1]  # reverse order to start with 1 cluster
+    cluster_lvls.columns = num_k  # set columns to number of cluster
+    scores_list = []
+
+    # get within-cluster dissimilarity for each k
+    for k in range(2, min(len(cluster_lvls.columns), max_k)):
+        level = cluster_lvls.iloc[:, k]  # get k clusters
+        b = silhouette_samples(dist, level)
+        scores_list.append(b.mean()/b.std())
+
+    scores_list = pd.Series(scores_list)
+    n = dist.shape[0]
+    limit_k = int(min(max_k, np.sqrt(n)))
+    scores_list = scores_list[0:limit_k]
+    if scores_list.isna().all():
+        k = len(scores_list)
+    else:
+        k = int(scores_list.idxmax() + 2)
 
     return k
 
@@ -801,7 +851,6 @@ def codep_dist(
     if codependence in {"pearson", "spearman", "kendall"}:
         codep = returns.corr(method=codependence)
         dist = np.sqrt(np.clip((1 - codep) / 2, a_min=0.0, a_max=1.0))
-        codep = 1 - dist**2
     elif codependence == "gerber1":
         codep = gs.gerber_cov_stat1(returns, threshold=gs_threshold)
         codep = cov2corr(codep)

@@ -236,6 +236,8 @@ class HCPortfolio(object):
         model="HRP",
         linkage="ward",
         codependence="pearson",
+        opt_k_method="twodiff",
+        k=None,
         max_k=10,
         leaf_order=True,
     ):
@@ -283,7 +285,13 @@ class HCPortfolio(object):
 
         if model in {"HERC", "HERC2", "NCO"}:
             # optimal number of clusters
-            k = af.two_diff_gap_stat(dist, clustering, max_k)
+            if k is None:
+                if opt_k_method == "twodiff":
+                    k = af.two_diff_gap_stat(dist, clustering, max_k)
+                elif opt_k_method == "stdsil":
+                    k = af.std_silhouette_score(dist, clustering, max_k)
+                else:
+                    raise ValueError('The only opt_k_method available are twodiff and stdsil')
         else:
             k = None
 
@@ -691,6 +699,7 @@ class HCPortfolio(object):
         custom_cov=None,
         custom_mu=None,
         linkage="single",
+        opt_k_method="twodiff",
         k=None,
         max_k=10,
         bins_info="KN",
@@ -823,6 +832,13 @@ class HCPortfolio(object):
             - 'ward'.
             - 'DBHT': Direct Bubble Hierarchical Tree.
 
+        opt_k_method : str
+            Method used to calculate the optimum number of clusters.
+            The default is 'twodiff'. Possible values are:
+
+            - 'twodiff': two difference gap statistic.
+            - 'stdsil': standarized silhouette score.
+
         k : int, optional
             Number of clusters. This value is took instead of the optimal number
             of clusters calculated with the two difference gap statistic.
@@ -916,7 +932,7 @@ class HCPortfolio(object):
 
         # Step-1: Tree clustering
         self.clusters, self.k = self._hierarchical_clustering(
-            model, linkage, codependence, max_k, leaf_order=leaf_order
+            model, linkage, codependence, opt_k_method, k, max_k, leaf_order=leaf_order
         )
         if k is not None:
             self.k = int(k)

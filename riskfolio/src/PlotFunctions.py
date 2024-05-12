@@ -2515,6 +2515,7 @@ def plot_clusters(
     custom_cov=None,
     codependence="pearson",
     linkage="ward",
+    opt_k_method="twodiff",
     k=None,
     max_k=10,
     bins_info="KN",
@@ -2569,6 +2570,13 @@ def plot_clusters(
         - 'median'.
         - 'ward'.
         - 'DBHT': Direct Bubble Hierarchical Tree.
+
+    opt_k_method : str
+        Method used to calculate the optimum number of clusters.
+        The default is 'twodiff'. Possible values are:
+
+        - 'twodiff': two difference gap statistic.
+        - 'stdsil': standarized silhouette score.
 
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
@@ -2699,7 +2707,12 @@ def plot_clusters(
 
     # optimal number of clusters
     if k is None:
-        k = af.two_diff_gap_stat(dist, clustering, max_k)
+        if opt_k_method == "twodiff":
+            k = af.two_diff_gap_stat(dist, clustering, max_k)
+        elif opt_k_method == "stdsil":
+            k = af.std_silhouette_score(dist, clustering, max_k)
+        else:
+            raise ValueError('The only opt_k_method available are twodiff and stdsil')
 
     clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
     clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
@@ -2715,6 +2728,7 @@ def plot_clusters(
     ax.set_yticklabels(labels[permutation], va="center")
     ax.yaxis.set_label_position("right")
     ax.yaxis.tick_right()
+    ax.set_ylim(ax.get_ylim()[::-1])
 
     flag = False
     if show_clusters is True:
@@ -2725,10 +2739,11 @@ def plot_clusters(
             flag = True
 
     if flag:
+        N = len(permutation)
         for cluster_id, cluster in clusters.items():
             amin = permutation.index(cluster[0])
             xmin, xmax = amin, amin + len(cluster)
-            ymin, ymax = amin, amin + len(cluster)
+            ymin, ymax =amin, amin + len(cluster)
 
             for i in cluster:
                 a = permutation.index(i)
@@ -2738,16 +2753,16 @@ def plot_clusters(
                     amin = a
 
             ax.axvline(
-                x=xmin, ymin=ymin / dim, ymax=(ymax) / dim, linewidth=4, color=linecolor
+                x=xmin, ymin=(N - ymin) / dim, ymax=(N - ymax) / dim, linewidth=4, color=linecolor
             )
             ax.axvline(
-                x=xmax, ymin=ymin / dim, ymax=(ymax) / dim, linewidth=4, color=linecolor
+                x=xmax, ymin=(N - ymin) / dim, ymax=(N - ymax) / dim, linewidth=4, color=linecolor
             )
             ax.axhline(
-                y=ymin, xmin=xmin / dim, xmax=(xmax) / dim, linewidth=4, color=linecolor
+                y=ymin, xmin=xmin / dim, xmax=xmax / dim, linewidth=4, color=linecolor
             )
             ax.axhline(
-                y=ymax, xmin=xmin / dim, xmax=(xmax) / dim, linewidth=4, color=linecolor
+                y=ymax, xmin=xmin / dim, xmax=xmax / dim, linewidth=4, color=linecolor
             )
 
     axcolor = fig.add_axes([1.02, 0.1, 0.02, 0.6])
@@ -2823,12 +2838,12 @@ def plot_clusters(
 
         ax2.xaxis.set_major_locator(mticker.FixedLocator(np.arange(codep.shape[0])))
         ax2.set_xticklabels(labels[permutation], rotation=90, ha="center")
+        ax2.set_ylim(ax2.get_ylim()[::-1])
 
         if show_clusters is True:
             i = 0
-            for coll in ax2.collections[
-                :-1
-            ]:  # the last collection is the ungrouped level
+            # the last collection is the ungrouped level
+            for coll in ax2.collections[:-1]:
                 ymin, ymax = np.inf, -np.inf
                 xmax = -np.inf
                 for p in coll.get_paths():
@@ -2881,6 +2896,7 @@ def plot_dendrogram(
     custom_cov=None,
     codependence="pearson",
     linkage="ward",
+    opt_k_method="twodiff",
     k=None,
     max_k=10,
     bins_info="KN",
@@ -2932,6 +2948,13 @@ def plot_dendrogram(
         - 'median'.
         - 'ward'.
         - 'DBHT': Direct Bubble Hierarchical Tree.
+
+    opt_k_method : str
+        Method used to calculate the optimum number of clusters.
+        The default is 'twodiff'. Possible values are:
+
+        - 'twodiff': two difference gap statistic.
+        - 'stdsil': standarized silhouette score.
 
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
@@ -3041,9 +3064,14 @@ def plot_dendrogram(
     if show_clusters is False:
         color_threshold = 0
     elif show_clusters is True:
-        # optimal number of clusters
+    # optimal number of clusters
         if k is None:
-            k = af.two_diff_gap_stat(dist, clustering, max_k)
+            if opt_k_method == "twodiff":
+                k = af.two_diff_gap_stat(dist, clustering, max_k)
+            elif opt_k_method == "stdsil":
+                k = af.std_silhouette_score(dist, clustering, max_k)
+            else:
+                raise ValueError('The only opt_k_method available are twodiff and stdsil')
 
         root, nodes = hr.to_tree(clustering, rd=True)
         nodes = [i.dist for i in nodes]
@@ -3111,6 +3139,7 @@ def plot_network(
     custom_cov=None,
     codependence="pearson",
     linkage="ward",
+    opt_k_method="twodiff",
     k=None,
     max_k=10,
     bins_info="KN",
@@ -3168,6 +3197,13 @@ def plot_network(
         - 'median'.
         - 'ward'.
         - 'DBHT': Direct Bubble Hierarchical Tree.
+
+    opt_k_method : str
+        Method used to calculate the optimum number of clusters.
+        The default is 'twodiff'. Possible values are:
+
+        - 'twodiff': two difference gap statistic.
+        - 'stdsil': standarized silhouette score.
 
     k : int, optional
         Number of clusters. This value is took instead of the optimal number
@@ -3295,7 +3331,12 @@ def plot_network(
 
     # optimal number of clusters
     if k is None:
-        k = af.two_diff_gap_stat(dist, clustering, max_k)
+        if opt_k_method == "twodiff":
+            k = af.two_diff_gap_stat(dist, clustering, max_k)
+        elif opt_k_method == "stdsil":
+            k = af.std_silhouette_score(dist, clustering, max_k)
+        else:
+            raise ValueError('The only opt_k_method available are twodiff and stdsil')
 
     clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
     clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
@@ -3677,6 +3718,7 @@ def plot_clusters_network(
     custom_cov=None,
     codependence="pearson",
     linkage="ward",
+    opt_k_method="twodiff",
     k=None,
     max_k=10,
     bins_info="KN",
@@ -3738,6 +3780,20 @@ def plot_clusters_network(
         - 'ward'.
         - 'DBHT': Direct Bubble Hierarchical Tree.
 
+    opt_k_method : str
+        Method used to calculate the optimum number of clusters.
+        The default is 'twodiff'. Possible values are:
+
+        - 'twodiff': two difference gap statistic.
+        - 'stdsil': standarized silhouette score.
+
+    k : int, optional
+        Number of clusters. This value is took instead of the optimal number
+        of clusters calculated with the two difference gap statistic.
+        The default is None.
+    max_k : int, optional
+        Max number of clusters used by the two difference gap statistic
+        to find the optimal number of clusters. The default is 10.
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
         value is 'KN'. Possible values are:
@@ -3843,8 +3899,19 @@ def plot_clusters_network(
         p_dist = squareform(dist, checks=False)
         clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
 
+    # optimal number of clusters
     if k is None:
-        k = af.two_diff_gap_stat(dist, clustering, max_k)
+        if opt_k_method == "twodiff":
+            k = af.two_diff_gap_stat(dist, clustering, max_k)
+        elif opt_k_method == "stdsil":
+            k = af.std_silhouette_score(dist, clustering, max_k)
+        else:
+            raise ValueError('The only opt_k_method available are twodiff and stdsil')
+
+    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
+    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    for i, v in enumerate(clustering_inds):
+        clusters[v].append(labels[i])
 
     # Calculating adjacency matrix based on hierarchical clustering
     D = ct.clusters_matrix(
@@ -3862,15 +3929,6 @@ def plot_clusters_network(
     # Build Adjacency matrix
     MAdj = pd.DataFrame(D, index=labels, columns=labels)
     G = nx.from_pandas_adjacency(MAdj)
-
-    # optimal number of clusters
-    if k is None:
-        k = af.two_diff_gap_stat(dist, clustering, max_k)
-
-    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
-    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
-    for i, v in enumerate(clustering_inds):
-        clusters[v].append(labels[i])
 
     # Build clusters super nodes positions
     supergraph = nx.cycle_graph(len(clusters))
@@ -3939,6 +3997,7 @@ def plot_clusters_network_allocation(
     custom_cov=None,
     codependence="pearson",
     linkage="ward",
+    opt_k_method="twodiff",
     k=None,
     max_k=10,
     bins_info="KN",
@@ -4117,8 +4176,19 @@ def plot_clusters_network_allocation(
         p_dist = squareform(dist, checks=False)
         clustering = hr.linkage(p_dist, method=linkage, optimal_ordering=leaf_order)
 
+    # optimal number of clusters
     if k is None:
-        k = af.two_diff_gap_stat(dist, clustering, max_k)
+        if opt_k_method == "twodiff":
+            k = af.two_diff_gap_stat(dist, clustering, max_k)
+        elif opt_k_method == "stdsil":
+            k = af.std_silhouette_score(dist, clustering, max_k)
+        else:
+            raise ValueError('The only opt_k_method available are twodiff and stdsil')
+
+    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
+    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    for i, v in enumerate(clustering_inds):
+        clusters[v].append(labels[i])
 
     # Calculating adjacency matrix based on hierarchical clustering
     D = ct.clusters_matrix(
@@ -4136,11 +4206,6 @@ def plot_clusters_network_allocation(
     # Build Adjacency matrix
     MAdj = pd.DataFrame(D, index=labels, columns=labels)
     G = nx.from_pandas_adjacency(MAdj)
-
-    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
-    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
-    for i, v in enumerate(clustering_inds):
-        clusters[v].append(labels[i])
 
     # Build clusters super nodes positions
     supergraph = nx.cycle_graph(len(clusters))

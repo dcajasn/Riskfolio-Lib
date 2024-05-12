@@ -1252,7 +1252,7 @@ def augmented_black_litterman(
         Indicate if use equilibrium or historical excess returns.
         The default is True.
     const : bool, optional
-        Indicate if use equilibrium or historical excess returns.
+        Indicate if the loadings matrix has a constant.
         The default is True.
     method_mu : str, optional
         The method used to estimate the expected returns.
