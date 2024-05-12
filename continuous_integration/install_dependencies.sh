@@ -43,15 +43,6 @@ else
   python -m pip install "ortools>=9.3,<9.10" coptpy sdpa-python diffcp gurobipy clarabel sdpa-python
 fi
 
-if [[ "$PYTHON_VERSION" != "3.8" ]]; then
-  if [[ "$RUNNER_OS" == "Windows" ]]; then
-    # SDPA with OpenBLAS backend does not pass LP5 on Windows
-    python -m pip install sdpa-multiprecision
-  else
-    python -m pip install sdpa-python
-  fi
-fi
-
 if [[ "$PYTHON_VERSION" != "3.11" ]] && [[ "$RUNNER_OS" != "Windows" ]]; then
   python -m pip install cylp
 fi
