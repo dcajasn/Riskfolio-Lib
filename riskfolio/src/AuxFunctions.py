@@ -772,7 +772,7 @@ def std_silhouette_score(dist, clusters, max_k=10):
     for k in range(2, min(len(cluster_lvls.columns), max_k)):
         level = cluster_lvls.iloc[:, k]  # get k clusters
         b = silhouette_samples(dist, level)
-        scores_list.append(b.mean()/b.std())
+        scores_list.append(b.mean() / b.std())
 
     scores_list = pd.Series(scores_list)
     n = dist.shape[0]

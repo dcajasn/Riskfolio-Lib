@@ -838,7 +838,7 @@ def assets_clusters(
         elif opt_k_method == "stdsil":
             k = af.std_silhouette_score(dist, clustering, max_k)
         else:
-            raise ValueError('The only opt_k_method available are twodiff and stdsil')
+            raise ValueError("The only opt_k_method available are twodiff and stdsil")
 
     # Building clusters
     clusters_inds = hr.fcluster(clustering, k, criterion="maxclust")
