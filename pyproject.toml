@@ -10,6 +10,6 @@ requires = [
     "numpy>=1.23.4,<1.24; python_version=='3.11'",
     "numpy>=1.26.4; python_version=='3.12'",
     "scipy >= 1.1.0",
-    "setuptools>69.5.1",
+    "setuptools>65.5.1",
     "wheel"
 ]
