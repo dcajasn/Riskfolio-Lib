@@ -287,7 +287,7 @@ def cokurt_matrix(X, method="hist", **kwargs):
 
     assets = X.columns.tolist()
     cols = list(product(assets, assets))
-    cols = [y + " - " + x for x, y in cols]
+    cols = [str(y) + " - " + str(x) for x, y in cols]
 
     if method == "hist":
         kurt = cf.cokurtosis_matrix(X)
@@ -823,7 +823,7 @@ def risk_factors(
     X,
     Y,
     B=None,
-    const=False,
+    const=True,
     method_mu="hist",
     method_cov="hist",
     feature_selection="stepwise",
@@ -832,7 +832,8 @@ def risk_factors(
     threshold=0.05,
     n_components=0.95,
     error=True,
-    **kwargs
+    dict_mu={},
+    dict_cov={},
 ):
     r"""
     Estimate the expected returns vector and covariance matrix based on risk
@@ -948,8 +949,8 @@ def risk_factors(
         The covariance matrix of risk factors model.
     returns : DataFrame
         The returns based on a risk factor model.
-    nav : DataFrame
-        The cumulated uncompounded returns based on a risk factor model.
+    B : DataFrame
+        A DataFrame with the loadings matrix.
 
     Raises
     ------
@@ -981,8 +982,8 @@ def risk_factors(
     assets = Y.columns.tolist()
     dates = X.index.tolist()
 
-    mu_f = np.array(mean_vector(X1, method=method_mu, **kwargs), ndmin=2)
-    S_f = np.array(covar_matrix(X1, method=method_cov, **kwargs), ndmin=2)
+    mu_f = np.array(mean_vector(X1, method=method_mu, **dict_mu), ndmin=2)
+    S_f = np.array(covar_matrix(X1, method=method_cov, **dict_cov), ndmin=2)
     B = np.array(B, ndmin=2)
 
     returns = np.array(X1, ndmin=2) @ B.T
@@ -1003,7 +1004,17 @@ def risk_factors(
 
 
 def black_litterman(
-    X, w, P, Q, delta=1, rf=0, eq=True, method_mu="hist", method_cov="hist", **kwargs
+    X,
+    w,
+    P,
+    Q,
+    delta=1,
+    rf=0,
+    eq=True,
+    method_mu="hist",
+    method_cov="hist",
+    dict_mu={},
+    dict_cov={},
 ):
     r"""
     Estimate the expected returns vector and covariance matrix based
@@ -1087,8 +1098,10 @@ def black_litterman(
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
         - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
-    **kwargs : dict
-        Other variables related to the expected returns and covariance estimation.
+    dict_mu : dict
+        Other variables related to the mean vector estimation method.
+    dict_cov : dict
+        Other variables related to the covariance estimation method.
 
     Returns
     -------
@@ -1117,8 +1130,8 @@ def black_litterman(
     if w.shape[0] == 1:
         w = w.T
 
-    mu = np.array(mean_vector(X, method=method_mu, **kwargs), ndmin=2)
-    S = np.array(covar_matrix(X, method=method_cov, **kwargs), ndmin=2)
+    mu = np.array(mean_vector(X, method=method_mu, **dict_mu), ndmin=2)
+    S = np.array(covar_matrix(X, method=method_cov, **dict_cov), ndmin=2)
     P = np.array(P, ndmin=2)
     Q = np.array(Q, ndmin=2)
     tau = 1 / X.shape[0]
@@ -1163,7 +1176,8 @@ def augmented_black_litterman(
     const=True,
     method_mu="hist",
     method_cov="hist",
-    **kwargs
+    dict_mu={},
+    dict_cov={},
 ):
     r"""
     Estimate the expected returns vector and covariance matrix based
@@ -1281,8 +1295,10 @@ def augmented_black_litterman(
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
         - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
-    **kwargs : dict
-        Other variables related to the expected returns and covariance estimation.
+    dict_mu : dict
+        Other variables related to the mean vector estimation method.
+    dict_cov : dict
+        Other variables related to the covariance estimation method.
 
     Returns
     -------
@@ -1321,14 +1337,14 @@ def augmented_black_litterman(
             alpha = B[:, :1]
             B = B[:, 1:]
 
-    mu = np.array(mean_vector(X, method=method_mu, **kwargs), ndmin=2)
-    S = np.array(covar_matrix(X, method=method_cov, **kwargs), ndmin=2)
+    mu = np.array(mean_vector(X, method=method_mu, **dict_mu), ndmin=2)
+    S = np.array(covar_matrix(X, method=method_cov, **dict_cov), ndmin=2)
 
     tau = 1 / X.shape[0]
 
     if F is not None:
-        mu_f = np.array(mean_vector(F, method=method_mu, **kwargs), ndmin=2)
-        S_f = np.array(covar_matrix(F, method=method_cov, **kwargs), ndmin=2)
+        mu_f = np.array(mean_vector(F, method=method_mu, **dict_mu), ndmin=2)
+        S_f = np.array(covar_matrix(F, method=method_cov, **dict_cov), ndmin=2)
 
     if P is not None and Q is not None and P_f is None and Q_f is None:
         S_a = S
@@ -1415,7 +1431,8 @@ def black_litterman_bayesian(
     diag=True,
     method_mu="hist",
     method_cov="hist",
-    **kwargs
+    dict_mu={},
+    dict_cov={},
 ):
     r"""
     Estimate the expected returns vector and covariance matrix based
@@ -1517,8 +1534,10 @@ def black_litterman_bayesian(
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
         - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
-    **kwargs : dict
-        Other variables related to the expected returns and covariance estimation.
+    dict_mu : dict
+        Other variables related to the mean vector estimation method.
+    dict_cov : dict
+        Other variables related to the covariance estimation method.
 
     Returns
     -------
@@ -1549,12 +1568,12 @@ def black_litterman_bayesian(
             alpha = B[:, :1]
             B = B[:, 1:]
 
-    mu_f = np.array(mean_vector(F, method=method_mu, **kwargs), ndmin=2)
+    mu_f = np.array(mean_vector(F, method=method_mu, **dict_mu), ndmin=2)
     mu_f = (mu_f - rf).T
 
     tau = 1 / X.shape[0]
 
-    S_f = np.array(covar_matrix(F, method=method_cov, **kwargs), ndmin=2)
+    S_f = np.array(covar_matrix(F, method=method_cov, **dict_cov), ndmin=2)
     S = B @ S_f @ B.T
 
     if diag == True:
@@ -1731,6 +1750,8 @@ def bootstrapping(
     cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)
     if diag == True:
         cov_sigma = np.diag(np.diag(cov_sigma))
+    if af.is_pos_def(cov_sigma) == False:
+        cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)
     k_sigmas = np.diag(A_Sigma @ inv(cov_sigma) @ A_Sigma.T)
     k_sigma = np.percentile(k_sigmas, q=(1 - q) * 100) ** 0.5
     cov_sigma = pd.DataFrame(cov_sigma, index=cols_2, columns=cols_2)
@@ -1805,6 +1826,11 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
     K = cf.commutation_matrix(T=n, n=n)
     I = np.identity(n**2)
     cov_sigma = T * (I + K) @ np.kron(cov_mu, cov_mu)
+    if diag == True:
+        cov_sigma = np.diag(np.diag(cov_sigma))
+    if af.is_pos_def(cov_sigma) == False:
+        cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)
+    cov_sigma = pd.DataFrame(cov_sigma, index=cols_2, columns=cols_2)
 
     # Box Constraint for Mean
     delta_mu = st.norm.ppf(1 - q / 2) * np.sqrt(np.diag(cov_mu)).reshape(-1, 1)
@@ -1841,12 +1867,12 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
     # Elliptical Constraint for Covariance
     A_Sigma = covs.reshape((n_sim, n**2), order="F")
     A_Sigma = A_Sigma - np.repeat(vec_Sigma, n_sim, axis=0)
-    # cov_sigma = np.cov(A_Sigma, rowvar=False)
-    cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)
+    A_cov_sigma = np.cov(A_Sigma, rowvar=False)
     if diag == True:
-        cov_sigma = np.diag(np.diag(cov_sigma))
-    k_sigmas = np.diag(A_Sigma @ inv(cov_sigma) @ A_Sigma.T)
+        A_cov_sigma = np.diag(np.diag(A_cov_sigma))
+    if af.is_pos_def(A_cov_sigma) == False:
+        A_cov_sigma = af.cov_fix(A_cov_sigma, method="clipped", threshold=threshold)
+    k_sigmas = np.diag(A_Sigma @ inv(A_cov_sigma) @ A_Sigma.T)
     k_sigma = np.percentile(k_sigmas, q=1 - q) ** 0.5
-    cov_sigma = pd.DataFrame(cov_sigma, index=cols_2, columns=cols_2)
 
     return mu_l, mu_u, cov_l, cov_u, cov_mu, cov_sigma, k_mu, k_sigma

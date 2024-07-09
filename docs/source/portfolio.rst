@@ -27,17 +27,18 @@ one of the following 4 objective functions:
 .. math::
     \begin{aligned}
     &\underset{w}{\max} & & R (w)\\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,13] \\
     & & & R (w) \geq \overline{\mu}
     \end{aligned}
+
 
 - **Minimum Risk Portfolio:**
 
 .. math::
     \begin{aligned}
     &\underset{w}{\min} & & \phi_{k}(w)\\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,13] \\
     & & & R (w) \geq \overline{\mu}
     \end{aligned}
@@ -48,7 +49,7 @@ one of the following 4 objective functions:
 .. math::
     \begin{aligned}
     &\underset{w}{\max} & & \frac{R (w) - r_{f}}{\phi_{k}(w)}\\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,13] \\
     & & & R (w) \geq \overline{\mu}
     \end{aligned}
@@ -59,13 +60,13 @@ one of the following 4 objective functions:
 .. math::
     \begin{aligned}
     &\underset{w}{\max} & & R (w) - \lambda \phi_{k}(w)\\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     & & &\phi_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,13] \\
     & & & R (w) \geq \overline{\mu}
     \end{aligned}
 
 
-Where:
+where:
 
 :math:`R (w)` is the return function, posible values are:
 
@@ -81,7 +82,7 @@ Where:
 
 :math:`r`: is the matrix of assets returns.
 
-:math:`Aw \geq B`: is a set of linear constraints.
+:math:`Aw \leq B`: is a set of linear constraints.
 
 :math:`\phi_{i}(w)`: are 20 available risk measures. The available risk
 measures are:
@@ -128,12 +129,12 @@ the general vanilla risk parity model :cite:`a-Roncalli` :cite:`a-RichardRoncall
     &\underset{w}{\min} & & \phi(w) \\
     &\text{s.t.} & & b \log(w) \geq c \\
     & & & \mu w \geq \overline{\mu} \\
-    & & & Aw \geq B \\
+    & & & Aw \leq B \\
     & & & w \geq 0 \\
     \end{aligned}
 
 
-Where:
+where:
     
 :math:`w`: is the vector of weights of the optimum portfolio.
 
@@ -141,7 +142,7 @@ Where:
 
 :math:`b`: is a vector of risk contribution constraints.
 
-:math:`Aw \geq B`: is a set of linear constraints.
+:math:`Aw \leq B`: is a set of linear constraints.
 
 :math:`\phi(w)`: are 16 available risk measures. The available risk
 measures are:
@@ -182,13 +183,13 @@ the relaxed risk parity model :cite:`a-GambetaKwon`:
     & & & w_{i} \zeta_{i} \geq \gamma^{2} b_{i} & \forall i=1 , \ldots , N \\
     & & & \lambda x^{T} \Theta x \leq \rho^{2} & \\
     & & & \mu w \geq \overline{\mu} & \\
-    & & & Aw \geq B & \\
+    & & & Aw \leq B & \\
     & & & \sum^{N}_{i=1} w_{i} = 1 & \\
     & & & \psi, \gamma, \rho, w  \geq 0 & \\
     \end{aligned}
 
 
-Where:
+where:
     
 :math:`w`: is the vector of weights of the optimum portfolio.
 
@@ -210,7 +211,7 @@ Where:
 
 :math:`\Theta = \text{diag}(\Sigma)`
 
-:math:`Aw \geq B`: is a set of linear constraints.
+:math:`Aw \leq B`: is a set of linear constraints.
 
 
 Worst Case Mean Variance Portfolio Optimization
@@ -226,7 +227,7 @@ that results from optimize one of the following 4 objective functions:
 .. math::
     \begin{aligned}
     &\underset{w}{\max} & & \underset{\mu \, \in \, U_{\mu}}{\min} \mu w\\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     \end{aligned}
 
 
@@ -235,7 +236,7 @@ that results from optimize one of the following 4 objective functions:
 .. math::
     \begin{aligned}
     &\underset{w}{\min} & & \underset{\Sigma \, \in \, U_{\Sigma}}{\max} w^{T} \Sigma w\\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     \end{aligned}
 
 
@@ -245,7 +246,7 @@ that results from optimize one of the following 4 objective functions:
     \begin{aligned}
     &\underset{w}{\max} & & \cfrac{\underset{\mu \, \in \, U_{\mu}}{\min} \mu w - r_{f}}
     {\underset{\Sigma \, \in \, U_{\Sigma}}{\max} \sqrt{w^{T} \Sigma w}}\\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     \end{aligned}
 
 
@@ -255,11 +256,11 @@ that results from optimize one of the following 4 objective functions:
     \begin{aligned}
     &\underset{w}{\max} & & \underset{\mu \, \in \, U_{\mu}}{\min} \mu w
     - \underset{\Sigma \, \in \, U_{\Sigma}}{\max}  \lambda w^{T} \Sigma w\\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     \end{aligned}
 
 
-Where:
+where:
 
 :math:`w` are the weights of the portfolio.
 
@@ -285,7 +286,7 @@ Where:
     \end{aligned}
 
 
-:math:`Aw \geq B`: is a set of linear constraints.
+:math:`Aw \leq B`: is a set of linear constraints.
 
 :math:`r_{f}`: is the risk free rate. 
 
@@ -303,7 +304,7 @@ this function to calculate the Higher L-Moment portfolio optimization model :cit
 .. math::
     \begin{aligned}
     &\underset{w}{\min} & & \sum^{T}_{i=0} v_{[i]}y_{[i]} \\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     & & & y = rw \\
     & & & R (w) \geq \overline{\mu} \\
     \end{aligned}
@@ -313,7 +314,7 @@ this function to calculate the Higher L-Moment portfolio optimization model :cit
 .. math::
     \begin{aligned}
     &\underset{w}{\max} & & \frac{R (w) - r_{f}}{\sum^{T}_{i=0} v_{[i]}y_{[i]}}\\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     & & & y = rw \\
     & & & R (w) \geq \overline{\mu} \\
     \end{aligned}
@@ -323,7 +324,7 @@ this function to calculate the Higher L-Moment portfolio optimization model :cit
 .. math::
     \begin{aligned}
     &\underset{w}{\max} & & R (w) - \lambda \left ( \sum^{T}_{i=0} v_{[i]}y_{[i]} \right) \\
-    &\text{s.t.} & & Aw \geq B\\
+    &\text{s.t.} & & Aw \leq B\\
     & & & y = rw \\
     & & & R (w) \geq \overline{\mu} \\
     \end{aligned}

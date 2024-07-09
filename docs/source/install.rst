@@ -69,15 +69,15 @@ Dependencies
 
 Riskfolio-Lib has the following dependencies:
 
-* numpy>=1.18.0
-* scipy>=1.1.0
-* pandas>=1.0.0
-* matplotlib>=3.5.0
-* cvxpy>=1.3.1
-* scikit-learn>=1.0.0
-* statsmodels>=0.10.1
-* arch>=4.15
-* xlsxwriter>=1.3.7
-* networkx>=2.5.1
-* astropy>=4.3.1 (if there are problems check `astropy installation instructions <https://www.astropy.org>`_)
+* numpy>=1.24.0
+* pandas>=2.0.0
+* matplotlib>=3.8.0
+* clarabel>=0.6.0
+* cvxpy>=1.5.2
+* scikit-learn>=1.3.0
+* statsmodels>=0.13.5
+* arch>=7.0
+* xlsxwriter>=3.1.2
+* networkx>=3.0
+* astropy>=5.1 (if there are problems check `astropy installation instructions <https://www.astropy.org>`_)
 * pybind11>=2.10.1

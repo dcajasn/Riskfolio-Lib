@@ -163,9 +163,11 @@ Some of key functionalities that Riskfolio-Lib offers:
 - Tools to build views on assets and asset classes.
 - Tools to build views on risk factors.
 - Tools to build risk contribution constraints per asset classes.
+- Tools to build risk contribution constraints per risk factor using explicit risk factors and principal components.
 - Tools to build bounds constraints for Hierarchical Clustering Portfolios.
 - Tools to calculate risk measures.
 - Tools to calculate risk contributions per asset.
+- Tools to calculate risk contributions per risk factor.
 - Tools to calculate uncertainty sets for mean vector and covariance matrix.
 - Tools to calculate assets clusters based on codependence metrics.
 - Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
@@ -230,18 +232,18 @@ POW - refers to problems with 3-dimensional power cone constraints.
 
 ## Dependencies
 
-Riskfolio-Lib supports Python 3.8|.
+Riskfolio-Lib supports Python 3.9 or higher.
 
 Installation requires:
 - [numpy](http://www.numpy.org/) >= 1.24.0
 - [scipy](https://www.scipy.org/) >= 1.10.0
 - [pandas](https://pandas.pydata.org/) >= 2.0.0
-- [matplotlib](https://matplotlib.org/) >= 3.7.0
+- [matplotlib](https://matplotlib.org/) >= 3.8.0
 - [clarabel](https://oxfordcontrol.github.io/ClarabelDocs/stable/) >= 0.6.0
-- [cvxpy](https://www.cvxpy.org/) >= 1.4.0
+- [cvxpy](https://www.cvxpy.org/) >= 1.5.2
 - [scikit-learn](https://scikit-learn.org/stable/) >= 1.3.0
 - [statsmodels](https://www.statsmodels.org/) >= 0.13.5
-- [arch](https://bashtage.github.io/arch/) >= 5.4
+- [arch](https://bashtage.github.io/arch/) >= 7.0
 - [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 3.1.2
 - [networkx](https://networkx.org) >= 3.0
 - [astropy](https://www.astropy.org) >= 5.1
@@ -260,7 +262,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 ```
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (6.1.0)},
+      title = {Riskfolio-Lib (6.2.0)},
       year  = {2024},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }

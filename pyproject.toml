@@ -14,4 +14,4 @@ requires = [
     "wheel"
 ]
 
-target-version = "py38"
+target-version = "py39"

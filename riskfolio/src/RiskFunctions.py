@@ -616,7 +616,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
         if solver in ["CLARABEL", "MOSEK", "SCS"]:
             prob.solve(solver=solver)
         else:
-            prob.solve(verbose=True)
+            prob.solve()
     except:
         pass
 
@@ -2166,7 +2166,7 @@ def Risk_Contribution(
         returns_ = np.array(returns, ndmin=2)
 
     RC = []
-    if rm in ["RLVaR", "RLDaR"]:
+    if rm in ["EVaR", "EDaR", "RLVaR", "RLDaR"]:
         d_i = 0.0001
     else:
         d_i = 0.0000001

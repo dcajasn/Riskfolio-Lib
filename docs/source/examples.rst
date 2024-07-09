@@ -79,15 +79,17 @@ Hierarchical Clustering Portfolio Optimization
 * `Hierarchical Equal Risk Contribution (HERC) with Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2044%20-%20Hierarchical%20Equal%20Risk%20Contribution%20(HERC)%20Portfolio%20Optimization%20with%20Constraints.ipynb>`_.
 * `Nested Clustered Optimization (NCO) with Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2045%20-%20Nested%20Clustered%20Optimization%20(NCO)%20Portfolio%20Optimization%20with%20Constraints.ipynb>`_.
 
+
 Graph Theory Constraints
 ------------------------
 * `Hierarchical Clustering and Networks <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2028%20-%20Hierarchical%20Clustering%20and%20Networks.ipynb>`_.
 * `Classic Mean Risk Optimization with Network and Dendrogram Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2046%20-%20Classic%20Mean%20Risk%20Optimization%20with%20Network%20and%20Dendrogram%20Constraints.ipynb>`_.
 
+
 Backtesting
 -----------
-* `Multi Assets Algorithmic Trading Backtesting with transaction cost and slippage using Backtrader <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%205%20-%20Multi%20Assets%20Algorithmic%20Trading%20Backtesting%20with%20Backtrader.ipynb>`_ (matplotlib=3.2.2 for compatibility with backtrader=1.9.76.123).
-* `Multi Assets Algorithmic Trading Backtesting with Vectorbt <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2018%20-%20Multi%20Assets%20Algorithmic%20Trading%20Backtesting%20with%20Vectorbt.ipynb>`_ (vectorbt=0.23.0).
+* `Multi Assets Algorithmic Trading Backtesting with transaction cost and slippage using Backtrader <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%205%20-%20Multi%20Assets%20Algorithmic%20Trading%20Backtesting%20with%20Backtrader.ipynb>`_ (matplotlib=3.2.2 for compatibility with backtrader=1.9.76.123. We don't recommend to try to reproduce this example due the compatibility problems of Backtrader).
+* `Multi Assets Algorithmic Trading Backtesting with Vectorbt <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2018%20-%20Multi%20Assets%20Algorithmic%20Trading%20Backtesting%20with%20Vectorbt.ipynb>`_ (vectorbt=0.26.1).
 
 
 Excel and Reporting

@@ -14,6 +14,14 @@ Changelog
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 
+Version 6.2.0
+=============
+
+- Improvement in calculation speed of duplication_matrix, duplication_elimination_matrix and duplication_summation_matrix functions using a vectorized formula.
+- Fixed formulation of risk parity with risk factors model that produced incorrect results when using the MOSEK solver.
+- Fixed some bugs in PlotFunctions module.
+- Fixed some bugs in HCPortfolio related to custom_mu vector and use of Kurtosis and Semi Kurtosis as risk measures.
+- Standardized the way additional parameters to estimate mean vector and covariance matrix are entered.
 
 Version 6.1.0
 =============

@@ -355,6 +355,7 @@ class Portfolio(object):
         self.cov_f = None
         self._B = None
         self.feature_selection = None
+        self.n_components = None
         self.mu_fm = None
         self.cov_fm = None
         self.mu_bl = None
@@ -672,7 +673,13 @@ class Portfolio(object):
             self._kappa = a
 
     def assets_stats(
-        self, method_mu="hist", method_cov="hist", method_kurt=None, d=0.94, **kwargs
+        self,
+        method_mu="hist",
+        method_cov="hist",
+        method_kurt=None,
+        dict_mu={},
+        dict_cov={},
+        dict_kurt={},
     ):
         r"""
         Calculate the inputs that will be used by the optimization method when
@@ -720,8 +727,12 @@ class Portfolio(object):
             - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
 
-        **kwargs : dict
-            All additional parameters of mean_vector and covar_matrix functions.
+        dict_mu : dict
+            Other variables related to the mean vector estimation method.
+        dict_cov : dict
+            Other variables related to the covariance estimation method.
+        dict_kurt : dict
+            Other variables related to the cokurtosis estimation method.
 
         See Also
         --------
@@ -731,14 +742,15 @@ class Portfolio(object):
 
         """
 
-        self.mu = pe.mean_vector(self.returns, method=method_mu, d=d)
-        self.cov = pe.covar_matrix(self.returns, method=method_cov, **kwargs)
-        value = af.is_pos_def(self.cov, threshold=1e-8)
+        self.mu = pe.mean_vector(self.returns, method=method_mu, **dict_mu)
+        self.cov = pe.covar_matrix(self.returns, method=method_cov, **dict_cov)
+
+        value = af.is_pos_def(self.cov, threshold=1e-6)
         for i in range(5):
             if value == False:
                 try:
-                    self.cov = af.cov_fix(self.cov, method="clipped", threshold=1e-5)
-                    value = af.is_pos_def(self.cov, threshold=1e-8)
+                    self.cov = af.cov_fix(self.cov, method="clipped", threshold=1e-6)
+                    value = af.is_pos_def(self.cov, threshold=1e-6)
                 except:
                     break
             else:
@@ -751,7 +763,7 @@ class Portfolio(object):
             T, N = self.returns.shape
             self.L_2 = cf.duplication_elimination_matrix(N)
             self.S_2 = cf.duplication_summation_matrix(N)
-            self.kurt = pe.cokurt_matrix(self.returns, method=method_kurt, **kwargs)
+            self.kurt = pe.cokurt_matrix(self.returns, method=method_kurt, **dict_kurt)
             value = af.is_pos_def(self.kurt, threshold=1e-8)
             for i in range(5):
                 if value == False:
@@ -769,14 +781,14 @@ class Portfolio(object):
                 print("You must convert self.kurt to a positive definite matrix")
 
             self.skurt = pe.cokurt_matrix(self.returns, method="semi")
-            value = af.is_pos_def(self.skurt, threshold=1e-8)
+            value = af.is_pos_def(self.skurt, threshold=1e-6)
             for i in range(5):
                 if value == False:
                     try:
                         self.skurt = af.cov_fix(
-                            self.skurt, method="clipped", threshold=1e-5
+                            self.skurt, method="clipped", threshold=1e-6
                         )
-                        value = af.is_pos_def(self.skurt, threshold=1e-8)
+                        value = af.is_pos_def(self.skurt, threshold=1e-6)
                     except:
                         break
                 else:
@@ -801,7 +813,8 @@ class Portfolio(object):
         eq=True,
         method_mu="hist",
         method_cov="hist",
-        **kwargs,
+        dict_mu={},
+        dict_cov={},
     ):
         r"""
         Calculate the inputs that will be used by the optimization method when
@@ -850,8 +863,10 @@ class Portfolio(object):
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`a-Gerber2021`.
             - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`a-Gerber2021`.
-        **kwargs : dict
-            Other variables related to the covariance estimation.
+        dict_mu : dict
+            Other variables related to the mean vector estimation method.
+        dict_cov : dict
+            Other variables related to the covariance estimation method.
 
         See Also
         --------
@@ -881,19 +896,20 @@ class Portfolio(object):
             eq=eq,
             method_mu=method_mu,
             method_cov=method_cov,
-            **kwargs,
+            dict_mu=dict_mu,
+            dict_cov=dict_cov,
         )
         self.mu_bl = mu
         self.cov_bl = cov
 
-        value = af.is_pos_def(self.cov_bl, threshold=1e-8)
+        value = af.is_pos_def(self.cov_bl, threshold=1e-6)
         for i in range(5):
             if value == False:
                 try:
                     self.cov_bl = af.cov_fix(
-                        self.cov_bl, method="clipped", threshold=1e-5
+                        self.cov_bl, method="clipped", threshold=1e-6
                     )
-                    value = af.is_pos_def(self.cov_bl, threshold=1e-8)
+                    value = af.is_pos_def(self.cov_bl, threshold=1e-6)
                 except:
                     break
             else:
@@ -906,11 +922,16 @@ class Portfolio(object):
         self,
         method_mu="hist",
         method_cov="hist",
-        d=0.94,
         B=None,
+        const=True,
         feature_selection="stepwise",
+        stepwise="Forward",
+        criterion="pvalue",
+        threshold=0.05,
+        n_components=0.95,
+        error=True,
+        dict_mu={},
         dict_cov={},
-        dict_risk={},
     ):
         r"""
         Calculate the inputs that will be used by the optimization method when
@@ -954,10 +975,10 @@ class Portfolio(object):
 
             - 'stepwise': use stepwise regression to select the best factors and estimate coefficients.
             - 'PCR': use principal components regression to estimate coefficients.
+        dict_mu : dict
+            Other variables related to the mean vector estimation method.
         dict_cov : dict
             Other variables related to the covariance estimation method.
-        dict_risk : dict
-            Other variables related of risk_factors function.
 
         See Also
         --------
@@ -970,18 +991,19 @@ class Portfolio(object):
         X = self.factors
         Y = self.returns
         self.B = None
+        self.n_components = n_components
 
-        mu_f = pe.mean_vector(self.returns, method=method_mu, d=d)
-        cov_f = pe.covar_matrix(self.returns, method=method_cov, d=d, **dict_cov)
+        mu_f = pe.mean_vector(self.factors, method=method_mu, **dict_mu)
+        cov_f = pe.covar_matrix(self.factors, method=method_cov, **dict_cov)
 
         self.mu_f = mu_f
         self.cov_f = cov_f
 
-        value = af.is_pos_def(self.cov_f, threshold=1e-8)
+        value = af.is_pos_def(self.cov_f, threshold=1e-6)
         if value == False:
             try:
-                self.cov = af.cov_fix(self.cov, method="clipped", threshold=1e-5)
-                value = af.is_pos_def(self.cov, threshold=1e-8)
+                self.cov = af.cov_fix(self.cov, method="clipped", threshold=1e-6)
+                value = af.is_pos_def(self.cov, threshold=1e-6)
                 if value == False:
                     print("You must convert self.cov to a positive definite matrix")
             except:
@@ -996,10 +1018,17 @@ class Portfolio(object):
             X,
             Y,
             B=B,
+            const=const,
             method_mu=method_mu,
             method_cov=method_cov,
             feature_selection=feature_selection,
-            **dict_risk,
+            stepwise=stepwise,
+            criterion=criterion,
+            threshold=threshold,
+            n_components=n_components,
+            error=error,
+            **dict_mu,
+            **dict_cov,
         )
 
         self.mu_fm = mu
@@ -1013,14 +1042,14 @@ class Portfolio(object):
                 B_, index=self.assetslist, columns=["const"] + self.factorslist
             )
 
-        value = af.is_pos_def(self.cov_fm, threshold=1e-8)
+        value = af.is_pos_def(self.cov_fm, threshold=1e-6)
         for i in range(5):
             if value == False:
                 try:
                     self.cov_fm = af.cov_fix(
-                        self.cov_fm, method="clipped", threshold=1e-5
+                        self.cov_fm, method="clipped", threshold=1e-6
                     )
-                    value = af.is_pos_def(self.cov_fm, threshold=1e-8)
+                    value = af.is_pos_def(self.cov_fm, threshold=1e-6)
                 except:
                     break
             else:
@@ -1041,12 +1070,13 @@ class Portfolio(object):
         w=None,
         delta=None,
         eq=True,
-        const=False,
+        const=True,
         diag=False,
         method_mu="hist",
         method_cov="hist",
-        kwargs_1=None,
-        kwargs_2=None,
+        dict_load={},
+        dict_mu={},
+        dict_cov={},
     ):
         r"""
         Calculate the inputs that will be used by the optimization method when
@@ -1112,10 +1142,12 @@ class Portfolio(object):
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`a-Gerber2021`.
             - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`a-Gerber2021`.
-        kwargs_1 : dict
+        dict_load : dict
             Other variables related to the loadings matrix estimation.
-        kwargs_2 : dict
-            Other variables related to the factors Black Litterman model selected.
+        dict_mu : dict
+            Other variables related to the mean vector estimation method.
+        dict_cov : dict
+            Other variables related to the covariance estimation method.
 
         See Also
         --------
@@ -1140,7 +1172,9 @@ class Portfolio(object):
 
         if B is None:
             if self.B is None:
-                self.B = pe.loadings_matrix(X=F, Y=X, **kwargs_1)
+                self.B = pe.loadings_matrix(X=F,
+                                            Y=X,
+                                            **dict_load)
                 const = True
             elif self.B is not None:
                 pass
@@ -1148,86 +1182,54 @@ class Portfolio(object):
             self.B = B
 
         if flavor == "BLB":
-            if isinstance(kwargs_1, dict):
-                mu, cov, w = pe.black_litterman_bayesian(
-                    X=X,
-                    F=F,
-                    B=self.B,
-                    P_f=P_f,
-                    Q_f=Q_f,
-                    delta=delta,
-                    rf=rf,
-                    eq=eq,
-                    const=const,
-                    diag=diag,
-                    method_mu=method_mu,
-                    method_cov=method_cov,
-                    **kwargs_2,
-                )
-            else:
-                mu, cov, w = pe.black_litterman_bayesian(
-                    X=X,
-                    F=F,
-                    B=self.B,
-                    P_f=P_f,
-                    Q_f=Q_f,
-                    delta=delta,
-                    rf=rf,
-                    eq=eq,
-                    const=const,
-                    diag=diag,
-                    method_mu=method_mu,
-                    method_cov=method_cov,
-                )
+            mu, cov, w = pe.black_litterman_bayesian(
+                X=X,
+                F=F,
+                B=self.B,
+                P_f=P_f,
+                Q_f=Q_f,
+                delta=delta,
+                rf=rf,
+                eq=eq,
+                const=const,
+                diag=diag,
+                method_mu=method_mu,
+                method_cov=method_cov,
+                dict_mu=dict_mu,
+                dict_cov=dict_cov,
+            )
 
         elif flavor == "ABL":
-            if isinstance(kwargs_1, dict):
-                mu, cov, w = pe.augmented_black_litterman(
-                    X=X,
-                    w=w,
-                    F=F,
-                    B=self.B,
-                    P=P,
-                    Q=Q,
-                    P_f=P_f,
-                    Q_f=Q_f,
-                    delta=delta,
-                    rf=rf,
-                    eq=eq,
-                    const=const,
-                    method_mu=method_mu,
-                    method_cov=method_cov,
-                    **kwargs_2,
-                )
-            else:
-                mu, cov, w = pe.augmented_black_litterman(
-                    X=X,
-                    w=w,
-                    F=F,
-                    B=self.B,
-                    P=P,
-                    Q=Q,
-                    P_f=P_f,
-                    Q_f=Q_f,
-                    delta=delta,
-                    rf=rf,
-                    eq=eq,
-                    const=const,
-                    method_mu=method_mu,
-                    method_cov=method_cov,
-                )
+            mu, cov, w = pe.augmented_black_litterman(
+                X=X,
+                w=w,
+                F=F,
+                B=self.B,
+                P=P,
+                Q=Q,
+                P_f=P_f,
+                Q_f=Q_f,
+                delta=delta,
+                rf=rf,
+                eq=eq,
+                const=const,
+                method_mu=method_mu,
+                method_cov=method_cov,
+                dict_mu=dict_mu,
+                dict_cov=dict_cov,
+            )
 
         self.mu_bl_fm = mu
         self.cov_bl_fm = cov
 
-        value = af.is_pos_def(self.cov_bl_fm, threshold=1e-8)
+        value = af.is_pos_def(self.cov_bl_fm, threshold=1e-6)
         for i in range(5):
             if value == False:
                 try:
                     self.cov_bl_fm = af.cov_fix(
-                        self.cov_bl_fm, method="clipped", threshold=1e-5
+                        self.cov_bl_fm, method="clipped", threshold=1e-6
                     )
-                    value = af.is_pos_def(self.cov_bl_fm, threshold=1e-8)
+                    value = af.is_pos_def(self.cov_bl_fm, threshold=1e-6)
                 except:
                     break
             else:
@@ -1414,7 +1416,7 @@ class Portfolio(object):
         .. math::
             \begin{align}
             &\underset{w}{\text{optimize}} & & F(w)\\
-            &\text{s. t.} & & Aw \geq B\\
+            &\text{s. t.} & & Aw \leq B\\
             & & & \phi_{i}(w) \leq c_{i}\\
             \end{align}
 
@@ -1422,7 +1424,7 @@ class Portfolio(object):
 
         :math:`F(w)` is the objective function.
 
-        :math:`Aw \geq B` is a set of linear constraints.
+        :math:`Aw \leq B` is a set of linear constraints.
 
         :math:`\phi_{i}(w) \leq c_{i}` are constraints on maximum values of
         several risk measures.
@@ -2243,9 +2245,9 @@ class Portfolio(object):
             A = np.array(self.ainequality, ndmin=2) * 1000
             B = np.array(self.binequality, ndmin=2) * 1000
             if obj == "Sharpe":
-                constraints += [A @ w - B @ k >= 0]
+                constraints += [A @ w - B @ k <= 0]
             else:
-                constraints += [A @ w - B >= 0]
+                constraints += [A @ w - B <= 0]
 
         # Number of Effective Assets Constraints
 
@@ -2698,7 +2700,7 @@ class Portfolio(object):
             &\underset{w}{\min} & & \phi(w)\\
             &\text{s.t.} & & b \log(w) \geq c\\
             & & & \mu w \geq \overline{\mu} \\
-            & & & Aw \geq B \\
+            & & & Aw \leq B \\
             & & & w \geq 0 \\
             \end{aligned}
 
@@ -2710,7 +2712,7 @@ class Portfolio(object):
 
         :math:`b` is a vector of risk constraints.
 
-        :math:`Aw \geq B`: is a set of linear constraints.
+        :math:`Aw \leq B`: is a set of linear constraints.
 
         :math:`\phi(w)`: is a risk measure.
 
@@ -2807,18 +2809,16 @@ class Portfolio(object):
                 scaler = StandardScaler()
                 scaler.fit(self.factors)
                 X_std = scaler.transform(self.factors)
-                pca = PCA(n_components=0.95)
+                pca = PCA(n_components=self.n_components)
                 pca.fit(X_std)
                 V_p = pca.components_.T
                 std = np.array(np.std(self.factors, axis=0, ddof=1), ndmin=2)
                 B1 = (pinv(V_p) @ (B1.T * std.T)).T
 
             B2 = pinv(B1.T)
-            B3 = pinv(null_space(B1.T).T)
-            N_f = len(B2.T)
+            N_f = B2.shape[1]
             w1 = cp.Variable((N_f, 1))
-            w2 = cp.Variable((N - N_f, 1))
-            w = B2 @ w1 + B3 @ w2
+            w = B2 @ w1
 
             if b_f is None:
                 rb = np.ones((N_f, 1))
@@ -3343,12 +3343,13 @@ class Portfolio(object):
         ]
 
         risk22 = t4 + ln_k * s4 + onesvec.T @ psi4 + onesvec.T @ theta4
+
         # Problem Linear Constraints
 
         if self.ainequality is not None and self.binequality is not None:
             A = np.array(self.ainequality, ndmin=2) * 1000
             B = np.array(self.binequality, ndmin=2) * 1000
-            constraints += [A @ w - B @ k >= 0]
+            constraints += [A @ w - B @ k <= 0]
 
         # Problem Return Constraint
 
@@ -3430,7 +3431,7 @@ class Portfolio(object):
         # Risk budgeting constraint
 
         if model == "FC":
-            log_w = cp.Variable((N_f, 1))
+            # log_w = cp.Variable((N_f, 1))
             constraints += [
                 rb.T @ cp.log(w1) >= 1,
                 # rb.T @ log_w >= 1,
@@ -3519,7 +3520,7 @@ class Portfolio(object):
             & & & w_{i} \zeta_{i} \geq \gamma^{2} b_{i} & \forall i=1 , \ldots , N \\
             & & & \lambda x^{T} \Theta x \leq \rho^{2} & \\
             & & & \mu w \geq \overline{\mu} & \\
-            & & & Aw \geq B & \\
+            & & & Aw \leq B & \\
             & & & \sum^{N}_{i=1} w_{i} = 1 & \\
             & & & \psi, \gamma, \rho, w  \geq 0 & \\
             \end{aligned}
@@ -3546,7 +3547,7 @@ class Portfolio(object):
 
         :math:`\Theta = \text{diag}(\Sigma)`
 
-        :math:`Aw \geq B`: is a set of linear constraints.
+        :math:`Aw \leq B`: is a set of linear constraints.
 
         Parameters
         ----------
@@ -3673,7 +3674,7 @@ class Portfolio(object):
         if self.ainequality is not None and self.binequality is not None:
             A = np.array(self.ainequality, ndmin=2) * 1000
             B = np.array(self.binequality, ndmin=2) * 1000
-            constraints += [A @ w - B >= 0]
+            constraints += [A @ w - B <= 0]
 
         # Problem Return Constraint
 
@@ -3973,9 +3974,9 @@ class Portfolio(object):
             A = np.array(self.ainequality, ndmin=2) * 1000
             B = np.array(self.binequality, ndmin=2) * 1000
             if obj == "Sharpe":
-                constraints += [A @ w - B @ k >= 0]
+                constraints += [A @ w - B @ k <= 0]
             else:
-                constraints += [A @ w - B >= 0]
+                constraints += [A @ w - B <= 0]
 
         # Tracking error Constraints
 
@@ -4083,14 +4084,14 @@ class Portfolio(object):
         .. math::
             \begin{align}
             &\underset{w}{\text{optimize}} & & F(w)\\
-            &\text{s. t.} & & Aw \geq B\\
+            &\text{s. t.} & & Aw \leq B\\
             \end{align}
 
         Where:
 
         :math:`F(w)` is the objective function based on an owa risk measure.
 
-        :math:`Aw \geq B` is a set of linear constraints.
+        :math:`Aw \leq B` is a set of linear constraints.
 
         Parameters
         ----------
@@ -4184,9 +4185,9 @@ class Portfolio(object):
         constraints = []
         constraints += [returns @ w == y]
         if owa_w is None:
-            owa_w = owa.owa_gmd(T) / 2
+            owa_w = owa.owa_gmd(T)
 
-        onesvec = np.ones((N, 1))
+        onesvec = np.ones((T, 1))
         constraints += [y @ owa_w.T <= onesvec @ a.T + b @ onesvec.T]
 
         # Cardinality Boolean Variables
@@ -4296,9 +4297,9 @@ class Portfolio(object):
             A = np.array(self.ainequality, ndmin=2) * 1000
             B = np.array(self.binequality, ndmin=2) * 1000
             if obj == "Sharpe":
-                constraints += [A @ w - B @ k >= 0]
+                constraints += [A @ w - B @ k <= 0]
             else:
-                constraints += [A @ w - B >= 0]
+                constraints += [A @ w - B <= 0]
 
         # Number of Effective Assets Constraints
 

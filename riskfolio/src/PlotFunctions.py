@@ -149,16 +149,25 @@ def plot_series(returns, w, cmap="tab20", n_colors=20, height=6, width=10, ax=No
     .. image:: images/Port_Series.png
 
     """
+
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
 
     if not isinstance(w, pd.DataFrame):
-        raise ValueError("w must be a DataFrame")
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a DataFrame or Series")
+    else:
+        w_ = w.copy()
 
-    if returns.shape[1] != w.shape[0]:
-        a1 = str(returns.shape)
-        a2 = str(w.shape)
-        raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
+    if returns.shape[1] != w_.shape[0]:
+        if returns.shape[1] == w_.shape[1]:
+            w_ = w_.T
+        else:
+            a1 = str(returns.shape)
+            a2 = str(w_.shape)
+            raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if ax is None:
         fig = plt.gcf()
@@ -172,7 +181,8 @@ def plot_series(returns, w, cmap="tab20", n_colors=20, height=6, width=10, ax=No
     title = "Historical Compounded Cumulative Returns"
     ax.set_title(title)
 
-    labels = w.columns.tolist()
+    labels = w_.columns.tolist()
+    index = returns.index.tolist()
 
     colormap = cm.get_cmap(cmap)
     colormap = colormap(np.linspace(0, 1, n_colors))
@@ -183,11 +193,8 @@ def plot_series(returns, w, cmap="tab20", n_colors=20, height=6, width=10, ax=No
     cycle = plt.cycler("color", colormap)
     ax.set_prop_cycle(cycle)
 
-    X = w.columns.tolist()
-    index = returns.index.tolist()
-
-    for i in range(len(X)):
-        a = np.array(returns, ndmin=2) @ np.array(w[X[i]], ndmin=2).T
+    for i in range(len(labels)):
+        a = np.array(returns, ndmin=2) @ np.array(w_[labels[i]], ndmin=2).T
         prices = 1 + np.insert(a, 0, 0, axis=0)
         prices = np.cumprod(prices, axis=0)
         prices = np.ravel(prices).tolist()
@@ -303,7 +310,7 @@ def plot_frontier(
     cmap : cmap, optional
         Colorscale that represents the risk adjusted return ratio.
         The default is 'viridis'.
-    w : DataFrame of shape (n_assets, 1), optional
+    w : DataFrame  or Series of shape (n_assets, 1), optional
         A portfolio specified by the user. The default is None.
     label : str or list, optional
         Name or list of names of portfolios that appear on plot legend.
@@ -378,13 +385,23 @@ def plot_frontier(
         raise ValueError("w_frontier must be a DataFrame")
 
     if not isinstance(mu, pd.DataFrame):
-        raise ValueError("mu must be a DataFrame")
+        if isinstance(mu, pd.Series):
+            pass
+        else:
+            raise ValueError("mu must be a DataFrame or Series")
 
     if not isinstance(cov, pd.DataFrame):
         raise ValueError("cov must be a DataFrame")
 
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
+
+    if cov.shape[1] != cov.shape[0]:
+        raise ValueError("cov must be a square DataFrame")
+    elif cov.shape[1] != w_frontier.shape[0]:
+        a1 = str(cov.shape)
+        a2 = str(w_frontier.shape)
+        raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if returns.shape[1] != w_frontier.shape[0]:
         a1 = str(returns.shape)
@@ -393,15 +410,22 @@ def plot_frontier(
 
     if w is not None:
         if not isinstance(w, pd.DataFrame):
-            raise ValueError("w must be a DataFrame")
+            if isinstance(w, pd.Series):
+                w_ = w.to_frame()
+            else:
+                raise ValueError("w must be a DataFrame or Series")
+        else:
+            w_ = w.copy()
 
-        if w.shape[1] > 1 and w.shape[0] == 1:
-            w = w.T
+        if returns.shape[1] != w_.shape[0]:
+            if returns.shape[1] == w_.shape[1]:
+                w_ = w_.T
+            else:
+                a1 = str(returns.shape)
+                a2 = str(w_.shape)
+                raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
-        if returns.shape[1] != w.shape[0]:
-            a1 = str(returns.shape)
-            a2 = str(w.shape)
-            raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
+
 
     if beta is None:
         beta = alpha
@@ -484,10 +508,10 @@ def plot_frontier(
             label = [label]
 
         if label is None:
-            label = w.columns.tolist()
+            label = w_.columns.tolist()
 
-        if w.shape[1] != len(label):
-            label = w.columns.tolist()
+        if w_.shape[1] != len(label):
+            label = w_.columns.tolist()
 
         label = [
             v + " " + str(label[:i].count(v) + 1) if label.count(v) > 1 else v
@@ -514,8 +538,8 @@ def plot_frontier(
         if n_repeats > 1:
             colormap = np.vstack([colormap] * n_repeats)
 
-        for i in range(w.shape[1]):
-            weights = w.iloc[:, i].to_numpy().reshape(-1, 1)
+        for i in range(w_.shape[1]):
+            weights = w_.iloc[:, i].to_numpy().reshape(-1, 1)
             risk = rk.Sharpe_Risk(
                 weights,
                 cov=cov,
@@ -592,7 +616,7 @@ def plot_pie(
 
     Parameters
     ----------
-    w : DataFrame of shape (n_assets, 1)
+    w : DataFrame  or Series of shape (n_assets, 1)
         Portfolio weights.
     title : str, optional
         Title of the chart. The default is "".
@@ -641,11 +665,16 @@ def plot_pie(
     """
 
     if not isinstance(w, pd.DataFrame):
-        raise ValueError("w must be a DataFrame")
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a DataFrame or Series")
+    else:
+        w_ = w.copy()
 
-    if w.shape[1] > 1 and w.shape[0] == 0:
-        w = w.T
-    elif w.shape[1] > 1 and w.shape[0] > 0:
+    if w_.shape[1] > 1 and w_.shape[0] == 1:
+        w_ = w_.T
+    elif w_.shape[1] > 1 and w_.shape[0] > 1:
         raise ValueError("w must be a column DataFrame")
 
     if ax is None:
@@ -772,7 +801,7 @@ def plot_bar(
 
     Parameters
     ----------
-    w : DataFrame of shape (n_assets, 1)
+    w : DataFrame  or Series of shape (n_assets, 1)
         Portfolio weights.
     title : str, optional
         Title of the chart. The default is "".
@@ -825,11 +854,16 @@ def plot_bar(
     """
 
     if not isinstance(w, pd.DataFrame):
-        raise ValueError("w must be a DataFrame")
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a DataFrame or Series")
+    else:
+        w_ = w.copy()
 
-    if w.shape[1] > 1 and w.shape[0] == 0:
-        w = w.T
-    elif w.shape[1] > 1 and w.shape[0] > 0:
+    if w_.shape[1] > 1 and w_.shape[0] == 1:
+        w_ = w_.T
+    elif w_.shape[1] > 1 and w_.shape[0] > 1:
         raise ValueError("w must be a column DataFrame")
 
     if ax is None:
@@ -840,8 +874,8 @@ def plot_bar(
     else:
         fig = ax.get_figure()
 
-    labels = w.index.tolist()
-    sizes = w.iloc[:, 0].tolist()
+    labels = w_.index.tolist()
+    sizes = w_.to_numpy().flatten().tolist()
     abs_sizes = [np.absolute(s) for s in sizes]
     sizes2 = pd.DataFrame([labels, abs_sizes, sizes]).T
     sizes2.columns = ["labels", "abs_values", "values"]
@@ -998,7 +1032,13 @@ def plot_bar(
 
 
 def plot_frontier_area(
-    w_frontier, nrow=25, cmap="tab20", n_colors=20, height=6, width=10, ax=None
+    w_frontier,
+    nrow=25,
+    cmap="tab20",
+    n_colors=20,
+    height=6,
+    width=10,
+    ax=None
 ):
     r"""
     Create a chart with the asset composition of the efficient frontier.
@@ -1121,7 +1161,7 @@ def plot_risk_con(
 
     Parameters
     ----------
-    w : DataFrame of shape (n_assets, 1)
+    w : DataFrame  or Series of shape (n_assets, 1)
         Portfolio weights.
     cov : DataFrame of shape (n_features, n_features)
         Covariance matrix, where n_features is the number of features.
@@ -1233,7 +1273,28 @@ def plot_risk_con(
     """
 
     if not isinstance(w, pd.DataFrame):
-        raise ValueError("w must be a DataFrame")
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a DataFrame or Series")
+    else:
+        w_ = w.copy()
+
+    if cov.shape[1] != cov.shape[0]:
+        raise ValueError("cov must be a square DataFrame")
+    elif cov.shape[1] != w_.shape[0]:
+        if cov.shape[1] != w_.shape[1]:
+            a1 = str(cov.shape)
+            a2 = str(w_.shape)
+            raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
+
+    if returns.shape[1] != w_.shape[0]:
+        if returns.shape[1] == w_.shape[1]:
+            w_ = w_.T
+        else:
+            a1 = str(returns.shape)
+            a2 = str(w_.shape)
+            raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if beta is None:
         beta = alpha
@@ -1263,10 +1324,10 @@ def plot_risk_con(
         title += " (%)"
     ax.set_title(r"{}".format(title))
 
-    X = w.index.tolist()
+    X = w_.index.tolist()
 
     RC = rk.Risk_Contribution(
-        w,
+        w_,
         cov=cov,
         returns=returns,
         rm=rm,
@@ -1300,7 +1361,7 @@ def plot_risk_con(
             erc = 1 / len(RC)
         else:
             erc = rk.Sharpe_Risk(
-                w,
+                w_,
                 cov=cov,
                 returns=returns,
                 rm=rm,
@@ -1362,7 +1423,7 @@ def plot_factor_risk_con(
 
     Parameters
     ----------
-    w : DataFrame of shape (n_assets, 1)
+    w : DataFrame  or Series of shape (n_assets, 1)
         Portfolio weights.
     cov : DataFrame of shape (n_features, n_features)
         Covariance matrix, where n_features is the number of features.
@@ -1530,7 +1591,28 @@ def plot_factor_risk_con(
     """
 
     if not isinstance(w, pd.DataFrame):
-        raise ValueError("w must be a DataFrame")
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a DataFrame or Series")
+    else:
+        w_ = w.copy()
+
+    if cov.shape[1] != cov.shape[0]:
+        raise ValueError("cov must be a square DataFrame")
+    elif cov.shape[1] != w_.shape[0]:
+        if cov.shape[1] != w_.shape[1]:
+            a1 = str(cov.shape)
+            a2 = str(w_.shape)
+            raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
+
+    if returns.shape[1] != w_.shape[0]:
+        if returns.shape[1] == w_.shape[1]:
+            w_ = w_.T
+        else:
+            a1 = str(returns.shape)
+            a2 = str(w_.shape)
+            raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if beta is None:
         beta = alpha
@@ -1565,7 +1647,7 @@ def plot_factor_risk_con(
     ax.set_title(r"{}".format(title))
 
     RC_F = rk.Factors_Risk_Contribution(
-        w,
+        w_,
         cov=cov,
         returns=returns,
         factors=factors,
@@ -1614,7 +1696,7 @@ def plot_factor_risk_con(
             erc = 1 / len(RC_F)
         else:
             erc = rk.Sharpe_Risk(
-                w,
+                w_,
                 cov=cov,
                 returns=returns,
                 rm=rm,
@@ -1661,7 +1743,7 @@ def plot_hist(
     ----------
     returns : DataFrame
         Assets returns.
-    w : DataFrame of shape (n_assets, 1)
+    w : DataFrame  or Series of shape (n_assets, 1)
         Portfolio weights.
     alpha : float, optional
         Significance level of VaR, CVaR, EVaR, RLVaR and Tail Gini. The default is 0.05.
@@ -1712,16 +1794,21 @@ def plot_hist(
         raise ValueError("returns must be a DataFrame")
 
     if not isinstance(w, pd.DataFrame):
-        raise ValueError("w must be a DataFrame")
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a column DataFrame or Series")
+    else:
+        w_ = w.copy()
 
-    if w.shape[1] > 1 and w.shape[0] == 0:
-        w = w.T
-    elif w.shape[1] > 1 and w.shape[0] > 0:
-        raise ValueError("w must be a  DataFrame")
+    if w_.shape[1] > 1 and w_.shape[0] == 1:
+        w_ = w_.T
+    elif w_.shape[1] > 1 and w_.shape[0] > 1:
+        raise ValueError("w must be a column DataFrame")
 
-    if returns.shape[1] != w.shape[0]:
+    if returns.shape[1] != w_.shape[0]:
         a1 = str(returns.shape)
-        a2 = str(w.shape)
+        a2 = str(w_.shape)
         raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if ax is None:
@@ -1732,7 +1819,7 @@ def plot_hist(
     else:
         fig = ax.get_figure()
 
-    a = np.array(returns, ndmin=2) @ np.array(w, ndmin=2)
+    a = returns.to_numpy() @ w_.to_numpy()
     ax.set_title("Portfolio Returns Histogram")
     n, bins1, patches = ax.hist(
         a, bins, density=1, edgecolor="skyblue", color="skyblue", alpha=0.5
@@ -1807,11 +1894,10 @@ def plot_hist(
         y,
         "--",
         color="orange",
-        label=r"Normal: $\mu="
-        + "{0:.2%}".format(mu)
-        + "$%, $\sigma="
-        + "{0:.2%}".format(sigma)
-        + "$%",
+        label=r"Normal: $\mu=$"
+        + r"{0:.2%},".format(mu)
+        + r" $\sigma=$"
+        + r"{0:.2%}".format(sigma)
     )
 
     factor = (np.max(a) - np.min(a)) / bins
@@ -1858,7 +1944,7 @@ def plot_range(
     ----------
     returns : DataFrame
         Assets returns.
-    w : DataFrame of shape (n_assets, 1)
+    w : DataFrame or Series of shape (n_assets, 1)
         Portfolio weights.
     alpha : float, optional
         Significance level of CVaR and Tail Gini of losses.
@@ -1894,16 +1980,16 @@ def plot_range(
     -------
     ::
 
-        ax = plot_range(returns=Y,
-                        w=w1,
-                        alpha=0.05,
-                        a_sim=100,
-                        beta=None,
-                        b_sim=None,
-                        bins=50,
-                        height=6,
-                        width=10,
-                        ax=None)
+        ax = rp.plot_range(returns=Y,
+                           w=w1,
+                           alpha=0.05,
+                           a_sim=100,
+                           beta=None,
+                           b_sim=None,
+                           bins=50,
+                           height=6,
+                           width=10,
+                           ax=None)
 
     .. image:: images/Range.png
 
@@ -1914,16 +2000,21 @@ def plot_range(
         raise ValueError("returns must be a DataFrame")
 
     if not isinstance(w, pd.DataFrame):
-        raise ValueError("w must be a DataFrame")
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a column DataFrame or Series")
+    else:
+        w_ = w.copy()
 
-    if w.shape[1] > 1 and w.shape[0] == 0:
-        w = w.T
-    elif w.shape[1] > 1 and w.shape[0] > 0:
-        raise ValueError("w must be a  DataFrame")
+    if w_.shape[1] > 1 and w_.shape[0] == 1:
+        w_ = w_.T
+    elif w_.shape[1] > 1 and w_.shape[0] > 1:
+        raise ValueError("w must be a column DataFrame")
 
-    if returns.shape[1] != w.shape[0]:
+    if returns.shape[1] != w_.shape[0]:
         a1 = str(returns.shape)
-        a2 = str(w.shape)
+        a2 = str(w_.shape)
         raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if beta is None:
@@ -1939,7 +2030,7 @@ def plot_range(
     else:
         fig = ax.get_figure()
 
-    a = np.array(returns, ndmin=2) @ np.array(w, ndmin=2)
+    a = returns.to_numpy() @ w_.to_numpy()
     ax.set_title("Portfolio Returns Range")
 
     df = dict(
@@ -2110,16 +2201,21 @@ def plot_drawdown(
         raise ValueError("returns must be a DataFrame")
 
     if not isinstance(w, pd.DataFrame):
-        raise ValueError("w must be a DataFrame")
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a column DataFrame or Series")
+    else:
+        w_ = w.copy()
 
-    if w.shape[1] > 1 and w.shape[0] == 0:
-        w = w.T
-    elif w.shape[1] > 1 and w.shape[0] > 0:
-        raise ValueError("w must be a  DataFrame")
+    if w_.shape[1] > 1 and w_.shape[0] == 1:
+        w_ = w_.T
+    elif w_.shape[1] > 1 and w_.shape[0] > 1:
+        raise ValueError("w must be a column DataFrame")
 
-    if returns.shape[1] != w.shape[0]:
+    if returns.shape[1] != w_.shape[0]:
         a1 = str(returns.shape)
-        a2 = str(w.shape)
+        a2 = str(w_.shape)
         raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if ax is None:
@@ -2149,7 +2245,7 @@ def plot_drawdown(
         fig = ax[0].get_figure()
 
     index = returns.index.tolist()
-    a = returns.to_numpy() @ w.to_numpy()
+    a = returns.to_numpy() @ w_.to_numpy()
     prices = 1 + np.insert(a, 0, 0, axis=0)
     prices = np.cumprod(prices, axis=0)
     prices = np.ravel(prices).tolist()
@@ -2328,11 +2424,21 @@ def plot_table(
         raise ValueError("returns must be a DataFrame")
 
     if not isinstance(w, pd.DataFrame):
-        raise ValueError("w must be a DataFrame")
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a column DataFrame or Series")
+    else:
+        w_ = w.copy()
 
-    if returns.shape[1] != w.shape[0]:
+    if w_.shape[1] > 1 and w_.shape[0] == 1:
+        w_ = w_.T
+    elif w_.shape[1] > 1 and w_.shape[0] > 1:
+        raise ValueError("w must be a column DataFrame")
+
+    if returns.shape[1] != w_.shape[0]:
         a1 = str(returns.shape)
-        a2 = str(w.shape)
+        a2 = str(w_.shape)
         raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
     if ax is None:
@@ -2347,8 +2453,7 @@ def plot_table(
     cov = returns.cov()
     days = (returns.index[-1] - returns.index[0]).days + ini_days
 
-    X = returns @ w
-    X = X.to_numpy().ravel()
+    X = (returns.to_numpy() @ w_.to_numpy()).flatten()
 
     rowLabels = [
         "Profitability and Other Inputs",
@@ -2387,13 +2492,13 @@ def plot_table(
 
     indicators = [
         "",
-        (mu @ w).to_numpy().item() * t_factor,
+        (mu @ w_).to_numpy().item() * t_factor,
         np.power(np.prod(1 + X), days_per_year / days) - 1,
         MAR * t_factor,
         alpha,
         "",
         "",
-        np.sqrt(w.T @ cov @ w).to_numpy().item() * t_factor**0.5,
+        np.sqrt(w_.T @ cov @ w_).to_numpy().item() * t_factor**0.5,
         rk.MAD(X) * t_factor**0.5,
         rk.SemiDeviation(X) * t_factor**0.5,
         rk.LPM(X, MAR=MAR, p=1) * t_factor**0.5,
@@ -2890,6 +2995,8 @@ def plot_clusters(
         ax1.set_title(title)
     elif dendrogram == False:
         ax.set_title(title)
+        ax.set_position([0,0.17,1,1])
+        axcolor.set_position([1.2, 0.17, 0.035, 1])
 
     try:
         fig.tight_layout()
@@ -3459,7 +3566,7 @@ def plot_network_allocation(
     ----------
     returns : DataFrame
         Assets returns.
-    w : DataFrame of shape (n_assets, 1)
+    w : DataFrame  or Series of shape (n_assets, 1)
         Portfolio weights.
     custom_cov : DataFrame or None, optional
         Custom covariance matrix, used when codependence parameter has value
@@ -3576,6 +3683,24 @@ def plot_network_allocation(
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
 
+    if not isinstance(w, pd.DataFrame):
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a column DataFrame or Series")
+    else:
+        w_ = w.copy()
+
+    if w_.shape[1] > 1 and w_.shape[0] == 1:
+        w_ = w_.T
+    elif w_.shape[1] > 1 and w_.shape[0] > 1:
+        raise ValueError("w must be a column DataFrame")
+
+    if returns.shape[1] != w_.shape[0]:
+        a1 = str(returns.shape)
+        a2 = str(w_.shape)
+        raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
+
     if ax is None:
         fig = plt.gcf()
         ax = fig.gca()
@@ -3629,9 +3754,9 @@ def plot_network_allocation(
     # Plotting
     nx.draw_networkx_edges(G, pos=pos, ax=ax, edge_color="grey")
 
-    clusters_1 = w.loc[w.iloc[:, 0] > 1e-6]
-    clusters_2 = w.loc[(w.iloc[:, 0] <= 1e-6) & (w.iloc[:, 0] >= -1e-6)]
-    clusters_3 = w.loc[w.iloc[:, 0] < -1e-6]
+    clusters_1 = w_.loc[w_.iloc[:, 0] > 1e-6]
+    clusters_2 = w_.loc[(w_.iloc[:, 0] <= 1e-6) & (w_.iloc[:, 0] >= -1e-6)]
+    clusters_3 = w_.loc[w_.iloc[:, 0] < -1e-6]
 
     label_options = {"ec": "k", "fc": "white", "alpha": 0.7}
 
@@ -3640,7 +3765,7 @@ def plot_network_allocation(
         "font_color": "k",
     }
 
-    node_w = np.abs(w) * max_node_size / np.abs(w).sum().item()
+    node_w = np.abs(w_) * max_node_size / np.abs(w_).sum().item()
     if node_labels == True:
         labels = {}
         labels_pos = {}
@@ -3755,8 +3880,6 @@ def plot_clusters_network(
     ----------
     returns : DataFrame
         Assets returns.
-    w : DataFrame of shape (n_assets, 1)
-        Portfolio weights.
     custom_cov : DataFrame or None, optional
         Custom covariance matrix, used when codependence parameter has value
         'custom_cov'. The default is None.
@@ -4038,7 +4161,7 @@ def plot_clusters_network_allocation(
     ----------
     returns : DataFrame
         Assets returns.
-    w : DataFrame of shape (n_assets, 1)
+    w : DataFrame  or Series of shape (n_assets, 1)
         Portfolio weights.
     custom_cov : DataFrame or None, optional
         Custom covariance matrix, used when codependence parameter has value
@@ -4149,6 +4272,24 @@ def plot_clusters_network_allocation(
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
 
+    if not isinstance(w, pd.DataFrame):
+        if isinstance(w, pd.Series):
+            w_ = w.to_frame()
+        else:
+            raise ValueError("w must be a column DataFrame or Series")
+    else:
+        w_ = w.copy()
+
+    if w_.shape[1] > 1 and w_.shape[0] == 1:
+        w_ = w_.T
+    elif w_.shape[1] > 1 and w_.shape[0] > 1:
+        raise ValueError("w must be a column DataFrame")
+
+    if returns.shape[1] != w_.shape[0]:
+        a1 = str(returns.shape)
+        a2 = str(w_.shape)
+        raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
+
     if ax is None:
         fig = plt.gcf()
         ax = fig.gca()
@@ -4238,10 +4379,10 @@ def plot_clusters_network_allocation(
         "font_color": "k",
     }
 
-    clusters_1 = set(w.loc[w.iloc[:, 0] > 1e-6].index)
-    clusters_2 = set(w.loc[(w.iloc[:, 0] <= 1e-6) & (w.iloc[:, 0] >= -1e-6)].index)
-    clusters_3 = set(w.loc[w.iloc[:, 0] < -1e-6].index)
-    node_w = np.abs(w) * max_node_size / np.abs(w).sum().item()
+    clusters_1 = set(w_.loc[w_.iloc[:, 0] > 1e-6].index)
+    clusters_2 = set(w_.loc[(w_.iloc[:, 0] <= 1e-6) & (w_.iloc[:, 0] >= -1e-6)].index)
+    clusters_3 = set(w_.loc[w_.iloc[:, 0] < -1e-6].index)
+    node_w = np.abs(w_) * max_node_size / np.abs(w_).sum().item()
 
     # Nodes colored by cluster
     for key in clusters.keys():
@@ -4280,7 +4421,7 @@ def plot_clusters_network_allocation(
     nx.draw_networkx_edges(G, pos=pos, ax=ax, edge_color="grey")
 
     if node_labels == True:
-        label_w = list(w.loc[np.abs(w.iloc[:, 0]) >= 1e-6].index)
+        label_w = list(w_.loc[np.abs(w_.iloc[:, 0]) >= 1e-6].index)
         labels = {}
         labels_pos = {}
         for node in G.nodes():

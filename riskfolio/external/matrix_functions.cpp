@@ -27,6 +27,7 @@ using namespace Spectra;
  */
 
 Eigen::MatrixXd cpp_duplication_matrix(const int &n) {
+    /* Old Version
     Eigen::SparseMatrix<double> out(n*n, (n*(n+1))/2);
     for (int j = 0; j < n; ++j) {
         for (int i = j; i < n; ++i) {
@@ -40,6 +41,36 @@ Eigen::MatrixXd cpp_duplication_matrix(const int &n) {
             out += T * u;
         }
     }
+    */
+    // New version based on https://www.mathworks.com/matlabcentral/answers/473737-efficient-algorithm-for-a-duplication-matrix
+    int m = n * (n + 1) / 2;
+    int nsq = n * n;
+    int r = 0;
+    int a = 1;
+
+    std::vector<int> v(nsq, 0);
+    std::vector<int> sequence(n - 1); // Create cn which is the cumulative sum of n to 2
+    std::iota(sequence.begin(), sequence.end(), 2); // sequence: [2, 3, 4, ... , n]
+    std::reverse(sequence.begin(), sequence.end()); // reverse: [n, n-1, n-2, ..., 2]
+    std::vector<int> cn = cumsum(sequence); // cumulative sum
+
+    for (int i = 1; i <= n; ++i) {
+        for (int j = 0; j < i - 1; ++j) {
+            v[r + j] = i - n + cn[j];
+        }
+        r += i - 1;
+        for (int j = 0; j < n - i + 1; ++j) {
+            v[r + j] = a + j;
+        }
+        r += n - i + 1;
+        a += n - i + 1;
+    }
+
+    Eigen::SparseMatrix<double> out(nsq, m);
+    for (int i = 0; i < nsq; ++i) {
+        out.insert(i, v[i] - 1) = 1;
+    }
+
     Eigen::MatrixXd D = Eigen::MatrixXd(out);
     return D;
 }
@@ -53,8 +84,9 @@ Eigen::MatrixXd cpp_duplication_matrix(const int &n) {
  * Applied Mathematics (SIAM). https://doi.org/10.1137/0601049
  *
  * @n size of symmetric matrix.
- */
+ */ 
 Eigen::MatrixXd cpp_duplication_elimination_matrix(const int &n) {
+    /* Old Version
     Eigen::SparseMatrix<double> out((n*(n+1))/2, n*n);
     for (int j = 0; j < n; ++j) {
         Eigen::SparseMatrix<double> e_j(1, n);
@@ -66,6 +98,33 @@ Eigen::MatrixXd cpp_duplication_elimination_matrix(const int &n) {
             e_i.insert(0, i) = 1.0;
             out += Eigen::kroneckerProduct(u, Eigen::kroneckerProduct(e_j, e_i).eval()).eval();
         }
+    }
+    */
+    // New version based on https://www.mathworks.com/matlabcentral/answers/473737-efficient-algorithm-for-a-duplication-matrix
+    int m = n * (n + 1) / 2;
+    int nsq = n * n;
+    int r = 0;
+    int a = 1;
+
+    std::vector<int> v(nsq, 0);
+    std::vector<int> sequence(n); // Create cn which is the cumulative sum of 0 to n-1
+    std::iota(sequence.begin(), sequence.end(), 0); // sequence: [0, 1, 2, ... , n-1]
+    std::vector<int> cn = cumsum(sequence); // cumulative sum
+
+    for (int i = 1; i <= n; ++i) {
+        r += i - 1;
+        // Filling v[r:r + n - i] with a:a + n - i
+        for (int j = 0; j < n - i + 1; ++j) {
+            v[r + j] = a + j + cn[i-1];
+        }
+        r += n - i + 1;
+        a += n - i + 1;
+    }
+    v.erase(std::remove(v.begin(), v.end(), 0),v.end());
+
+    Eigen::SparseMatrix<double> out(m, nsq);
+    for (int i = 0; i < m; ++i) {
+        out.insert(i, v[i] - 1) = 1;
     }
     Eigen::MatrixXd L = Eigen::MatrixXd(out);
     return L;
@@ -79,6 +138,7 @@ Eigen::MatrixXd cpp_duplication_elimination_matrix(const int &n) {
  * @n size of symmetric matrix.
  */
 Eigen::MatrixXd cpp_duplication_summation_matrix(const int &n) {
+    /* Old version
     std::vector<int> a = {0};
     for (int k = 0; k < n-1; ++k) {
         a.push_back(a.back() + n - k);
@@ -102,6 +162,46 @@ Eigen::MatrixXd cpp_duplication_summation_matrix(const int &n) {
             out += Eigen::kroneckerProduct(u, Eigen::kroneckerProduct(e_j, e_i).eval()).eval();
         }
     }
+    */
+    // New version based on https://www.mathworks.com/matlabcentral/answers/473737-efficient-algorithm-for-a-duplication-matrix
+    int m = n * (n + 1) / 2;
+    int nsq = n * n;
+    int r = 0;
+    int a = 1;
+
+    std::vector<int> v(nsq, 0);
+    std::vector<int> v2(nsq, 0);
+    std::vector<int> rows2(nsq, 0);
+    std::vector<int> sequence(n); // Create cn which is the cumulative sum of 0 to n-1
+    std::iota(sequence.begin(), sequence.end(), 0); // sequence: [0, 1, 2, ... , n-1]
+    std::vector<int> cn = cumsum(sequence); // cumulative sum
+
+    for (int i = 1; i <= n; ++i) {
+        r += i - 1;
+        // Filling v[r:r + n - i] with a:a + n - i
+        for (int j = 0; j < n - i + 1; ++j) {
+            v[r + j] = a + j + cn[i-1];
+        }
+        for (int j = 1; j < n - i + 1; ++j) {
+            v2[r + j] = a + j + cn[i-1];
+            rows2[r + j] = a + j;
+        }
+        r += n - i + 1;
+        a += n - i + 1;
+    }
+    v.erase(std::remove(v.begin(), v.end(), 0), v.end());
+    v2.erase(std::remove(v2.begin(), v2.end(), 0), v2.end());
+    rows2.erase(std::remove(rows2.begin(), rows2.end(), 0), rows2.end());
+
+    Eigen::SparseMatrix<double> out(m, nsq);
+    for (int i = 0; i < m; ++i) {
+        out.insert(i, v[i] - 1) = 1;
+    }
+    Eigen::SparseMatrix<double> out2(m, nsq);
+    for (int i = 0; i < m-n; ++i) {
+        out2.insert(rows2[i]-1, v2[i] - 1) = 1;
+    }
+
     Eigen::MatrixXd S = Eigen::MatrixXd(out);
     return S;
 }

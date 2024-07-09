@@ -102,6 +102,8 @@ class HCPortfolio(object):
         self.clusters = None
         self.cov = None
         self.mu = None
+        self.kurt = False
+        self.skurt = False
         self.codep = None
         self.codep_sorted = None
         self.w_max = w_max
@@ -201,27 +203,59 @@ class HCPortfolio(object):
         return weights
 
     # get optimal weights
-    def _opt_w(self, returns, mu, cov, obj="MinRisk", rm="MV", rf=0, l=2):
+    def _opt_w(
+        self,
+        returns,
+        mu,
+        cov,
+        obj="MinRisk",
+        rm="MV",
+        rf=0,
+        l=2,
+    ):
         if returns.shape[1] == 1:
             weights = np.array([1]).reshape(-1, 1)
         else:
             if obj in {"MinRisk", "Utility", "Sharpe"}:
                 port = rp.Portfolio(returns=returns)
-                port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
-                port.cov = cov
+
+                if self.kurt:
+                    method_kurt = "hist"
+                elif self.skurt:
+                    method_kurt = "hist"
+                else:
+                    method_kurt = None
+
+                port.assets_stats(method_mu="hist",
+                                  method_cov="hist",
+                                  method_kurt=method_kurt)
                 if self.solvers is not None:
                     port.solvers = self.solvers
                 if mu is not None:
                     port.mu = mu
+                if cov is not None:
+                    port.cov = cov
                 weights = port.optimization(
                     model="Classic", rm=rm, obj=obj, rf=rf, l=l, hist=True
                 ).to_numpy()
             elif obj in {"ERC"}:
                 port = rp.Portfolio(returns=returns)
-                port.assets_stats(method_mu="hist", method_cov="hist", d=0.94)
-                port.cov = cov
+
+                if self.kurt:
+                    method_kurt = "hist"
+                elif self.skurt:
+                    method_kurt = "hist"
+                else:
+                    method_kurt = None
+                port.assets_stats(method_mu="hist",
+                                  method_cov="hist",
+                                  method_kurt=method_kurt)
                 if self.solvers is not None:
                     port.solvers = self.solvers
+                if mu is not None:
+                    port.mu = mu
+                if cov is not None:
+                    port.cov = cov
                 weights = port.rp_optimization(
                     model="Classic", rm=rm, rf=rf, b=None, hist=True
                 ).to_numpy()
@@ -631,7 +665,14 @@ class HCPortfolio(object):
         return weights
 
     # compute intra-cluster weights
-    def _intra_weights(self, Z, obj="MinRisk", rm="MV", rf=0, l=2):
+    def _intra_weights(
+        self,
+        Z,
+        obj="MinRisk",
+        rm="MV",
+        rf=0,
+        l=2,
+    ):
         # Get constituents of k clusters
         clustered_assets = pd.Series(
             hr.cut_tree(Z, n_clusters=self.k).flatten(), index=self.cov.index
@@ -647,12 +688,16 @@ class HCPortfolio(object):
                 cluster_mu = None
             cluster_cov = self.cov.loc[cluster.index, cluster.index]
             cluster_returns = self.returns.loc[:, cluster.index]
-            weights = pd.Series(
-                self._opt_w(
-                    cluster_returns, cluster_mu, cluster_cov, obj=obj, rm=rm, rf=rf, l=l
-                ).flatten(),
-                index=cluster_cov.index,
+            weights = self._opt_w(
+                cluster_returns,
+                cluster_mu,
+                cluster_cov,
+                obj=obj,
+                rm=rm,
+                rf=rf,
+                l=l,
             )
+            weights = pd.Series(weights.flatten(), index=cluster_cov.index,)
             intra_weights[i] = weights
 
         intra_weights = intra_weights.fillna(0)
@@ -665,8 +710,6 @@ class HCPortfolio(object):
         rm="MV",
         rf=0,
         l=2,
-        upper_bound=None,
-        lower_bound=None,
     ):
         # inter-cluster mean vector
         if self.mu is not None:
@@ -679,10 +722,16 @@ class HCPortfolio(object):
         tot_ret = self.returns @ intra_weights
 
         # inter-cluster weights
-        inter_weights = pd.Series(
-            self._opt_w(tot_ret, tot_mu, tot_cov, obj=obj, rm=rm, rf=rf, l=l).flatten(),
-            index=intra_weights.columns,
+        inter_weights = self._opt_w(
+            tot_ret,
+            tot_mu,
+            tot_cov,
+            obj=obj,
+            rm=rm,
+            rf=rf,
+            l=l,
         )
+        inter_weights = pd.Series(inter_weights.flatten(), index=intra_weights.columns)
         # determine the weight on each cluster by multiplying the intra-cluster weight with the inter-cluster weight
         weights = intra_weights.mul(inter_weights, axis=1).sum(axis=1).sort_index()
 
@@ -693,13 +742,14 @@ class HCPortfolio(object):
         self,
         model="HRP",
         codependence="pearson",
-        covariance="hist",
         obj="MinRisk",
         rm="MV",
         rf=0,
         l=2,
-        custom_cov=None,
+        method_mu="hist",
+        method_cov="hist",
         custom_mu=None,
+        custom_cov=None,
         linkage="single",
         opt_k_method="twodiff",
         k=None,
@@ -708,8 +758,8 @@ class HCPortfolio(object):
         alpha_tail=0.05,
         gs_threshold=0.5,
         leaf_order=True,
-        d=0.94,
-        **kwargs,
+        dict_mu={},
+        dict_cov={},
     ):
         r"""
         This method calculates the optimal portfolio according to the
@@ -742,25 +792,6 @@ class HCPortfolio(object):
             - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
             - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
             - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
-
-        covariance : str, optional
-            The method used to estimate the covariance matrix:
-            The default is 'hist'. Possible values are:
-
-            - 'hist': use historical estimates.
-            - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-            - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-            - 'ledoit': use the Ledoit and Wolf Shrinkage method.
-            - 'oas': use the Oracle Approximation Shrinkage method.
-            - 'shrunk': use the basic Shrunk Covariance method.
-            - 'gl': use the basic Graphical Lasso Covariance method.
-            - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`c-jLogo`.
-            - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`c-MLforAM`.
-            - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`c-MLforAM`.
-            - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`c-MLforAM`.
-            - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`c-Gerber2021`.
-            - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`c-Gerber2021`.
-            - 'custom_cov': use custom covariance matrix.
 
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'ERC'}.
             Objective function used by the NCO model.
@@ -815,12 +846,43 @@ class HCPortfolio(object):
         l : scalar, optional
             Risk aversion factor of the 'Utility' objective function.
             The default is 2.
-        custom_cov : DataFrame or None, optional
-            Custom covariance matrix, used when codependence or covariance
-            parameters have value 'custom_cov'. The default is None.
+        method_mu : str, optional
+            The method used to estimate the expected returns vector.
+            The default value is 'hist'. Possible values are:
+
+            - 'hist': use historical estimator.
+            - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+            - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+            - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
+            - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
+            - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
+            - 'custom_mu': use custom expected returns vector.
+
+        method_cov : str, optional
+            The method used to estimate the covariance matrix:
+            The default is 'hist'. Possible values are:
+
+            - 'hist': use historical estimates.
+            - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+            - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+            - 'ledoit': use the Ledoit and Wolf Shrinkage method.
+            - 'oas': use the Oracle Approximation Shrinkage method.
+            - 'shrunk': use the basic Shrunk Covariance method.
+            - 'gl': use the basic Graphical Lasso Covariance method.
+            - 'jlogo': use the j-LoGo Covariance method. For more information see: :cite:`c-jLogo`.
+            - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`c-MLforAM`.
+            - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`c-MLforAM`.
+            - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`c-MLforAM`.
+            - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`c-Gerber2021`.
+            - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`c-Gerber2021`.
+            - 'custom_cov': use custom covariance matrix.
+
         custom_mu : DataFrame or None, optional
             Custom mean vector when NCO objective is 'Utility' or 'Sharpe'.
             The default is None.
+        custom_cov : DataFrame or None, optional
+            Custom covariance matrix, used when codependence or covariance
+            parameters have value 'custom_cov'. The default is None.
         linkage : string, optional
             Linkage method of hierarchical clustering. For more information see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html>`_.
             The default is 'single'. Possible values are:
@@ -865,42 +927,57 @@ class HCPortfolio(object):
         leaf_order : bool, optional
             Indicates if the cluster are ordered so that the distance between
             successive leaves is minimal. The default is True.
-        d : scalar
-            The smoothing factor of ewma methods.
-            The default is 0.94.
-        **kwargs:
-            Other variables related to covariance estimation. See
-            `Scikit Learn <https://scikit-learn.org/stable/modules/covariance.html>`_
-            and chapter 2 of :cite:`d-MLforAM` for more details.
+        dict_mu : dict
+            Other variables related to the mean vector estimation method.
+        dict_cov : dict
+            Other variables related to the covariance estimation method.
 
         Returns
         -------
         w : DataFrame
             The weights of optimal portfolio.
 
+        See Also
+        --------
+        riskfolio.src.ParamsEstimation.mean_vector
+        riskfolio.src.ParamsEstimation.covar_matrix
         """
 
         # Covariance matrix
-        if covariance == "custom_cov":
-            self.cov = custom_cov.copy()
+        if method_cov == "custom_cov":
+            if isinstance(custom_cov, pd.DataFrame) == True:
+                if custom_cov.shape[0] != custom_cov.shape[1]:
+                    raise NameError("custom_cov must be a square DataFrame")
+                else:
+                    self.cov = custom_cov.copy()
         else:
             self.cov = pe.covar_matrix(
-                self.returns, method=covariance, d=0.94, **kwargs
+                self.returns, method=method_cov, **dict_cov
             )
 
-        # Custom mean vector
-        if custom_mu is not None:
+        # Mean vector
+        if method_mu == "custom_mu":
             if isinstance(custom_mu, pd.Series) == True:
                 self.mu = custom_mu.to_frame().T
             elif isinstance(custom_mu, pd.DataFrame) == True:
                 if custom_mu.shape[0] > 1 and custom_mu.shape[1] == 1:
-                    self.mu = custom_mu.T
+                    self.mu = custom_mu.copy()
                 elif custom_mu.shape[0] == 1 and custom_mu.shape[1] > 1:
-                    self.mu = custom_mu
+                    self.mu = custom_mu.copy()
                 else:
                     raise NameError("custom_mu must be a column DataFrame")
             else:
                 raise NameError("custom_mu must be a column DataFrame or Series")
+        else:
+            self.mu = pe.mean_vector(
+                self.returns, method=method_mu, **dict_mu
+            )
+        if rm == 'KT':
+            self.kurt, self.skurt = True, False
+        elif rm == 'SKT':
+            self.kurt, self.skurt = False, True
+        else:
+            self.kurt, self.skurt = False, False
 
         self.alpha_tail = alpha_tail
         self.bins_info = bins_info
@@ -996,11 +1073,21 @@ class HCPortfolio(object):
         elif model == "NCO":
             # Step-3.1: Determine intra-cluster weights
             intra_weights = self._intra_weights(
-                self.clusters, obj=obj, rm=rm, rf=rf, l=l
+                self.clusters,
+                obj=obj,
+                rm=rm,
+                rf=rf,
+                l=l,
             )
 
             # Step-3.2: Determine inter-cluster weights and multiply with 􏰁→ intra-cluster weights
-            weights = self._inter_weights(intra_weights, obj=obj, rm=rm, rf=rf, l=l)
+            weights = self._inter_weights(
+                intra_weights,
+                obj=obj,
+                rm=rm,
+                rf=rf,
+                l=l
+            )
 
         weights = weights.loc[self.assetslist]
 

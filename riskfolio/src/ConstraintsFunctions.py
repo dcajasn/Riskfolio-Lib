@@ -34,7 +34,7 @@ __all__ = [
 def assets_constraints(constraints, asset_classes):
     r"""
     Create the linear constraints matrixes A and B of the constraint
-    :math:`Aw \geq B`.
+    :math:`Aw \leq B`.
 
     Parameters
     ----------
@@ -63,10 +63,10 @@ def assets_constraints(constraints, asset_classes):
     Returns
     -------
     A : nd-array
-        The matrix A of :math:`Aw \geq B`.
+        The matrix A of :math:`Aw \leq B`.
 
     B : nd-array
-        The matrix B of :math:`Aw \geq B`.
+        The matrix B of :math:`Aw \leq B`.
 
     Raises
     ------
@@ -284,8 +284,8 @@ def assets_constraints(constraints, asset_classes):
                         A.append(A3)
                         B.append([0])
 
-    A = np.array(A, ndmin=2, dtype=float)
-    B = np.array(B, ndmin=2, dtype=float)
+    A = -np.array(A, ndmin=2, dtype=float)
+    B = -np.array(B, ndmin=2, dtype=float)
 
     return A, B
 
@@ -293,7 +293,7 @@ def assets_constraints(constraints, asset_classes):
 def factors_constraints(constraints, loadings):
     r"""
     Create the factors constraints matrixes C and D of the constraint
-    :math:`Cw \geq D`.
+    :math:`Cw \leq D`.
 
     Parameters
     ----------
@@ -313,10 +313,10 @@ def factors_constraints(constraints, loadings):
     Returns
     -------
     C : nd-array
-        The matrix C of :math:`Cw \geq D`.
+        The matrix C of :math:`Cw \leq D`.
 
     D : nd-array
-        The matrix D of :math:`Cw \geq D`.
+        The matrix D of :math:`Cw \leq D`.
 
     Raises
     ------
@@ -392,8 +392,8 @@ def factors_constraints(constraints, loadings):
             C.append(C1 * d)
             D.append([data[i][3] * d])
 
-    C = np.array(C, ndmin=2, dtype=float)
-    D = np.array(D, ndmin=2, dtype=float)
+    C = -np.array(C, ndmin=2, dtype=float)
+    D = -np.array(D, ndmin=2, dtype=float)
 
     return C, D
 

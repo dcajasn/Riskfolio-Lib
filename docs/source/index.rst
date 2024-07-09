@@ -44,9 +44,10 @@ Riskfolio-Lib
 Description
 ===========
 
-Riskfolio-Lib is a library for making portfolio optimization and quantitative strategic asset allocation in Python made in Peru |:peru:|. Its objective is to help students, academics and practitioners to build investment portfolios based on mathematically complex models with low effort. It is built on top of
-`CVXPY <https://www.cvxpy.org/>`_ and closely integrated
-with `Pandas <https://pandas.pydata.org/>`_ data structures.
+Riskfolio-Lib is a library for making portfolio optimization and quantitative strategic asset allocation 
+in Python made in Peru |:peru:|. Its objective is to help students, academics and practitioners to build 
+investment portfolios based on mathematically complex models with low effort. It is built on top of
+`CVXPY <https://www.cvxpy.org/>`_ and closely integrated with `Pandas <https://pandas.pydata.org/>`_ data structures.
 
 Some of key functionalities that Riskfolio-Lib offers:
 
@@ -178,9 +179,11 @@ Some of key functionalities that Riskfolio-Lib offers:
 - Tools to build views on assets and asset classes.
 - Tools to build views on risk factors.
 - Tools to build risk contribution constraints per asset classes.
+- Tools to build risk contribution constraints per risk factor using explicit risk factors and principal components.
 - Tools to build bounds constraints for Hierarchical Clustering Portfolios.
 - Tools to calculate risk measures.
 - Tools to calculate risk contributions per asset.
+- Tools to calculate risk contributions per risk factor.
 - Tools to calculate uncertainty sets for mean vector and covariance matrix.
 - Tools to calculate assets clusters based on codependence metrics.
 - Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
@@ -307,7 +310,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 
     @misc{riskfolio,
           author = {Dany Cajas},
-          title = {Riskfolio-Lib (6.1.0)},
+          title = {Riskfolio-Lib (6.2.0)},
           year  = {2024},
           url   = {https://github.com/dcajasn/Riskfolio-Lib},
           }

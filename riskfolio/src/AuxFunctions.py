@@ -707,7 +707,7 @@ def two_diff_gap_stat(dist, clusters, max_k=10):
     W_list = []
 
     # get within-cluster dissimilarity for each k
-    for k in range(min(len(cluster_lvls.columns), max_k)):
+    for k in range(min(len(num_k), max_k)):
         level = cluster_lvls.iloc[:, k]  # get k clusters
         D_list = []  # within-cluster distance list
 
@@ -769,7 +769,7 @@ def std_silhouette_score(dist, clusters, max_k=10):
     scores_list = []
 
     # get within-cluster dissimilarity for each k
-    for k in range(2, min(len(cluster_lvls.columns), max_k)):
+    for k in range(1, min(len(num_k)-1, max_k)):
         level = cluster_lvls.iloc[:, k]  # get k clusters
         b = silhouette_samples(dist, level)
         scores_list.append(b.mean() / b.std())
