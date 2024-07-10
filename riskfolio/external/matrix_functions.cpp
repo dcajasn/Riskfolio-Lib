@@ -6,6 +6,10 @@
  */
 
 #include <iostream>
+#include <iomanip>
+#include <vector>
+#include <numeric>
+#include <map>
 #include <Eigen>
 #include <Eigen/Core>
 #include <Eigen/KroneckerProduct>
@@ -15,6 +19,12 @@ namespace py = pybind11;
 using namespace std;
 using namespace Eigen;
 using namespace Spectra;
+
+std::vector<int> cumsum(const std::vector<int>& vec) {
+    std::vector<int> result(vec.size());
+    std::partial_sum(vec.begin(), vec.end(), result.begin());
+    return result;
+}
 
 /**
  * Calculate duplication matrix of size "n" as shown
