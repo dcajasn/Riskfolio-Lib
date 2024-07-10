@@ -226,9 +226,9 @@ class HCPortfolio(object):
                 else:
                     method_kurt = None
 
-                port.assets_stats(method_mu="hist",
-                                  method_cov="hist",
-                                  method_kurt=method_kurt)
+                port.assets_stats(
+                    method_mu="hist", method_cov="hist", method_kurt=method_kurt
+                )
                 if self.solvers is not None:
                     port.solvers = self.solvers
                 if mu is not None:
@@ -247,9 +247,9 @@ class HCPortfolio(object):
                     method_kurt = "hist"
                 else:
                     method_kurt = None
-                port.assets_stats(method_mu="hist",
-                                  method_cov="hist",
-                                  method_kurt=method_kurt)
+                port.assets_stats(
+                    method_mu="hist", method_cov="hist", method_kurt=method_kurt
+                )
                 if self.solvers is not None:
                     port.solvers = self.solvers
                 if mu is not None:
@@ -697,7 +697,10 @@ class HCPortfolio(object):
                 rf=rf,
                 l=l,
             )
-            weights = pd.Series(weights.flatten(), index=cluster_cov.index,)
+            weights = pd.Series(
+                weights.flatten(),
+                index=cluster_cov.index,
+            )
             intra_weights[i] = weights
 
         intra_weights = intra_weights.fillna(0)
@@ -951,9 +954,7 @@ class HCPortfolio(object):
                 else:
                     self.cov = custom_cov.copy()
         else:
-            self.cov = pe.covar_matrix(
-                self.returns, method=method_cov, **dict_cov
-            )
+            self.cov = pe.covar_matrix(self.returns, method=method_cov, **dict_cov)
 
         # Mean vector
         if method_mu == "custom_mu":
@@ -969,12 +970,10 @@ class HCPortfolio(object):
             else:
                 raise NameError("custom_mu must be a column DataFrame or Series")
         else:
-            self.mu = pe.mean_vector(
-                self.returns, method=method_mu, **dict_mu
-            )
-        if rm == 'KT':
+            self.mu = pe.mean_vector(self.returns, method=method_mu, **dict_mu)
+        if rm == "KT":
             self.kurt, self.skurt = True, False
-        elif rm == 'SKT':
+        elif rm == "SKT":
             self.kurt, self.skurt = False, True
         else:
             self.kurt, self.skurt = False, False
@@ -1081,13 +1080,7 @@ class HCPortfolio(object):
             )
 
             # Step-3.2: Determine inter-cluster weights and multiply with 􏰁→ intra-cluster weights
-            weights = self._inter_weights(
-                intra_weights,
-                obj=obj,
-                rm=rm,
-                rf=rf,
-                l=l
-            )
+            weights = self._inter_weights(intra_weights, obj=obj, rm=rm, rf=rf, l=l)
 
         weights = weights.loc[self.assetslist]
 

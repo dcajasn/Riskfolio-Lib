@@ -1172,9 +1172,7 @@ class Portfolio(object):
 
         if B is None:
             if self.B is None:
-                self.B = pe.loadings_matrix(X=F,
-                                            Y=X,
-                                            **dict_load)
+                self.B = pe.loadings_matrix(X=F, Y=X, **dict_load)
                 const = True
             elif self.B is not None:
                 pass

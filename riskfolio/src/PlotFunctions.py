@@ -425,8 +425,6 @@ def plot_frontier(
                 a2 = str(w_.shape)
                 raise ValueError("shapes " + a1 + " and " + a2 + " not aligned")
 
-
-
     if beta is None:
         beta = alpha
     if b_sim is None:
@@ -1032,13 +1030,7 @@ def plot_bar(
 
 
 def plot_frontier_area(
-    w_frontier,
-    nrow=25,
-    cmap="tab20",
-    n_colors=20,
-    height=6,
-    width=10,
-    ax=None
+    w_frontier, nrow=25, cmap="tab20", n_colors=20, height=6, width=10, ax=None
 ):
     r"""
     Create a chart with the asset composition of the efficient frontier.
@@ -1897,7 +1889,7 @@ def plot_hist(
         label=r"Normal: $\mu=$"
         + r"{0:.2%},".format(mu)
         + r" $\sigma=$"
-        + r"{0:.2%}".format(sigma)
+        + r"{0:.2%}".format(sigma),
     )
 
     factor = (np.max(a) - np.min(a)) / bins
@@ -2995,7 +2987,7 @@ def plot_clusters(
         ax1.set_title(title)
     elif dendrogram == False:
         ax.set_title(title)
-        ax.set_position([0,0.17,1,1])
+        ax.set_position([0, 0.17, 1, 1])
         axcolor.set_position([1.2, 0.17, 0.035, 1])
 
     try:
