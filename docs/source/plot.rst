@@ -73,7 +73,7 @@ Example
     method_mu='hist' # Method to estimate expected returns based on historical data.
     method_cov='hist' # Method to estimate covariance matrix based on historical data.
 
-    port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
+    port.assets_stats(method_mu=method_mu, method_cov=method_cov)
     
     mu = port.mu
     cov = port.cov
@@ -95,7 +95,7 @@ Example
     port.factors_stats(method_mu=method_mu,
                        method_cov=method_cov,
                        feature_selection='stepwise',
-                       dict_risk=dict(stepwise='Forward'))
+                       stepwise='Forward')
     w3 = port.rp_optimization(model='FC', rm='MV', rf=0, b_f=None)
 
     # Estimate the risk parity portfolio for principal components
@@ -103,7 +103,7 @@ Example
     port.factors_stats(method_mu=method_mu,
                        method_cov=method_cov,
                        feature_selection='PCR',
-                       dict_risk=dict(n_components=0.95))
+                       n_components=0.95)
     w4 = port.rp_optimization(model='FC', rm='MV', rf=0, b_f=None)
 
 

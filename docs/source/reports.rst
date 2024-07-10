@@ -65,7 +65,7 @@ Example
     method_mu='hist' # Method to estimate expected returns based on historical data.
     method_cov='hist' # Method to estimate covariance matrix based on historical data.
 
-    port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
+    port.assets_stats(method_mu=method_mu, method_cov=method_cov)
     
     # Estimate the portfolio that maximizes the risk adjusted return ratio
     w = port.optimization(model='Classic', rm=rm, obj='Sharpe', rf=0.0, l=0, hist=True)
