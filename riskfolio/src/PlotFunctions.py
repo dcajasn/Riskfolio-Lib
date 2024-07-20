@@ -3185,6 +3185,7 @@ def plot_dendrogram(
                 )
         else:
             clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
+
         L, M = hr.leaders(clustering, np.array(clustering_inds, dtype=np.int32))
         root, nodes = hr.to_tree(clustering, rd=True)
         nodes = np.array([i.dist for i in nodes])
@@ -3450,6 +3451,8 @@ def plot_network(
             k, clustering_inds = af.std_silhouette_score(dist, clustering, max_k)
         else:
             raise ValueError("The only opt_k_method available are twodiff and stdsil")
+    else:
+        clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
 
     clusters = {i: [] for i in np.unique(clustering_inds)}
     for i, v in enumerate(clustering_inds):
@@ -4035,6 +4038,8 @@ def plot_clusters_network(
             k, clustering_inds = af.std_silhouette_score(dist, clustering, max_k)
         else:
             raise ValueError("The only opt_k_method available are twodiff and stdsil")
+    else:
+        clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
 
     clusters = {i: [] for i in np.unique(clustering_inds)}
     for i, v in enumerate(clustering_inds):
@@ -4329,6 +4334,8 @@ def plot_clusters_network_allocation(
             k, clustering_inds = af.std_silhouette_score(dist, clustering, max_k)
         else:
             raise ValueError("The only opt_k_method available are twodiff and stdsil")
+    else:
+        clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
 
     clusters = {i: [] for i in np.unique(clustering_inds)}
     for i, v in enumerate(clustering_inds):
