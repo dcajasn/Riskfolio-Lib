@@ -2805,14 +2805,13 @@ def plot_clusters(
     # optimal number of clusters
     if k is None:
         if opt_k_method == "twodiff":
-            k = af.two_diff_gap_stat(dist, clustering, max_k)
+            k, clustering_inds = af.two_diff_gap_stat(dist, clustering, max_k)
         elif opt_k_method == "stdsil":
-            k = af.std_silhouette_score(dist, clustering, max_k)
+            k, clustering_inds = af.std_silhouette_score(dist, clustering, max_k)
         else:
             raise ValueError("The only opt_k_method available are twodiff and stdsil")
 
-    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
-    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    clusters = {i: [] for i in np.unique(clustering_inds)}
     for i, v in enumerate(clustering_inds):
         clusters[v].append(i)
 
@@ -2879,11 +2878,12 @@ def plot_clusters(
         if show_clusters is False:
             color_threshold = 0
         elif show_clusters is True:
+            L, M = hr.leaders(clustering, np.array(clustering_inds, dtype=np.int32))
             root, nodes = hr.to_tree(clustering, rd=True)
-            nodes = [i.dist for i in nodes]
+            nodes = np.array([i.dist for i in nodes])
             nodes.sort()
-            nodes = nodes[::-1][: k - 1]
-            color_threshold = np.min(nodes)
+            leaders_threshold = nodes[np.max(L)+1]
+            color_threshold = np.max(leaders_threshold)
             colors = af.color_list(k)
             hr.set_link_color_palette(colors)
 
@@ -2912,7 +2912,7 @@ def plot_clusters(
                 rec = plt.Rectangle(
                     (xmin - 4, 0),
                     xmax - xmin + 8,
-                    ymax * 1.05,
+                    ymax * 1.005,
                     facecolor=colors[i],  # coll.get_color()[0],
                     alpha=0.2,
                     edgecolor="none",
@@ -3174,19 +3174,19 @@ def plot_dendrogram(
         # optimal number of clusters
         if k is None:
             if opt_k_method == "twodiff":
-                k = af.two_diff_gap_stat(dist, clustering, max_k)
+                k, clustering_inds = af.two_diff_gap_stat(dist, clustering, max_k)
             elif opt_k_method == "stdsil":
-                k = af.std_silhouette_score(dist, clustering, max_k)
+                k, clustering_inds = af.std_silhouette_score(dist, clustering, max_k)
             else:
                 raise ValueError(
                     "The only opt_k_method available are twodiff and stdsil"
                 )
-
+        L, M = hr.leaders(clustering, np.array(clustering_inds, dtype=np.int32))
         root, nodes = hr.to_tree(clustering, rd=True)
-        nodes = [i.dist for i in nodes]
+        nodes = np.array([i.dist for i in nodes])
         nodes.sort()
-        nodes = nodes[::-1][: k - 1]
-        color_threshold = np.min(nodes)
+        leaders_threshold = nodes[np.max(L)+1]
+        color_threshold = np.max(leaders_threshold)
         colors = af.color_list(k)  # color list
         hr.set_link_color_palette(colors)
 
@@ -3210,7 +3210,7 @@ def plot_dendrogram(
             rec = plt.Rectangle(
                 (xmin - 4, 0),
                 xmax - xmin + 8,
-                ymax * 1.05,
+                ymax * 1.005,
                 facecolor=colors[i],  # coll.get_color()[0],
                 alpha=0.2,
                 edgecolor="none",
@@ -3441,14 +3441,13 @@ def plot_network(
     # optimal number of clusters
     if k is None:
         if opt_k_method == "twodiff":
-            k = af.two_diff_gap_stat(dist, clustering, max_k)
+            k, clustering_inds = af.two_diff_gap_stat(dist, clustering, max_k)
         elif opt_k_method == "stdsil":
-            k = af.std_silhouette_score(dist, clustering, max_k)
+            k, clustering_inds = af.std_silhouette_score(dist, clustering, max_k)
         else:
             raise ValueError("The only opt_k_method available are twodiff and stdsil")
 
-    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
-    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    clusters = {i: [] for i in np.unique(clustering_inds)}
     for i, v in enumerate(clustering_inds):
         clusters[v].append(labels[i])
 
@@ -4027,14 +4026,13 @@ def plot_clusters_network(
     # optimal number of clusters
     if k is None:
         if opt_k_method == "twodiff":
-            k = af.two_diff_gap_stat(dist, clustering, max_k)
+            k, clustering_inds = af.two_diff_gap_stat(dist, clustering, max_k)
         elif opt_k_method == "stdsil":
-            k = af.std_silhouette_score(dist, clustering, max_k)
+            k, clustering_inds = af.std_silhouette_score(dist, clustering, max_k)
         else:
             raise ValueError("The only opt_k_method available are twodiff and stdsil")
 
-    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
-    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    clusters = {i: [] for i in np.unique(clustering_inds)}
     for i, v in enumerate(clustering_inds):
         clusters[v].append(labels[i])
 
@@ -4322,14 +4320,13 @@ def plot_clusters_network_allocation(
     # optimal number of clusters
     if k is None:
         if opt_k_method == "twodiff":
-            k = af.two_diff_gap_stat(dist, clustering, max_k)
+            k, clustering_inds = af.two_diff_gap_stat(dist, clustering, max_k)
         elif opt_k_method == "stdsil":
-            k = af.std_silhouette_score(dist, clustering, max_k)
+            k, clustering_inds = af.std_silhouette_score(dist, clustering, max_k)
         else:
             raise ValueError("The only opt_k_method available are twodiff and stdsil")
 
-    clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
-    clusters = {i: [] for i in range(min(clustering_inds), max(clustering_inds) + 1)}
+    clusters = {i: [] for i in np.unique(clustering_inds)}
     for i, v in enumerate(clustering_inds):
         clusters[v].append(labels[i])
 

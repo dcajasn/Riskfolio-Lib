@@ -243,7 +243,7 @@ def cov_returns(cov, seed=0):
 
 def block_vec_pq(A, p, q):
     r"""
-    Calculates block vectorization operator as shown in :cite:`d-Loan1992`
+    Calculates block vectorization operator as shown in :cite:`d-VanLoan1993`
     and :cite:`d-Ojeda2015`.
 
     Parameters
@@ -674,7 +674,7 @@ def ltdi_matrix(X, alpha=0.05):
     return mat
 
 
-def two_diff_gap_stat(dist, clusters, max_k=10):
+def two_diff_gap_stat(dist, clustering, max_k=10):
     r"""
     Calculate the optimal number of clusters based on the two difference gap
     statistic :cite:`d-twogap`.
@@ -683,7 +683,7 @@ def two_diff_gap_stat(dist, clusters, max_k=10):
     ----------
     dist : str, optional
         A distance measure based on the codependence matrix.
-    clusters : str, optional
+    clustering : str, optional
         The hierarchical clustering encoded as a linkage matrix, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
     max_k : int, optional
         Max number of clusters used by the two difference gap statistic
@@ -699,44 +699,70 @@ def two_diff_gap_stat(dist, clusters, max_k=10):
         ValueError when the value cannot be calculated.
 
     """
+    flag = False
+    # Check if linkage matrix is monotonic
+    if hr.is_monotonic(clustering):
+        flag = True
     # cluster levels over from 1 to N-1 clusters
-    cluster_lvls = pd.DataFrame(hr.cut_tree(clusters), index=dist.columns)
-    num_k = cluster_lvls.columns  # save column with number of clusters
+    cluster_lvls = pd.DataFrame(hr.cut_tree(clustering), index=dist.columns)
+    level_k = cluster_lvls.columns.tolist()
     cluster_lvls = cluster_lvls.iloc[:, ::-1]  # reverse order to start with 1 cluster
-    cluster_lvls.columns = num_k  # set columns to number of cluster
+    cluster_lvls.columns = level_k
+    # Fix for nonmonotonic linkage matrices
+    if flag is False:
+        for i in cluster_lvls.columns:
+            unique_vals, indices = np.unique(cluster_lvls[i], return_inverse=True)
+            cluster_lvls[i] = indices
+    cluster_lvls = cluster_lvls.T.drop_duplicates().T
+    level_k = cluster_lvls.columns.tolist()
+    cluster_k = cluster_lvls.nunique(axis=0).tolist()
     W_list = []
+    n = dist.shape[0]
 
     # get within-cluster dissimilarity for each k
-    for k in range(min(len(num_k), max_k)):
-        level = cluster_lvls.iloc[:, k]  # get k clusters
-        D_list = []  # within-cluster distance list
+    for k in cluster_k:
+        if k == 1:
+            W_list.append(-np.inf)
+        elif k > min(max_k, np.sqrt(n))+2:
+            break
+        else:
+            level = cluster_lvls[level_k[cluster_k.index(k)]]  # get k clusters
+            D_list = []  # within-cluster distance list
 
-        for i in range(np.max(level.unique()) + 1):
-            cluster = level.loc[level == i]
-            # Based on correlation distance
-            cluster_dist = dist.loc[cluster.index, cluster.index]  # get distance
-            cluster_pdist = squareform(cluster_dist, checks=False)
-            if cluster_pdist.shape[0] != 0:
-                D = np.nan_to_num(cluster_pdist.mean())
-                D_list.append(D)  # append to list
+            for i in range(np.max(level.unique()) + 1):
+                cluster = level.loc[level == i]
+                # Based on correlation distance
+                cluster_dist = dist.loc[cluster.index, cluster.index]  # get distance
+                cluster_pdist = squareform(cluster_dist, checks=False)
+                if cluster_pdist.shape[0] != 0:
+                    D = np.nan_to_num(cluster_pdist.std())
+                    D_list.append(D)  # append to list
 
-        W_k = np.sum(D_list)
-        W_list.append(W_k)
+            W_k = np.sum(D_list)
+            W_list.append(W_k)
 
     W_list = pd.Series(W_list)
-    n = dist.shape[0]
-    limit_k = int(min(max_k, np.sqrt(n)))
-    gaps = W_list.shift(2) + W_list - 2 * W_list.shift(1)
-    gaps = gaps[0:limit_k]
-    if gaps.isna().all():
-        k = len(gaps)
+    gaps = W_list.shift(-2) + W_list - 2 * W_list.shift(-1)
+    k_index = int(gaps.idxmax())
+    k = cluster_k[k_index]
+    node_k = level_k[k_index]
+
+    if flag:
+        clustering_inds = cluster_lvls[node_k].tolist()
     else:
-        k = int(gaps.idxmax() + 2)
+        clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
+        j = len(np.unique(clustering_inds))
+        while k != j:
+            j += 1
+            clustering_inds = hr.fcluster(clustering, j, criterion="maxclust")
+            k = len(np.unique(clustering_inds))
+        unique_vals, indices = np.unique(clustering_inds, return_inverse=True)
+        clustering_inds = indices
 
-    return k
+    return k, clustering_inds
 
 
-def std_silhouette_score(dist, clusters, max_k=10):
+def std_silhouette_score(dist, clustering, max_k=10):
     r"""
     Calculate the optimal number of clusters based on the standarized silhouette
     score index :cite:`d-Prado2`.
@@ -745,7 +771,7 @@ def std_silhouette_score(dist, clusters, max_k=10):
     ----------
     dist : str, optional
         A distance measure based on the codependence matrix.
-    clusters : str, optional
+    clustering : str, optional
         The hierarchical clustering encoded as a linkage matrix, see `linkage <https://docs.scipy.org/doc/scipy/reference/generated/scipy.cluster.hierarchy.linkage.html?highlight=linkage#scipy.cluster.hierarchy.linkage>`_ for more details.
     max_k : int, optional
         Max number of clusters used by the standarized silhouette score
@@ -761,29 +787,54 @@ def std_silhouette_score(dist, clusters, max_k=10):
         ValueError when the value cannot be calculated.
 
     """
+    flag = False
+    # Check if linkage matrix is monotonic
+    if hr.is_monotonic(clustering):
+        flag = True
     # cluster levels over from 1 to N-1 clusters
-    cluster_lvls = pd.DataFrame(hr.cut_tree(clusters), index=dist.columns)
-    num_k = cluster_lvls.columns  # save column with number of clusters
+    cluster_lvls = pd.DataFrame(hr.cut_tree(clustering), index=dist.columns)
+    level_k = cluster_lvls.columns.tolist()
     cluster_lvls = cluster_lvls.iloc[:, ::-1]  # reverse order to start with 1 cluster
-    cluster_lvls.columns = num_k  # set columns to number of cluster
+    cluster_lvls.columns = level_k
+    # Fix for nonmonotonic linkage matrices
+    if flag is False:
+        for i in cluster_lvls.columns:
+            unique_vals, indices = np.unique(cluster_lvls[i], return_inverse=True)
+            cluster_lvls[i] = indices
+    cluster_lvls = cluster_lvls.T.drop_duplicates().T
+    level_k = cluster_lvls.columns.tolist()
+    cluster_k = cluster_lvls.nunique(axis=0).tolist()
     scores_list = []
+    n = dist.shape[0]
 
     # get within-cluster dissimilarity for each k
-    for k in range(1, min(len(num_k) - 1, max_k)):
-        level = cluster_lvls.iloc[:, k]  # get k clusters
-        b = silhouette_samples(dist, level)
-        scores_list.append(b.mean() / b.std())
+    for k in cluster_k:
+        if k == 1:
+            scores_list.append(-np.inf)
+        elif k > min(max_k, np.sqrt(n)):
+            break
+        else:
+            level = cluster_lvls[level_k[cluster_k.index(k)]]  # get k clusters
+            b = silhouette_samples(dist, level)
+            scores_list.append(b.mean() / b.std())
 
     scores_list = pd.Series(scores_list)
-    n = dist.shape[0]
-    limit_k = int(min(max_k, np.sqrt(n)))
-    scores_list = scores_list[0:limit_k]
-    if scores_list.isna().all():
-        k = len(scores_list)
+    k_index = int(scores_list.idxmax())
+    k = cluster_k[k_index]
+    node_k = level_k[k_index]
+    if flag:
+        clustering_inds = cluster_lvls[node_k].tolist()
     else:
-        k = int(scores_list.idxmax() + 2)
+        clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
+        j = len(np.unique(clustering_inds))
+        while k != j:
+            j += 1
+            clustering_inds = hr.fcluster(clustering, j, criterion="maxclust")
+            k = len(np.unique(clustering_inds))
+        unique_vals, indices = np.unique(clustering_inds, return_inverse=True)
+        clustering_inds = indices
 
-    return k
+    return k, clustering_inds
 
 
 def codep_dist(

@@ -834,19 +834,19 @@ def assets_clusters(
     # optimal number of clusters
     if k is None:
         if opt_k_method == "twodiff":
-            k = af.two_diff_gap_stat(dist, clustering, max_k)
+            k, clustering_inds = af.two_diff_gap_stat(dist, clustering, max_k)
         elif opt_k_method == "stdsil":
-            k = af.std_silhouette_score(dist, clustering, max_k)
+            k, clustering_inds = af.std_silhouette_score(dist, clustering, max_k)
         else:
             raise ValueError("The only opt_k_method available are twodiff and stdsil")
+    else:
+        clustering_inds = hr.fcluster(clustering, k, criterion="maxclust")
 
     # Building clusters
-    clusters_inds = hr.fcluster(clustering, k, criterion="maxclust")
     labels = np.array(returns.columns.tolist())
-
     clusters = {"Assets": [], "Clusters": []}
 
-    for i, v in enumerate(clusters_inds):
+    for i, v in enumerate(clustering_inds):
         clusters["Assets"].append(labels[i])
         clusters["Clusters"].append("Cluster " + str(v))
 

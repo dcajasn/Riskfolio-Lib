@@ -99,7 +99,7 @@ class HCPortfolio(object):
         self.gs_threshold = gs_threshold
         self.bins_info = bins_info
         self.asset_order = None
-        self.clusters = None
+        self.clustering = None
         self.cov = None
         self.mu = None
         self.kurt = False
@@ -321,9 +321,9 @@ class HCPortfolio(object):
             # optimal number of clusters
             if k is None:
                 if opt_k_method == "twodiff":
-                    k = af.two_diff_gap_stat(dist, clustering, max_k)
+                    k, _ = af.two_diff_gap_stat(dist, clustering, max_k)
                 elif opt_k_method == "stdsil":
-                    k = af.std_silhouette_score(dist, clustering, max_k)
+                    k, _ = af.std_silhouette_score(dist, clustering, max_k)
                 else:
                     raise ValueError(
                         "The only opt_k_method available are twodiff and stdsil"
@@ -1009,14 +1009,14 @@ class HCPortfolio(object):
             self.codep = af.cov2corr(custom_cov).astype(float)
 
         # Step-1: Tree clustering
-        self.clusters, self.k = self._hierarchical_clustering(
+        self.clustering, self.k = self._hierarchical_clustering(
             model, linkage, codependence, opt_k_method, k, max_k, leaf_order=leaf_order
         )
         if k is not None:
             self.k = int(k)
 
         # Step-2: Seriation (Quasi-Diagnalization)
-        self.sort_order = self._seriation(self.clusters)
+        self.sort_order = self._seriation(self.clustering)
         # asset_order = self.assetslist
         asset_order = [self.assetslist[i] for i in self.sort_order]
         self.asset_order = asset_order.copy()
@@ -1061,7 +1061,7 @@ class HCPortfolio(object):
         elif model in ["HERC", "HERC2"]:
             # Cluster-based Recursive bisection
             weights = self._hierarchical_recursive_bisection(
-                self.clusters,
+                self.clustering,
                 rm=rm,
                 rf=rf,
                 linkage=linkage,
@@ -1072,7 +1072,7 @@ class HCPortfolio(object):
         elif model == "NCO":
             # Step-3.1: Determine intra-cluster weights
             intra_weights = self._intra_weights(
-                self.clusters,
+                self.clustering,
                 obj=obj,
                 rm=rm,
                 rf=rf,
