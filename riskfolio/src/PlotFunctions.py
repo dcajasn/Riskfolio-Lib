@@ -2882,7 +2882,7 @@ def plot_clusters(
             root, nodes = hr.to_tree(clustering, rd=True)
             nodes = np.array([i.dist for i in nodes])
             nodes.sort()
-            leaders_threshold = nodes[np.max(L)+1]
+            leaders_threshold = nodes[np.max(L) + 1]
             color_threshold = np.max(leaders_threshold)
             colors = af.color_list(k)
             hr.set_link_color_palette(colors)
@@ -3185,7 +3185,7 @@ def plot_dendrogram(
         root, nodes = hr.to_tree(clustering, rd=True)
         nodes = np.array([i.dist for i in nodes])
         nodes.sort()
-        leaders_threshold = nodes[np.max(L)+1]
+        leaders_threshold = nodes[np.max(L) + 1]
         color_threshold = np.max(leaders_threshold)
         colors = af.color_list(k)  # color list
         hr.set_link_color_palette(colors)

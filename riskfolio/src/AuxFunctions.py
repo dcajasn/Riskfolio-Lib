@@ -723,7 +723,7 @@ def two_diff_gap_stat(dist, clustering, max_k=10):
     for k in cluster_k:
         if k == 1:
             W_list.append(-np.inf)
-        elif k > min(max_k, np.sqrt(n))+2:
+        elif k > min(max_k, np.sqrt(n)) + 2:
             break
         else:
             level = cluster_lvls[level_k[cluster_k.index(k)]]  # get k clusters
