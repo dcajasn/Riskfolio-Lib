@@ -1,4 +1,5 @@
 """"""  #
+
 """
 Copyright (c) 2020-2024, Dany Cajas
 All rights reserved.
@@ -812,14 +813,14 @@ def BubbleCluster8s(Rpm, Dpm, Hb, Mb, Mv, CliqList):
         )  # Assign discrete cluster membership of vertices in the converging bubbles.
 
         Udjv = Dpm @ (Mdjv @ np.diag(1 / np.sum(1 * (Mdjv != 0), axis=0)))
-        Udjv[
-            Adjv == 0
-        ] = np.inf  # Compute the distance between a vertex and the converging bubbles.
+        Udjv[Adjv == 0] = (
+            np.inf
+        )  # Compute the distance between a vertex and the converging bubbles.
         # mn = np.min(Udjv[np.sum(Mdjv.T, axis=0)==0,:].T) # Look for the closest converging bubble
         imn = np.argmin(Udjv[np.sum(Mdjv, axis=1) == 0, :], axis=1)
-        Tc[
-            Tc == -1
-        ] = imn  # Assign discrete cluster membership according to the distances to the converging bubbles
+        Tc[Tc == -1] = (
+            imn  # Assign discrete cluster membership according to the distances to the converging bubbles
+        )
     else:
         Tc = np.ones(
             N

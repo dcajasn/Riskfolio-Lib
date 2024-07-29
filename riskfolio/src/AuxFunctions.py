@@ -1,4 +1,5 @@
 """"""  #
+
 """
 Copyright (c) 2020-2024, Dany Cajas
 All rights reserved.
@@ -267,6 +268,10 @@ def block_vec_pq(A, p, q):
     """
     if isinstance(A, pd.DataFrame):
         A_ = A.to_numpy()
+    elif isinstance(A, np.ndarray):
+        A_ = A.copy()
+    else:
+        raise ValueError("A must be an 2darray or DataFrame.")
 
     mp, nq = A_.shape
     if mp % p == 0 and nq % q == 0:
@@ -406,9 +411,7 @@ def numBins(n_samples, corr=None):
         b = np.round(z / 6 + 2 / (3 * z) + 1 / 3)
     # bivariate case
     else:
-        b = np.round(
-            2**-0.5 * (1 + (1 + 24 * n_samples / (1 - corr**2)) ** 0.5) ** 0.5
-        )
+        b = np.round(2**-0.5 * (1 + (1 + 24 * n_samples / (1 - corr**2)) ** 0.5) ** 0.5)
 
     bins = np.int32(b)
 

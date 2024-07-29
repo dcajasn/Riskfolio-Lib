@@ -1,4 +1,5 @@
 """"""  #
+
 """
 Copyright (c) 2020-2024, Dany Cajas
 All rights reserved.
@@ -683,8 +684,8 @@ def plot_pie(
     else:
         fig = ax.get_figure()
 
-    labels = w.index.tolist()
-    sizes = w.iloc[:, 0].tolist()
+    labels = w_.index.tolist()
+    sizes = w_.iloc[:, 0].tolist()
     abs_sizes = [np.absolute(s) for s in sizes]
     sizes2 = pd.DataFrame([labels, abs_sizes, sizes]).T
     sizes2.columns = ["labels", "abs_values", "values"]
