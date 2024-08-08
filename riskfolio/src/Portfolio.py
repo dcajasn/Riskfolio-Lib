@@ -4566,7 +4566,7 @@ class Portfolio(object):
             return. The default is False.
         points : scalar, optional
             Number of point calculated from the efficient frontier.
-            The default is 50.
+            The default is 20.
         rf : scalar, optional
             Risk free rate. The default is 0.
         solver: str, optional
