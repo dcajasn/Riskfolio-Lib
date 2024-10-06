@@ -35,7 +35,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-20.04, macos-12, windows-2022 ]
+        os: [ ubuntu-20.04, macos-13, windows-2022 ]
         python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     env:
@@ -78,7 +78,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-20.04, macos-12, windows-2022 ]
+        os: [ ubuntu-20.04, macos-13, windows-2022 ]
         python-version: ["3.9", "3.10", "3.11", "3.12"]
 
     env:
@@ -137,7 +137,7 @@ jobs:
 
       - name: Upload artifacts to github
         if: ${{github.event_name == 'push' && env.USE_OPENMP != 'True'}}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: wheels
           path: ./wheelhouse
