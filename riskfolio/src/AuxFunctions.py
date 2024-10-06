@@ -68,9 +68,8 @@ def is_pos_def(cov, threshold=1e-8):
 
     Parameters
     ----------
-    cov : ndarray
-        Covariance matrix of shape (n_features, n_features), where
-        n_features is the number of features.
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
 
     Returns
     -------
@@ -95,9 +94,8 @@ def cov2corr(cov):
 
     Parameters
     ----------
-    cov : ndarray
-        Covariance matrix of shape n_features x n_features, where
-        n_features is the number of features.
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
 
     Returns
     -------
@@ -132,9 +130,8 @@ def corr2cov(corr, std):
 
     Parameters
     ----------
-    corr : ndarray
-        Assets correlation matrix of shape n_features x n_features, where
-        n_features is the number of features.
+    corr : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
     std : 1darray
         Assets standard deviation vector of size n_features, where
         n_features is the number of features.
@@ -170,9 +167,8 @@ def cov_fix(cov, method="clipped", threshold=1e-8):
 
     Parameters
     ----------
-    cov : ndarray
-        Covariance matrix of shape n_features x n_features, where
-        n_features is the number of features.
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
     method : str
         The default value is 'clipped', see more in `cov_nearest <https://www.statsmodels.org/stable/generated/statsmodels.stats.correlation_tools.cov_nearest.html>`_.
     **kwargs
@@ -209,9 +205,8 @@ def cov_returns(cov, seed=0):
 
     Parameters
     ----------
-    cov : ndarray
-        Covariance matrix of shape n_features x n_features, where
-        n_features is the number of features.
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
 
     Returns
     -------
@@ -349,8 +344,9 @@ def dcorr_matrix(X):
 
     Parameters
     ----------
-    X : ndarray
-        Returns series of shape n_sample x n_features.
+    X : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
 
     Returns
     -------
@@ -424,8 +420,9 @@ def mutual_info_matrix(X, bins_info="KN", normalize=True):
 
     Parameters
     ----------
-    X : ndarray
-        Returns series of shape n_sample x n_features.
+    X : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
     bins_info: int or str
         Number of bins used to calculate mutual information. The default
         value is 'KN'. Possible values are:
@@ -519,8 +516,9 @@ def var_info_matrix(X, bins_info="KN", normalize=True):
 
     Parameters
     ----------
-    X : ndarray
-        Returns series of shape n_sample x n_features.
+    X : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
     bins_info: int or str
         Number of bins used to calculate variation of information. The default
         value is 'KN'. Possible values are:
@@ -614,8 +612,9 @@ def ltdi_matrix(X, alpha=0.05):
 
     Parameters
     ----------
-    X : ndarray
-        Returns series of shape n_sample x n_features.
+    X : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
     alpha : float, optional
         Significance level for lower tail dependence index.
         The default is 0.05.
@@ -853,8 +852,9 @@ def codep_dist(
 
     Parameters
     ----------
-    returns : DataFrame
-        Assets returns.
+    returns : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
     custom_cov : DataFrame or None, optional
         Custom covariance matrix, used when codependence parameter has value
         'custom_cov'. The default is None.
@@ -1215,16 +1215,15 @@ def shrinkCorr(eVal, eVec, nFacts, alpha=0):
     return corr2
 
 
-def denoiseCov(cov, q, kind="fixed", bWidth=0.01, detone=False, mkt_comp=1, alpha=0):
+def denoiseCov(cov, q, kind="fixed", bWidth=0.01, detone=False, mkt_comp=1, alpha=0.1):
     r"""
     Remove noise from cov by fixing random eigenvalues of their correlation
     matrix. For more information see chapter 2 of :cite:`d-MLforAM`.
 
     Parameters
     ----------
-    cov : ndarray or pd.DataFrame
-        Covariance matrix of shape n_features x n_features, where
-        n_features is the number of features.
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
     q : float
         T/N where T is the number of rows and N the number of columns.
     bWidth : float

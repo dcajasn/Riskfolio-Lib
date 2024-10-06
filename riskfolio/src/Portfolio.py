@@ -59,23 +59,25 @@ class Portfolio(object):
 
     Parameters
     ----------
-    returns : DataFrame, optional
-        A dataframe that containts the returns of the assets.
+    returns : DataFrame of shape (n_samples, n_assets), optional
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
         The default is None.
     sht : bool, optional
         Indicate if the portfolio consider short positions (negative weights).
         The default is False.
     uppersht : float, optional
-        Indicate the maximum value of the sum of absolute values of short
+        Indicate the maximum absolute value of short
         positions (negative weights). The default is 0.2.
     upperlng : float, optional
-        Indicate the maximum value of the sum of long positions (positive
-        weights). When sht=True, the difference between upperlng and uppersht
-        must be equal to the budget (upperlng - uppersht = budget)
+        Indicate the maximum value of long positions (positive weights).
         The default is 1.
     budget : float, optional
         Indicate the maximum value of the sum of long positions (positive
         weights) and short positions (negative weights). The default is 1.
+    budgetsht : float, optional
+        Indicate the maximum value of the sum of absolute value of short
+        positions (negative weights). The default is 0.2.
     nea : int, optional
         Indicate the minimum number of effective assets (NEA) used in
         portfolio. This value is the inverse of Herfindahl-Hirschman index of
@@ -87,9 +89,9 @@ class Portfolio(object):
     factors : DataFrame, optional
         A dataframe that containts the returns of the factors.
         The default is None.
-    B : DataFrame, optional
-        A dataframe that containts the loadings matrix.
-        The default is None.
+    B : DataFrame of shape (n_assets, n_factors), optional
+        Loadings matrix, where n_assets is the number assets and n_factors is
+        the number of risk factors. The default is None.
     alpha : float, optional
         Significance level of CVaR, EVaR, CDaR, EDaR and Tail Gini of losses. The default is 0.05.
     a_sim : float, optional
@@ -138,16 +140,28 @@ class Portfolio(object):
         is assigned to network_sdp automatically network_ip becomes None.
         This constraint is based on :cite:`a-Cajas10` and :cite:`a-Cajas11`.
         The default is None.
-    network_penalty : float, optional
-        The weight of SDP network constraint when the risk measure is not 'MV'.
+    cluster_sdp : nd-array, optional
+        Adjacency label matrix for semidefinite programming (SDP) cluster constraint.
+        Users cannot use cluster_sdp and cluster_ip at the same time, when a value
+        is assigned to cluster_sdp automatically cluster_ip becomes None.
         This constraint is based on :cite:`a-Cajas10` and :cite:`a-Cajas11`.
-        The default is 0.05.
+        The default is None.
     network_ip : nd-array, optional
-        Connection matrix for Integer Programming (IP) network constraint. Users
+        Connection matrix for integer programming (IP) network constraint. Users
         cannot use network_sdp and network_ip at the same time, when a value is
         assigned to network_ip automatically network_sdp becomes None.
         This constraint is based on :cite:`a-Cajas10` and :cite:`a-Cajas11`.
         The default is None.
+    cluster_ip : nd-array, optional
+        Adjacency label matrix for integer programming (IP) cluster constraint. Users
+        cannot use cluster_sdp and cluster_ip at the same time, when a value is
+        assigned to cluster_ip automatically cluster_sdp becomes None.
+        This constraint is based on :cite:`a-Cajas10` and :cite:`a-Cajas11`.
+        The default is None.
+    graph_penalty : float, optional
+        The weight of SDP network constraint when the risk measure is not 'MV'.
+        This constraint is based on :cite:`a-Cajas10` and :cite:`a-Cajas11`.
+        The default is 0.05.
     acentrality : nd-array, optional
         The matrix :math:`A_c` of the centrality constraint :math:`A_c = B_c`.
         This constraint is based on :cite:`a-Cajas10`.
@@ -229,6 +243,7 @@ class Portfolio(object):
         uppersht=0.2,
         upperlng=1,
         budget=1,
+        budgetsht=0.2,
         nea=None,
         card=None,
         factors=None,
@@ -250,8 +265,10 @@ class Portfolio(object):
         binequality=None,
         b=None,
         network_sdp=None,
-        network_penalty=0.05,
+        cluster_sdp=None,
         network_ip=None,
+        cluster_ip=None,
+        graph_penalty=0.05,
         acentrality=None,
         bcentrality=None,
         lowerret=None,
@@ -290,6 +307,7 @@ class Portfolio(object):
         self.uppersht = uppersht
         self.upperlng = upperlng
         self.budget = budget
+        self.budgetsht = budgetsht
         self.nea = nea
         self.card = card
         self._factors = factors
@@ -306,8 +324,10 @@ class Portfolio(object):
         self._binequality = binequality
         self._b = b
         self._network_sdp = network_sdp
-        self.network_penalty = network_penalty
+        self._cluster_sdp = cluster_sdp
         self._network_ip = network_ip
+        self._cluster_ip = cluster_ip
+        self.graph_penalty = graph_penalty
         self._acentrality = acentrality
         self._bcentrality = bcentrality
         self.lowerret = lowerret
@@ -435,7 +455,7 @@ class Portfolio(object):
             if self.returns.index.equals(a.index):
                 self._factors = a
         else:
-            raise NameError("factors must be a DataFrame")
+            raise NameError("factors must be a DataFrame.")
 
     @property
     def factorslist(self):
@@ -456,7 +476,7 @@ class Portfolio(object):
         elif a is None:
             self._B = a
         else:
-            raise NameError("loadings matrix must be a DataFrame")
+            raise NameError("Loadings matrix must be a DataFrame.")
 
     @property
     def benchweights(self):
@@ -465,7 +485,7 @@ class Portfolio(object):
             if self._benchweights.shape[0] == n and self._benchweights.shape[1] == 1:
                 a = self._benchweights
             else:
-                raise NameError("Weights must have a size of shape (n_assets,1)")
+                raise NameError("Weights must have a size of shape (n_assets, 1).")
         else:
             a = np.array(np.ones((n, 1)) / n)
         return a
@@ -478,7 +498,7 @@ class Portfolio(object):
             if a.shape[0] == n and a.shape[1] == 1:
                 a = a
             else:
-                raise NameError("Weights must have a size of shape (n_assets,1)")
+                raise NameError("Weights must have a size of shape (n_assets,1).")
         else:
             a = np.array(np.ones((n, 1)) / n)
         self._benchweights = a
@@ -491,7 +511,7 @@ class Portfolio(object):
                 a = a
             else:
                 raise NameError(
-                    "The array ainequality must have the same number of columns than assets' number"
+                    "The array ainequality must have the same number of columns than assets' number."
                 )
         return a
 
@@ -503,7 +523,7 @@ class Portfolio(object):
                 a = a
             else:
                 raise NameError(
-                    "The matrix ainequality must have the same number of columns than assets' number"
+                    "The matrix ainequality must have the same number of columns than assets' number."
                 )
         self._ainequality = a
 
@@ -514,7 +534,7 @@ class Portfolio(object):
             if a.shape[1] == 1:
                 a = a
             else:
-                raise NameError("The matrix binequality must have one column")
+                raise NameError("The matrix binequality must have one column.")
         return a
 
     @binequality.setter
@@ -524,7 +544,7 @@ class Portfolio(object):
             if a.shape[1] == 1:
                 a = a
             else:
-                raise NameError("The matrix binequality must have one column")
+                raise NameError("The matrix binequality must have one column.")
         self._binequality = a
 
     @property
@@ -537,7 +557,7 @@ class Portfolio(object):
                 a = a.T
             else:
                 raise NameError(
-                    "The vector of risk contribution constraints must have a size equal than the assets' number"
+                    "The vector of risk contribution constraints must have a size equal than the assets' number."
                 )
         return a
 
@@ -551,7 +571,7 @@ class Portfolio(object):
                 a = a.T
             else:
                 raise NameError(
-                    "The vector of risk contribution constraints must have a size equal than the assets' number"
+                    "The vector of risk contribution constraints must have a size equal than the assets' number."
                 )
         self._b = a
 
@@ -564,7 +584,7 @@ class Portfolio(object):
                 a = self._network_sdp
             else:
                 raise NameError(
-                    "Connection matrix network_sdp must have a size of shape (n_assets,n_assets)"
+                    "Connection matrix network_sdp must have a size of shape (n_assets, n_assets)."
                 )
         return a
 
@@ -577,10 +597,39 @@ class Portfolio(object):
                 a = a
             else:
                 raise NameError(
-                    "Connection matrix network_sdp must have a size of shape (n_assets,n_assets)"
+                    "Connection matrix network_sdp must have a size of shape (n_assets, n_assets)."
                 )
         self._network_sdp = a
         self._network_ip = None
+        self.card = None
+
+    @property
+    def cluster_sdp(self):
+        a = self._cluster_sdp
+        n = self.numassets
+        if self._cluster_sdp is not None:
+            if self._cluster_sdp.shape[0] == n and self._cluster_sdp.shape[1] == n:
+                a = self._cluster_sdp
+            else:
+                raise NameError(
+                    "Connection matrix cluster_sdp must have a size of shape (n_assets, n_assets)."
+                )
+        return a
+
+    @cluster_sdp.setter
+    def cluster_sdp(self, value):
+        a = value
+        n = self.numassets
+        if a is not None:
+            if a.shape[0] == n and a.shape[1] == n:
+                a = a
+            else:
+                raise NameError(
+                    "Connection matrix cluster_sdp must have a size of shape (n_assets, n_assets)."
+                )
+        self._cluster_sdp = a
+        self._cluster_ip = None
+        self.card = None
 
     @property
     def network_ip(self):
@@ -591,7 +640,7 @@ class Portfolio(object):
                 a = a
             else:
                 raise NameError(
-                    "Connection matrix network_ip must have a n_assets columns"
+                    "Connection matrix network_ip must have a n_assets columns."
                 )
         return a
 
@@ -604,10 +653,37 @@ class Portfolio(object):
                 a = a
             else:
                 raise NameError(
-                    "Connection matrix network_ip must have a n_assets columns"
+                    "Connection matrix network_ip must have a n_assets columns."
                 )
         self._network_ip = a
         self._network_sdp = None
+
+    @property
+    def cluster_ip(self):
+        a = self._cluster_ip
+        n = self.numassets
+        if a is not None:
+            if a.shape[1] == n:
+                a = a
+            else:
+                raise NameError(
+                    "Connection matrix cluster_ip must have a n_assets columns."
+                )
+        return a
+
+    @cluster_ip.setter
+    def cluster_ip(self, value):
+        a = value
+        n = self.numassets
+        if a is not None:
+            if a.shape[1] == n:
+                a = a
+            else:
+                raise NameError(
+                    "Connection matrix cluster_ip must have a n_assets columns."
+                )
+        self._cluster_ip = a
+        self._cluster_sdp = None
 
     @property
     def acentrality(self):
@@ -617,7 +693,7 @@ class Portfolio(object):
                 a = a
             else:
                 raise NameError(
-                    "The array ainequality must have the same number of columns than assets' number"
+                    "The array ainequality must have the same number of columns than assets' number."
                 )
         return a
 
@@ -629,7 +705,7 @@ class Portfolio(object):
                 a = a
             else:
                 raise NameError(
-                    "The matrix ainequality must have the same number of columns than assets' number"
+                    "The matrix ainequality must have the same number of columns than assets' number."
                 )
         self._acentrality = a
 
@@ -640,7 +716,7 @@ class Portfolio(object):
             if a.shape[1] == 1:
                 a = a
             else:
-                raise NameError("The matrix binequality must have one column")
+                raise NameError("The matrix binequality must have one column.")
         return a
 
     @bcentrality.setter
@@ -650,7 +726,7 @@ class Portfolio(object):
             if a.shape[1] == 1:
                 a = a
             else:
-                raise NameError("The matrix binequality must have one column")
+                raise NameError("The matrix binequality must have one column.")
         self._bcentrality = a
 
     @property
@@ -662,12 +738,12 @@ class Portfolio(object):
         a = value
         if a >= 1:
             print(
-                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99"
+                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99."
             )
             self._kappa = 0.99
         elif a <= 0:
             print(
-                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01"
+                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01."
             )
             self._kappa = 0.01
         else:
@@ -925,12 +1001,7 @@ class Portfolio(object):
         method_cov="hist",
         B=None,
         const=True,
-        feature_selection="stepwise",
-        stepwise="Forward",
-        criterion="pvalue",
-        threshold=0.05,
-        n_components=0.95,
-        error=True,
+        dict_load={},
         dict_mu={},
         dict_cov={},
     ):
@@ -967,8 +1038,9 @@ class Portfolio(object):
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`a-Gerber2021`.
             - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`a-Gerber2021`.
-        B : DataFrame of shape (n_assets, n_features), optional
-            Loadings matrix. If is not specified, is estimated using
+        B : DataFrame of shape (n_assets, n_factors), optional
+            Loadings matrix, where the number of rows represent the assets and the
+            columns the risk factors. If is not specified, is estimated using
             stepwise regression. The default is None.
         feature_selection: str, 'stepwise' or 'PCR', optional
             Indicate the method used to estimate the loadings matrix.
@@ -976,6 +1048,8 @@ class Portfolio(object):
 
             - 'stepwise': use stepwise regression to select the best factors and estimate coefficients.
             - 'PCR': use principal components regression to estimate coefficients.
+        dict_load : dict
+            Other variables related to the loadings matrix estimation.
         dict_mu : dict
             Other variables related to the mean vector estimation method.
         dict_cov : dict
@@ -991,8 +1065,6 @@ class Portfolio(object):
         """
         X = self.factors
         Y = self.returns
-        self.B = None
-        self.n_components = n_components
 
         mu_f = pe.mean_vector(self.factors, method=method_mu, **dict_mu)
         cov_f = pe.covar_matrix(self.factors, method=method_cov, **dict_cov)
@@ -1011,25 +1083,30 @@ class Portfolio(object):
                 print("You must convert self.cov to a positive definite matrix")
 
         if B is None:
-            self.feature_selection = feature_selection
-        else:
-            self.feature_selection = None
+            if self.B is None:
+                self.B = pe.loadings_matrix(X=X, Y=Y, **dict_load)
+                const = True
+                self.feature_selection = None
+                self.n_components = 0.95
+                if "feature_selection" in dict_load:
+                    if dict_load["feature_selection"] == "PCR":
+                        self.feature_selection = "PCR"
+                if "n_components" in dict_load:
+                    self.n_components = dict_load["n_components"]
+            elif self.B is not None:
+                self.feature_selection = None
+        elif B is not None:
+            self.B = B
 
         mu, cov, returns, B_ = pe.risk_factors(
             X,
             Y,
-            B=B,
+            B=self.B,
             const=const,
             method_mu=method_mu,
             method_cov=method_cov,
-            feature_selection=feature_selection,
-            stepwise=stepwise,
-            criterion=criterion,
-            threshold=threshold,
-            n_components=n_components,
-            error=error,
-            **dict_mu,
-            **dict_cov,
+            dict_mu=dict_mu,
+            dict_cov=dict_cov,
         )
 
         self.mu_fm = mu
@@ -1072,7 +1149,6 @@ class Portfolio(object):
         delta=None,
         eq=True,
         const=True,
-        diag=False,
         method_mu="hist",
         method_cov="hist",
         dict_load={},
@@ -1110,11 +1186,6 @@ class Portfolio(object):
             The default is True.
         const : bool, optional
             Indicate if the loadings matrix has a constant.
-            The default is False.
-        diag : bool, optional
-            Indicate if we use the diagonal matrix to calculate covariance matrix
-            of factor model, only useful when we work with a factor model based on
-            a regresion model (only equity portfolio).
             The default is False.
         method_mu : str, optional
             The method used to estimate the expected returns.
@@ -1191,7 +1262,6 @@ class Portfolio(object):
                 rf=rf,
                 eq=eq,
                 const=const,
-                diag=diag,
                 method_mu=method_mu,
                 method_cov=method_cov,
                 dict_mu=dict_mu,
@@ -1405,7 +1475,7 @@ class Portfolio(object):
             )
 
     def optimization(
-        self, model="Classic", rm="MV", obj="Sharpe", kelly=False, rf=0, l=2, hist=True
+        self, model="Classic", rm="MV", obj="Sharpe", kelly=None, rf=0, l=2, hist=True
     ):
         r"""
         This method that calculates the optimal portfolio according to the
@@ -1476,10 +1546,10 @@ class Portfolio(object):
             - 'MaxRet': Maximize the expected return of the portfolio.
 
         kelly : str, optional
-            Method used to calculate mean return. Possible values are False for
+            Method used to calculate mean return. Possible values are: None for
             arithmetic mean return, "approx" for approximate mean logarithmic
             return using first and second moment and "exact" for mean logarithmic
-            return. The default is False.
+            return. The default is None.
         rf : float, optional
             Risk free rate, must be in the same period of assets returns.
             The default is 0.
@@ -1560,6 +1630,7 @@ class Portfolio(object):
             self.kurt is not None
             or self.skurt is not None
             or self.network_sdp is not None
+            or self.cluster_sdp is not None
         ):
             sdpmodel = True
         elif self.upperkt is not None or self.upperskt is not None:
@@ -1578,16 +1649,16 @@ class Portfolio(object):
         # MV Model Variables
 
         penalty_factor = cp.Constant(0)
-        if self.network_sdp is None:
+        if self.network_sdp is None and self.cluster_sdp is None:
             g = cp.Variable(nonneg=True)
             G = sqrtm(sigma)
             risk1 = g**2
             devconstraints = [cp.SOC(g, G.T @ w)]
-        elif self.network_sdp is not None:
+        elif self.network_sdp is not None or self.cluster_sdp is not None:
             risk1 = cp.trace(sigma @ W)
             devconstraints = []
             if rm != "MV" and self.upperdev is None:
-                penalty_factor = self.network_penalty * cp.trace(W)
+                penalty_factor = self.graph_penalty * cp.trace(W)
 
         # Return Variables
 
@@ -1602,7 +1673,7 @@ class Portfolio(object):
                     ret = mu @ w - 0.5 * cp.quad_over_lin(g, k)
                 else:
                     ret = mu @ w - 0.5 * g**2
-            elif kelly == False:
+            elif kelly is None:
                 ret = mu @ w
         else:
             ret = mu @ w
@@ -2140,7 +2211,11 @@ class Portfolio(object):
         # Cardinality Boolean Variables
 
         flag_int = False
-        if self.card is not None or self.network_ip is not None:
+        if (
+            self.card is not None
+            or self.network_ip is not None
+            or self.cluster_ip is not None
+        ):
             flag_int = True
             if obj == "Sharpe":
                 e = cp.Variable((mu.shape[1], 1), boolean=True)
@@ -2162,21 +2237,11 @@ class Portfolio(object):
                         e1 >= k - 100000 * (1 - e),
                         w <= self.upperlng * e1,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
-
             elif self.sht == True:
                 constraints += [
-                    cp.sum(cp.pos(w)) * 1000 <= self.upperlng * k * 1000,
-                    cp.sum(cp.neg(w)) * 1000 <= self.uppersht * k * 1000,
+                    cp.sum(cp.pos(w)) * 1000
+                    <= (self.budget + self.uppersht) * k * 1000,
+                    cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * k * 1000,
                 ]
                 if flag_int:
                     constraints += [
@@ -2184,20 +2249,9 @@ class Portfolio(object):
                         e1 >= 0,
                         e1 <= 100000 * e,
                         e1 >= k - 100000 * (1 - e),
-                        w >= -self.uppersht * e1,
-                        w <= self.upperlng * e1,
+                        w >= -min(self.uppersht, self.budgetsht) * e1,
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)) * e1,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
-
         else:
             constraints = [cp.sum(w) == self.budget]
             if self.sht == False:
@@ -2206,37 +2260,42 @@ class Portfolio(object):
                     constraints += [
                         w <= self.upperlng * e,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
 
             elif self.sht == True:
                 constraints += [
-                    cp.sum(cp.pos(w)) * 1000 <= self.upperlng * 1000,
-                    cp.sum(cp.neg(w)) * 1000 <= self.uppersht * 1000,
+                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.uppersht) * 1000,
+                    cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * 1000,
                 ]
                 if flag_int:
                     constraints += [
-                        w >= -self.uppersht * e,
-                        w <= self.upperlng * e,
+                        w >= -min(self.uppersht, self.budgetsht) * e,
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)) * e,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
+
+        # Problem network constraints
+        if flag_int:
+            # Cardinality Constraint
+            if self.card is not None:
+                constraints += [
+                    cp.sum(e) <= self.card,
+                ]
+            # Network IP Constraint
+            if self.network_ip is not None:
+                constraints += [
+                    np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
+                ]
+            # Cluster IP Constraint
+            if self.cluster_ip is not None:
+                constraints += [
+                    np.unique(self.cluster_ip + np.identity(N), axis=0) @ e <= 1
+                ]
+        else:
+            # Network SDP Constraint
+            if self.network_sdp is not None:
+                constraints += [cp.multiply(self.network_sdp, W) == 0]
+            # Cluster SDP Constraint
+            if self.cluster_sdp is not None:
+                constraints += [cp.multiply(self.cluster_sdp, W) == 0]
 
         # Problem Linear Constraints
 
@@ -2294,11 +2353,6 @@ class Portfolio(object):
             else:
                 constraints += [ret >= self.lowerret]
 
-        # Problem SDP network constraints
-
-        if self.network_sdp is not None:
-            constraints += [cp.multiply(self.network_sdp, W) == 0]
-
         # Problem centrality measures constraints
 
         if self.acentrality is not None and self.bcentrality is not None:
@@ -2310,7 +2364,7 @@ class Portfolio(object):
         # Problem risk Constraints
 
         if self.upperdev is not None:
-            if self.network_sdp is None:
+            if self.network_sdp is None and self.cluster_sdp is None:
                 if obj == "Sharpe":
                     constraints += [g <= self.upperdev * k]
                 else:
@@ -2618,12 +2672,20 @@ class Portfolio(object):
                     if rm != "MV":
                         constraints += devconstraints
                     objective = cp.Maximize(ret - penalty_factor)
-                elif kelly == False:
+                elif kelly is None:
+                    if (mu < 0).all():
+                        constraints += [risk <= 1]
+                        objective = cp.Maximize(ret - penalty_factor)
+                    else:
+                        constraints += [mu @ w - rf0 * k == 1]
+                        objective = cp.Minimize(risk * 1000 + penalty_factor * 1000)
+            else:
+                if (mu < 0).all():
+                    constraints += [risk <= 1]
+                    objective = cp.Maximize(ret * 1000 - penalty_factor * 1000)
+                else:
                     constraints += [mu @ w - rf0 * k == 1]
                     objective = cp.Minimize(risk * 1000 + penalty_factor * 1000)
-            else:
-                constraints += [mu @ w - rf0 * k == 1]
-                objective = cp.Minimize(risk * 1000 + penalty_factor * 1000)
         elif obj == "MinRisk":
             objective = cp.Minimize(risk * 1000 + penalty_factor * 1000)
         elif obj == "Utility":
@@ -2808,7 +2870,10 @@ class Portfolio(object):
                 scaler = StandardScaler()
                 scaler.fit(self.factors)
                 X_std = scaler.transform(self.factors)
-                pca = PCA(n_components=self.n_components)
+                if self.n_components > 0 and self.n_components < 1:
+                    pca = PCA(n_components=self.n_components)
+                elif self.n_components >= 1:
+                    pca = PCA(n_components=int(self.n_components))
                 pca.fit(X_std)
                 V_p = pca.components_.T
                 std = np.array(np.std(self.factors, axis=0, ddof=1), ndmin=2)
@@ -3820,7 +3885,11 @@ class Portfolio(object):
         # SDP Model Variables
 
         sdpmodel = False
-        if self.network_sdp is not None or Ucov in ["box", "ellip"]:
+        if (
+            self.network_sdp is not None
+            or self.cluster_sdp is not None
+            or Ucov in ["box", "ellip"]
+        ):
             sdpmodel = True
 
         if sdpmodel:
@@ -3853,7 +3922,11 @@ class Portfolio(object):
         # Cardinal Boolean Variables
 
         flag_int = False
-        if self.card is not None or self.network_ip is not None:
+        if (
+            self.card is not None
+            or self.network_ip is not None
+            or self.cluster_ip is not None
+        ):
             flag_int = True
             if obj == "Sharpe":
                 e = cp.Variable((mu.shape[1], 1), boolean=True)
@@ -3875,42 +3948,22 @@ class Portfolio(object):
                         e1 >= k - 100000 * (1 - e),
                         w <= self.upperlng * e1,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
-
             elif self.sht == True:
                 constraints += [
-                    cp.sum(cp.pos(w)) * 1000 <= self.upperlng * k * 1000,
-                    cp.sum(cp.neg(w)) * 1000 <= self.uppersht * k * 1000,
+                    cp.sum(cp.pos(w)) * 1000
+                    <= (self.budget + self.uppersht) * k * 1000,
+                    cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * k * 1000,
                 ]
+
                 if flag_int:
                     constraints += [
                         e1 <= k,
                         e1 >= 0,
                         e1 <= 100000 * e,
                         e1 >= k - 100000 * (1 - e),
-                        w >= -self.uppersht * e1,
-                        w <= self.upperlng * e1,
+                        w >= -min(self.uppersht, self.budgetsht) * e1,
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)) * e1,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
-
         else:
             constraints += [cp.sum(w) == self.budget]
             if self.sht == False:
@@ -3919,37 +3972,40 @@ class Portfolio(object):
                     constraints += [
                         w <= self.upperlng * e,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
-
             elif self.sht == True:
                 constraints += [
-                    cp.sum(cp.pos(w)) * 1000 <= self.upperlng * 1000,
-                    cp.sum(cp.neg(w)) * 1000 <= self.uppersht * 1000,
+                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.uppersht) * 1000,
+                    cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * 1000,
                 ]
                 if flag_int:
                     constraints += [
-                        w >= -self.uppersht * e,
-                        w <= self.upperlng * e,
+                        w >= -min(self.uppersht, self.budgetsht) * e,
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)) * e,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
+
+        if flag_int:
+            # Cardinality Constraint
+            if self.card is not None:
+                constraints += [
+                    cp.sum(e) <= self.card,
+                ]
+            # Network IP Constraint
+            if self.network_ip is not None:
+                constraints += [
+                    np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
+                ]
+            # Cluster IP Constraint
+            if self.cluster_ip is not None:
+                constraints += [
+                    np.unique(self.cluster_ip + np.identity(N), axis=0) @ e <= 1
+                ]
+        else:
+            # Network SDP Constraint
+            if self.network_sdp is not None:
+                constraints += [cp.multiply(self.network_sdp, W) == 0]
+            # Cluster SDP Constraint
+            if self.cluster_sdp is not None:
+                constraints += [cp.multiply(self.cluster_sdp, W) == 0]
 
         # Number of effective assets constraints
 
@@ -3998,11 +4054,6 @@ class Portfolio(object):
             if self.allowTO == True:
                 TO_1 = cp.abs(w - c) * 1000
                 constraints += [TO_1 <= self.turnover * 1000]
-
-        # Problem SDP network constraints
-
-        if self.network_sdp is not None:
-            constraints += [cp.multiply(self.network_sdp, W) == 0]
 
         # Problem centrality measures constraints
 
@@ -4074,7 +4125,7 @@ class Portfolio(object):
 
         return self.wc_optimal
 
-    def owa_optimization(self, obj="Sharpe", owa_w=None, kelly=False, rf=0, l=2):
+    def owa_optimization(self, obj="Sharpe", owa_w=None, kelly=None, rf=0, l=2):
         r"""
         This method that calculates the owa optimal portfolio according to the
         weight vector given by the user. The general problem that
@@ -4106,10 +4157,10 @@ class Portfolio(object):
             The owa weight used to define the owa risk measure.
             The default is 'MV'. Possible values are:
         kelly : str, optional
-            Method used to calculate mean return. Possible values are False for
+            Method used to calculate mean return. Possible values are: None for
             arithmetic mean return, "approx" for approximate mean logarithmic
             return using first and second moment and "exact" for mean logarithmic
-            return. The default is False.
+            return. The default is None.
         rf : float, optional
             Risk free rate, must be in the same period of assets returns.
             The default is 0.
@@ -4153,14 +4204,14 @@ class Portfolio(object):
                 ret = mu @ w - 0.5 * cp.quad_over_lin(g, k)
             else:
                 ret = mu @ w - 0.5 * g**2
-        elif kelly == False:
+        elif kelly is None:
             ret = mu @ w
 
         # SDP Model Variables
 
         penalty_factor = cp.Constant(0)
         sdpmodel = False
-        if self.network_sdp is not None:
+        if self.network_sdp is not None or self.cluster_sdp is not None:
             sdpmodel = True
 
         if sdpmodel:
@@ -4172,7 +4223,7 @@ class Portfolio(object):
                 M2 = cp.vstack([w, np.ones((1, 1))])
             M3 = cp.hstack([M1, M2])
             sdpconstraints = [M3 >> 0]
-            penalty_factor = self.network_penalty * cp.trace(W)
+            penalty_factor = self.graph_penalty * cp.trace(W)
 
         # OWA Model Variables
 
@@ -4192,7 +4243,11 @@ class Portfolio(object):
         # Cardinality Boolean Variables
 
         flag_int = False
-        if self.card is not None or self.network_ip is not None:
+        if (
+            self.card is not None
+            or self.network_ip is not None
+            or self.cluster_ip is not None
+        ):
             flag_int = True
             if obj == "Sharpe":
                 e = cp.Variable((mu.shape[1], 1), boolean=True)
@@ -4214,21 +4269,11 @@ class Portfolio(object):
                         e1 >= k - 100000 * (1 - e),
                         w <= self.upperlng * e1,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
-
             elif self.sht == True:
                 constraints += [
-                    cp.sum(cp.pos(w)) * 1000 <= self.upperlng * k * 1000,
-                    cp.sum(cp.neg(w)) * 1000 <= self.uppersht * k * 1000,
+                    cp.sum(cp.pos(w)) * 1000
+                    <= (self.budget + self.uppersht) * k * 1000,
+                    cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * k * 1000,
                 ]
                 if flag_int:
                     constraints += [
@@ -4236,20 +4281,9 @@ class Portfolio(object):
                         e1 >= 0,
                         e1 <= 100000 * e,
                         e1 >= k - 100000 * (1 - e),
-                        w >= -self.uppersht * e1,
-                        w <= self.upperlng * e1,
+                        w >= -min(self.uppersht, self.budgetsht) * e1,
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)) * e1,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
-
         else:
             constraints += [cp.sum(w) == self.budget]
             if self.sht == False:
@@ -4258,37 +4292,40 @@ class Portfolio(object):
                     constraints += [
                         w <= self.upperlng * e,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
-
             elif self.sht == True:
                 constraints += [
-                    cp.sum(cp.pos(w)) * 1000 <= self.upperlng * 1000,
-                    cp.sum(cp.neg(w)) * 1000 <= self.uppersht * 1000,
+                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.uppersht) * 1000,
+                    cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * 1000,
                 ]
                 if flag_int:
                     constraints += [
-                        w >= -self.uppersht * e,
-                        w <= self.upperlng * e,
+                        w >= -min(self.uppersht, self.budgetsht) * e,
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)) * e,
                     ]
-                    # Cardinality Constraint
-                    if self.card is not None:
-                        constraints += [
-                            cp.sum(e) <= self.card,
-                        ]
-                    # Network IP Constraint
-                    if self.network_ip is not None:
-                        constraints += [
-                            np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
-                        ]
+
+        if flag_int:
+            # Cardinality Constraint
+            if self.card is not None:
+                constraints += [
+                    cp.sum(e) <= self.card,
+                ]
+            # Network IP Constraint
+            if self.network_ip is not None:
+                constraints += [
+                    np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
+                ]
+            # Cluster IP Constraint
+            if self.cluster_ip is not None:
+                constraints += [
+                    np.unique(self.cluster_ip + np.identity(N), axis=0) @ e <= 1
+                ]
+        else:
+            # Network SDP Constraint
+            if self.network_sdp is not None:
+                constraints += [cp.multiply(self.network_sdp, W) == 0]
+            # Cluster SDP Constraint
+            if self.cluster_sdp is not None:
+                constraints += [cp.multiply(self.cluster_sdp, W) == 0]
 
         # Problem Linear Constraints
 
@@ -4346,11 +4383,6 @@ class Portfolio(object):
             else:
                 constraints += [ret >= self.lowerret]
 
-        # Problem SDP network constraints
-
-        if self.network_sdp is not None:
-            constraints += [cp.multiply(self.network_sdp, W) == 0]
-
         # Problem centrality measures constraints
 
         if self.acentrality is not None and self.bcentrality is not None:
@@ -4383,9 +4415,13 @@ class Portfolio(object):
                 constraints += [risk <= 1]
                 constraints += devconstraints
                 objective = cp.Maximize(ret * 1000 - penalty_factor * 1000)
-            elif kelly == False:
-                constraints += [mu @ w - rf0 * k == 1]
-                objective = cp.Minimize(risk * 1000 + penalty_factor * 1000)
+            elif kelly is None:
+                if (mu < 0).all():
+                    constraints += [risk <= 1]
+                    objective = cp.Maximize(ret * 1000 - penalty_factor * 1000)
+                else:
+                    constraints += [mu @ w - rf0 * k == 1]
+                    objective = cp.Minimize(risk * 1000 + penalty_factor * 1000)
         elif obj == "MinRisk":
             objective = cp.Minimize(risk + penalty_factor)
         elif obj == "Utility":
@@ -4430,7 +4466,7 @@ class Portfolio(object):
 
         return self.owa_optimal
 
-    def frontier_limits(self, model="Classic", rm="MV", kelly=False, rf=0, hist=True):
+    def frontier_limits(self, model="Classic", rm="MV", kelly=None, rf=0, hist=True):
         r"""
         Method that calculates the minimum risk and maximum return portfolios
         available with current assets and constraints.
@@ -4468,10 +4504,10 @@ class Portfolio(object):
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
         kelly : str, optional
-            Method used to calculate mean return. Possible values are False for
+            Method used to calculate mean return. Possible values are: None for
             arithmetic mean return, "approx" for approximate mean logarithmic
             return using first and second moment and "exact" for mean logarithmic
-            return. The default is False.
+            return. The default is None.
         rf : scalar, optional
             Risk free rate. The default is 0.
         hist : bool, optional
@@ -4516,7 +4552,7 @@ class Portfolio(object):
         self,
         model="Classic",
         rm="MV",
-        kelly=False,
+        kelly=None,
         points=20,
         rf=0,
         solver="CLARABEL",
@@ -4560,10 +4596,10 @@ class Portfolio(object):
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
 
         kelly : str, optional
-            Method used to calculate mean return. Possible values are False for
+            Method used to calculate mean return. Possible values are: None for
             arithmetic mean return, "approx" for approximate mean logarithmic
             return using first and second moment and "exact" for mean logarithmic
-            return. The default is False.
+            return. The default is None.
         points : scalar, optional
             Number of point calculated from the efficient frontier.
             The default is 50.
@@ -4721,9 +4757,9 @@ class Portfolio(object):
             risk_min = rk.RLDaR_Abs(returns @ w_min, alpha, kappa, solver)
             risk_max = rk.RLDaR_Abs(returns @ w_max, alpha, kappa, solver)
 
-        mus = np.linspace(ret_min, ret_max, points)
+        mus = np.linspace(ret_min, ret_max, int(points))
 
-        risks = np.linspace(risk_min, risk_max, points)
+        risks = np.linspace(risk_min, risk_max, int(points))
 
         risk_lims = [
             "upperdev",
@@ -4858,7 +4894,7 @@ class Portfolio(object):
         self.binequality = None
         self.b = None
         self.network_sdp = None
-        self.network_penalty = 0.05
+        self.graph_penalty = 0.05
         self.network_ip = None
         self.acentrality = None
         self.bcentrality = None
@@ -4909,6 +4945,7 @@ class Portfolio(object):
         self.uppersht = 0.2
         self.upperlng = 1
         self.budget = 1
+        self.budgetsh = 0.2
         self.nea = None
         self.card = None
         self._factors = None

@@ -212,7 +212,7 @@ Eigen::MatrixXd cpp_duplication_summation_matrix(const int &n) {
         out2.insert(rows2[i]-1, v2[i] - 1) = 1;
     }
 
-    Eigen::MatrixXd S = Eigen::MatrixXd(out);
+    Eigen::MatrixXd S = Eigen::MatrixXd(out + out2);
     return S;
 }
 

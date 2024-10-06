@@ -63,10 +63,11 @@ def jupyter_report(
 
     Parameters
     ----------
-    returns : DataFrame
-        Assets returns.
-    w : DataFrame of shape (n_assets, 1)
-        Portfolio weights.
+    returns : DataFrame of shape (n_samples, n_assets), optional
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
+    w : DataFrame or Series of shape (n_assets, 1)
+        Portfolio weights, where n_assets is the number of assets.
     rm : str, optional
         Risk measure used to estimate risk contribution.
         The default is 'MV'. Possible values are:
@@ -285,10 +286,11 @@ def excel_report(
 
     Parameters
     ----------
-    returns : DataFrame
-        Assets returns.
-    w : DataFrame of size (n_assets, n_portfolios)
-        Portfolio weights.
+    returns : DataFrame of shape (n_samples, n_assets), optional
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
+    w : DataFrame or Series of shape (n_assets, 1)
+        Portfolio weights, where n_assets is the number of assets.
     rf : float, optional
         Risk free rate or minimum acceptable return. The default is 0.
     alpha : float, optional

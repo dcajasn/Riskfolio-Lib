@@ -17,10 +17,12 @@ Authors
 
 I'm a BSc in  Economic Engineering at Universidad Nacional de
 Ingeniería and MA in Finance at Universidad del Pacífico. I am very interested
-in quantitative finance. For more about me, you can visit my
-blog `financioneroncios <https://financioneroncios.wordpress.com/>`_, visit
-my `linkedin <https://www.linkedin.com/in/dany-cajas/>`_ or write me to 
-`dany.cajas.n@uni.pe <dany.cajas.n@uni.pe>`_
+in quantitative finance. For more about me, you can visit:
+
+- My blog `financioneroncios <https://financioneroncios.wordpress.com/>`_.
+- My `linkedin <https://www.linkedin.com/in/dany-cajas/>`_.
+- My `SSRN author page <https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=2931756>`_ where you can find all my working papers.
+- Or write me to `dcajasn@gmail.com <dcajasn@gmail.com >`_.
 
 I like to learn and apply my knowledge in practical applications; for this
 reason, I started my blog to practice and share in my native language the things

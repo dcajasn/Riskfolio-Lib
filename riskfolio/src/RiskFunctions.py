@@ -54,6 +54,7 @@ __all__ = [
     "TGRG",
     "L_Moment",
     "L_Moment_CRM",
+    "NEA",
     "Sharpe_Risk",
     "Sharpe",
     "Risk_Contribution",
@@ -555,6 +556,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
         & z \geq 0 \\
         & \left ( z \left ( \frac{1+\kappa}{2\kappa} \right ), \psi_{i} \left ( \frac{1+\kappa}{\kappa} \right ), \varepsilon_{i} \right) \in \mathcal{P}_3^{1/(1+\kappa),\, \kappa/(1+\kappa)} \\
         & \left ( \omega_{i}\left ( \frac{1}{1-\kappa} \right ), \theta_{i}\left ( \frac{1}{\kappa} \right),  -z \left ( \frac{1}{2\kappa} \right ) \right ) \in \mathcal{P}_3^{1-\kappa,\, \kappa} \\
+        \end{array} \right .
 
     Where:
 
@@ -947,7 +949,7 @@ def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     using uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
 
     .. math::
-        \text{RLDaR}^{\kappa}_{\alpha}(X) & = \text{RLVaR}^{\kappa}_{\alpha}(DD(X)) \\
+        \text{RLDaR}^{\kappa}_{\alpha}(X) & = \text{RLVaR}^{\kappa}_{\alpha}(\text{DD}(X)) \\
         \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \sum_{i=0}^{t}X_{i}
         \right )- \sum_{i=0}^{j}X_{i} \\
 
@@ -1328,7 +1330,7 @@ def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     using compounded cumulative returns. I recommend only use this function with MOSEK solver.
 
     .. math::
-        \text{RLDaR}^{\kappa}_{\alpha}(X) & = \text{RLVaR}^{\kappa}_{\alpha}(DD(X)) \\
+        \text{RLDaR}^{\kappa}_{\alpha}(X) & = \text{RLVaR}^{\kappa}_{\alpha}(\text{DD}(X)) \\
         \text{DD}(X,j) & = \max_{t \in (0,j)} \left ( \prod_{i=0}^{t}(1+X_{i})
         \right )- \prod_{i=0}^{j}(1+X_{i}) \\
 
@@ -1730,15 +1732,47 @@ def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"):
     return value
 
 
+def NEA(w):
+    r"""
+    Calculate the number of effective assets (NEA) that is the inverse of the
+    Herfindahl Hirschman index (HHI).
+
+    Parameters
+    ----------
+    w : DataFrame or Series of shape (n_assets, 1)
+        Portfolio weights, where n_assets is the number of assets.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        The NEA of the portfolio.
+    """
+
+    a = np.array(w, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("w must have n_assets x 1 size")
+
+    value = 1 / np.sum(a**2)
+
+    return value
+
+
 ###############################################################################
 # Risk Adjusted Return Ratios
 ###############################################################################
 
 
 def Sharpe_Risk(
-    w,
+    returns,
+    w=None,
     cov=None,
-    returns=None,
     rm="MV",
     rf=0,
     alpha=0.05,
@@ -1755,8 +1789,8 @@ def Sharpe_Risk(
     ----------
     w : DataFrame or 1d-array of shape (n_assets, 1)
         Weights matrix, where n_assets is the number of assets.
-    cov : DataFrame or nd-array of shape (n_features, n_features)
-        Covariance matrix, where n_features is the number of features.
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
     returns : DataFrame or nd-array of shape (n_samples, n_features)
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
@@ -1790,6 +1824,7 @@ def Sharpe_Risk(
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
         - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
         - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
+        - 'DaR_Rel': Drawdown at Risk of compounded cumulative returns.
         - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
         - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
         - 'RLDaR_Rel': Relativistic Drawdown at Risk of compounded cumulative returns. I recommend only use this risk measure with MOSEK solver.
@@ -1826,16 +1861,30 @@ def Sharpe_Risk(
 
     """
 
-    w_ = np.array(w, ndmin=2)
+    if isinstance(returns, pd.Series):
+        returns_ = returns.to_frame()
+    elif isinstance(returns, pd.DataFrame):
+        returns_ = returns.to_numpy()
+    else:
+        returns_ = np.array(returns, ndmin=2)
+
+    if returns_.shape[1] == 1:
+        w_ = np.array([[1]])
+    else:
+        if w is None:
+            raise ValueError("weights must have n_assets x 1 size")
+        else:
+            w_ = np.array(w, ndmin=2)
+
     if w_.shape[0] == 1 and w_.shape[1] > 1:
         w_ = w_.T
     if w_.shape[0] > 1 and w_.shape[1] > 1:
         raise ValueError("weights must have n_assets x 1 size")
 
-    if cov is not None:
+    if cov is None:
+        cov_ = np.array(np.cov(returns_, rowvar=False), ndmin=2)
+    else:
         cov_ = np.array(cov, ndmin=2)
-    if returns is not None:
-        returns_ = np.array(returns, ndmin=2)
 
     a = returns_ @ w_
     if rm == "MV":
@@ -1908,10 +1957,10 @@ def Sharpe_Risk(
 
 
 def Sharpe(
-    w,
-    mu,
+    returns,
+    w=None,
+    mu=None,
     cov=None,
-    returns=None,
     rm="MV",
     rf=0,
     alpha=0.05,
@@ -1941,15 +1990,15 @@ def Sharpe(
     Parameters
     ----------
 
+    returns : DataFrame or nd-array of shape (n_samples, n_features)
+        Features matrix, where n_samples is the number of samples and
+        n_features is the number of features.
     w : DataFrame or 1d-array of shape (n_assets, 1)
         Weights matrix, where n_assets is the number of assets.
     mu : DataFrame or nd-array of shape (1, n_assets)
         Vector of expected returns, where n_assets is the number of assets.
-    cov : DataFrame or nd-array of shape (n_features, n_features)
-        Covariance matrix, where n_features is the number of features.
-    returns : DataFrame or nd-array of shape (n_samples, n_features)
-        Features matrix, where n_samples is the number of samples and
-        n_features is the number of features.
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
     rm : str, optional
         Risk measure used in the denominator of the ratio. The default is
         'MV'. Possible values are:
@@ -1980,6 +2029,7 @@ def Sharpe(
         - 'UCI': Ulcer Index of uncompounded cumulative returns.
         - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
         - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
+        - 'DaR_Rel': Drawdown at Risk of compounded cumulative returns.
         - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
         - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
         - 'RLDaR_Rel': Relativistic Drawdown at Risk of compounded cumulative returns. I recommend only use this function with MOSEK solver.
@@ -2016,33 +2066,43 @@ def Sharpe(
 
     """
 
-    w_ = np.array(w, ndmin=2)
+    if isinstance(returns, pd.Series):
+        returns_ = returns.to_frame()
+    elif isinstance(returns, pd.DataFrame):
+        returns_ = returns.to_numpy()
+    else:
+        returns_ = np.array(returns, ndmin=2)
+
+    if returns_.shape[1] == 1:
+        w_ = np.array([[1]])
+    else:
+        if w is None:
+            raise ValueError("weights must have n_assets x 1 size")
+        else:
+            w_ = np.array(w, ndmin=2)
+
     if w_.shape[0] == 1 and w_.shape[1] > 1:
         w_ = w_.T
     if w_.shape[0] > 1 and w_.shape[1] > 1:
         raise ValueError("weights must have n_assets x 1 size")
 
-    if cov is None and rm == "MV":
-        raise ValueError("covariance matrix is necessary to calculate the sharpe ratio")
-    elif returns is None and rm != "MV":
-        raise ValueError(
-            "returns scenarios are necessary to calculate the sharpe ratio"
-        )
-
-    mu_ = np.array(mu, ndmin=2)
-
-    if cov is not None:
+    if cov is None:
+        cov_ = np.array(np.cov(returns_, rowvar=False), ndmin=2)
+    else:
         cov_ = np.array(cov, ndmin=2)
-    if returns is not None:
-        returns_ = np.array(returns, ndmin=2)
+
+    if mu is None:
+        mu_ = np.array(np.mean(returns_, axis=0), ndmin=2)
+    else:
+        mu_ = np.array(mu, ndmin=2)
 
     ret = mu_ @ w_
     ret = ret.item()
 
     risk = Sharpe_Risk(
-        w,
-        cov=cov_,
         returns=returns_,
+        w=w_,
+        cov=cov_,
         rm=rm,
         rf=rf,
         alpha=alpha,
@@ -2065,8 +2125,8 @@ def Sharpe(
 
 def Risk_Contribution(
     w,
+    returns,
     cov=None,
-    returns=None,
     rm="MV",
     rf=0,
     alpha=0.05,
@@ -2077,18 +2137,17 @@ def Risk_Contribution(
     solver="CLARABEL",
 ):
     r"""
-    Calculate the risk contribution for each asset based on the risk measure
-    selected.
+    Calculate the risk contribution for each asset based on the selected risk measure.
 
     Parameters
     ----------
-    w : DataFrame or 1d-array of shape (n_assets, 1)
-        Weights matrix, where n_assets is the number of assets.
-    cov : DataFrame or nd-array of shape (n_features, n_features)
-        Covariance matrix, where n_features is the number of features.
+    w : DataFrame or Series of shape (n_assets, 1)
+        Portfolio weights, where n_assets is the number of assets.
     returns : DataFrame or nd-array of shape (n_samples, n_features)
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
     rm : str, optional
         Risk measure used in the denominator of the ratio. The default is
         'MV'. Possible values are:
@@ -2161,10 +2220,17 @@ def Risk_Contribution(
     if w_.shape[0] > 1 and w_.shape[1] > 1:
         raise ValueError("weights must have n_assets x 1 size")
 
-    if cov is not None:
-        cov_ = np.array(cov, ndmin=2)
-    if returns is not None:
+    if isinstance(returns, pd.Series):
+        returns_ = returns.to_frame()
+    elif isinstance(returns, pd.DataFrame):
+        returns_ = returns.to_numpy()
+    else:
         returns_ = np.array(returns, ndmin=2)
+
+    if cov is None:
+        cov_ = np.array(np.cov(returns_, rowvar=False), ndmin=2)
+    else:
+        cov_ = np.array(cov, ndmin=2)
 
     RC = []
     if rm in ["EVaR", "EDaR", "RLVaR", "RLDaR"]:
@@ -2285,8 +2351,8 @@ def Risk_Contribution(
 
 def Risk_Margin(
     w,
+    returns,
     cov=None,
-    returns=None,
     rm="MV",
     rf=0,
     alpha=0.05,
@@ -2302,13 +2368,13 @@ def Risk_Margin(
 
     Parameters
     ----------
-    w : DataFrame or 1d-array of shape (n_assets, 1)
-        Weights matrix, where n_assets is the number of assets.
-    cov : DataFrame or nd-array of shape (n_features, n_features)
-        Covariance matrix, where n_features is the number of features.
+    w : DataFrame or Series of shape (n_assets, 1)
+        Portfolio weights, where n_assets is the number of assets.
     returns : DataFrame or nd-array of shape (n_samples, n_features)
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
     rm : str, optional
         Risk measure used in the denominator of the ratio. The default is
         'MV'. Possible values are:
@@ -2381,10 +2447,17 @@ def Risk_Margin(
     if w_.shape[0] > 1 and w_.shape[1] > 1:
         raise ValueError("weights must have n_assets x 1 size")
 
-    if cov is not None:
-        cov_ = np.array(cov, ndmin=2)
-    if returns is not None:
+    if isinstance(returns, pd.Series):
+        returns_ = returns.to_frame()
+    elif isinstance(returns, pd.DataFrame):
+        returns_ = returns.to_numpy()
+    else:
         returns_ = np.array(returns, ndmin=2)
+
+    if cov is None:
+        cov_ = np.array(np.cov(returns_, rowvar=False), ndmin=2)
+    else:
+        cov_ = np.array(cov, ndmin=2)
 
     RM = []
     if rm in ["RLVaR", "RLDaR"]:
@@ -2505,9 +2578,9 @@ def Risk_Margin(
 
 def Factors_Risk_Contribution(
     w,
+    returns,
+    factors,
     cov=None,
-    returns=None,
-    factors=None,
     B=None,
     const=False,
     rm="MV",
@@ -2525,23 +2598,23 @@ def Factors_Risk_Contribution(
     n_components=0.95,
 ):
     r"""
-    Calculate the risk contribution for each factor based on the risk measure
-    selected.
+    Calculate the risk contribution for each factor based on the selected risk measure.
 
     Parameters
     ----------
-    w : DataFrame or 1d-array of shape (n_assets, 1)
-        Weights matrix, where n_assets is the number of assets.
-    cov : DataFrame or nd-array of shape (n_features, n_features)
-        Covariance matrix, where n_features is the number of features.
+    w : DataFrame or Series of shape (n_assets, 1)
+        Portfolio weights, where n_assets is the number of assets.
     returns : DataFrame or nd-array of shape (n_samples, n_features)
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
     factors : DataFrame or nd-array of shape (n_samples, n_factors)
         Factors matrix, where n_samples is the number of samples and
         n_factors is the number of factors.
-    B : DataFrame of shape (n_assets, n_features), optional
-        Loadings matrix. If is not specified, is estimated using
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
+    B : DataFrame of shape (n_assets, n_factors), optional
+        Loadings matrix, where n_assets is the number assets and n_factors is
+        the number of risk factors. If is not specified, is estimated using
         stepwise regression. The default is None.
     const : bool, optional
         Indicate if the loadings matrix has a constant.
@@ -2641,10 +2714,13 @@ def Factors_Risk_Contribution(
     if w_.shape[0] > 1 and w_.shape[1] > 1:
         raise ValueError("weights must have n_assets x 1 size")
 
+    if returns.index.tolist() != factors.index.tolist():
+        raise ValueError("returns and factors must have same dates.")
+
     RM = Risk_Margin(
-        w=w,
-        cov=cov,
+        w=w_,
         returns=returns,
+        cov=cov,
         rm=rm,
         rf=rf,
         alpha=alpha,
@@ -2676,7 +2752,10 @@ def Factors_Risk_Contribution(
         scaler = StandardScaler()
         scaler.fit(factors)
         factors_std = scaler.transform(factors)
-        pca = PCA(n_components=n_components)
+        if n_components > 0 and n_components < 1:
+            pca = PCA(n_components=n_components)
+        elif n_components >= 1:
+            pca = PCA(n_components=int(n_components))
         pca.fit(factors_std)
         V_p = pca.components_.T
         std = np.array(np.std(factors, axis=0, ddof=1), ndmin=2)
@@ -2687,7 +2766,7 @@ def Factors_Risk_Contribution(
     B3 = pinv(B2.T)
 
     RC_F = (B.T @ w_) * (B1.T @ RM)
-    RC_OF = np.array(((B2.T @ w.to_numpy()) * (B3.T @ RM)).sum(), ndmin=2)
+    RC_OF = np.array(((B2.T @ w_) * (B3.T @ RM)).sum(), ndmin=2)
     RC_F = np.vstack([RC_F, RC_OF]).ravel()
 
     return RC_F

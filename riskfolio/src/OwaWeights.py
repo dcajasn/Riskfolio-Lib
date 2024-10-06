@@ -45,11 +45,14 @@ def owa_l_moment(T, k=2):
         An OWA weights vector of size Tx1.
     """
     w = []
-    for i in range(1, T + 1):
+    T_ = int(T)
+    for i in range(1, T_ + 1):
         a = 0
         for j in range(k):
-            a += (-1) ** j * binom(k - 1, j) * binom(i - 1, k - 1 - j) * binom(T - i, j)
-        a *= 1 / (k * binom(T, k))
+            a += (
+                (-1) ** j * binom(k - 1, j) * binom(i - 1, k - 1 - j) * binom(T_ - i, j)
+            )
+        a *= 1 / (k * binom(T_, k))
         w.append(a)
     return np.array(w).reshape(-1, 1)
 
@@ -71,9 +74,10 @@ def owa_gmd(T):
     """
 
     w_ = []
-    for i in range(1, T + 1):
-        w_.append(2 * i - 1 - T)
-    w_ = 2 * np.array(w_) / (T * (T - 1))
+    T_ = int(T)
+    for i in range(1, T_ + 1):
+        w_.append(2 * i - 1 - T_)
+    w_ = 2 * np.array(w_) / (T_ * (T_ - 1))
     w_ = w_.reshape(-1, 1)
 
     return w_
@@ -97,9 +101,10 @@ def owa_cvar(T, alpha=0.05):
         An OWA weights vector of size Tx1.
     """
 
-    k = int(np.ceil(T * alpha)) - 1
-    w_ = np.zeros((T, 1))
-    w_[:k, :] = -1 / (T * alpha)
+    T_ = int(T)
+    k = int(np.ceil(T_ * alpha)) - 1
+    w_ = np.zeros((T_, 1))
+    w_[:k, :] = -1 / (T_ * alpha)
     w_[k, :] = -1 - np.sum(w_[:k, :])
 
     return w_
@@ -126,8 +131,9 @@ def owa_wcvar(T, alphas, weights):
     """
 
     w_ = 0
+    T_ = int(T)
     for i, j in zip(alphas, weights):
-        w_ += owa_cvar(T, i) * j
+        w_ += owa_cvar(T_, i) * j
 
     return w_
 
@@ -151,13 +157,14 @@ def owa_tg(T, alpha=0.05, a_sim=100):
     value : 1d-array
         A OWA weights vector of size Tx1.
     """
-
-    alphas = np.linspace(alpha, 0.0001, a_sim)[::-1]
+    T_ = int(T)
+    a_sim_ = int(a_sim)
+    alphas = np.linspace(alpha, 0.0001, a_sim_)[::-1]
     w_ = [(alphas[1] - 0) * alphas[0] / alphas[-1] ** 2]
     for i in range(1, len(alphas) - 1):
         w_.append((alphas[i + 1] - alphas[i - 1]) * alphas[i] / alphas[-1] ** 2)
     w_.append((alphas[-1] - alphas[-2]) / alphas[-1])
-    w_ = owa_wcvar(T, alphas, w_)
+    w_ = owa_wcvar(T_, alphas, w_)
 
     return w_
 
@@ -178,7 +185,8 @@ def owa_wr(T):
         A OWA weights vector of size Tx1.
     """
 
-    w_ = np.zeros((T, 1))
+    T_ = int(T)
+    w_ = np.zeros((T_, 1))
     w_[0, :] = -1
 
     return w_
@@ -200,7 +208,8 @@ def owa_rg(T):
         A OWA weights vector of size Tx1.
     """
 
-    w_ = np.zeros((T, 1))
+    T_ = int(T)
+    w_ = np.zeros((T_, 1))
     w_[0, :] = -1
     w_[-1, :] = 1
 
@@ -228,10 +237,11 @@ def owa_cvrg(T, alpha=0.05, beta=None):
         A OWA weights vector of size Tx1.
     """
 
+    T_ = int(T)
     if beta is None:
         beta = alpha
 
-    w_ = owa_cvar(T, alpha) - owa_cvar(T, beta)[::-1]
+    w_ = owa_cvar(T_, alpha) - owa_cvar(T_, beta)[::-1]
 
     return w_
 
@@ -262,11 +272,12 @@ def owa_wcvrg(T, alphas, weights_a, betas=None, weights_b=None):
         A OWA weights vector of size Tx1.
     """
 
+    T_ = int(T)
     if betas is None or weights_b is None:
         betas = alphas
         weights_b = weights_a
 
-    w_ = owa_wcvar(T, alphas, weights_a) - owa_wcvar(T, betas, weights_b)[::-1]
+    w_ = owa_wcvar(T_, alphas, weights_a) - owa_wcvar(T_, betas, weights_b)[::-1]
 
     return w_
 
@@ -302,7 +313,11 @@ def owa_tgrg(T, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     if b_sim is None:
         b_sim = a_sim
 
-    w_ = owa_tg(T, alpha, a_sim) - owa_tg(T, beta, b_sim)[::-1]
+    T_ = int(T)
+    a_sim_ = int(a_sim)
+    b_sim_ = int(b_sim)
+
+    w_ = owa_tg(T_, alpha, a_sim_) - owa_tg(T_, beta, b_sim_)[::-1]
 
     return w_
 
@@ -353,9 +368,10 @@ def owa_l_moment_crm(T, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"
             "The constraint on maximum weight of L-moments must be between 0 and 1"
         )
 
-    ws = np.empty((T, 0))
+    T_ = int(T)
+    ws = np.empty((T_, 0))
     for i in range(2, k + 1):
-        w_i = (-1) ** i * owa_l_moment(T, i)
+        w_i = (-1) ** i * owa_l_moment(T_, i)
         ws = np.concatenate([ws, w_i], axis=1)
 
     if method == "CRRA":
@@ -375,7 +391,7 @@ def owa_l_moment_crm(T, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"
             w[i, 0] = np.max(a[: i + 1, 0])
 
     else:
-        theta = cp.Variable((T, 1))
+        theta = cp.Variable((T_, 1))
         n = ws.shape[1]
         phi = cp.Variable((n, 1))
 
@@ -389,7 +405,7 @@ def owa_l_moment_crm(T, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"
         ]
 
         if method == "ME":
-            theta_ = cp.Variable((T, 1))
+            theta_ = cp.Variable((T_, 1))
             obj = cp.sum(cp.entr(theta_)) * 1000
             constraints += [
                 theta_ >= theta,

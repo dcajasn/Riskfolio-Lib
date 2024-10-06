@@ -26,11 +26,12 @@ def gerber_cov_stat0(X, threshold=0.5):
 
     Parameters
     ----------
-    X : ndarray
-        Returns series of shape n_sample x n_features.
+    X : DataFrame of shape (n_samples, n_assets), optional
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
 
     threshold : float
-        threshold: threshold is between 0 and 1
+        Threshold is between 0 and 1.
 
     Returns
     -------
@@ -101,11 +102,12 @@ def gerber_cov_stat1(X, threshold=0.5):
 
     Parameters
     ----------
-    X : ndarray
-        Returns series of shape n_sample x n_features.
+    X : DataFrame of shape (n_samples, n_assets), optional
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
 
     threshold : float
-        threshold: threshold is between 0 and 1
+        Threshold is between 0 and 1.
 
     Returns
     -------
@@ -179,11 +181,12 @@ def gerber_cov_stat2(X, threshold=0.5):
 
     Parameters
     ----------
-    X : ndarray
-        Returns series of shape n_sample x n_features.
+    X : : DataFrame of shape (n_samples, n_assets), optional
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
 
     threshold : float
-        threshold: threshold is between 0 and 1
+        Threshold is between 0 and 1.
 
     Returns
     -------

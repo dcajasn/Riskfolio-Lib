@@ -31,8 +31,9 @@ class HCPortfolio(object):
 
     Parameters
     ----------
-    returns : DataFrame, optional
-        A dataframe that containts the returns of the assets.
+    returns : DataFrame of shape (n_samples, n_assets), optional
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
         The default is None.
     alpha : float, optional
         Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR and Tail Gini of losses.
@@ -57,19 +58,6 @@ class HCPortfolio(object):
         Upper bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
     w_min : pd.Series or float, optional
         Lower bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
-    alpha_tail : float, optional
-        Significance level for lower tail dependence index. The default is 0.05.
-    gs_threshold : float, optional
-        Gerber statistic threshold. The default is 0.5.
-    bins_info: int or str
-        Number of bins used to calculate variation of information. The default
-        value is 'KN'. Possible values are:
-
-        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
-        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
-        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
-        - 'HGR': Hacine-Gharbi and Ravier' choice method.
-        - int: integer value choice by user.
     """
 
     def __init__(
@@ -84,9 +72,6 @@ class HCPortfolio(object):
         solvers=["CLARABEL", "SCS", "ECOS"],
         w_max=None,
         w_min=None,
-        alpha_tail=0.05,
-        gs_threshold=0.5,
-        bins_info="KN",
     ):
         self._returns = returns
         self.alpha = alpha
@@ -96,9 +81,6 @@ class HCPortfolio(object):
         self._kappa = kappa
         self.solver_rl = solver_rl
         self.solvers = solvers
-        self.alpha_tail = alpha_tail
-        self.gs_threshold = gs_threshold
-        self.bins_info = bins_info
         self.asset_order = None
         self.clustering = None
         self.cov = None
@@ -165,9 +147,9 @@ class HCPortfolio(object):
                 w = pd.DataFrame(w, columns=["weights"], index=assets)
                 if rm == "vol":
                     risk = rk.Sharpe_Risk(
-                        w,
-                        cov=cov,
                         returns=returns,
+                        w=w,
+                        cov=cov,
                         rm="MV",
                         rf=rf,
                         alpha=self.alpha,
@@ -179,9 +161,9 @@ class HCPortfolio(object):
                     )
                 else:
                     risk = rk.Sharpe_Risk(
-                        w,
-                        cov=cov,
                         returns=returns,
+                        w=w,
+                        cov=cov,
                         rm=rm,
                         rf=rf,
                         alpha=self.alpha,
@@ -269,8 +251,8 @@ class HCPortfolio(object):
     def _hierarchical_clustering(
         self,
         model="HRP",
-        linkage="ward",
         codependence="pearson",
+        linkage="ward",
         opt_k_method="twodiff",
         k=None,
         max_k=10,
@@ -373,9 +355,9 @@ class HCPortfolio(object):
 
                 if rm == "vol":
                     left_risk = rk.Sharpe_Risk(
-                        left_weights,
-                        cov=left_cov,
                         returns=left_returns,
+                        w=left_weights,
+                        cov=left_cov,
                         rm="MV",
                         rf=rf,
                         alpha=self.alpha,
@@ -387,9 +369,9 @@ class HCPortfolio(object):
                     )
                 else:
                     left_risk = rk.Sharpe_Risk(
-                        left_weights,
-                        cov=left_cov,
                         returns=left_returns,
+                        w=left_weights,
+                        cov=left_cov,
                         rm=rm,
                         rf=rf,
                         alpha=self.alpha,
@@ -409,9 +391,9 @@ class HCPortfolio(object):
 
                 if rm == "vol":
                     right_risk = rk.Sharpe_Risk(
-                        right_weights,
-                        cov=right_cov,
                         returns=right_returns,
+                        w=right_weights,
+                        cov=right_cov,
                         rm="MV",
                         rf=rf,
                         alpha=self.alpha,
@@ -423,9 +405,9 @@ class HCPortfolio(object):
                     )
                 else:
                     right_risk = rk.Sharpe_Risk(
-                        right_weights,
-                        cov=right_cov,
                         returns=right_returns,
+                        w=right_weights,
+                        cov=right_cov,
                         rm=rm,
                         rf=rf,
                         alpha=self.alpha,
@@ -440,35 +422,6 @@ class HCPortfolio(object):
 
                 # Allocate weight to clusters
                 alpha_1 = 1 - left_risk / (left_risk + right_risk)
-
-                # Weights constraints
-                if (upper_bound < weights).any().item() or (
-                    lower_bound > weights
-                ).any().item():
-                    a1 = (
-                        np.sum(upper_bound.iloc[left_cluster])
-                        / weights.iloc[left_cluster[0]]
-                    )
-                    a2 = np.max(
-                        [
-                            np.sum(lower_bound.iloc[left_cluster])
-                            / weights.iloc[left_cluster[0]],
-                            alpha_1,
-                        ]
-                    )
-                    alpha_1 = np.min([a1, a2])
-                    a1 = (
-                        np.sum(upper_bound.iloc[right_cluster])
-                        / weights.iloc[right_cluster[0]]
-                    )
-                    a2 = np.max(
-                        [
-                            np.sum(lower_bound.iloc[right_cluster])
-                            / weights.iloc[right_cluster[0]],
-                            1 - alpha_1,
-                        ]
-                    )
-                    alpha_1 = 1 - np.min([a1, a2])
 
                 weights.iloc[left_cluster] *= alpha_1  # weight 1
                 weights.iloc[right_cluster] *= 1 - alpha_1  # weight 2
@@ -529,9 +482,9 @@ class HCPortfolio(object):
 
                             if rm == "vol":
                                 left_risk_ = rk.Sharpe_Risk(
-                                    left_weights,
-                                    cov=left_cov,
                                     returns=left_returns,
+                                    w=left_weights,
+                                    cov=left_cov,
                                     rm="MV",
                                     rf=rf,
                                     alpha=self.alpha,
@@ -543,9 +496,9 @@ class HCPortfolio(object):
                                 )
                             else:
                                 left_risk_ = rk.Sharpe_Risk(
-                                    left_weights,
-                                    cov=left_cov,
                                     returns=left_returns,
+                                    w=left_weights,
+                                    cov=left_cov,
                                     rm=rm,
                                     rf=rf,
                                     alpha=self.alpha,
@@ -571,9 +524,9 @@ class HCPortfolio(object):
 
                             if rm == "vol":
                                 right_risk_ = rk.Sharpe_Risk(
-                                    right_weights,
-                                    cov=right_cov,
                                     returns=right_returns,
+                                    w=right_weights,
+                                    cov=right_cov,
                                     rm="MV",
                                     rf=rf,
                                     alpha=self.alpha,
@@ -585,9 +538,9 @@ class HCPortfolio(object):
                                 )
                             else:
                                 right_risk_ = rk.Sharpe_Risk(
-                                    right_weights,
-                                    cov=right_cov,
                                     returns=right_returns,
+                                    w=right_weights,
+                                    cov=right_cov,
                                     rm=rm,
                                     rf=rf,
                                     alpha=self.alpha,
@@ -604,35 +557,6 @@ class HCPortfolio(object):
                             right_cluster += clusters[j]
 
                     alpha_1 = 1 - left_risk / (left_risk + right_risk)
-
-                    # Weights constraints
-                    if (upper_bound < weights).any().item() or (
-                        lower_bound > weights
-                    ).any().item():
-                        a1 = (
-                            np.sum(upper_bound.iloc[left_cluster])
-                            / weights.iloc[left_cluster[0]]
-                        )
-                        a2 = np.max(
-                            [
-                                np.sum(lower_bound.iloc[left_cluster])
-                                / weights.iloc[left_cluster[0]],
-                                alpha_1,
-                            ]
-                        )
-                        alpha_1 = np.min([a1, a2])
-                        a1 = (
-                            np.sum(upper_bound.iloc[right_cluster])
-                            / weights.iloc[right_cluster[0]]
-                        )
-                        a2 = np.max(
-                            [
-                                np.sum(lower_bound.iloc[right_cluster])
-                                / weights.iloc[right_cluster[0]],
-                                1 - alpha_1,
-                            ]
-                        )
-                        alpha_1 = 1 - np.min([a1, a2])
 
                     weights.iloc[left] *= alpha_1  # weight 1
                     weights.iloc[right] *= 1 - alpha_1  # weight 2
@@ -771,7 +695,7 @@ class HCPortfolio(object):
 
         Parameters
         ----------
-        model : str, can be {'HRP', 'HERC' or 'HERC2'}
+        model : str, optional
             The hierarchical cluster portfolio model used for optimize the
             portfolio. The default is 'HRP'. Possible values are:
 
@@ -797,7 +721,7 @@ class HCPortfolio(object):
             - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
             - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
 
-        obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'ERC'}.
+        obj : str, optional
             Objective function used by the NCO model.
             The default is 'MinRisk'. Possible values are:
 
@@ -979,39 +903,51 @@ class HCPortfolio(object):
         else:
             self.kurt, self.skurt = False, False
 
-        self.alpha_tail = alpha_tail
+        self.codependence = codependence
+        self.linkage = linkage
+        self.opt_k_method = opt_k_method
+        self.k = k
+        self.max_k = max_k
         self.bins_info = bins_info
+        self.alpha_tail = alpha_tail
         self.gs_threshold = gs_threshold
+        self.leaf_order = leaf_order
 
         # Codependence matrix
-        if codependence in {"pearson", "spearman", "kendall"}:
-            self.codep = self.returns.corr(method=codependence).astype(float)
-        elif codependence == "gerber1":
+        if self.codependence in {"pearson", "spearman", "kendall"}:
+            self.codep = self.returns.corr(method=self.codependence).astype(float)
+        elif self.codependence == "gerber1":
             self.codep = gs.gerber_cov_stat1(self.returns, threshold=self.gs_threshold)
             self.codep = af.cov2corr(self.codep).astype(float)
-        elif codependence == "gerber2":
+        elif self.codependence == "gerber2":
             self.codep = gs.gerber_cov_stat2(self.returns, threshold=self.gs_threshold)
             self.codep = af.cov2corr(self.codep).astype(float)
-        elif codependence in {"abs_pearson", "abs_spearman", "abs_kendall"}:
-            self.codep = np.abs(self.returns.corr(method=codependence[4:])).astype(
+        elif self.codependence in {"abs_pearson", "abs_spearman", "abs_kendall"}:
+            self.codep = np.abs(self.returns.corr(method=self.codependence[4:])).astype(
                 float
             )
-        elif codependence in {"distance"}:
+        elif self.codependence in {"distance"}:
             self.codep = af.dcorr_matrix(self.returns).astype(float)
-        elif codependence in {"mutual_info"}:
+        elif self.codependence in {"mutual_info"}:
             self.codep = af.mutual_info_matrix(self.returns, self.bins_info).astype(
                 float
             )
-        elif codependence in {"tail"}:
+        elif self.codependence in {"tail"}:
             self.codep = af.ltdi_matrix(self.returns, alpha=self.alpha_tail).astype(
                 float
             )
-        elif codependence in {"custom_cov"}:
+        elif self.codependence in {"custom_cov"}:
             self.codep = af.cov2corr(custom_cov).astype(float)
 
         # Step-1: Tree clustering
         self.clustering, self.k = self._hierarchical_clustering(
-            model, linkage, codependence, opt_k_method, k, max_k, leaf_order=leaf_order
+            model,
+            self.codependence,
+            self.linkage,
+            self.opt_k_method,
+            self.k,
+            self.max_k,
+            self.leaf_order,
         )
         if k is not None:
             self.k = int(k)

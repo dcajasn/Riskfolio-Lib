@@ -27,6 +27,7 @@ __all__ = [
     "connection_matrix",
     "centrality_vector",
     "clusters_matrix",
+    "average_centrality",
     "connected_assets",
     "related_assets",
 ]
@@ -40,8 +41,8 @@ def assets_constraints(constraints, asset_classes):
     Parameters
     ----------
     constraints : DataFrame of shape (n_constraints, n_fields)
-        Constraints matrix, where n_constraints is the number of constraints
-        and n_fields is the number of fields of constraints matrix, the fields
+        Constraints DataFrame, where n_constraints is the number of constraints
+        and n_fields is the number of fields of constraints DataFrame, the fields
         are:
 
         - Disabled: (bool) indicates if the constraint is enable.
@@ -299,8 +300,8 @@ def factors_constraints(constraints, loadings):
     Parameters
     ----------
     constraints : DataFrame of shape (n_constraints, n_fields)
-        Constraints matrix, where n_constraints is the number of constraints
-        and n_fields is the number of fields of constraints matrix, the fields
+        Constraints DataFrame, where n_constraints is the number of constraints
+        and n_fields is the number of fields of constraints DataFrame, the fields
         are:
 
         - Disabled: (bool) indicates if the constraint is enable.
@@ -389,7 +390,7 @@ def factors_constraints(constraints, loadings):
             C1 = loadings[data[i][1]].values
             if data[i][4] != "":
                 C2 = loadings[data[i][4]].values
-                C1 = C1 - C2
+                C1 = C2 - C1
             C.append(C1 * d)
             D.append([data[i][3] * d])
 
@@ -406,8 +407,8 @@ def assets_views(views, asset_classes):
     Parameters
     ----------
     views : DataFrame of shape (n_views, n_fields)
-        Constraints matrix, where n_views is the number of views
-        and n_fields is the number of fields of views matrix, the fields
+        Constraints DataFrame, where n_views is the number of views
+        and n_fields is the number of fields of views DataFrame, the fields
         are:
 
         - Disabled: (bool) indicates if the constraint is enable.
@@ -584,8 +585,8 @@ def factors_views(views, loadings, const=True):
     Parameters
     ----------
     constraints : DataFrame of shape (n_constraints, n_fields)
-        Constraints matrix, where n_constraints is the number of constraints
-        and n_fields is the number of fields of constraints matrix, the fields
+        Constraints DataFrame, where n_constraints is the number of constraints
+        and n_fields is the number of fields of constraints DataFrame, the fields
         are:
 
         - Disabled: (bool) indicates if the constraint is enable.
@@ -707,8 +708,9 @@ def assets_clusters(
 
     Parameters
     ----------
-    returns : DataFrame
-        Assets returns.
+    returns : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
     custom_cov : DataFrame or None, optional
         Custom covariance matrix, used when codependence parameter has value
         'custom_cov'. The default is None.
@@ -865,8 +867,8 @@ def hrp_constraints(constraints, asset_classes):
     Parameters
     ----------
     constraints : DataFrame of shape (n_constraints, n_fields)
-        Constraints matrix, where n_constraints is the number of constraints
-        and n_fields is the number of fields of constraints matrix, the fields
+        Constraints DataFrame, where n_constraints is the number of constraints
+        and n_fields is the number of fields of constraints DataFrame, the fields
         are:
 
         - Disabled: (bool) indicates if the constraint is enable.
@@ -876,8 +878,8 @@ def hrp_constraints(constraints, asset_classes):
         - Weight: (scalar) is the maximum or minimum weight of the absolute constraint.
 
     asset_classes : DataFrame of shape (n_assets, n_cols)
-        Asset's classes matrix, where n_assets is the number of assets and
-        n_cols is the number of columns of the matrix where the first column
+        Asset's classes DataFrame, where n_assets is the number of assets and
+        n_cols is the number of columns of the DataFrame where the first column
         is the asset list and the next columns are the different asset's
         classes sets.
 
@@ -1012,8 +1014,8 @@ def risk_constraint(asset_classes, kind="vanilla", classes_col=None):
     Parameters
     ----------
     asset_classes : DataFrame of shape (n_assets, n_cols)
-        Asset's classes matrix, where n_assets is the number of assets and
-        n_cols is the number of columns of the matrix where the first column
+        Asset's classes DataFrame, where n_assets is the number of assets and
+        n_cols is the number of columns of the DataFrame where the first column
         is the asset list and the next columns are the different asset's
         classes sets. It is only used when kind value is 'classes'. The default
         value is None.
@@ -1119,8 +1121,9 @@ def connection_matrix(
 
     Parameters
     ----------
-    returns : DataFrame
-        Assets returns.
+    returns : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
     custom_cov : DataFrame or None, optional
         Custom covariance matrix, used when codependence parameter has value
         'custom_cov'. The default is None.
@@ -1228,7 +1231,7 @@ def connection_matrix(
     A = np.where(A != 0, 1, 0)
 
     A_p = np.zeros_like(A)
-    for i in range(walk_size + 1):
+    for i in range(int(walk_size) + 1):
         A_p += np.linalg.matrix_power(A, i)
 
     n, n = A.shape
@@ -1253,8 +1256,9 @@ def centrality_vector(
 
     Parameters
     ----------
-    returns : DataFrame
-        Assets returns.
+    returns : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
     measure : str, optional
         Centrality measure. The default is 'Degree'. Possible values are:
 
@@ -1388,8 +1392,9 @@ def clusters_matrix(
 
     Parameters
     ----------
-    returns : DataFrame
-        Assets returns.
+    returns : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
     custom_cov : DataFrame or None, optional
         Custom covariance matrix, used when codependence parameter has value
         'custom_cov'. The default is None.
@@ -1492,9 +1497,9 @@ def clusters_matrix(
         opt_k_method=opt_k_method,
         k=k,
         max_k=max_k,
-        bins_info="KN",
+        bins_info=bins_info,
         alpha_tail=alpha_tail,
-        gs_threshold=0.5,
+        gs_threshold=gs_threshold,
         leaf_order=leaf_order,
     )
 
@@ -1512,6 +1517,132 @@ def clusters_matrix(
     return A_c
 
 
+def average_centrality(
+    returns,
+    w,
+    measure="Degree",
+    custom_cov=None,
+    codependence="pearson",
+    graph="MST",
+    bins_info="KN",
+    alpha_tail=0.05,
+    gs_threshold=0.5,
+):
+    r"""
+    Calculates the average centrality of assets of the portfolio based on :cite:`e-Cajas10` formula.
+
+    Parameters
+    ----------
+    returns : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
+    w : DataFrame or Series of shape (n_assets, 1)
+        Portfolio weights, where n_assets is the number of assets.
+    measure : str, optional
+        Centrality measure. The default is 'Degree'. Possible values are:
+
+        - 'Degre': Node's degree centrality. Number of edges connected to a node.
+        - 'Eigenvector': Eigenvector centrality. See more in `eigenvector_centrality_numpy <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.eigenvector_centrality_numpy.html#eigenvector-centrality-numpy>`_.
+        - 'Katz': Katz centrality. See more in `katz_centrality_numpy <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.katz_centrality_numpy.html#katz-centrality-numpy>`_.
+        - 'Closeness': Closeness centrality. See more in `closeness_centrality <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.closeness_centrality.html#closeness-centrality>`_.
+        - 'Betweeness': Betweeness centrality. See more in `betweenness_centrality <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.betweenness_centrality.html#betweenness-centrality>`_.
+        - 'Communicability': Communicability betweeness centrality. See more in `communicability_betweenness_centrality <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.communicability_betweenness_centrality.html#communicability-betweenness-centrality>`_.
+        - 'Subgraph': Subgraph centrality. See more in `subgraph_centrality <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.subgraph_centrality.html#subgraph-centrality>`_.
+        - 'Laplacian': Laplacian centrality. See more in `laplacian_centrality <https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.centrality.laplacian_centrality.html#laplacian-centrality>`_.
+
+    custom_cov : DataFrame or None, optional
+        Custom covariance matrix, used when codependence parameter has value
+        'custom_cov'. The default is None.
+    codependence : str, optional
+        The codependence or similarity matrix used to build the distance
+        metric and clusters. The default is 'pearson'. Possible values are:
+
+        - 'pearson': pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+        - 'spearman': spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{spearman}_{i,j})}`.
+        - 'kendall': kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{kendall}_{i,j})}`.
+        - 'gerber1': Gerber statistic 1 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber1}_{i,j})}`.
+        - 'gerber2': Gerber statistic 2 correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{gerber2}_{i,j})}`.
+        - 'abs_pearson': absolute value pearson correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_spearman': absolute value spearman correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho_{i,j}|)}`.
+        - 'abs_kendall': absolute value kendall correlation matrix. Distance formula: :math:`D_{i,j} = \sqrt{(1-|\rho^{kendall}_{i,j}|)}`.
+        - 'distance': distance correlation matrix. Distance formula :math:`D_{i,j} = \sqrt{(1-\rho^{distance}_{i,j})}`.
+        - 'mutual_info': mutual information matrix. Distance used is variation information matrix.
+        - 'tail': lower tail dependence index matrix. Dissimilarity formula :math:`D_{i,j} = -\log{\lambda_{i,j}}`.
+        - 'custom_cov': use custom correlation matrix based on the custom_cov parameter. Distance formula: :math:`D_{i,j} = \sqrt{0.5(1-\rho^{pearson}_{i,j})}`.
+
+    graph : string, optional
+        Graph used to build the adjacency matrix. The default is 'MST'.
+        Possible values are:
+
+        - 'MST': Minimum Spanning Tree.
+        - 'TMFG': Plannar Maximally Filtered Graph.
+
+    bins_info: int or str
+        Number of bins used to calculate variation of information. The default
+        value is 'KN'. Possible values are:
+
+        - 'KN': Knuth's choice method. See more in `knuth_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.knuth_bin_width.html>`_.
+        - 'FD': Freedman–Diaconis' choice method. See more in `freedman_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.freedman_bin_width.html>`_.
+        - 'SC': Scotts' choice method. See more in `scott_bin_width <https://docs.astropy.org/en/stable/api/astropy.stats.scott_bin_width.html>`_.
+        - 'HGR': Hacine-Gharbi and Ravier' choice method.
+        - int: integer value choice by user.
+
+    alpha_tail : float, optional
+        Significance level for lower tail dependence index. The default is 0.05.
+    gs_threshold : float, optional
+        Gerber statistic threshold. The default is 0.5.
+
+    Returns
+    -------
+    AC : float
+        Average centrality of assets.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+
+    ::
+
+        ac = rp.average_centrality(returns,
+                                   w,
+                                   measure="Degree"
+                                   codependence="pearson",
+                                   graph="MST")
+
+    """
+
+    w_ = np.array(w, ndmin=2)
+    if w_.shape[0] == 1 and w_.shape[1] > 1:
+        w_ = w_.T
+    if w_.shape[0] > 1 and w_.shape[1] > 1:
+        raise ValueError("w must have n_assets x 1 size")
+    if w.index.tolist() != returns.columns.tolist():
+        raise ValueError("w and returns must have the same columns.")
+    if codependence == "custom_cov" and custom_cov is None:
+        raise ValueError(
+            "custom_cov value of codependence parameter requires a custom_cov parameter."
+        )
+
+    CM = centrality_vector(
+        returns=returns,
+        measure=measure,
+        custom_cov=custom_cov,
+        codependence=codependence,
+        graph=graph,
+        bins_info=bins_info,
+        alpha_tail=alpha_tail,
+        gs_threshold=gs_threshold,
+    )
+
+    w_ = np.array(w)
+    ac = CM @ w_
+
+    return ac.item()
+
+
 def connected_assets(
     returns,
     w,
@@ -1524,18 +1655,19 @@ def connected_assets(
     gs_threshold=0.5,
 ):
     r"""
-    Calculates the percentage invested in connected assets based on :cite:`e-Cajas10` formula.
+    Calculates the percentage invested in connected assets of the portfolio based on :cite:`e-Cajas10` formula.
 
     Parameters
     ----------
-    returns : DataFrame
-        Assets returns.
-    w : DataFrame of shape (n_assets, 1)
-        Portfolio weights.
+    returns : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
+    w : DataFrame or Series of shape (n_assets, 1)
+        Portfolio weights, where n_assets is the number of assets.
     custom_cov : DataFrame or None, optional
         Custom covariance matrix, used when codependence parameter has value
         'custom_cov'. The default is None.
-    codependence : str, can be {'pearson', 'spearman', 'abs_pearson', 'abs_spearman', 'distance', 'mutual_info', 'tail' or 'custom_cov'}
+    codependence : str, optional
         The codependence or similarity matrix used to build the distance
         metric and clusters. The default is 'pearson'. Possible values are:
 
@@ -1598,6 +1730,18 @@ def connected_assets(
 
     """
 
+    w_ = np.array(w, ndmin=2)
+    if w_.shape[0] == 1 and w_.shape[1] > 1:
+        w_ = w_.T
+    if w_.shape[0] > 1 and w_.shape[1] > 1:
+        raise ValueError("w must have n_assets x 1 size")
+    if w.index.tolist() != returns.columns.tolist():
+        raise ValueError("w and returns must have the same columns.")
+    if codependence == "custom_cov" and custom_cov is None:
+        raise ValueError(
+            "custom_cov value of codependence parameter requires a custom_cov parameter."
+        )
+
     A_p = connection_matrix(
         returns=returns,
         custom_cov=custom_cov,
@@ -1610,7 +1754,6 @@ def connected_assets(
 
     n, n = A_p.shape
     ones = np.ones((n, 1))
-    w_ = np.array(w)
     wwt = np.abs(w_ @ w_.T)
     ca = ones.T @ (A_p * wwt) @ ones
     ca /= ones.T @ wwt @ ones
@@ -1633,14 +1776,15 @@ def related_assets(
     leaf_order=True,
 ):
     r"""
-    Calculates the percentage invested in related assets based on :cite:`e-Cajas11` formula.
+    Calculates the percentage invested in related assets based of the portfolio on :cite:`e-Cajas11` formula.
 
     Parameters
     ----------
-    returns : DataFrame
-        Assets returns.
-    w : DataFrame of shape (n_assets, 1)
-        Portfolio weights.
+    returns : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
+    w : DataFrame or Series of shape (n_assets, 1)
+        Portfolio weights, where n_assets is the number of assets.
     custom_cov : DataFrame or None, optional
         Custom covariance matrix, used when codependence parameter has value
         'custom_cov'. The default is None.
@@ -1729,6 +1873,18 @@ def related_assets(
 
     """
 
+    w_ = np.array(w, ndmin=2)
+    if w_.shape[0] == 1 and w_.shape[1] > 1:
+        w_ = w_.T
+    if w_.shape[0] > 1 and w_.shape[1] > 1:
+        raise ValueError("w must have n_assets x 1 size")
+    if w.index.tolist() != returns.columns.tolist():
+        raise ValueError("w and returns must have the same columns.")
+    if codependence == "custom_cov" and custom_cov is None:
+        raise ValueError(
+            "custom_cov value of codependence parameter requires a custom_cov parameter."
+        )
+
     L_a = clusters_matrix(
         returns,
         custom_cov=custom_cov,
@@ -1744,7 +1900,6 @@ def related_assets(
 
     n, n = L_a.shape
     ones = np.ones((n, 1))
-    w_ = np.array(w)
     wwt = np.abs(w_ @ w_.T)
     ra = ones.T @ (L_a * wwt) @ ones
     ra /= ones.T @ wwt @ ones
