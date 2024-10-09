@@ -14,7 +14,7 @@ import matplotlib.dates as mdates
 import matplotlib.lines as mlines
 import matplotlib.ticker as mticker
 from matplotlib import cm, colors
-from matplotlib.gridspec import GridSpec
+from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 import scipy.stats as st
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
@@ -452,7 +452,12 @@ def plot_frontier(
         if isinstance(ax, plt.Axes):
             ax.axis("off")
             fig = ax.get_figure()
-            gs = GridSpec(nrows=1, ncols=2, figure=fig, width_ratios=width_ratios)
+            if hasattr(ax, 'get_subplotspec'):
+                subplot_spec = ax.get_subplotspec()
+                gs0 = subplot_spec.get_gridspec()
+                gs = GridSpecFromSubplotSpec(nrows=1, ncols=2, width_ratios=width_ratios, subplot_spec=gs0[0])
+            else:
+                gs = GridSpec(nrows=1, ncols=2, figure=fig, width_ratios=width_ratios)
             axes = []
             axes.append(fig.add_subplot(gs[0]))
             axes.append(fig.add_subplot(gs[1]))
@@ -2274,7 +2279,12 @@ def plot_drawdown(
         if isinstance(ax, plt.Axes):
             ax.axis("off")
             fig = ax.get_figure()
-            gs = GridSpec(nrows=2, ncols=1, figure=fig, height_ratios=height_ratios)
+            if hasattr(ax, 'get_subplotspec'):
+                subplot_spec = ax.get_subplotspec()
+                gs0 = subplot_spec.get_gridspec()
+                gs = GridSpecFromSubplotSpec(nrows=2, ncols=1, height_ratios=height_ratios, subplot_spec=gs0[0])
+            else:
+                gs = GridSpec(nrows=2, ncols=1, figure=fig, height_ratios=height_ratios)
             axes = []
             axes.append(fig.add_subplot(gs[0]))
             axes.append(fig.add_subplot(gs[1]))
@@ -2838,13 +2848,22 @@ def plot_clusters(
         fig = ax.get_figure()
         if dendrogram == True:
             if isinstance(ax, plt.Axes):
-                gs = GridSpec(
-                    nrows=2,
-                    ncols=3,
-                    figure=fig,
-                    height_ratios=height_ratios_1,
-                    width_ratios=width_ratios_1,
-                )
+                if hasattr(ax, 'get_subplotspec'):
+                    subplot_spec = ax.get_subplotspec()
+                    gs0 = subplot_spec.get_gridspec()
+                    gs = GridSpecFromSubplotSpec(nrows=2,
+                                                 ncols=3,
+                                                 height_ratios=height_ratios_1,
+                                                 width_ratios=width_ratios_1,
+                                                 subplot_spec=gs0[0]
+                                                 )
+                else:
+                    gs = GridSpec(nrows=2,
+                                  ncols=3,
+                                  figure=fig,
+                                  height_ratios=height_ratios_1,
+                                  width_ratios=width_ratios_1,
+                                  )
                 axes = []
                 for i in range(2):
                     for j in range(3):
@@ -2853,7 +2872,20 @@ def plot_clusters(
                 raise TypeError("ax must be a matplotlib axes object.")
         else:
             if isinstance(ax, plt.Axes):
-                gs = GridSpec(nrows=1, ncols=2, figure=fig, width_ratios=width_ratios_2)
+                if hasattr(ax, 'get_subplotspec'):
+                    subplot_spec = ax.get_subplotspec()
+                    gs0 = subplot_spec.get_gridspec()
+                    gs = GridSpecFromSubplotSpec(nrows=1,
+                                                 ncols=2,
+                                                 width_ratios=width_ratios_2,
+                                                 subplot_spec=gs0[0]
+                                                 )
+                else:
+                    gs = GridSpec(nrows=1,
+                                  ncols=2,
+                                  figure=fig,
+                                  width_ratios=width_ratios_2,
+                                  )
                 axes = []
                 for i in range(1):
                     for j in range(2):

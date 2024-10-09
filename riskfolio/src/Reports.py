@@ -9,6 +9,7 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 from xlsxwriter.utility import xl_range_abs, xl_range, xl_rowcol_to_cell, xl_col_to_name
 import datetime
 import riskfolio.src.PlotFunctions as plf
@@ -21,7 +22,7 @@ __all__ = [
 ]
 
 
-__LICENSE__ = """Copyright (c) 2020-2023, Dany Cajas
+__LICENSE__ = """Copyright (c) 2020-2024, Dany Cajas
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -194,13 +195,26 @@ def jupyter_report(
 
     cov = returns.cov()
 
-    fig, ax = plt.subplots(
-        nrows=6,
-        figsize=(width, height * 6),
-        gridspec_kw={"height_ratios": [2, 1, 1.5, 1, 1, 1]},
-    )
+    fig, ax = plt.subplots(figsize=(width, height * 6))
+    ax.axis('off')
 
-    ax[0] = plf.plot_table(
+    gs0 = GridSpec(5, 1, figure=fig, height_ratios=[2, 1.5, 1, 2, 1])
+    gs00 = gs0[0].subgridspec(1, 1)
+    ax0 = fig.add_subplot(gs00[0, 0])
+
+    gs01 = gs0[1].subgridspec(1, 1)
+    ax1 = fig.add_subplot(gs01[0, 0])
+
+    gs02 = gs0[2].subgridspec(1, 1)
+    ax2 = fig.add_subplot(gs02[0, 0])
+
+    gs03 = gs0[3].subgridspec(1, 1)
+    ax3 = fig.add_subplot(gs03[0, 0])
+
+    gs04 = gs0[4].subgridspec(1, 1)
+    ax4 = fig.add_subplot(gs04[0, 0])
+
+    ax0 = plf.plot_table(
         returns,
         w,
         MAR=rf,
@@ -211,19 +225,34 @@ def jupyter_report(
         t_factor=t_factor,
         ini_days=ini_days,
         days_per_year=days_per_year,
-        ax=ax[0],
+        ax=ax0,
     )
 
-    ax[2] = plf.plot_pie(
+    ax1 = plf.plot_pie(
         w=w,
         title="Portfolio Composition",
         others=others,
         nrow=nrow,
         cmap=cmap,
-        ax=ax[2],
+        ax=ax1,
     )
 
-    ax[3] = plf.plot_risk_con(
+    ax2 = plf.plot_hist(
+        returns=returns,
+        w=w,
+        alpha=alpha,
+        a_sim=a_sim,
+        kappa=kappa,
+        solver=solver,
+        bins=bins,
+        ax=ax2,
+    )
+
+    ax3 = plf.plot_drawdown(
+        returns=returns, w=w, alpha=alpha, kappa=kappa, solver=solver, ax=ax3
+    )
+
+    ax4 = plf.plot_risk_con(
         w=w,
         cov=cov,
         returns=returns,
@@ -240,22 +269,7 @@ def jupyter_report(
         erc_line=erc_line,
         color=color,
         erc_linecolor=erc_linecolor,
-        ax=ax[3],
-    )
-
-    ax[4] = plf.plot_hist(
-        returns=returns,
-        w=w,
-        alpha=alpha,
-        a_sim=a_sim,
-        kappa=kappa,
-        solver=solver,
-        bins=bins,
-        ax=ax[4],
-    )
-
-    ax[[1, 5]] = plf.plot_drawdown(
-        returns=returns, w=w, alpha=alpha, kappa=kappa, solver=solver, ax=ax[[1, 5]]
+        ax=ax4,
     )
 
     year = str(datetime.datetime.now().year)
@@ -264,7 +278,7 @@ def jupyter_report(
     subtitle = "Copyright (c) 2020-" + year + ", Dany Cajas. All rights reserved."
 
     fig.suptitle(title, fontsize="xx-large", y=1.011, fontweight="bold")
-    ax[0].set_title(subtitle, fontsize="large", ha="center", pad=10)
+    ax0.set_title(subtitle, fontsize="large", ha="center", pad=10)
 
     return ax
 
@@ -349,6 +363,7 @@ def excel_report(
     n2 = returns.shape[0]
 
     portfolios = w.columns.tolist()
+    returns.index = returns.index.tz_localize(None)
     dates = returns.index.tolist()
     year = str(datetime.datetime.now().year)
     days = (returns.index[-1] - returns.index[0]).days + ini_days
