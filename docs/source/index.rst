@@ -322,6 +322,7 @@ Contents
     :maxdepth: 1
 
     Install <install>
+    Riskfolio-XL <excel>
     Portfolio Models <portfolio>
     Hierarchical Clustering Models <hcportfolio>
     Parameters Estimation <parameters>
