@@ -124,7 +124,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 
     @misc{riskfolioxl,
           author = {Dany Cajas},
-          title = {Riskfolio-LXLib (0.1.0)},
+          title = {Riskfolio-LXLib (0.1.1)},
           year  = {2024},
           url   = {https://riskfolio-lib.readthedocs.io/en/latest/excel.html},
           }
