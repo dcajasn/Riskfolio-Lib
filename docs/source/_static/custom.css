@@ -1,0 +1,12 @@
+header.md-header{
+    background-color: orange;
+    color: #FFF; 
+}
+
+.md-text-color {
+    color: #666666; /* Custom primary font color */
+}
+
+.md-footer{
+    background: #666666;
+}

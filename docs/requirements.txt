@@ -22,3 +22,5 @@ XlsxWriter
 networkx
 astropy
 pybind11
+sphinx-immaterial
+fonttools>=4.43.0

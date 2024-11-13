@@ -51,145 +51,145 @@ investment portfolios based on mathematically complex models with low effort. It
 
 Some of key functionalities that Riskfolio-Lib offers:
 
-- Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 4 objective functions:
+* Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 4 objective functions:
 
-    - Minimum Risk.
-    - Maximum Return.
-    - Maximum Utility Function.
-    - Maximum Risk Adjusted Return Ratio.
+    * Minimum Risk.
+    * Maximum Return.
+    * Maximum Utility Function.
+    * Maximum Risk Adjusted Return Ratio.
 
-- Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 22 convex risk measures:
-
-    **Dispersion Risk Measures:**
-
-    - Standard Deviation.
-    - Square Root Kurtosis.
-    - Mean Absolute Deviation (MAD).
-    - Gini Mean Difference (GMD).
-    - Conditional Value at Risk Range.
-    - Tail Gini Range.
-    - Range.
-
-    **Downside Risk Measures:**
-
-    - Semi Standard Deviation.
-    - Square Root Semi Kurtosis.
-    - First Lower Partial Moment (Omega Ratio).
-    - Second Lower Partial Moment (Sortino Ratio).
-    - Conditional Value at Risk (CVaR).
-    - Tail Gini.
-    - Entropic Value at Risk (EVaR).
-    - Relativistic Value at Risk (RLVaR).
-    - Worst Realization (Minimax).
-
-    **Drawdown Risk Measures:**
-
-    - Average Drawdown for uncompounded cumulative returns.
-    - Ulcer Index for uncompounded cumulative returns.
-    - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
-    - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
-    - Relativistic Drawdown at Risk (RLDaR) for uncompounded cumulative returns.
-    - Maximum Drawdown (Calmar Ratio) for uncompounded cumulative returns.
-
-- Risk Parity Portfolio Optimization with 18 convex risk measures:
+* Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 22 convex risk measures:
 
     **Dispersion Risk Measures:**
 
-    - Standard Deviation.
-    - Square Root Kurtosis.
-    - Mean Absolute Deviation (MAD).
-    - Gini Mean Difference (GMD).
-    - Conditional Value at Risk Range.
-    - Tail Gini Range.
+    * Standard Deviation.
+    * Square Root Kurtosis.
+    * Mean Absolute Deviation (MAD).
+    * Gini Mean Difference (GMD).
+    * Conditional Value at Risk Range.
+    * Tail Gini Range.
+    * Range.
 
     **Downside Risk Measures:**
 
-    - Semi Standard Deviation.
-    - Square Root Semi Kurtosis.
-    - First Lower Partial Moment (Omega Ratio)
-    - Second Lower Partial Moment (Sortino Ratio)
-    - Conditional Value at Risk (CVaR).
-    - Tail Gini.
-    - Entropic Value at Risk (EVaR).
-    - Relativistic Value at Risk (RLVaR).
+    * Semi Standard Deviation.
+    * Square Root Semi Kurtosis.
+    * First Lower Partial Moment (Omega Ratio).
+    * Second Lower Partial Moment (Sortino Ratio).
+    * Conditional Value at Risk (CVaR).
+    * Tail Gini.
+    * Entropic Value at Risk (EVaR).
+    * Relativistic Value at Risk (RLVaR).
+    * Worst Realization (Minimax).
 
     **Drawdown Risk Measures:**
 
-    - Ulcer Index for uncompounded cumulative returns.
-    - Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
-    - Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
-    - Relativistic Drawdown at Risk (RLDaR) for uncompounded cumulative returns.
+    * Average Drawdown for uncompounded cumulative returns.
+    * Ulcer Index for uncompounded cumulative returns.
+    * Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
+    * Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
+    * Relativistic Drawdown at Risk (RLDaR) for uncompounded cumulative returns.
+    * Maximum Drawdown (Calmar Ratio) for uncompounded cumulative returns.
 
-- Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 32 risk measures using naive risk parity:
+* Risk Parity Portfolio Optimization with 18 convex risk measures:
 
     **Dispersion Risk Measures:**
 
-    - Standard Deviation.
-    - Variance.
-    - Square Root Kurtosis.
-    - Mean Absolute Deviation (MAD).
-    - Gini Mean Difference (GMD).
-    - Conditional Value at Risk Range.
-    - Tail Gini Range.
-    - Range.
+    * Standard Deviation.
+    * Square Root Kurtosis.
+    * Mean Absolute Deviation (MAD).
+    * Gini Mean Difference (GMD).
+    * Conditional Value at Risk Range.
+    * Tail Gini Range.
 
     **Downside Risk Measures:**
 
-    - Semi Standard Deviation.
-    - Square Root Semi Kurtosis.
-    - First Lower Partial Moment (Omega Ratio).
-    - Second Lower Partial Moment (Sortino Ratio).
-    - Value at Risk (VaR).
-    - Conditional Value at Risk (CVaR).
-    - Entropic Value at Risk (EVaR).
-    - Relativistic Value at Risk (RLVaR).
-    - Tail Gini.
-    - Worst Case Realization (Minimax).
+    * Semi Standard Deviation.
+    * Square Root Semi Kurtosis.
+    * First Lower Partial Moment (Omega Ratio)
+    * Second Lower Partial Moment (Sortino Ratio)
+    * Conditional Value at Risk (CVaR).
+    * Tail Gini.
+    * Entropic Value at Risk (EVaR).
+    * Relativistic Value at Risk (RLVaR).
 
     **Drawdown Risk Measures:**
 
-    - Average Drawdown for compounded and uncompounded cumulative returns.
-    - Ulcer Index for compounded and uncompounded cumulative returns.
-    - Drawdown at Risk (DaR) for compounded and uncompounded cumulative returns.
-    - Conditional Drawdown at Risk (CDaR) for compounded and uncompounded cumulative returns.
-    - Entropic Drawdown at Risk (EDaR) for compounded and uncompounded cumulative returns.
-    - Relativistic Drawdown at Risk (RLDaR) for compounded and uncompounded cumulative returns.
-    - Maximum Drawdown (Calmar Ratio) for compounded and uncompounded cumulative returns.
+    * Ulcer Index for uncompounded cumulative returns.
+    * Conditional Drawdown at Risk (CDaR) for uncompounded cumulative returns.
+    * Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
+    * Relativistic Drawdown at Risk (RLDaR) for uncompounded cumulative returns.
 
-- Nested Clustered Optimization (NCO) with four objective functions and the available risk measures to each objective:
+* Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 32 risk measures using naive risk parity:
 
-    - Minimum Risk.
-    - Maximum Return.
-    - Maximum Utility Function.
-    - Equal Risk Contribution.
+    **Dispersion Risk Measures:**
 
-- Worst Case Mean Variance Portfolio Optimization.
-- Relaxed Risk Parity Portfolio Optimization.
-- Ordered Weighted Averaging (OWA) Portfolio Optimization.
-- Portfolio optimization with Black Litterman model.
-- Portfolio optimization with Risk Factors model.
-- Portfolio optimization with Black Litterman Bayesian model.
-- Portfolio optimization with Augmented Black Litterman model.
-- Portfolio optimization with constraints on tracking error and turnover.
-- Portfolio optimization with short positions and leveraged portfolios.
-- Portfolio optimization with constraints on number of assets and number of effective assets.
-- Portfolio optimization with constraints based on graph information.
-- Tools to build efficient frontier for 22 convex risk measures.
-- Tools to build linear constraints on assets, asset classes and risk factors.
-- Tools to build views on assets and asset classes.
-- Tools to build views on risk factors.
-- Tools to build risk contribution constraints per asset classes.
-- Tools to build risk contribution constraints per risk factor using explicit risk factors and principal components.
-- Tools to build bounds constraints for Hierarchical Clustering Portfolios.
-- Tools to calculate risk measures.
-- Tools to calculate risk contributions per asset.
-- Tools to calculate risk contributions per risk factor.
-- Tools to calculate uncertainty sets for mean vector and covariance matrix.
-- Tools to calculate assets clusters based on codependence metrics.
-- Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
-- Tools to visualizing portfolio properties and risk measures.
-- Tools to build reports on Jupyter Notebook and Excel. 
-- Option to use commercial optimization solver like MOSEK or GUROBI for large scale problems.
+    * Standard Deviation.
+    * Variance.
+    * Square Root Kurtosis.
+    * Mean Absolute Deviation (MAD).
+    * Gini Mean Difference (GMD).
+    * Conditional Value at Risk Range.
+    * Tail Gini Range.
+    * Range.
+
+    **Downside Risk Measures:**
+
+    * Semi Standard Deviation.
+    * Square Root Semi Kurtosis.
+    * First Lower Partial Moment (Omega Ratio).
+    * Second Lower Partial Moment (Sortino Ratio).
+    * Value at Risk (VaR).
+    * Conditional Value at Risk (CVaR).
+    * Entropic Value at Risk (EVaR).
+    * Relativistic Value at Risk (RLVaR).
+    * Tail Gini.
+    * Worst Case Realization (Minimax).
+
+    **Drawdown Risk Measures:**
+
+    * Average Drawdown for compounded and uncompounded cumulative returns.
+    * Ulcer Index for compounded and uncompounded cumulative returns.
+    * Drawdown at Risk (DaR) for compounded and uncompounded cumulative returns.
+    * Conditional Drawdown at Risk (CDaR) for compounded and uncompounded cumulative returns.
+    * Entropic Drawdown at Risk (EDaR) for compounded and uncompounded cumulative returns.
+    * Relativistic Drawdown at Risk (RLDaR) for compounded and uncompounded cumulative returns.
+    * Maximum Drawdown (Calmar Ratio) for compounded and uncompounded cumulative returns.
+
+* Nested Clustered Optimization (NCO) with four objective functions and the available risk measures to each objective:
+
+    * Minimum Risk.
+    * Maximum Return.
+    * Maximum Utility Function.
+    * Equal Risk Contribution.
+
+* Worst Case Mean Variance Portfolio Optimization.
+* Relaxed Risk Parity Portfolio Optimization.
+* Ordered Weighted Averaging (OWA) Portfolio Optimization.
+* Portfolio optimization with Black Litterman model.
+* Portfolio optimization with Risk Factors model.
+* Portfolio optimization with Black Litterman Bayesian model.
+* Portfolio optimization with Augmented Black Litterman model.
+* Portfolio optimization with constraints on tracking error and turnover.
+* Portfolio optimization with short positions and leveraged portfolios.
+* Portfolio optimization with constraints on number of assets and number of effective assets.
+* Portfolio optimization with constraints based on graph information.
+* Tools to build efficient frontier for 22 convex risk measures.
+* Tools to build linear constraints on assets, asset classes and risk factors.
+* Tools to build views on assets and asset classes.
+* Tools to build views on risk factors.
+* Tools to build risk contribution constraints per asset classes.
+* Tools to build risk contribution constraints per risk factor using explicit risk factors and principal components.
+* Tools to build bounds constraints for Hierarchical Clustering Portfolios.
+* Tools to calculate risk measures.
+* Tools to calculate risk contributions per asset.
+* Tools to calculate risk contributions per risk factor.
+* Tools to calculate uncertainty sets for mean vector and covariance matrix.
+* Tools to calculate assets clusters based on codependence metrics.
+* Tools to estimate loadings matrix (Stepwise Regression and Principal Components Regression).
+* Tools to visualizing portfolio properties and risk measures.
+* Tools to build reports on Jupyter Notebook and Excel. 
+* Option to use commercial optimization solver like MOSEK or GUROBI for large scale problems.
 
 
 Choosing a Solver
@@ -200,69 +200,248 @@ The list of solvers compatible with CVXPY is available in `Choosing a solver <ht
 However, to select an adequate solver for each risk measure we can use the following table
 that specifies which type of programming technique is used to model each risk measure.
 
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Risk Measure                          | LP | QP | SOCP | SDP | EXP | POW |
-+=======================================+====+====+======+=====+=====+=====+
-| Variance (MV)                         |    |    | X    | X*  |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Mean Absolute Deviation (MAD)         | X  |    |      |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Gini Mean Difference (GMD)            |    |    |      |     |     | X** |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Semi Variance (MSV)                   |    |    | X    |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Kurtosis (KT)                         |    |    |      | X   |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Semi Kurtosis (SKT)                   |    |    |      | X   |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| First Lower Partial Moment (FLPM)     | X  |    |      |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Second Lower Partial Moment (SLPM)    |    |    | X    |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Conditional Value at Risk (CVaR)      | X  |    |      |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Tail Gini (TG)                        |    |    |      |     |     | X** |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Entropic Value at Risk (EVaR)         |    |    |      |     | X   |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Relativistic Value at Risk (RLVaR)    |    |    |      |     |     | X** |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Worst Realization (WR)                | X  |    |      |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| CVaR Range (CVRG)                     | X  |    |      |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Tail Gini Range (TGRG)                |    |    |      |     |     | X** |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Range (RG)                            | X  |    |      |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Average Drawdown (ADD)                | X  |    |      |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Ulcer Index (UCI)                     |    |    | X    |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Conditional Drawdown at Risk (CDaR)   | X  |    |      |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Entropic Drawdown at Risk (EDaR)      |    |    |      |     | X   |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Relativistic Drawdown at Risk (RLDaR) |    |    |      |     |     | X** |
-+---------------------------------------+----+----+------+-----+-----+-----+
-| Maximum Drawdown (MDD)                | X  |    |      |     |     |     |
-+---------------------------------------+----+----+------+-----+-----+-----+
+.. raw:: html
+
+    <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+    <style type="text/css">
+    .tg  {border-collapse:collapse;border-spacing:0;}
+    .tg td{border-color:#9b9b9b;border-style:solid;border-width:1px;font-family:Roboto, sans-serif;font-size:17px;
+    overflow:hidden;padding:10px 5px;word-break:normal; min-width:60px}
+    .tg th{border-color:#9b9b9b;border-style:solid;border-width:1px;font-family:Roboto, sans-serif;font-size:17px;
+    font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;min-width:60px}
+    .tg tbody tr:nth-child(even){background-color: #efefef}
+    .tg tbody tr:nth-child(odd){background-color: white}
+    .tg .tg-huut{background-color:orange;border-color:#9b9b9b;color:#ffffff;font-weight:bold;text-align:center;vertical-align:top}
+    </style>
+    <table class="tg">
+        <thead>
+        <tr>
+            <th class="tg-huut">Risk Measure</th>
+            <th class="tg-huut">LP</th>
+            <th class="tg-huut">QP</th>
+            <th class="tg-huut">SOCP</th>
+            <th class="tg-huut">SDP</th>
+            <th class="tg-huut">EXP</th>
+            <th class="tg-huut">POW</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>Variance (MV)</td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X</td>
+            <td style='text-align:center'>X*</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Mean Absolute Deviation (MAD)</td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Gini Mean Difference (GMD)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X**</td>
+        </tr>
+        <tr>
+            <td>Semi Variance (MSV)</td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Kurtosis (KT)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Semi Kurtosis (SKT)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>First Lower Partial Moment (FLPM)</td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Second Lower Partial Moment (SLPM)</td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Conditional Value at Risk (CVaR)</td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Tail Gini (TG)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X**</td>
+        </tr>
+        <tr>
+            <td>Entropic Value at Risk (EVaR)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Relativistic Value at Risk (RLVaR)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X**</td>
+        </tr>
+        <tr>
+            <td>Worst Realization (WR)</td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>CVaR Range (CVRG)</td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Tail Gini Range (TGRG)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X**</td>
+        </tr>
+        <tr>
+            <td>Range (RG)</td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Average Drawdown (ADD)</td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Ulcer Index (UCI)</td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Conditional Drawdown at Risk (CDaR)</td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Entropic Drawdown at Risk (EDaR)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>Relativistic Drawdown at Risk (RLDaR)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X**</td>
+        </tr>
+        <tr>
+            <td>Maximum Drawdown (MDD)</td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
 
 (*) When SDP graph theory constraints are included. In the case of integer programming graph theory constraints, the model assume the SOCP formulation.
 
 (**) For these models is highly recommended to use MOSEK as solver, due to in some cases CLARABEL cannot find a solution and SCS takes too much time to solve them.
 
-LP - Linear Programming refers to problems with a linear objective function and linear constraints.
+LP: Linear Programming refers to problems with a linear objective function and linear constraints.
 
-QP - Quadratic Programming refers to problems with a quadratic objective function and linear constraints.
+QP: Quadratic Programming refers to problems with a quadratic objective function and linear constraints.
 
-SOCP - Second Order Cone Programming refers to problems with second-order cone constraints.
+SOCP: Second Order Cone Programming refers to problems with second-order cone constraints.
 
-SDP - Semidefinite Programming refers to problems with positive semidefinite constraints.
+SDP: Semidefinite Programming refers to problems with positive semidefinite constraints.
 
-EXP - refers to problems with exponential cone constraints.
+EXP:refers to problems with exponential cone constraints.
 
-POW - refers to problems with 3-dimensional power cone constraints.
+POW: refers to problems with 3-dimensional power cone constraints.
 
 
 Consulting Fees
@@ -270,26 +449,26 @@ Consulting Fees
 
 Riskfolio-Lib is an open-source project, however due it's a project that is not financed for any institution, I started charging for consultancies that are not related to errors in source code. Our fees are as follows:
 
-- $ 25 USD (United States Dollars) per question that doesn't require to check code.
+* $ 25 USD (United States Dollars) per question that doesn't require to check code.
 
-- $ 50 USD to check a small size script or code (less than 200 lines of code). The fee of the solution depends on the complexity of the solution:
-    - $ 50 USD for simple errors in scripts (modify less than 10 lines of code).
-    - For most complex errors the fee depends on the complexity of the solution but the fee is $ 150 USD per hour.
+* $ 50 USD to check a small size script or code (less than 200 lines of code). The fee of the solution depends on the complexity of the solution:
+    * $ 50 USD for simple errors in scripts (modify less than 10 lines of code).
+    * For most complex errors the fee depends on the complexity of the solution but the fee is $ 150 USD per hour.
 
-- $ 100 USD to check a medium size script or code (between 201 and 600 lines of code). The fee of the solution depends on the complexity of the solution:
-    - $ 50 USD for simple errors in scripts (modify less than 10 lines of code).
-    - For most complex errors the fee depends on the complexity of the solution but the fee is $ 150 USD per hour.
+* $ 100 USD to check a medium size script or code (between 201 and 600 lines of code). The fee of the solution depends on the complexity of the solution:
+    * $ 50 USD for simple errors in scripts (modify less than 10 lines of code).
+    * For most complex errors the fee depends on the complexity of the solution but the fee is $ 150 USD per hour.
 
-- For large size script or code (more than 600 lines of code) the fee is variable depending on the size of the code. The fee of the solution depends on the complexity of the solution:
-    - $ 50 USD for simple errors in scripts (modify less than 10 lines of code).
-    - For most complex errors the fee depends on the complexity of the solution but the fee is $ 150 USD per hour.
+* For large size script or code (more than 600 lines of code) the fee is variable depending on the size of the code. The fee of the solution depends on the complexity of the solution:
+    * $ 50 USD for simple errors in scripts (modify less than 10 lines of code).
+    * For most complex errors the fee depends on the complexity of the solution but the fee is $ 150 USD per hour.
 
 **All consulting must be paid in advance**.
 
 You can contact me through:
 
-- `LinkedIn <https://www.linkedin.com/in/dany-cajas/>`
-- `Gmail <dcajasn@gmail.com>`
+* `LinkedIn <https://www.linkedin.com/in/dany-cajas/>`
+* `Gmail <dcajasn@gmail.com>`
 
 You can pay using one of the following channels:
 
@@ -322,6 +501,7 @@ Contents
     :maxdepth: 1
 
     Install <install>
+    Portfolio Course <course>
     Riskfolio-XL <excel>
     Portfolio Models <portfolio>
     Hierarchical Clustering Models <hcportfolio>
@@ -341,9 +521,9 @@ Contents
 Indices and tables
 ==================
 
-- :ref:`genindex`
-- :ref:`modindex`
-- :ref:`search`
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
 
 
 Module Plans
@@ -352,4 +532,4 @@ Module Plans
 The plan for this library is to add more functions that will be very useful
 for students, academics and practitioners.
 
-- Add more functions based on suggestion of users.
+* Add more functions based on suggestion of users.

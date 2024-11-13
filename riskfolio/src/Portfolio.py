@@ -2752,7 +2752,7 @@ class Portfolio(object):
         r"""
         This method that calculates the risk parity portfolio using the risk
         budgeting approach :cite:`a-Roncalli` :cite:`a-RichardRoncalli` and
-        the risk parity with risk factors approach :cite:`Roncalli2012b`
+        the risk parity with risk factors approach :cite:`a-Roncalli2012b`
         according to the optimization model selected by the user. The general
         problem that solves is:
 

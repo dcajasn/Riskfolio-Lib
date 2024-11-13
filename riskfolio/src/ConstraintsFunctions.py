@@ -1117,7 +1117,7 @@ def connection_matrix(
     gs_threshold=0.5,
 ):
     r"""
-    Create a connection matrix of walks of a specific size  based on :cite:`e-Cajas10` formula..
+    Create a connection matrix of walks of a specific size  based on :cite:`e-Cajas10` formula.
 
     Parameters
     ----------

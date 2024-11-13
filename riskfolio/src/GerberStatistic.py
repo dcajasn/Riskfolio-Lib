@@ -20,7 +20,7 @@ __all__ = [
 def gerber_cov_stat0(X, threshold=0.5):
     r"""
     Compute Gerber covariance Statistics 0 or original Gerber statistics
-    :cite: `d-Gerber2021`, not always PSD, however this function fixes the
+    :cite:`d-Gerber2021`, not always PSD, however this function fixes the
     covariance matrix finding the nearest covariance matrix that is positive
     semidefinite.
 
@@ -98,7 +98,7 @@ def gerber_cov_stat0(X, threshold=0.5):
 
 def gerber_cov_stat1(X, threshold=0.5):
     r"""
-    Compute Gerber covariance Statistics 1 :cite: `d-Gerber2021`.
+    Compute Gerber covariance Statistics 1 :cite:`d-Gerber2021`.
 
     Parameters
     ----------
@@ -177,7 +177,7 @@ def gerber_cov_stat1(X, threshold=0.5):
 
 def gerber_cov_stat2(X, threshold=0.5):
     r"""
-    Compute Gerber covariance Statistics 2 :cite: `d-Gerber2021`.
+    Compute Gerber covariance Statistics 2 :cite:`d-Gerber2021`.
 
     Parameters
     ----------

@@ -781,9 +781,9 @@ class HCPortfolio(object):
             - 'hist': use historical estimator.
             - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
             - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-            - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
-            - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
-            - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
+            - 'JS': James-Stein estimator. For more information see :cite:`c-Meucci2005` and :cite:`c-Feng2016`.
+            - 'BS': Bayes-Stein estimator. For more information see :cite:`c-Jorion1986`.
+            - 'BOP': BOP estimator. For more information see :cite:`c-Bodnar2019`.
             - 'custom_mu': use custom expected returns vector.
 
         method_cov : str, optional
