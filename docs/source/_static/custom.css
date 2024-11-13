@@ -10,3 +10,15 @@ header.md-header{
 .md-footer{
     background: #666666;
 }
+
+@media only screen and (max-width: 75em){
+    .md-nav__source{
+        background-color: #996600;
+    }
+}
+@media only screen and (max-width: 75em){
+    .md-nav--primary .md-nav__title[for=__drawer]{
+        background-color: orange;
+        min-height: unset;
+    }
+}

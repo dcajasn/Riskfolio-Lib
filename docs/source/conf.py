@@ -93,7 +93,7 @@ html_static_path = ['_static']
 
 html_search_language = 'en'
 html_theme_options = {
-    "palette": { "scheme": "default"},
+    "palette": {"scheme": "default"},
     "icon": {"repo": "fontawesome/brands/github"},
     "site_url": "https://riskfolio-lib.readthedocs.io/en/latest",
     "repo_url": "https://github.com/dcajasn/Riskfolio-Lib",
