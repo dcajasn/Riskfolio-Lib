@@ -9,7 +9,8 @@ Riskfolio-Lib
    :keywords lang=es: optimización de portafolios python, optimización de portafolios, optimización de portafolios de Markowitz, optimización de portafolios con cvar, asignación de activos, asignación estratégica de activos
 
 
-**Quantitative Strategic Asset Allocation, Easy for Everyone.**
+Quantitative Strategic Asset Allocation, Easy for Everyone
+##########################################################
 
 .. image:: images/MSV_Frontier.png
     :width: 45%
@@ -500,9 +501,10 @@ Contents
 ..  toctree::
     :maxdepth: 1
 
-    Install <install>
-    Portfolio Course <course>
+    Portfolio Optimization Book <book>
+    Portfolio Optimization Course <course>
     Riskfolio-XL <excel>
+    Install <install>
     Portfolio Models <portfolio>
     Hierarchical Clustering Models <hcportfolio>
     Parameters Estimation <parameters>

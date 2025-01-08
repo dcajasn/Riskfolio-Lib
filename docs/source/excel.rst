@@ -2,7 +2,8 @@
 Riskfolio-XL
 ############
 
-**Riskfolio-Lib add-in for Microsoft Excel**
+Riskfolio-Lib add-in for Microsoft Excel
+########################################
 
 Description
 ===========
