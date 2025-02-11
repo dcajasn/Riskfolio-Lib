@@ -3,7 +3,10 @@
 **Quantitative Strategic Asset Allocation, Easy for Everyone.**
 
 <a href="https://www.kqzyfj.com/click-101360347-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
-<img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/refs/heads/master/docs/source/_static/Button.png" height="60">
+<div>
+<img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/refs/heads/master/docs/source/_static/Button.png" height="40">
+</div>
+<br>
 </a>
 
 <div class="row">
