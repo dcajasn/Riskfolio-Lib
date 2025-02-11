@@ -29,7 +29,7 @@ Version 7.0.0
 - Add two new convex risk measures: EVaR Range and RLVaR Range, to the Portfolio object.
 - Add three new risk measures: VaR Range, EVaR Range and RLVaR Range, to the HCPortfolio object.
 - Add the generalization of risk parity for variance through inequality constraints on the risk contributions of assets to the Portfolio object.
-- Add the generalization of risk parity for variance through inequality constraints on the risk contributions of risk factors to the Portfolio object.
+- Add the generalization of factor risk parity for variance through inequality constraints on the risk contributions of risk factors to the Portfolio object.
 - Add a function to calculate the Brinson Performance Attribution per class and aggregate.
 - Add a plot function to show the Brinson Performance Attribution.
 - Add functions to calculate the VaR Range, EVaR Range and RLVaR Range.
