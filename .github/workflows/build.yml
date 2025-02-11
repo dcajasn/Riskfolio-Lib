@@ -37,6 +37,16 @@ jobs:
       matrix:
         os: [ ubuntu-20.04, macos-13, windows-2022 ]
         python-version: ["3.9", "3.10", "3.11", "3.12"]
+        include:
+          # These are intended to just add their extra parameter to existing matrix combinations;
+          # see https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymatrixinclude
+          - os: ubuntu-22.04
+            python-version: 3.12
+            openmp: "True"
+            single_action_config: false
+          - os: macos-13
+            python-version: 3.12
+            single_action_config: true
 
     env:
       RUNNER_OS: ${{ matrix.os }}
@@ -80,11 +90,17 @@ jobs:
       matrix:
         os: [ ubuntu-20.04, macos-13, windows-2022 ]
         python-version: ["3.9", "3.10", "3.11", "3.12"]
-
+        include:
+          # This is intended to just add the single_action_config parameter to one existing combination;
+          # see https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions#jobsjob_idstrategymatrixinclude
+          - os: ubuntu-22.04
+            python-version: 3.12
+            single_action_config: true
     env:
       RUNNER_OS: ${{ matrix.os }}
       PYTHON_VERSION: ${{ matrix.python-version }}
       SINGLE_ACTION_CONFIG: "${{ matrix.single_action_config == 'True' }}"
+      PIP_INSTALL: "${{ matrix.python-version == '3.11' }}"
       PYPI_SERVER: ${{ secrets.PYPI_SERVER }}
       PYPI_USER: ${{ secrets.PYPI_USER }}
       PYPI_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
