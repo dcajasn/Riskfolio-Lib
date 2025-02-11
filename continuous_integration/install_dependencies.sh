@@ -9,54 +9,53 @@ conda config --set remote_connect_timeout_secs 30.0
 conda config --set remote_max_retries 10
 conda config --set remote_backoff_factor 2
 conda config --set remote_read_timeout_secs 120.0
+conda install mkl pip pytest pytest-cov hypothesis openblas "setuptools>65.5.1"
 
-if [[ "$PYTHON_VERSION" == "3.8" ]] && [[ "$RUNNER_OS" == "macos-11" ]]; then
-  conda install scipy=1.3 numpy=1.18 mkl pip pytest pytest-cov lapack ecos scs osqp cvxopt proxsuite "setuptools>68.1.0" pybind11
-elif [[ "$PYTHON_VERSION" == "3.8" ]]; then
-  conda install scipy=1.3 numpy=1.18 mkl pip pytest pytest-cov lapack ecos scs osqp cvxopt proxsuite "setuptools>68.1.0" pybind11
-elif [[ "$PYTHON_VERSION" == "3.9" ]]; then
-  # The earliest version of numpy that works is 1.19.
-  # Given numpy 1.19, the earliest version of scipy we can use is 1.5.
-  conda install scipy=1.5 numpy=1.19 mkl pip pytest lapack ecos scs osqp cvxopt proxsuite "setuptools>68.1.0" pybind11
-elif [[ "$PYTHON_VERSION" == "3.10" ]]; then
-    # The earliest version of numpy that works is 1.21.
-    # Given numpy 1.21, the earliest version of scipy we can use is 1.7.
-    conda install scipy=1.7 numpy=1.21 mkl pip pytest lapack ecos scs osqp cvxopt proxsuite "setuptools>68.1.0" pybind11
-elif [[ "$PYTHON_VERSION" == "3.11" ]]; then
-    # The earliest version of numpy that works is 1.23.4.
-    # Given numpy 1.23.4, the earliest version of scipy we can use is 1.9.3.
-    conda install scipy=1.9.3 numpy=1.23.4 mkl pip pytest lapack ecos scs cvxopt proxsuite "setuptools>68.1.0" pybind11
-elif [[ "$PYTHON_VERSION" == "3.12" ]]; then
-    # The earliest version of numpy that works is 1.26.4
-    # Given numpy 1.26.4, the earliest version of scipy we can use is 1.9.3.
-    conda install scipy=1.11.3 numpy=1.26.4 mkl pip pytest lapack ecos scs cvxopt proxsuite daqp "setuptools>68.1.0" pybind11
-fi
-
-if [[ "$PYTHON_VERSION" == "3.12" ]]; then
-  python -m pip install coptpy gurobipy piqp osqp clarabel
-elif [[ "$PYTHON_VERSION" == "3.11" ]]; then
-  python -m pip install coptpy gurobipy cplex piqp osqp diffcp "ortools>=9.7,<9.10" clarabel
-# Python 3.8 on Windows will uninstall NumPy 1.16 and install NumPy 1.24 without the exception.
-elif [[ "$RUNNER_OS" == "Windows" ]] && [[ "$PYTHON_VERSION" == "3.8" ]]; then
-  python -m pip install gurobipy clarabel osqp 
-elif [[ "$PYTHON_VERSION" == "3.8" ]] && [[ "$RUNNER_OS" != "macos-11" ]]; then
-  python -m pip install gurobipy clarabel piqp
+if [[ "$PYTHON_VERSION" != "3.13" ]]; then
+  conda install ecos scs proxsuite daqp
+  python -m pip install coptpy==7.1.7 gurobipy piqp clarabel osqp highspy
 else
-  python -m pip install "ortools>=9.3,<9.10" coptpy sdpa-python diffcp gurobipy clarabel sdpa-python
+  # only install the essential solvers for Python 3.13.
+  conda install scs
+  python -m pip install clarabel osqp
 fi
 
-# cylp has wheels for all versions 3.7 - 3.10, except for 3.7 on Windows
-if [[ "$PYTHON_VERSION" != "3.11" ]] && [[ "$RUNNER_OS" != "Windows" ]]; then
-  python -m pip install cylp
+# Install newest stable versions for Python 3.13.
+if [[ "$PYTHON_VERSION" == "3.13" ]]; then
+  conda install scipy numpy
+else
+  conda install scipy=1.13.0 numpy=1.26.4
 fi
 
-# SCIP only works with scipy >= 1.5 due to dependency conflicts when installing on Linux/macOS
-if [[ "$PYTHON_VERSION" == "3.9" ]] && [[ "$RUNNER_OS" == "Windows" ]]; then
-  conda install pyscipopt
+if [[ "$PYTHON_VERSION" == "3.11" ]]; then
+  python -m pip install cplex "ortools>=9.7,<9.12"
+fi
+
+if [[ "$RUNNER_OS" == "Windows" ]] && [[ "$PYTHON_VERSION" != "3.13" ]]; then
+  # SDPA with OpenBLAS backend does not pass LP5 on Windows
+  python -m pip install sdpa-multiprecision
+fi
+
+if [[ "$RUNNER_OS" != "Windows" ]] && [[ "$PYTHON_VERSION" != "3.13" ]]; then
+  conda install cvxopt
+fi
+
+if [[ "$PYTHON_VERSION" == "3.12" ]] && [[ "$RUNNER_OS" != "Windows" ]]; then
+  # cylp has no wheels for Windows
+  python -m pip install cylp pyscipopt==5.2.1
+fi
+
+if [[ "$PYTHON_VERSION" == "3.10" ]] && [[ "$RUNNER_OS" != "Windows" ]]; then
+  # SDPA didn't pass LP5 on Ubuntu for Python 3.9 and 3.12
+  python -m pip install sdpa-python
+fi
+
+if [[ "$PYTHON_VERSION" == "3.11" ]] && [[ "$RUNNER_OS" != "macOS" ]]; then
+  python -m pip install xpress==9.4.3
 fi
 
 # Only install Mosek if license is available (secret is not copied to forks)
-if [[ -n "$MOSEK_CI_BASE64" ]] && [[ "$PYTHON_VERSION" != "3.11" ]]; then
+if [[ -n "$MOSEK_CI_BASE64" ]] && [[ "$PYTHON_VERSION" != "3.13" ]]; then
     python -m pip install mosek
 fi
 
