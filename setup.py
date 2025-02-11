@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Dany Cajas
+# Copyright (C) 2020-2025 Dany Cajas
 
 import os
 import numpy as np
@@ -6,9 +6,9 @@ import numpy as np
 from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
-MAJOR = 6
-MINOR = 3
-MICRO = 1
+MAJOR = 7
+MINOR = 0
+MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 def write_version_py(filename='riskfolio/version.py'):

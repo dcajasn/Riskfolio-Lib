@@ -1,7 +1,7 @@
 """"""  #
 
 """
-Copyright (c) 2020-2024, Dany Cajas
+Copyright (c) 2020-2025, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -13,7 +13,7 @@ from riskfolio.external.functions import *
 from itertools import product
 
 
-def duplication_matrix(n: int):
+def duplication_matrix(n: int, diag: bool = True):
     r"""
     Calculate duplication matrix of size "n" as shown in :cite:`d-Magnus1980`.
 
@@ -27,10 +27,10 @@ def duplication_matrix(n: int):
     D: np.ndarray
         Duplication matrix
     """
-    return cpp_duplication_matrix(n)
+    return cpp_duplication_matrix(n, diag)
 
 
-def duplication_elimination_matrix(n: int):
+def duplication_elimination_matrix(n: int, diag: bool = True):
     r"""
     Calculate duplication elimination matrix of size "n" as shown in :cite:`d-Magnus1980`.
 
@@ -44,10 +44,10 @@ def duplication_elimination_matrix(n: int):
     L: np.ndarray
         Duplication matrix
     """
-    return cpp_duplication_elimination_matrix(n)
+    return cpp_duplication_elimination_matrix(n, diag)
 
 
-def duplication_summation_matrix(n: int):
+def duplication_summation_matrix(n: int, diag: bool = True):
     r"""
     Calculate duplication summation matrix of size "n" as shown in :cite:`d-Cajas4`.
 
@@ -61,7 +61,7 @@ def duplication_summation_matrix(n: int):
     S: np.ndarray
         Duplication summation matrix.
     """
-    return cpp_duplication_summation_matrix(n)
+    return cpp_duplication_summation_matrix(n, diag)
 
 
 def commutation_matrix(T: int, n: int):

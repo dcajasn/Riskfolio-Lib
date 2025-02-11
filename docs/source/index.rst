@@ -12,6 +12,16 @@ Riskfolio-Lib
 Quantitative Strategic Asset Allocation, Easy for Everyone
 ##########################################################
 
+.. raw:: html
+
+    <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer;">
+            Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
 .. image:: images/MSV_Frontier.png
     :width: 45%
     
@@ -59,7 +69,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Maximum Utility Function.
     * Maximum Risk Adjusted Return Ratio.
 
-* Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 22 convex risk measures:
+* Mean Risk and Logarithmic Mean Risk (Kelly Criterion) Portfolio Optimization with 24 convex risk measures:
 
     **Dispersion Risk Measures:**
 
@@ -69,6 +79,8 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Gini Mean Difference (GMD).
     * Conditional Value at Risk Range.
     * Tail Gini Range.
+    * Entropic Value at Risk Range.
+    * Relativistic Value at Risk Range.
     * Range.
 
     **Downside Risk Measures:**
@@ -92,7 +104,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Relativistic Drawdown at Risk (RLDaR) for uncompounded cumulative returns.
     * Maximum Drawdown (Calmar Ratio) for uncompounded cumulative returns.
 
-* Risk Parity Portfolio Optimization with 18 convex risk measures:
+* Risk Parity Portfolio Optimization with 20 convex risk measures:
 
     **Dispersion Risk Measures:**
 
@@ -102,6 +114,8 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Gini Mean Difference (GMD).
     * Conditional Value at Risk Range.
     * Tail Gini Range.
+    * Entropic Value at Risk Range.
+    * Relativistic Value at Risk Range.
 
     **Downside Risk Measures:**
 
@@ -121,7 +135,7 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Entropic Drawdown at Risk (EDaR) for uncompounded cumulative returns.
     * Relativistic Drawdown at Risk (RLDaR) for uncompounded cumulative returns.
 
-* Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 32 risk measures using naive risk parity:
+* Hierarchical Clustering Portfolio Optimization: Hierarchical Risk Parity (HRP) and Hierarchical Equal Risk Contribution (HERC) with 35 risk measures using naive risk parity:
 
     **Dispersion Risk Measures:**
 
@@ -130,8 +144,11 @@ Some of key functionalities that Riskfolio-Lib offers:
     * Square Root Kurtosis.
     * Mean Absolute Deviation (MAD).
     * Gini Mean Difference (GMD).
+    * Value at Risk Range.
     * Conditional Value at Risk Range.
     * Tail Gini Range.
+    * Entropic Value at Risk Range.
+    * Relativistic Value at Risk Range.
     * Range.
 
     **Downside Risk Measures:**
@@ -175,7 +192,9 @@ Some of key functionalities that Riskfolio-Lib offers:
 * Portfolio optimization with short positions and leveraged portfolios.
 * Portfolio optimization with constraints on number of assets and number of effective assets.
 * Portfolio optimization with constraints based on graph information.
-* Tools to build efficient frontier for 22 convex risk measures.
+* Portfolio optimization with inequality constraints on risk contributions for variance.
+* Portfolio optimization with inequality constraints on factor risk contributions for variance.
+* Tools to build efficient frontier for 24 convex risk measures.
 * Tools to build linear constraints on assets, asset classes and risk factors.
 * Tools to build views on assets and asset classes.
 * Tools to build views on risk factors.
@@ -363,6 +382,24 @@ that specifies which type of programming technique is used to model each risk me
             <td style='text-align:center'>X**</td>
         </tr>
         <tr>
+            <td>EVaR Range (EVRG)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td>RLVaR Range (RVRG)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style='text-align:center'>X**</td>
+        </tr>
+        <tr>
             <td>Range (RG)</td>
             <td style='text-align:center'>X</td>
             <td></td>
@@ -490,8 +527,8 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 
     @misc{riskfolio,
           author = {Dany Cajas},
-          title = {Riskfolio-Lib (6.3.1)},
-          year  = {2024},
+          title = {Riskfolio-Lib (7.0.0)},
+          year  = {2025},
           url   = {https://github.com/dcajasn/Riskfolio-Lib},
           }
 

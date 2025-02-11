@@ -2,16 +2,27 @@
 Examples
 ########
 
+.. raw:: html
+
+    <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer;">
+            Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
 .. image:: https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86
  :target: https://github.com/sponsors/dcajasn
 
 .. raw:: html
    
-   <br>
+    <br>
    
 .. raw:: html
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
 
 The following examples are available:
 
@@ -34,7 +45,8 @@ Return Risk Portfolio Optimization Models
 * `Relativistic Value at Risk (RLVaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2040%20-%20Mean%20Relativistic%20Value%20at%20Risk%20(RLVaR)%20Optimization.ipynb>`_.
 * `Relativistic Drawdown at Risk (RLDaR) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2041%20-%20Mean%20Relativistic%20Drawdown%20at%20Risk%20(RLDaR)%20Optimization.ipynb>`_.
 * `Higher L-Moments OWA Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2042%20-%20Higher%20L-Moments%20OWA%20Portfolio%20Optimization.ipynb>`_.
-
+* `Entropic Value at Risk Range (EVRG) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2049%20-%20Mean%20Entropic%20Value%20at%20Risk%20Range%20(EVRG)%20Optimization.ipynb>`_.
+* `Relativistic Value at Risk Range (RVRG) Portfolio Optimization for Mean Risk and Risk Parity <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2050%20-%20Mean%20Relativistic%20Value%20at%20Risk%20Range%20(RVRG)%20Optimization.ipynb>`_.
 
 Special Constraints
 -------------------
@@ -66,6 +78,8 @@ Risk Parity Models
 * `Risk Parity with Constraints using the Risk Budgeting Approach <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2033%20-%20Risk%20Parity%20with%20Constraints%20using%20the%20Risk%20Budgeting%20Approach.ipynb>`_.
 * `Risk Parity with a Risk Constraint per Classes <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2043%20-%20Risk%20Parity%20with%20a%20Risk%20Constraint%20per%20Classes.ipynb>`_.
 * `Risk Parity with Risk Factors <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2047%20-%20Risk%20Parity%20with%20Risk%20Factors.ipynb>`_.
+* `Mean Variance Portfolio Optimization with Risk Contribution Inequalities Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2048%20-%20Classic%20Mean%20Variance%20Optimization%20with%20Risk%20Contribution%20Inequalities%20Constraints.ipynb>`_.
+* `Mean Variance Portfolio Optimization with Risk Factor Contribution Inequalities Constraints <https://nbviewer.jupyter.org/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2051%20-%20Classic%20Mean%20Variance%20Optimization%20with%20Risk%20Factor%20Contribution%20Inequalities%20Constraints.ipynb>`_.
 
 
 Hierarchical Clustering Portfolio Optimization

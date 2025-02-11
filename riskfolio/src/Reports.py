@@ -1,7 +1,7 @@
 """"""  #
 
 """
-Copyright (c) 2020-2024, Dany Cajas
+Copyright (c) 2020-2025, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -159,8 +159,6 @@ def jupyter_report(
         Growth Rate (CAGR). Default value is 252 trading days per year.
     bins : float, optional
         Number of bins of the histogram. The default is 50.
-    ax : matplotlib axis of size (6,1), optional
-        If provided, plot on this axis. The default is None.
 
     Raises
     ------
@@ -169,7 +167,7 @@ def jupyter_report(
 
     Returns
     -------
-    ax : matplotlib axis
+    ax : matplotlib axis of size (6,1)
         Returns the Axes object with the plot for further tweaking.
 
     Example
@@ -196,7 +194,7 @@ def jupyter_report(
     cov = returns.cov()
 
     fig, ax = plt.subplots(figsize=(width, height * 6))
-    ax.axis('off')
+    ax.axis("off")
 
     gs0 = GridSpec(5, 1, figure=fig, height_ratios=[2, 1.5, 1, 2, 1])
     gs00 = gs0[0].subgridspec(1, 1)

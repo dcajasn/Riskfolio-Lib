@@ -1,7 +1,7 @@
 """"""  #
 
 """
-Copyright (c) 2020-2024, Dany Cajas
+Copyright (c) 2020-2025, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -50,8 +50,11 @@ __all__ = [
     "GMD",
     "TG",
     "RG",
+    "VRG",
     "CVRG",
     "TGRG",
+    "EVRG",
+    "RVRG",
     "L_Moment",
     "L_Moment_CRM",
     "NEA",
@@ -60,6 +63,7 @@ __all__ = [
     "Risk_Contribution",
     "Risk_Margin",
     "Factors_Risk_Contribution",
+    "BrinsonAttribution",
 ]
 
 
@@ -413,7 +417,7 @@ def Entropic_RM(X, z=1, alpha=0.05):
     ----------
     X : 1d-array
         Returns series, must have Tx1 size.
-    theta : float, optional
+    z : float, optional
         Risk aversion parameter, must be greater than zero. The default is 1.
     alpha : float, optional
         Significance level of EVaR. The default is 0.05.
@@ -478,7 +482,7 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
         Significance level of EVaR. The default is 0.05.
     solver: str, optional
         Solver available for CVXPY that supports exponential cone programming.
-        Used to calculate EVaR and EDaR. The default value is 'CLARABEL'.
+        Used to calculate EVaR, EVRG and EDaR. The default value is 'CLARABEL'.
 
     Raises
     ------
@@ -508,7 +512,7 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
 
     constraints = [
         cp.sum(ui) <= z,
-        cp.constraints.ExpCone(-a * 1000 - t * 1000, ones @ z * 1000, ui * 1000),
+        cp.ExpCone(-a * 1000 - t * 1000, ones @ z * 1000, ui * 1000),
     ]
 
     risk = t + z * np.log(1 / (alpha * T))
@@ -588,7 +592,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
 
     """
 
-    a = np.array(X, ndmin=2)
+    a = np.array(X * 100, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -612,7 +616,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     ]
     risk = Z.T @ (-a)
 
-    objective = cp.Maximize(risk * 1000)
+    objective = cp.Maximize(risk)
     prob = cp.Problem(objective, constraints)
 
     try:
@@ -671,7 +675,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
         else:
             value = risk.value.item()
 
-    return value
+    return value / 100
 
 
 def MDD_Abs(X):
@@ -891,7 +895,7 @@ def CDaR_Abs(X, alpha=0.05):
     return value
 
 
-def EDaR_Abs(X, alpha=0.05):
+def EDaR_Abs(X, alpha=0.05, solver="CLARABEL"):
     r"""
     Calculate the Entropic Drawdown at Risk (EDaR) of a returns series
     using uncompounded cumulative returns.
@@ -938,7 +942,7 @@ def EDaR_Abs(X, alpha=0.05):
         DD.append(-(peak - i))
     del DD[0]
 
-    (value, t) = EVaR_Hist(np.array(DD), alpha=alpha)
+    (value, t) = EVaR_Hist(np.array(DD), alpha=alpha, solver=solver)
 
     return (value, t)
 
@@ -962,8 +966,8 @@ def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     kappa : float, optional
         Deformation parameter of RLDaR, must be between 0 and 1. The default is 0.3.
     solver: str, optional
-        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is 'CLARABEL'.
+        Solver available for CVXPY that supports power cone programming. Used
+        to calculate RLVaR, RVRG and RLDaR. The default value is 'CLARABEL'.
 
     Raises
     ------
@@ -1272,7 +1276,7 @@ def CDaR_Rel(X, alpha=0.05):
     return value
 
 
-def EDaR_Rel(X, alpha=0.05):
+def EDaR_Rel(X, alpha=0.05, solver="CLARABEL"):
     r"""
     Calculate the Entropic Drawdown at Risk (EDaR) of a returns series
     using cumpounded cumulative returns.
@@ -1319,7 +1323,7 @@ def EDaR_Rel(X, alpha=0.05):
         DD.append(-(peak - i) / peak)
     del DD[0]
 
-    (value, t) = EVaR_Hist(np.array(DD), alpha=alpha)
+    (value, t) = EVaR_Hist(np.array(DD), alpha=alpha, solver=solver)
 
     return (value, t)
 
@@ -1343,8 +1347,8 @@ def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     kappa : float, optional
         Deformation parameter of RLDaR, must be between 0 and 1. The default is 0.3.
     solver: str, optional
-        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is 'CLARABEL'.
+        Solver available for CVXPY that supports power cone programming. Used
+        to calculate RLVaR, RVRG and RLDaR. The default value is 'CLARABEL'.
 
     Raises
     ------
@@ -1540,6 +1544,49 @@ def RG(X):
     return value
 
 
+def VRG(X, alpha=0.05, beta=None):
+    r"""
+    Calculate the CVaR range of a returns series.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    alpha : float, optional
+        Significance level of VaR of losses. The default is 0.05.
+    beta : float, optional
+        Significance level of VaR of gains. If None it duplicates alpha value.
+        The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Ulcer Index of a cumpounded cumulative returns.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    if beta is None:
+        beta = alpha
+
+    value_L = VaR_Hist(a, alpha=alpha)
+    value_G = VaR_Hist(-a, alpha=beta)
+
+    value = value_L + value_G
+
+    return value
+
+
 def CVRG(X, alpha=0.05, beta=None):
     r"""
     Calculate the CVaR range of a returns series.
@@ -1619,6 +1666,106 @@ def TGRG(X, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     T = a.shape[0]
     w_ = owa.owa_tgrg(T, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
     value = (w_.T @ np.sort(a, axis=0)).item()
+
+    return value
+
+
+def EVRG(X, alpha=0.05, beta=None, solver="CLARABEL"):
+    r"""
+    Calculate the CVaR range of a returns series.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    alpha : float, optional
+        Significance level of EVaR of losses. The default is 0.05.
+    beta : float, optional
+        Significance level of EVaR of gains. If None it duplicates alpha value.
+        The default is None.
+    solver: str, optional
+        Solver available for CVXPY that supports exponential cone programming.
+        Used to calculate EVaR, EVRG and EDaR. The default value is 'CLARABEL'.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Ulcer Index of a cumpounded cumulative returns.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    if beta is None:
+        beta = alpha
+
+    value_L = EVaR_Hist(a, alpha=alpha, solver=solver)[0]
+    value_G = EVaR_Hist(-a, alpha=beta, solver=solver)[0]
+
+    value = value_L + value_G
+
+    return value
+
+
+def RVRG(X, alpha=0.05, beta=None, kappa=0.3, kappa_g=None, solver="CLARABEL"):
+    r"""
+    Calculate the CVaR range of a returns series.
+
+    Parameters
+    ----------
+    X : 1d-array
+        Returns series, must have Tx1 size.
+    alpha : float, optional
+        Significance level of RLVaR of losses. The default is 0.05.
+    beta : float, optional
+        Significance level of RLVaR of gains. If None it duplicates alpha value.
+        The default is None.
+    kappa : float, optional
+        Deformation parameter of RLVaR for losses, must be between 0 and 1.
+        The default is 0.3.
+    kappa_g : float, optional
+        Deformation parameter of RLVaR for gains, must be between 0 and 1.
+        The default is None.
+    solver: str, optional
+        Solver available for CVXPY that supports power cone programming.
+        Used to calculate EVaR, EVRG and EDaR. The default value is 'CLARABEL'.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Ulcer Index of a cumpounded cumulative returns.
+
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    if beta is None:
+        beta = alpha
+    if kappa_g is None:
+        kappa_g = kappa
+
+    value_L = RLVaR_Hist(a, alpha=alpha, kappa=kappa, solver=solver)
+    value_G = RLVaR_Hist(-a, alpha=beta, kappa=kappa_g, solver=solver)
+
+    value = value_L + value_G
 
     return value
 
@@ -1780,6 +1927,7 @@ def Sharpe_Risk(
     beta=None,
     b_sim=None,
     kappa=0.3,
+    kappa_g=None,
     solver="CLARABEL",
 ):
     r"""
@@ -1813,8 +1961,11 @@ def Sharpe_Risk(
         - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
         - 'WR': Worst Realization (Minimax).
         - 'RG': Range of returns.
+        - 'VRG' VaR range of returns.
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
+        - 'EVRG': EVaR range of returns.
+        - 'RVRG': RLVaR range of returns. I recommend only use this function with MOSEK solver.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -1833,21 +1984,26 @@ def Sharpe_Risk(
     rf : float, optional
         Risk free rate. The default is 0.
     alpha : float, optional
-        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR and Tail Gini of losses.
-        The default is 0.05.
+        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR
+        and Tail Gini of losses. The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
     beta : float, optional
-        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
-        The default is None.
+        Significance level of CVaR and Tail Gini of gains. If None it
+        duplicates alpha value. The default is None.
     b_sim : float, optional
-        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
-        The default is None.
+        Number of CVaRs used to approximate Tail Gini of gains. If None it
+        duplicates a_sim value. The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
+        Deformation parameter of RLVaR and RLDaR for losses, must be between 0 and 1.
+        The default is 0.3.
+    kappa_g : float, optional
+        Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
+        The default is None.
     solver: str, optional
-        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-        The default value is 'CLARABEL'.
+        Solver available for CVXPY that supports exponential and power cone
+        programming. Used to calculate RLVaR and RLDaR. The default value is
+        'CLARABEL'.
 
     Raises
     ------
@@ -1907,17 +2063,25 @@ def Sharpe_Risk(
     elif rm == "TG":
         risk = TG(a, alpha=alpha, a_sim=a_sim)
     elif rm == "EVaR":
-        risk = EVaR_Hist(a, alpha=alpha)[0]
+        risk = EVaR_Hist(a, alpha=alpha, solver=solver)[0]
     elif rm == "RLVaR":
         risk = RLVaR_Hist(a, alpha=alpha, kappa=kappa, solver=solver)
     elif rm == "WR":
         risk = WR(a)
     elif rm == "RG":
         risk = RG(a)
+    elif rm == "VRG":
+        risk = VRG(a, alpha=alpha, beta=beta)
     elif rm == "CVRG":
         risk = CVRG(a, alpha=alpha, beta=beta)
     elif rm == "TGRG":
         risk = TGRG(a, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+    elif rm == "EVRG":
+        risk = EVRG(a, alpha=alpha, beta=beta, solver=solver)
+    elif rm == "RVRG":
+        risk = RVRG(
+            a, alpha=alpha, beta=beta, kappa=kappa, kappa_g=kappa_g, solver=solver
+        )
     elif rm == "MDD":
         risk = MDD_Abs(a)
     elif rm == "ADD":
@@ -1968,6 +2132,7 @@ def Sharpe(
     beta=None,
     b_sim=None,
     kappa=0.3,
+    kappa_g=None,
     solver="CLARABEL",
 ):
     r"""
@@ -2018,8 +2183,11 @@ def Sharpe(
         - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
         - 'WR': Worst Realization (Minimax).
         - 'RG': Range of returns.
+        - 'VRG' VaR range of returns.
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
+        - 'EVRG': EVaR range of returns.
+        - 'RVRG': RLVaR range of returns. I recommend only use this function with MOSEK solver.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -2049,7 +2217,11 @@ def Sharpe(
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
+        Deformation parameter of RLVaR and RLDaR for losses, must be between 0 and 1.
+        The default is 0.3.
+    kappa_g : float, optional
+        Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
+        The default is None.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
@@ -2110,6 +2282,7 @@ def Sharpe(
         beta=beta,
         b_sim=b_sim,
         kappa=kappa,
+        kappa_g=kappa_g,
         solver=solver,
     )
 
@@ -2134,6 +2307,7 @@ def Risk_Contribution(
     beta=None,
     b_sim=None,
     kappa=0.3,
+    kappa_g=None,
     solver="CLARABEL",
 ):
     r"""
@@ -2167,8 +2341,11 @@ def Risk_Contribution(
         - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
         - 'WR': Worst Realization (Minimax).
         - 'RG': Range of returns.
+        - 'VRG' VaR range of returns.
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
+        - 'EVRG': EVaR range of returns.
+        - 'RVRG': RLVaR range of returns. I recommend only use this function with MOSEK solver.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -2197,7 +2374,11 @@ def Risk_Contribution(
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
+        Deformation parameter of RLVaR and RLDaR for losses, must be between 0 and 1.
+        The default is 0.3.
+    kappa_g : float, optional
+        Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
+        The default is None.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
@@ -2222,6 +2403,7 @@ def Risk_Contribution(
 
     if isinstance(returns, pd.Series):
         returns_ = returns.to_frame()
+        returns_ = returns.to_numpy()
     elif isinstance(returns, pd.DataFrame):
         returns_ = returns.to_numpy()
     else:
@@ -2233,7 +2415,7 @@ def Risk_Contribution(
         cov_ = np.array(cov, ndmin=2)
 
     RC = []
-    if rm in ["EVaR", "EDaR", "RLVaR", "RLDaR"]:
+    if rm in ["EVaR", "EDaR", "RLVaR", "RLDaR", "EVRG", "RVRG"]:
         d_i = 0.0001
     else:
         d_i = 0.0000001
@@ -2275,20 +2457,33 @@ def Risk_Contribution(
             risk_1 = TG(a_1, alpha=alpha, a_sim=a_sim)
             risk_2 = TG(a_2, alpha=alpha, a_sim=a_sim)
         elif rm == "EVaR":
-            risk_1 = EVaR_Hist(a_1, alpha=alpha)[0]
-            risk_2 = EVaR_Hist(a_2, alpha=alpha)[0]
+            risk_1 = EVaR_Hist(a_1, alpha=alpha, solver=solver)[0]
+            risk_2 = EVaR_Hist(a_2, alpha=alpha, solver=solver)[0]
         elif rm == "RLVaR":
             risk_1 = RLVaR_Hist(a_1, alpha=alpha, kappa=kappa, solver=solver)
             risk_2 = RLVaR_Hist(a_2, alpha=alpha, kappa=kappa, solver=solver)
         elif rm == "WR":
             risk_1 = WR(a_1)
             risk_2 = WR(a_2)
+        elif rm == "VRG":
+            risk_1 = VRG(a_1, alpha=alpha, beta=beta)
+            risk_2 = VRG(a_2, alpha=alpha, beta=beta)
         elif rm == "CVRG":
             risk_1 = CVRG(a_1, alpha=alpha, beta=beta)
             risk_2 = CVRG(a_2, alpha=alpha, beta=beta)
         elif rm == "TGRG":
             risk_1 = TGRG(a_1, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
             risk_2 = TGRG(a_2, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+        elif rm == "EVRG":
+            risk_1 = EVRG(a_1, alpha=alpha, beta=beta, solver=solver)
+            risk_2 = EVRG(a_2, alpha=alpha, beta=beta, solver=solver)
+        elif rm == "RVRG":
+            risk_1 = RVRG(
+                a_1, alpha=alpha, beta=beta, kappa=kappa, kappa_g=kappa_g, solver=solver
+            )
+            risk_2 = RVRG(
+                a_2, alpha=alpha, beta=beta, kappa=kappa, kappa_g=kappa_g, solver=solver
+            )
         elif rm == "RG":
             risk_1 = RG(a_1)
             risk_2 = RG(a_2)
@@ -2360,6 +2555,7 @@ def Risk_Margin(
     beta=None,
     b_sim=None,
     kappa=0.3,
+    kappa_g=None,
     solver="CLARABEL",
 ):
     r"""
@@ -2394,8 +2590,11 @@ def Risk_Margin(
         - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
         - 'WR': Worst Realization (Minimax).
         - 'RG': Range of returns.
+        - 'VRG' VaR range of returns.
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
+        - 'EVRG': EVaR range of returns.
+        - 'RVRG': RLVaR range of returns.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -2413,20 +2612,26 @@ def Risk_Margin(
     rf : float, optional
         Risk free rate. The default is 0.
     alpha : float, optional
-        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR and Tail Gini of losses.
-        The default is 0.05.
+        Significance level of VaR, CVaR, EVaR, RLVaR, DaR, CDaR, EDaR, RLDaR
+        and Tail Gini of losses. The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
     beta : float, optional
-        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
-        The default is None.
+        Significance level of VaR, CVaR, Tail Gini, EVaR and RLVaR of gains. If
+        None it duplicates alpha value. The default is None.
     b_sim : float, optional
-        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
+        Number of CVaRs used to approximate Tail Gini of gains. If None it
+        duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
+        Deformation parameter of RLVaR and RLDaR for losses, must be between 0 and 1.
+        The default is 0.3.
+    kappa_g : float, optional
+        Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
+        The default is None.
     solver: str, optional
-        Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
+        Solver available for CVXPY that supports exponential and power cone
+        programming. Used to calculate EVaR, EVRG, EDaR, RLVaR, RVRG and RLDaR.
         The default value is None.
 
     Raises
@@ -2502,20 +2707,33 @@ def Risk_Margin(
             risk_1 = TG(a_1, alpha=alpha, a_sim=a_sim)
             risk_2 = TG(a_2, alpha=alpha, a_sim=a_sim)
         elif rm == "EVaR":
-            risk_1 = EVaR_Hist(a_1, alpha=alpha)[0]
-            risk_2 = EVaR_Hist(a_2, alpha=alpha)[0]
+            risk_1 = EVaR_Hist(a_1, alpha=alpha, solver=solver)[0]
+            risk_2 = EVaR_Hist(a_2, alpha=alpha, solver=solver)[0]
         elif rm == "RLVaR":
             risk_1 = RLVaR_Hist(a_1, alpha=alpha, kappa=kappa, solver=solver)
             risk_2 = RLVaR_Hist(a_2, alpha=alpha, kappa=kappa, solver=solver)
         elif rm == "WR":
             risk_1 = WR(a_1)
             risk_2 = WR(a_2)
+        elif rm == "VRG":
+            risk_1 = VRG(a_1, alpha=alpha, beta=beta)
+            risk_2 = VRG(a_2, alpha=alpha, beta=beta)
         elif rm == "CVRG":
             risk_1 = CVRG(a_1, alpha=alpha, beta=beta)
             risk_2 = CVRG(a_2, alpha=alpha, beta=beta)
         elif rm == "TGRG":
             risk_1 = TGRG(a_1, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
             risk_2 = TGRG(a_2, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
+        elif rm == "EVRG":
+            risk_1 = EVRG(a_1, alpha=alpha, beta=beta, solver=solver)
+            risk_2 = EVRG(a_2, alpha=alpha, beta=beta, solver=solver)
+        elif rm == "RVRG":
+            risk_1 = RVRG(
+                a_1, alpha=alpha, beta=beta, kappa=kappa, kappa_g=kappa_g, solver=solver
+            )
+            risk_2 = RVRG(
+                a_2, alpha=alpha, beta=beta, kappa=kappa, kappa_g=kappa_g, solver=solver
+            )
         elif rm == "RG":
             risk_1 = RG(a_1)
             risk_2 = RG(a_2)
@@ -2532,8 +2750,8 @@ def Risk_Margin(
             risk_1 = CDaR_Abs(a_1, alpha=alpha)
             risk_2 = CDaR_Abs(a_2, alpha=alpha)
         elif rm == "EDaR":
-            risk_1 = EDaR_Abs(a_1, alpha=alpha)[0]
-            risk_2 = EDaR_Abs(a_2, alpha=alpha)[0]
+            risk_1 = EDaR_Abs(a_1, alpha=alpha, solver=solver)[0]
+            risk_2 = EDaR_Abs(a_2, alpha=alpha, solver=solver)[0]
         elif rm == "RLDaR":
             risk_1 = RLDaR_Abs(a_1, alpha=alpha, kappa=kappa, solver=solver)
             risk_2 = RLDaR_Abs(a_2, alpha=alpha, kappa=kappa, solver=solver)
@@ -2553,8 +2771,8 @@ def Risk_Margin(
             risk_1 = CDaR_Rel(a_1, alpha=alpha)
             risk_2 = CDaR_Rel(a_2, alpha=alpha)
         elif rm == "EDaR_Rel":
-            risk_1 = EDaR_Rel(a_1, alpha=alpha)[0]
-            risk_2 = EDaR_Rel(a_2, alpha=alpha)[0]
+            risk_1 = EDaR_Rel(a_1, alpha=alpha, solver=solver)[0]
+            risk_2 = EDaR_Rel(a_2, alpha=alpha, solver=solver)[0]
         elif rm == "RLDaR_Rel":
             risk_1 = RLDaR_Rel(a_1, alpha=alpha, kappa=kappa, solver=solver)
             risk_2 = RLDaR_Rel(a_2, alpha=alpha, kappa=kappa, solver=solver)
@@ -2590,6 +2808,7 @@ def Factors_Risk_Contribution(
     beta=None,
     b_sim=None,
     kappa=0.3,
+    kappa_g=None,
     solver="CLARABEL",
     feature_selection="stepwise",
     stepwise="Forward",
@@ -2638,8 +2857,11 @@ def Factors_Risk_Contribution(
         - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
         - 'WR': Worst Realization (Minimax).
         - 'RG': Range of returns.
+        - 'VRG' VaR range of returns.
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
+        - 'EVRG': EVaR range of returns.
+        - 'RVRG': RLVaR range of returns. I recommend only use this function with MOSEK solver.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
         - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
@@ -2668,7 +2890,11 @@ def Factors_Risk_Contribution(
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR, must be between 0 and 1. The default is 0.3.
+        Deformation parameter of RLVaR and RLDaR for losses, must be between 0 and 1.
+        The default is 0.3.
+    kappa_g : float, optional
+        Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
+        The default is None.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
@@ -2770,3 +2996,185 @@ def Factors_Risk_Contribution(
     RC_F = np.vstack([RC_F, RC_OF]).ravel()
 
     return RC_F
+
+
+def BrinsonAttribution(
+    prices,
+    w,
+    wb,
+    start,
+    end,
+    asset_classes,
+    classes_col,
+    method="nearest",
+):
+    r"""
+    Creates a DataFrame with the Brinson Performance Attribution per class and
+    aggregate based on :cite:`f-Brinson1985`.
+
+    Parameters
+    ----------
+    prices : DataFrame of shape (n_samples, n_assets)
+        Assets prices DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
+    w : DataFrame  or Series of shape (n_assets, 1)
+        A portfolio specified by the user.
+    wb : DataFrame  or Series of shape (n_assets, 1)
+        A benchmark specified by the user.
+    start : str
+        Start date in format 'YYYY-MM-DD' specified by the user.
+    end : str
+        End date in format 'YYYY-MM-DD' specified by the user.
+    asset_classes : DataFrame of shape (n_assets, n_cols)
+        Asset's classes DataFrame, where n_assets is the number of assets and
+        n_cols is the number of columns of the DataFrame where the first column
+        is the asset list and the next columns are the different asset's
+        classes sets. It is only used when kind value is 'classes'. The default
+        value is None.
+    classes_col : str or int
+        If value is str, it is the column name of the set of classes from
+        asset_classes dataframe. If value is int, it is the column number of
+        the set of classes from asset_classes dataframe. The default
+        value is None.
+    method : str
+        Method used to calculate the nearest start or end dates in case one of
+        them is not in prices DataFrame. The default value is 'nearest'.
+        See `get_indexer <https://pandas.pydata.org/docs/reference/api/pandas.Index.get_indexer.html#pandas.Index.get_indexer>`__ for more details.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    BrinAttr : DataFrame
+        A DataFrame with the Brinson Performance Attribution per class and aggregate.
+
+    (start_, end_) : tuple
+        Start and end dates calculated using get_indexer method in string format.
+
+
+    Example
+    -------
+    ::
+
+        BrinAttr, (start, end) = BrinsonAttribution(
+            prices=data,
+            w=w,
+            wb=wb,
+            start='2019-01-07',
+            end='2019-12-06',
+            asset_classes=asset_classes,
+            classes_col='Industry',
+            )
+
+    .. image:: images/BrinAttr.png
+
+
+    """
+
+    if not isinstance(prices, pd.DataFrame):
+        raise ValueError("prices must be a DataFrame")
+
+    if not isinstance(w, pd.DataFrame):
+        if isinstance(w, pd.Series):
+            wp_ = w.to_frame()
+        else:
+            raise ValueError("w must be a one column DataFrame or Series")
+    else:
+        if w.shape[0] == 1:
+            wp_ = w.T.copy()
+        elif w.shape[1] == 1:
+            wp_ = w.copy()
+        else:
+            raise ValueError("w must be a one column DataFrame or Series")
+
+    if not isinstance(wb, pd.DataFrame):
+        if isinstance(wb, pd.Series):
+            wb_ = wb.to_frame()
+        else:
+            raise ValueError("w must be a one column DataFrame or Series")
+    else:
+        if wb.shape[0] == 1:
+            wb_ = wb.T.copy()
+        elif wb.shape[1] == 1:
+            wb_ = wb.copy()
+        else:
+            raise ValueError("w must be a one column DataFrame or Series")
+
+    if not isinstance(asset_classes, pd.DataFrame):
+        raise ValueError("asset_classes must be a DataFrame")
+    else:
+        if asset_classes.shape[1] < 2:
+            raise ValueError("asset_classes must have at least two columns")
+        classes = asset_classes.columns.tolist()
+        if isinstance(classes_col, str) and classes_col in classes:
+            col = classes_col
+        elif isinstance(classes_col, int) and classes[classes_col] in classes:
+            col = classes[classes_col]
+        else:
+            raise ValueError(
+                "classes_col must be a valid column or column position of asset_classes"
+            )
+
+    prices_ = prices.copy()
+    prices_.index = prices_.index.tz_localize(None)
+
+    start_ = prices_.index.get_indexer([pd.Timestamp(start)], method=method)
+    end_ = prices_.index.get_indexer([pd.Timestamp(end)], method=method)
+
+    p1 = prices_.iloc[start_].to_numpy().reshape(-1, 1)
+    p2 = prices_.iloc[end_].to_numpy().reshape(-1, 1)
+    p3 = p2 / p1 - 1
+
+    wp_ = wp_.to_numpy().reshape(-1, 1)
+    wb_ = wb_.to_numpy().reshape(-1, 1)
+
+    Rp = (p3.T @ wp_).item()
+    Rb = (p3.T @ wb_).item()
+
+    classes = asset_classes[col].tolist()
+    unique_classes = list(set(classes))
+    unique_classes.sort()
+
+    labels = [
+        "Asset Allocation",
+        "Security Selection",
+        "Interaction",
+        "Total Excess Return",
+    ]
+    BrinAttr = pd.DataFrame([], index=labels)
+
+    for i in unique_classes:
+        sets_i = []
+        for j in classes:
+            sets_i.append(i == j)
+        sets_i = np.array(sets_i, dtype=int).reshape(-1, 1)
+
+        wb_i = (sets_i.T @ wb_).item()
+        wp_i = (sets_i.T @ wp_).item()
+
+        Rb_i = (np.multiply(p3, sets_i).T @ wb_).item() / wb_i
+        Rp_i = (np.multiply(p3, sets_i).T @ wp_).item() / wp_i
+
+        AAE_i = (wp_i - wb_i) * (Rb_i - Rb)
+        SSE_i = wb_i * (Rp_i - Rb_i)
+        IE_i = (wp_i - wb_i) * (Rp_i - Rb_i)
+        TER_i = AAE_i + SSE_i + IE_i
+
+        BrinAttr_i = pd.DataFrame(
+            [AAE_i, SSE_i, IE_i, TER_i], index=labels, columns=[i]
+        )
+
+        BrinAttr = pd.concat([BrinAttr, BrinAttr_i], axis=1)
+
+    total = BrinAttr.sum(axis=1).to_frame()
+    total.columns = ["Total"]
+
+    BrinAttr = pd.concat([BrinAttr, total], axis=1)
+
+    start_ = prices_.index.tolist()[start_.item()].strftime("%Y-%m-%d")
+    end_ = prices_.index.tolist()[end_.item()].strftime("%Y-%m-%d")
+
+    return BrinAttr, (start_, end_)

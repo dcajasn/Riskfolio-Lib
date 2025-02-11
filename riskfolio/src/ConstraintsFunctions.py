@@ -1,7 +1,7 @@
 """"""  #
 
 """
-Copyright (c) 2020-2024, Dany Cajas
+Copyright (c) 2020-2025, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -407,7 +407,7 @@ def assets_views(views, asset_classes):
     Parameters
     ----------
     views : DataFrame of shape (n_views, n_fields)
-        Constraints DataFrame, where n_views is the number of views
+        views DataFrame, where n_views is the number of views
         and n_fields is the number of fields of views DataFrame, the fields
         are:
 
@@ -584,9 +584,9 @@ def factors_views(views, loadings, const=True):
 
     Parameters
     ----------
-    constraints : DataFrame of shape (n_constraints, n_fields)
-        Constraints DataFrame, where n_constraints is the number of constraints
-        and n_fields is the number of fields of constraints DataFrame, the fields
+    views : DataFrame of shape (n_views, n_fields)
+        views DataFrame, where n_views is the number of views
+        and n_fields is the number of fields of views DataFrame, the fields
         are:
 
         - Disabled: (bool) indicates if the constraint is enable.

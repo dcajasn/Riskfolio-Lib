@@ -1,7 +1,7 @@
 """"""  #
 
 """
-Copyright (c) 2020-2024, Dany Cajas
+Copyright (c) 2020-2025, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -109,7 +109,7 @@ def j_LoGo(S, separators, cliques):
         It is the complete covariance matrix.
     separators : nd-array
         It is the list of separators.
-    clique : nd-array
+    cliques : nd-array
         It is the list of cliques.
 
     Returns

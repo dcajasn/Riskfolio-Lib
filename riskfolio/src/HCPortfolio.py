@@ -1,7 +1,7 @@
 """"""  #
 
 """
-Copyright (c) 2020-2024, Dany Cajas
+Copyright (c) 2020-2025, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -47,7 +47,11 @@ class HCPortfolio(object):
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+        Deformation parameter of RLVaR and RLDaR for losses, must be between 0 and 1.
+        The default is 0.3.
+    kappa_g : float, optional
+        Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
+        The default is None.
     solver_rl: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
@@ -68,6 +72,7 @@ class HCPortfolio(object):
         beta=None,
         b_sim=None,
         kappa=0.30,
+        kappa_g=None,
         solver_rl="CLARABEL",
         solvers=["CLARABEL", "SCS", "ECOS"],
         w_max=None,
@@ -79,6 +84,7 @@ class HCPortfolio(object):
         self.beta = beta
         self.b_sim = b_sim
         self._kappa = kappa
+        self._kappa_g = kappa_g
         self.solver_rl = solver_rl
         self.solvers = solvers
         self.asset_order = None
@@ -131,6 +137,26 @@ class HCPortfolio(object):
         else:
             self._kappa = a
 
+    @property
+    def kappa_g(self):
+        return self._kappa_g
+
+    @kappa_g.setter
+    def kappa_g(self, value):
+        a = value
+        if a >= 1:
+            print(
+                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99"
+            )
+            self._kappa_g = 0.99
+        elif a <= 0:
+            print(
+                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01"
+            )
+            self._kappa_g = 0.01
+        else:
+            self._kappa_g = a
+
     # get naive-risk weights
     def _naive_risk(self, returns, cov, rm="MV", rf=0):
         assets = returns.columns.tolist()
@@ -157,6 +183,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
+                        kappa_g=self.kappa_g,
                         solver=self.solver_rl,
                     )
                 else:
@@ -171,6 +198,7 @@ class HCPortfolio(object):
                         beta=self.beta,
                         b_sim=self.b_sim,
                         kappa=self.kappa,
+                        kappa_g=self.kappa_g,
                         solver=self.solver_rl,
                     )
                 inv_risk[k, 0] = risk
@@ -200,7 +228,15 @@ class HCPortfolio(object):
             weights = np.array([1]).reshape(-1, 1)
         else:
             if obj in {"MinRisk", "Utility", "Sharpe"}:
-                port = rp.Portfolio(returns=returns)
+                port = rp.Portfolio(
+                    returns=returns,
+                    alpha=self.alpha,
+                    a_sim=self.a_sim,
+                    beta=self.beta,
+                    b_sim=self.b_sim,
+                    kappa=self.kappa,
+                    kappa_g=self.kappa_g,
+                )
 
                 if self.kurt:
                     method_kurt = "hist"
@@ -222,7 +258,15 @@ class HCPortfolio(object):
                     model="Classic", rm=rm, obj=obj, rf=rf, l=l, hist=True
                 ).to_numpy()
             elif obj in {"ERC"}:
-                port = rp.Portfolio(returns=returns)
+                port = rp.Portfolio(
+                    returns=returns,
+                    alpha=self.alpha,
+                    a_sim=self.a_sim,
+                    beta=self.beta,
+                    b_sim=self.b_sim,
+                    kappa=self.kappa,
+                    kappa_g=self.kappa_g,
+                )
 
                 if self.kurt:
                     method_kurt = "hist"
@@ -492,6 +536,7 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
+                                    kappa_g=self.kappa_g,
                                     solver=self.solver_rl,
                                 )
                             else:
@@ -506,6 +551,7 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
+                                    kappa_g=self.kappa_g,
                                     solver=self.solver_rl,
                                 )
                                 if rm == "MV":
@@ -534,6 +580,7 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
+                                    kappa_g=self.kappa_g,
                                     solver=self.solver_rl,
                                 )
                             else:
@@ -548,6 +595,7 @@ class HCPortfolio(object):
                                     beta=self.beta,
                                     b_sim=self.b_sim,
                                     kappa=self.kappa,
+                                    kappa_g=self.kappa_g,
                                     solver=self.solver_rl,
                                 )
                                 if rm == "MV":
@@ -748,24 +796,26 @@ class HCPortfolio(object):
             - 'CVaR': Conditional Value at Risk.
             - 'TG': Tail Gini.
             - 'EVaR': Entropic Value at Risk.
-            - 'RLVaR': Relativistic Value at Risk.
+            - 'RLVaR': Relativistic Value at Risk. I recommend only use this function with MOSEK solver.
             - 'WR': Worst Realization (Minimax).
-            - 'RG': Range of returns.
+            - 'VRG' VaR range of returns.
             - 'CVRG': CVaR range of returns.
             - 'TGRG': Tail Gini range of returns.
+            - 'EVRG': EVaR range of returns.
+            - 'RVRG': RLVaR range of returns. I recommend only use this function with MOSEK solver.
             - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
             - 'ADD': Average Drawdown of uncompounded cumulative returns.
             - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
             - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
             - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
-            - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns.
+            - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
             - 'MDD_Rel': Maximum Drawdown of compounded cumulative returns (Calmar Ratio).
             - 'ADD_Rel': Average Drawdown of compounded cumulative returns.
             - 'DaR_Rel': Drawdown at Risk of compounded cumulative returns.
             - 'CDaR_Rel': Conditional Drawdown at Risk of compounded cumulative returns.
             - 'EDaR_Rel': Entropic Drawdown at Risk of compounded cumulative returns.
-            - 'RLDaR_Rel': Relativistic Drawdown at Risk of compounded cumulative returns.
+            - 'RLDaR_Rel': Relativistic Drawdown at Risk of compounded cumulative returns. I recommend only use this function with MOSEK solver.
             - 'UCI_Rel': Ulcer Index of compounded cumulative returns.
 
         rf : float, optional

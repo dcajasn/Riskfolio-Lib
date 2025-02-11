@@ -1,7 +1,7 @@
 """"""  #
 
 """
-Copyright (c) 2020-2024, Dany Cajas
+Copyright (c) 2020-2025, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -43,6 +43,7 @@ __all__ = [
     "plot_network_allocation",
     "plot_clusters_network",
     "plot_clusters_network_allocation",
+    "plot_BrinsonAttribution",
 ]
 
 rm_names = [
@@ -62,6 +63,8 @@ rm_names = [
     "Worst Realization",
     "Conditional Value at Risk Range",
     "Tail Gini Range",
+    "Entropic Value at Risk Range",
+    "Relativistic Value at Risk Range",
     "Range",
     "Max Drawdown",
     "Average Drawdown",
@@ -89,6 +92,8 @@ rmeasures = [
     "WR",
     "CVRG",
     "TGRG",
+    "EVRG",
+    "RVRG",
     "RG",
     "MDD",
     "ADD",
@@ -229,6 +234,7 @@ def plot_frontier(
     beta=None,
     b_sim=None,
     kappa=0.30,
+    kappa_g=None,
     solver="CLARABEL",
     cmap="viridis",
     w=None,
@@ -274,6 +280,8 @@ def plot_frontier(
         - 'WR': Worst Realization (Minimax).
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
+        - 'EVRG': EVaR range of returns.
+        - 'RVRG': RLVaR range of returns.
         - 'RG': Range of returns.
         - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
@@ -301,7 +309,10 @@ def plot_frontier(
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+        Deformation parameter of RLVaR and RLDaR for losses, must be between 0 and 1. The default is 0.30.
+    kappa_g : float, optional
+        Deformation parameter of RLVaR for gains, must be between 0 and 1.
+        The default is None.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is 'CLARABEL'.
@@ -435,6 +446,8 @@ def plot_frontier(
         beta = alpha
     if b_sim is None:
         b_sim = a_sim
+    if kappa_g is None:
+        kappa_g = kappa
 
     width_ratios = [0.97, 0.03]
 
@@ -452,10 +465,12 @@ def plot_frontier(
         if isinstance(ax, plt.Axes):
             ax.axis("off")
             fig = ax.get_figure()
-            if hasattr(ax, 'get_subplotspec'):
+            if hasattr(ax, "get_subplotspec"):
                 subplot_spec = ax.get_subplotspec()
                 gs0 = subplot_spec.get_gridspec()
-                gs = GridSpecFromSubplotSpec(nrows=1, ncols=2, width_ratios=width_ratios, subplot_spec=gs0[0])
+                gs = GridSpecFromSubplotSpec(
+                    nrows=1, ncols=2, width_ratios=width_ratios, subplot_spec=gs0[0]
+                )
             else:
                 gs = GridSpec(nrows=1, ncols=2, figure=fig, width_ratios=width_ratios)
             axes = []
@@ -473,16 +488,31 @@ def plot_frontier(
         ax0.set_ylabel("Expected Logarithmic Return")
 
     item = rmeasures.index(rm)
-    if rm in ["CVaR", "TG", "EVaR", "RLVaR", "CVRG", "TGRG", "CDaR", "EDaR", "RLDaR"]:
+    if rm in [
+        "CVaR",
+        "TG",
+        "EVaR",
+        "RLVaR",
+        "CVRG",
+        "TGRG",
+        "EVRG",
+        "RVRG",
+        "CDaR",
+        "EDaR",
+        "RLDaR",
+    ]:
         x_label = (
             rm_names[item] + " (" + rm + ")" + " $\\alpha = $" + "{0:.2%}".format(alpha)
         )
     else:
         x_label = rm_names[item] + " (" + rm + ")"
-    if rm in ["CVRG", "TGRG"]:
+    if rm in ["CVRG", "TGRG", "EVRG", "RVRG"]:
         x_label += ", $\\beta = $" + "{0:.2%}".format(beta)
-    if rm in ["RLVaR", "RLDaR"]:
+    if rm in ["RLVaR", "RLDaR", "RVRG"]:
         x_label += ", $\\kappa = $" + "{0:.2}".format(kappa)
+    if rm in ["RLVaR", "RLDaR", "RVRG"]:
+        x_label += ", $\\kappa_g = $" + "{0:.2}".format(kappa_g)
+
     ax0.set_xlabel("Expected Risk - " + x_label)
 
     title = "Efficient Frontier Mean - " + x_label
@@ -1177,6 +1207,8 @@ def plot_risk_con(
     w,
     returns,
     cov=None,
+    asset_classes=None,
+    classes_col=None,
     rm="MV",
     rf=0,
     alpha=0.05,
@@ -1184,6 +1216,7 @@ def plot_risk_con(
     beta=None,
     b_sim=None,
     kappa=0.30,
+    kappa_g=None,
     solver="CLARABEL",
     percentage=False,
     erc_line=True,
@@ -1201,11 +1234,22 @@ def plot_risk_con(
     ----------
     w : DataFrame or Series of shape (n_assets, 1)
         Portfolio weights, where n_assets is the number of assets.
-    cov : DataFrame of shape (n_assets, n_assets)
-        Covariance matrix, where n_assets is the number of assets.
     returns : DataFrame of shape (n_samples, n_assets)
         Assets returns DataFrame, where n_samples is the number of
         observations and n_assets is the number of assets.
+    cov : DataFrame of shape (n_assets, n_assets)
+        Covariance matrix, where n_assets is the number of assets.
+    asset_classes : DataFrame of shape (n_assets, n_cols)
+        Asset's classes DataFrame, where n_assets is the number of assets and
+        n_cols is the number of columns of the DataFrame where the first column
+        is the asset list and the next columns are the different asset's
+        classes sets. It is only used when kind value is 'classes'. The default
+        value is None.
+    classes_col : str or int
+        If value is str, it is the column name of the set of classes from
+        asset_classes dataframe. If value is int, it is the column number of
+        the set of classes from asset_classes dataframe. The default
+        value is None.
     rm : str, optional
         Risk measure used to estimate risk contribution.
         The default is 'MV'. Possible values are:
@@ -1225,6 +1269,8 @@ def plot_risk_con(
         - 'WR': Worst Realization (Minimax).
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
+        - 'EVRG': EVaR range of returns.
+        - 'RVRG': RLVaR range of returns.
         - 'RG': Range of returns.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
@@ -1246,7 +1292,10 @@ def plot_risk_con(
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+        Deformation parameter of RLVaR and RLDaR for losses, must be between 0 and 1. The default is 0.30.
+    kappa_g : float, optional
+        Deformation parameter of RLVaR for gains, must be between 0 and 1.
+        The default is None.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is 'CLARABEL'.
@@ -1341,10 +1390,32 @@ def plot_risk_con(
     else:
         raise ValueError("cov must be a square DataFrame.")
 
+    if asset_classes is not None and classes_col is not None:
+        if not isinstance(asset_classes, pd.DataFrame):
+            raise ValueError("asset_classes must be a DataFrame")
+        else:
+            if asset_classes.shape[1] < 2:
+                raise ValueError("asset_classes must have at least two columns")
+
+            classes = asset_classes.columns.tolist()
+
+            if isinstance(classes_col, str) and classes_col in classes:
+                A = asset_classes.loc[:, classes_col].to_frame()
+                col = A.columns.to_list()[0]
+            elif isinstance(classes_col, int) and classes[classes_col] in classes:
+                A = asset_classes.iloc[:, classes_col].to_frame()
+                col = A.columns.to_list()[0]
+            else:
+                raise ValueError(
+                    "classes_col must be a valid column or column position of asset_classes"
+                )
+
     if beta is None:
         beta = alpha
     if b_sim is None:
         b_sim = a_sim
+    if kappa_g is None:
+        kappa_g = kappa
 
     if ax is None:
         fig = plt.gcf()
@@ -1355,14 +1426,28 @@ def plot_risk_con(
         fig = ax.get_figure()
 
     item = rmeasures.index(rm)
-    if rm in ["CVaR", "TG", "EVaR", "RLVaR", "CVRG", "TGRG", "CDaR", "EDaR", "RLDaR"]:
+    if rm in [
+        "CVaR",
+        "TG",
+        "EVaR",
+        "RLVaR",
+        "CVRG",
+        "TGRG",
+        "EVRG",
+        "RVRG",
+        "CDaR",
+        "EDaR",
+        "RLDaR",
+    ]:
         title = "Risk (" + rm_names[item] + " $\\alpha = $" + "{0:.2%}".format(alpha)
     else:
         title = "Risk (" + rm_names[item]
-    if rm in ["CVRG", "TGRG"]:
+    if rm in ["CVRG", "TGRG", "EVRG", "RVRG"]:
         title += ", $\\beta = $" + "{0:.2%}".format(beta)
-    if rm in ["RLVaR", "RLDaR"]:
+    if rm in ["RLVaR", "RLDaR", "RVRG"]:
         title += ", $\\kappa = $" + "{0:.2}".format(kappa)
+    if rm in ["RLVaR", "RLDaR", "RVRG"]:
+        title += ", $\\kappa = $" + "{0:.2}".format(kappa_g)
 
     title += ") Contribution per Asset"
     if percentage:
@@ -1390,6 +1475,14 @@ def plot_risk_con(
 
     if percentage:
         RC = RC / np.sum(RC)
+
+    if asset_classes is not None and classes_col is not None:
+        A = asset_classes.copy()
+        B = pd.DataFrame(RC, index=X)
+        A = pd.merge(A, B, left_on=classes[0], right_index=True, how="left")
+        A = A.groupby([col]).sum()[0]
+        X = A.index.tolist()
+        RC = A.to_numpy()
 
     ax.bar(X, RC, alpha=0.7, color=color, edgecolor="black")
 
@@ -1448,6 +1541,7 @@ def plot_factor_risk_con(
     beta=None,
     b_sim=None,
     kappa=0.30,
+    kappa_g=None,
     solver="CLARABEL",
     feature_selection="stepwise",
     stepwise="Forward",
@@ -1504,6 +1598,8 @@ def plot_factor_risk_con(
         - 'WR': Worst Realization (Minimax).
         - 'CVRG': CVaR range of returns.
         - 'TGRG': Tail Gini range of returns.
+        - 'EVRG': EVaR range of returns.
+        - 'RVRG': RLVaR range of returns.
         - 'RG': Range of returns.
         - 'MDD': Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
@@ -1525,7 +1621,10 @@ def plot_factor_risk_con(
         Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
         The default is None.
     kappa : float, optional
-        Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
+        Deformation parameter of RLVaR and RLDaR for losses, must be between 0 and 1. The default is 0.30.
+    kappa_g : float, optional
+        Deformation parameter of RLVaR for gains, must be between 0 and 1.
+        The default is None.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is 'CLARABEL'.
@@ -1668,6 +1767,8 @@ def plot_factor_risk_con(
         beta = alpha
     if b_sim is None:
         b_sim = a_sim
+    if kappa_g is None:
+        kappa_g = kappa
 
     if ax is None:
         fig = plt.gcf()
@@ -1678,14 +1779,28 @@ def plot_factor_risk_con(
         fig = ax.get_figure()
 
     item = rmeasures.index(rm)
-    if rm in ["CVaR", "TG", "EVaR", "RLVaR", "CVRG", "TGRG", "CDaR", "EDaR", "RLDaR"]:
+    if rm in [
+        "CVaR",
+        "TG",
+        "EVaR",
+        "RLVaR",
+        "CVRG",
+        "TGRG",
+        "EVRG",
+        "RVRG",
+        "CDaR",
+        "EDaR",
+        "RLDaR",
+    ]:
         title = "Risk (" + rm_names[item] + " $\\alpha = $" + "{0:.2%}".format(alpha)
     else:
         title = "Risk (" + rm_names[item]
-    if rm in ["CVRG", "TGRG"]:
+    if rm in ["CVRG", "TGRG", "EVRG", "RVRG"]:
         title += ", $\\beta = $" + "{0:.2%}".format(beta)
-    if rm in ["RLVaR", "RLDaR"]:
+    if rm in ["RLVaR", "RLDaR", "RVRG"]:
         title += ", $\\kappa = $" + "{0:.2}".format(kappa)
+    if rm in ["RLVaR", "RLDaR", "RVRG"]:
+        title += ", $\\kappa = $" + "{0:.2}".format(kappa_g)
 
     title += ") Contribution per "
     if feature_selection == "PCR":
@@ -1981,6 +2096,9 @@ def plot_range(
     a_sim=100,
     beta=None,
     b_sim=None,
+    kappa=0.3,
+    kappa_g=0.3,
+    solver="CLARABEL",
     bins=50,
     height=6,
     width=10,
@@ -2069,6 +2187,8 @@ def plot_range(
         beta = alpha
     if b_sim is None:
         b_sim = a_sim
+    if kappa_g is None:
+        kappa_g = kappa
 
     if ax is None:
         fig = plt.gcf()
@@ -2079,20 +2199,36 @@ def plot_range(
         fig = ax.get_figure()
 
     a = returns.to_numpy() @ w_.to_numpy()
-    ax.set_title("Portfolio Returns Range")
+    ax.set_title("Portfolio Returns Range Risk Measures")
 
     df = dict(
-        risk=["Range", "Tail Gini Range", "CVaR Range"],
+        risk=[
+            "VaR Range",
+            "CVaR Range",
+            "Tail Gini Range",
+            "EVaR Range",
+            "RLVaR Range",
+            "Range",
+        ],
         lower=[],
         upper=[],
     )
 
-    df["lower"].append(np.min(a))
-    df["lower"].append(-rk.TG(a, alpha=alpha, a_sim=a_sim))
+    df["lower"].append(-rk.VaR_Hist(a, alpha=alpha))
     df["lower"].append(-rk.CVaR_Hist(a, alpha=alpha))
-    df["upper"].append(-np.min(-a))
-    df["upper"].append(rk.TG(-a, alpha=beta, a_sim=b_sim))
+    df["lower"].append(-rk.TG(a, alpha=alpha, a_sim=a_sim))
+    df["lower"].append(-rk.EVaR_Hist(a, alpha=alpha, solver=solver)[0])
+    df["lower"].append(-rk.RLVaR_Hist(a, alpha=alpha, kappa=kappa, solver=solver))
+    df["lower"].append(np.min(a))
+    df["upper"].append(rk.VaR_Hist(-a, alpha=beta))
     df["upper"].append(rk.CVaR_Hist(-a, alpha=beta))
+    df["upper"].append(rk.TG(-a, alpha=beta, a_sim=b_sim))
+    df["upper"].append(rk.EVaR_Hist(-a, alpha=beta, solver=solver)[0])
+    df["upper"].append(
+        rk.RLVaR_Hist(-a * 100, alpha=beta, kappa=kappa_g, solver=solver) / 100
+    )
+    df["upper"].append(-np.min(-a))
+
     df = pd.DataFrame(df)
     df.set_index("risk", inplace=True)
 
@@ -2106,28 +2242,60 @@ def plot_range(
     n, _, _ = ax.hist(a, bins=int(bins), density=True, color="darkgrey", alpha=0.3)
 
     risk = [
-        rk.RG(a),
+        rk.VRG(a, alpha=alpha, beta=beta),
         rk.CVRG(a, alpha=alpha, beta=beta),
         rk.TGRG(a, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim),
+        rk.EVRG(a, alpha=alpha, beta=beta, solver=solver),
+        rk.RVRG(a, alpha=alpha, beta=beta, kappa=kappa, kappa_g=kappa_g, solver=solver),
+        rk.RG(a),
     ]
 
     label = [
-        "Range :" + "{0:.2%}".format(risk[0]),
-        "Tail Gini Range ("
+        "VaR Range ("
         + "{0:.1%}".format((1 - alpha))
         + ", "
         + "{0:.1%}".format((1 - beta))
         + "): "
-        + "{0:.2%}".format(risk[1]),
+        + "{0:.2%}".format(risk[0]),
         "CVaR Range ("
         + "{0:.1%}".format((1 - alpha))
         + ", "
         + "{0:.1%}".format((1 - beta))
         + "): "
+        + "{0:.2%}".format(risk[1]),
+        "Tail Gini Range ("
+        + "{0:.1%}".format((1 - alpha))
+        + ", "
+        + "{0:.1%}".format((1 - beta))
+        + "): "
         + "{0:.2%}".format(risk[2]),
+        "EVaR Range ("
+        + "{0:.1%}".format((1 - alpha))
+        + ", "
+        + "{0:.1%}".format((1 - beta))
+        + "): "
+        + "{0:.2%}".format(risk[3]),
+        "RlVaR Range ("
+        + "{0:.1%}".format((1 - alpha))
+        + ", "
+        + "{0:.1%}".format((1 - beta))
+        + ", "
+        + "{0:.1%}".format(kappa)
+        + ", "
+        + "{0:.1%}".format(kappa_g)
+        + "): "
+        + "{0:.2%}".format(risk[4]),
+        "Range :" + "{0:.2%}".format(risk[5]),
     ]
 
-    colors = ["dodgerblue", "fuchsia", "limegreen"]
+    colors = [
+        "darkorange",
+        "limegreen",
+        "mediumvioletred",
+        "dodgerblue",
+        "slateblue",
+        "fuchsia",
+    ]
 
     y_max = np.ceil(n.max())
 
@@ -2135,7 +2303,7 @@ def plot_range(
     for i in df.index:
         x1 = df.loc[i, "lower"]
         x2 = df.loc[i, "upper"]
-        y1 = j * y_max / 4
+        y1 = (len(colors) + 1 - j) * y_max / 9
         ax.vlines(
             x=x1,
             ymin=0,
@@ -2279,10 +2447,12 @@ def plot_drawdown(
         if isinstance(ax, plt.Axes):
             ax.axis("off")
             fig = ax.get_figure()
-            if hasattr(ax, 'get_subplotspec'):
+            if hasattr(ax, "get_subplotspec"):
                 subplot_spec = ax.get_subplotspec()
                 gs0 = subplot_spec.get_gridspec()
-                gs = GridSpecFromSubplotSpec(nrows=2, ncols=1, height_ratios=height_ratios, subplot_spec=gs0[0])
+                gs = GridSpecFromSubplotSpec(
+                    nrows=2, ncols=1, height_ratios=height_ratios, subplot_spec=gs0[0]
+                )
             else:
                 gs = GridSpec(nrows=2, ncols=1, figure=fig, height_ratios=height_ratios)
             axes = []
@@ -2406,12 +2576,6 @@ def plot_table(
         The default is 0.05.
     a_sim : float, optional
         Number of CVaRs used to approximate Tail Gini of losses. The default is 100.
-    beta : float, optional
-        Significance level of CVaR and Tail Gini of gains. If None it duplicates alpha value.
-        The default is None.
-    b_sim : float, optional
-        Number of CVaRs used to approximate Tail Gini of gains. If None it duplicates a_sim value.
-        The default is None.
     kappa : float, optional
         Deformation parameter of RLVaR and RLDaR, must be between 0 and 1. The default is 0.30.
     solver: str, optional
@@ -2848,22 +3012,24 @@ def plot_clusters(
         fig = ax.get_figure()
         if dendrogram == True:
             if isinstance(ax, plt.Axes):
-                if hasattr(ax, 'get_subplotspec'):
+                if hasattr(ax, "get_subplotspec"):
                     subplot_spec = ax.get_subplotspec()
                     gs0 = subplot_spec.get_gridspec()
-                    gs = GridSpecFromSubplotSpec(nrows=2,
-                                                 ncols=3,
-                                                 height_ratios=height_ratios_1,
-                                                 width_ratios=width_ratios_1,
-                                                 subplot_spec=gs0[0]
-                                                 )
+                    gs = GridSpecFromSubplotSpec(
+                        nrows=2,
+                        ncols=3,
+                        height_ratios=height_ratios_1,
+                        width_ratios=width_ratios_1,
+                        subplot_spec=gs0[0],
+                    )
                 else:
-                    gs = GridSpec(nrows=2,
-                                  ncols=3,
-                                  figure=fig,
-                                  height_ratios=height_ratios_1,
-                                  width_ratios=width_ratios_1,
-                                  )
+                    gs = GridSpec(
+                        nrows=2,
+                        ncols=3,
+                        figure=fig,
+                        height_ratios=height_ratios_1,
+                        width_ratios=width_ratios_1,
+                    )
                 axes = []
                 for i in range(2):
                     for j in range(3):
@@ -2872,20 +3038,22 @@ def plot_clusters(
                 raise TypeError("ax must be a matplotlib axes object.")
         else:
             if isinstance(ax, plt.Axes):
-                if hasattr(ax, 'get_subplotspec'):
+                if hasattr(ax, "get_subplotspec"):
                     subplot_spec = ax.get_subplotspec()
                     gs0 = subplot_spec.get_gridspec()
-                    gs = GridSpecFromSubplotSpec(nrows=1,
-                                                 ncols=2,
-                                                 width_ratios=width_ratios_2,
-                                                 subplot_spec=gs0[0]
-                                                 )
+                    gs = GridSpecFromSubplotSpec(
+                        nrows=1,
+                        ncols=2,
+                        width_ratios=width_ratios_2,
+                        subplot_spec=gs0[0],
+                    )
                 else:
-                    gs = GridSpec(nrows=1,
-                                  ncols=2,
-                                  figure=fig,
-                                  width_ratios=width_ratios_2,
-                                  )
+                    gs = GridSpec(
+                        nrows=1,
+                        ncols=2,
+                        figure=fig,
+                        width_ratios=width_ratios_2,
+                    )
                 axes = []
                 for i in range(1):
                     for j in range(2):
@@ -4136,9 +4304,8 @@ def plot_clusters_network(
         Seed for networkx spring layout. The default value is 0.
     node_labels : bool, optional
         Specify if node lables are visible. The default value is True.
-    max_node_size : float, optional
-        Size of the node with maximum weight in absolute value. The default
-        value is 2000.
+    node_size : float, optional
+        Size of the node. The default value is 2000.
     node_alpha : float, optional
         Alpha parameter or transparency of nodes. The default value is 0.7.
     scale : float, optional
@@ -4672,5 +4839,214 @@ def plot_clusters_network_allocation(
         fig.set_layout_engine(layout="constrained")
     except:
         pass
+
+    return ax
+
+
+def plot_BrinsonAttribution(
+    prices,
+    w,
+    wb,
+    start,
+    end,
+    asset_classes,
+    classes_col,
+    method="nearest",
+    sector="Total",
+    height=6,
+    width=10,
+    ax=None,
+):
+    r"""
+    Creates a plot with the Brinson Performance Attribution specified by the
+    sector parameter.
+
+    Parameters
+    ----------
+    prices : DataFrame of shape (n_samples, n_assets)
+        Assets prices DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
+    w : DataFrame or Series of shape (n_assets, 1)
+        A portfolio specified by the user.
+    wb : DataFrame or Series of shape (n_assets, 1)
+        A benchmark specified by the user.
+    start : str
+        Start date in format 'YYYY-MM-DD' specified by the user.
+    end : str
+        End date in format 'YYYY-MM-DD' specified by the user.
+    asset_classes : DataFrame of shape (n_assets, n_cols)
+        Asset's classes DataFrame, where n_assets is the number of assets and
+        n_cols is the number of columns of the DataFrame where the first column
+        is the asset list and the next columns are the different asset's
+        classes sets. It is only used when kind value is 'classes'. The default
+        value is None.
+    classes_col : str or int
+        If value is str, it is the column name of the set of classes from
+        asset_classes dataframe. If value is int, it is the column number of
+        the set of classes from asset_classes dataframe. The default
+        value is None.
+    method : str
+        Method used to calculate the nearest start or end dates in case one of
+        them is not in prices DataFrame. The default value is 'nearest'.
+        See `get_indexer <https://pandas.pydata.org/docs/reference/api/pandas.Index.get_indexer.html#pandas.Index.get_indexer>`_ for more details.
+    sector : str
+        Is the sector or class for which the function will plot the Brinson
+        performance attribution. Possible values are all classes in the set
+        of classes specified by classes_col parameter and 'Total' for aggregate
+        performance attribution. Default value is 'Total'.
+    height : float, optional
+        Height of the image in inches. The default is 8.
+    width : float, optional
+        Width of the image in inches. The default is 10.
+    ax : matplotlib axis, optional
+        If provided, plot on this axis. The default is None.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    ax :  matplotlib axis.
+        Returns the Axes object with the plot for further tweaking.
+
+    Example
+    -------
+    ::
+
+        ax = plot_BrinsonAttribution(
+            prices=data,
+            w=w,
+            wb=wb,
+            start='2019-01-07',
+            end='2019-12-06',
+            asset_classes=asset_classes,
+            classes_col='Industry',
+            method='nearest',
+            sector='Total',
+            height=6,
+            width=10,
+            ax=None
+            )
+
+    .. image:: images/BrinAttr_plot.png
+
+
+    """
+
+    if ax is None:
+        fig = plt.gcf()
+        ax = fig.gca()
+        fig.set_figwidth(width)
+        fig.set_figheight(height)
+    else:
+        fig = ax.get_figure()
+
+    BrinAttr, (start_, end_) = rk.BrinsonAttribution(
+        prices=prices,
+        w=w,
+        wb=wb,
+        start=start,
+        end=end,
+        asset_classes=asset_classes,
+        classes_col=classes_col,
+        method=method,
+    )
+
+    if sector not in BrinAttr.columns.tolist():
+        raise ValueError("Sector is not in asset_classes or it is not the Total")
+    else:
+        labels = [
+            "Asset Allocation",
+            "Security Selection",
+            "Interaction",
+            "Total Excess Return",
+        ]
+
+        ax.barh(
+            3,
+            BrinAttr.loc[labels[0], sector],
+            align="center",
+            color="fuchsia",
+            edgecolor="black",
+            alpha=0.3,
+        )
+        ax.barh(
+            2,
+            BrinAttr.loc[labels[1], sector],
+            align="center",
+            color="orange",
+            edgecolor="black",
+            alpha=0.3,
+        )
+        ax.barh(
+            1,
+            BrinAttr.loc[labels[2], sector],
+            align="center",
+            color="lime",
+            edgecolor="black",
+            alpha=0.3,
+        )
+        if BrinAttr.loc[labels[3], sector] < 0:
+            ax.barh(
+                0,
+                BrinAttr.loc[labels[3], sector],
+                align="center",
+                color="r",
+                edgecolor="black",
+                alpha=0.3,
+            )
+        else:
+            ax.barh(
+                0,
+                BrinAttr.loc[labels[3], sector],
+                align="center",
+                color="b",
+                edgecolor="black",
+                alpha=0.3,
+            )
+        ax.set_yticks([3, 2, 1, 0])
+        ax.set_yticklabels(labels)
+        ax.set_xlabel("Excess Return")
+        ax.set_title(
+            sector + " Performance Attribution Chart (" + start_ + " to " + end_ + ")"
+        )
+
+        ax.set_xticklabels(["{:3.2%}".format(x) for x in ax.get_xticks()])
+
+        r = plt.gcf().canvas.get_renderer()
+        transf = ax.transData.inverted()
+        sizes = [
+            BrinAttr.loc[labels[3], sector],
+            BrinAttr.loc[labels[2], sector],
+            BrinAttr.loc[labels[1], sector],
+            BrinAttr.loc[labels[0], sector],
+        ]
+        sizes2 = ["{:.2%}".format(x) for x in sizes]
+
+        for i, v in enumerate(sizes):
+            t = ax.text(v, i, sizes2[i], color="black")
+            bb = t.get_window_extent(renderer=r)
+            bb = bb.transformed(transf)
+            w_text = bb.width
+            x_text = bb.x0
+            y_text = bb.y0
+            if v >= 0:
+                t.set_position((x_text + w_text * 0.2, y_text))
+            else:
+                t.set_position((x_text - w_text * 1.2, y_text))
+
+        ax.set_xlim(
+            min(sizes) - (max(sizes) - min(sizes)) / 7,
+            max(sizes) + (max(sizes) - min(sizes)) / 7,
+        )
+
+        ax.grid(linestyle=":")
+
+        try:
+            fig.set_layout_engine(layout="constrained")
+        except:
+            pass
 
     return ax

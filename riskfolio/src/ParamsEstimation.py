@@ -56,8 +56,8 @@ def mean_vector(X, method="hist", d=0.94, target="b1"):
         The default value is 'hist'. Possible values are:
 
         - 'hist': use historical estimator.
-        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
+        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
         - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
         - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
         - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
@@ -167,8 +167,8 @@ def covar_matrix(
 
         - 'hist': use historical estimates.
         - 'semi': use semi lower covariance matrix.
-        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
+        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
         - 'ledoit': use the Ledoit and Wolf Shrinkage method.
         - 'oas': use the Oracle Approximation Shrinkage method.
         - 'shrunk': use the basic Shrunk Covariance method.
@@ -374,7 +374,7 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
 
-    thresholdt : scalar, optional
+    threshold : scalar, optional
         Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.
     verbose : bool, optional
@@ -939,8 +939,8 @@ def risk_factors(
         The default value is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
-        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
-        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`__ for more details.
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`__ for more details.
         - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
         - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
         - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
@@ -949,8 +949,8 @@ def risk_factors(
         The default is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
-        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
-        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`_ for more details.
+        - 'ewma1'': use ewma with adjust=True, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`__ for more details.
+        - 'ewma2': use ewma with adjust=False, see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/computation.html#exponentially-weighted-windows>`__ for more details.
         - 'ledoit': use the Ledoit and Wolf Shrinkage method.
         - 'oas': use the Oracle Approximation Shrinkage method.
         - 'shrunk': use the basic Shrunk Covariance method.
@@ -1131,8 +1131,8 @@ def black_litterman(
         The default value is 'hist'.
 
         - 'hist': use historical estimates.
-        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
+        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
         - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
         - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
         - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
@@ -1141,8 +1141,8 @@ def black_litterman(
         The default is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
-        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
+        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
         - 'ledoit': use the Ledoit and Wolf Shrinkage method.
         - 'oas': use the Oracle Approximation Shrinkage method.
         - 'shrunk': use the basic Shrunk Covariance method.
@@ -1329,8 +1329,8 @@ def augmented_black_litterman(
         The default value is 'hist'.
 
         - 'hist': use historical estimates.
-        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
+        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
         - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
         - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
         - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
@@ -1339,8 +1339,8 @@ def augmented_black_litterman(
         The default is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
-        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
+        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
         - 'ledoit': use the Ledoit and Wolf Shrinkage method.
         - 'oas': use the Oracle Approximation Shrinkage method.
         - 'shrunk': use the basic Shrunk Covariance method.
@@ -1562,8 +1562,8 @@ def black_litterman_bayesian(
         The default value is 'hist'.
 
         - 'hist': use historical estimates.
-        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-        - 'ewma2': use ewma with adjust=False, For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
+        - 'ewma2': use ewma with adjust=False, For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
         - 'JS': James-Stein estimator. For more information see :cite:`b-Meucci2005` and :cite:`b-Feng2016`.
         - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
         - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
@@ -1572,8 +1572,8 @@ def black_litterman_bayesian(
         The default is 'hist'. Possible values are:
 
         - 'hist': use historical estimates.
-        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
-        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`_.
+        - 'ewma1': use ewma with adjust=True. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
+        - 'ewma2': use ewma with adjust=False. For more information see `EWM <https://pandas.pydata.org/pandas-docs/stable/user_guide/window.html#exponentially-weighted-window>`__.
         - 'ledoit': use the Ledoit and Wolf Shrinkage method.
         - 'oas': use the Oracle Approximation Shrinkage method.
         - 'shrunk': use the basic Shrunk Covariance method.
@@ -1705,21 +1705,29 @@ def bootstrapping(
     Returns
     -------
     mu_l : DataFrame
-        The q/2 percentile of mean vector obtained through the selected bootstrapping method.
+        The q/2 percentile of mean vector obtained through the selected
+        bootstrapping method.
     mu_u : DataFrame
-        The 1-q/2 percentile of mean vector obtained through the selected bootstrapping method.
+        The 1-q/2 percentile of mean vector obtained through the selected
+        bootstrapping method.
     cov_l : DataFrame
-        The q/2 percentile of covariance matrix obtained through the selected bootstrapping method.
+        The q/2 percentile of covariance matrix obtained through the selected
+        bootstrapping method.
     cov_u : DataFrame
-        The 1-q/2 percentile of covariance matrix obtained through the selected bootstrapping method.
+        The 1-q/2 percentile of covariance matrix obtained through the selected
+        bootstrapping method.
     cov_mu : DataFrame
-        The covariance matrix of estimation errors of mean vector obtained through the selected bootstrapping method.
+        The covariance matrix of estimation errors of mean vector obtained
+        through the selected bootstrapping method.
     cov_sigma : DataFrame
-        The covariance matrix of estimation errors of covariance matrix obtained through the selected bootstrapping method.
+        The covariance matrix of estimation errors of covariance matrix
+        obtained through the selected bootstrapping method.
     k_mu : DataFrame
-        The square root of size of elliptical constraint of mean vector estimation error based on 1-q percentile.
+        The square root of size of elliptical constraint of mean vector
+        estimation error based on 1-q percentile.
     k_sigma : DataFrame
-        The square root of size of elliptical constraint of covariance matrix estimation error based on 1-q percentile.
+        The square root of size of elliptical constraint of covariance matrix
+        estimation error based on 1-q percentile.
 
     Raises
     ------
@@ -1828,8 +1836,8 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
         If consider only the main diagonal of covariance matrices of estimation
         errors following :cite:`b-fabozzi2007robust`. The default is False.
     threshold: float
-        Parameter used to fix covariance matrices in case they are not positive semidefinite.
-        The default is 1e-10.
+        Parameter used to fix covariance matrices in case they are not positive
+        semidefinite. The default is 1e-10.
     seed: int
         Seed used to generate random numbers for simulation.
         The default is 0.
@@ -1837,21 +1845,29 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
     Returns
     -------
     mu_l : DataFrame
-        The q/2 percentile of mean vector obtained through the normal simulation.
+        The q/2 percentile of mean vector obtained through the normal
+        simulation.
     mu_u : DataFrame
-        The 1-q/2 percentile of mean vector obtained through the normal simulation.
+        The 1-q/2 percentile of mean vector obtained through the normal
+        simulation.
     cov_l : DataFrame
-        The q/2 percentile of covariance matrix obtained through the normal simulation.
+        The q/2 percentile of covariance matrix obtained through the normal
+        simulation.
     cov_u : DataFrame
-        The 1-q/2 percentile of covariance matrix obtained through the normal simulation.
+        The 1-q/2 percentile of covariance matrix obtained through the normal
+        simulation.
     cov_mu : DataFrame
-        The covariance matrix of estimation errors of mean vector obtained through the normal simulation.
+        The covariance matrix of estimation errors of mean vector obtained
+        through the normal simulation.
     cov_sigma : DataFrame
-        The covariance matrix of estimation errors of covariance matrix obtained through the normal simulation.
+        The covariance matrix of estimation errors of covariance matrix
+        obtained through the normal simulation.
     k_mu : DataFrame
-        The square root of size of elliptical constraint of mean vector estimation error based on 1-q percentile.
+        The square root of size of elliptical constraint of mean vector
+        estimation error based on 1-q percentile.
     k_sigma : DataFrame
-        The square root of size of elliptical constraint of covariance matrix estimation error based on 1-q percentile.
+        The square root of size of elliptical constraint of covariance matrix
+        estimation error based on 1-q percentile.
 
     Raises
     ------

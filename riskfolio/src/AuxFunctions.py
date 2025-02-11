@@ -1,7 +1,7 @@
 """"""  #
 
 """
-Copyright (c) 2020-2024, Dany Cajas
+Copyright (c) 2020-2025, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -171,8 +171,8 @@ def cov_fix(cov, method="clipped", threshold=1e-8):
         Covariance matrix, where n_assets is the number of assets.
     method : str
         The default value is 'clipped', see more in `cov_nearest <https://www.statsmodels.org/stable/generated/statsmodels.stats.correlation_tools.cov_nearest.html>`_.
-    **kwargs
-        Other parameters from `cov_nearest <https://www.statsmodels.org/stable/generated/statsmodels.stats.correlation_tools.cov_nearest.html>`_.
+    threshold
+        Clipping threshold for smallest eigen value.
 
     Returns
     -------
@@ -1144,7 +1144,7 @@ def denoisedCorr(eVal, eVec, nFacts, kind="fixed"):
     ----------
     eVal : 1darray
         Eigenvalues.
-    eVal : ndarray
+    eVec : ndarray
         Eigenvectors.
     nFacts : float
         The number of factors.
@@ -1187,7 +1187,7 @@ def shrinkCorr(eVal, eVec, nFacts, alpha=0):
     ----------
     eVal : 1darray
         Eigenvalues.
-    eVal : ndarray
+    eVec : ndarray
         Eigenvectors.
     nFacts : float
         The number of factors.

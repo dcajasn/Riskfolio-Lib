@@ -7,12 +7,22 @@
 Plot Functions
 ##############
 
+.. raw:: html
+
+    <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer;">
+            Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
 .. image:: https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86
  :target: https://github.com/sponsors/dcajasn
 
 .. raw:: html
    
-   <br>
+    <br>
    
 .. raw:: html
 
@@ -105,6 +115,8 @@ Example
                        feature_selection='PCR',
                        n_components=0.95)
     w4 = port.rp_optimization(model='FC', rm='MV', rf=0, b_f=None)
+
+    wb = pd.DataFrame(np.ones((len(assets), 1))/len(assets), index=assets)
 
 
 Module Functions

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2024, Dany Cajas
+ * Copyright (c) 2020-2025, Dany Cajas
  * All rights reserved.
  * This work is licensed under BSD 3-Clause "New" or "Revised" License.
  * License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -36,7 +36,7 @@ std::vector<int> cumsum(const std::vector<int>& vec) {
  * @n size of symmetric matrix.
  */
 
-Eigen::MatrixXd cpp_duplication_matrix(const int &n) {
+Eigen::SparseMatrix<double> cpp_duplication_matrix(const int &n, const bool &diag = true) {
     /* Old Version
     Eigen::SparseMatrix<double> out(n*n, (n*(n+1))/2);
     for (int j = 0; j < n; ++j) {
@@ -53,7 +53,7 @@ Eigen::MatrixXd cpp_duplication_matrix(const int &n) {
     }
     */
     // New version based on https://www.mathworks.com/matlabcentral/answers/473737-efficient-algorithm-for-a-duplication-matrix
-    int m = n * (n + 1) / 2;
+    int m = 1;
     int nsq = n * n;
     int r = 0;
     int a = 1;
@@ -63,6 +63,7 @@ Eigen::MatrixXd cpp_duplication_matrix(const int &n) {
     std::iota(sequence.begin(), sequence.end(), 2); // sequence: [2, 3, 4, ... , n]
     std::reverse(sequence.begin(), sequence.end()); // reverse: [n, n-1, n-2, ..., 2]
     std::vector<int> cn = cumsum(sequence); // cumulative sum
+    std::vector<int> filtered_rows, filtered_cols;
 
     for (int i = 1; i <= n; ++i) {
         for (int j = 0; j < i - 1; ++j) {
@@ -76,13 +77,58 @@ Eigen::MatrixXd cpp_duplication_matrix(const int &n) {
         a += n - i + 1;
     }
 
-    Eigen::SparseMatrix<double> out(nsq, m);
-    for (int i = 0; i < nsq; ++i) {
-        out.insert(i, v[i] - 1) = 1;
+    if (diag==true){
+        m = n * (n + 1) / 2;
+        for (int i = 0; i < nsq; ++i) {
+            filtered_rows.push_back(i);
+            filtered_cols.push_back(v[i]-1);
+        }
+    }else{
+        m = n * (n - 1) / 2;
+        std::vector<int> rows(nsq), cols(m);
+        std::iota(rows.begin(), rows.end(), 0);
+
+        for (size_t i; i < nsq; ++i){
+            std::cout << rows[i] <<' ';
+        }
+
+        std::unordered_map<int, int> counts;
+        for (int i : v) {
+            counts[i]++;
+        }
+
+        std::unordered_set<int> non_unique_elements;
+        for (const auto& pair : counts) {  // Use pair explicitly
+            if (pair.second > 1) {
+                    non_unique_elements.insert(pair.first);
+            }
+        }
+
+        std::list<int> new_non_unique_elements;
+        for (int i : non_unique_elements) {
+            new_non_unique_elements.push_back(i);
+        }
+        new_non_unique_elements.sort();
+
+        std::unordered_map<int, int> new_cols;
+        int currentNumber = 0;
+        for (int col : new_non_unique_elements) {
+            new_cols[col] = currentNumber++;
+        }
+
+        for (int i = 0; i < nsq; ++i) {
+            if (non_unique_elements.count(v[i])) {
+                filtered_rows.push_back(rows[i]);
+                filtered_cols.push_back(new_cols[v[i]]);
+            }
+        }
     }
 
-    Eigen::MatrixXd D = Eigen::MatrixXd(out);
-    return D;
+    Eigen::SparseMatrix<double> out(nsq, m);
+    for (int i = 0; i < filtered_rows.size(); ++i) {
+        out.insert(filtered_rows[i], filtered_cols[i]) = 1;
+    }
+    return out;
 }
 
 
@@ -95,7 +141,7 @@ Eigen::MatrixXd cpp_duplication_matrix(const int &n) {
  *
  * @n size of symmetric matrix.
  */ 
-Eigen::MatrixXd cpp_duplication_elimination_matrix(const int &n) {
+Eigen::SparseMatrix<double> cpp_duplication_elimination_matrix(const int &n, const bool &diag = true) {
     /* Old Version
     Eigen::SparseMatrix<double> out((n*(n+1))/2, n*n);
     for (int j = 0; j < n; ++j) {
@@ -111,7 +157,9 @@ Eigen::MatrixXd cpp_duplication_elimination_matrix(const int &n) {
     }
     */
     // New version based on https://www.mathworks.com/matlabcentral/answers/473737-efficient-algorithm-for-a-duplication-matrix
-    int m = n * (n + 1) / 2;
+    
+    int m = 1;
+    int j = 1;
     int nsq = n * n;
     int r = 0;
     int a = 1;
@@ -121,7 +169,14 @@ Eigen::MatrixXd cpp_duplication_elimination_matrix(const int &n) {
     std::iota(sequence.begin(), sequence.end(), 0); // sequence: [0, 1, 2, ... , n-1]
     std::vector<int> cn = cumsum(sequence); // cumulative sum
 
-    for (int i = 1; i <= n; ++i) {
+    if (diag == true){
+        m = n * (n + 1) / 2;
+    }else{
+        m = n * (n - 1) / 2;
+        j = 2;
+    }
+
+    for (int i = j; i <= n; ++i) {
         r += i - 1;
         // Filling v[r:r + n - i] with a:a + n - i
         for (int j = 0; j < n - i + 1; ++j) {
@@ -136,8 +191,7 @@ Eigen::MatrixXd cpp_duplication_elimination_matrix(const int &n) {
     for (int i = 0; i < m; ++i) {
         out.insert(i, v[i] - 1) = 1;
     }
-    Eigen::MatrixXd L = Eigen::MatrixXd(out);
-    return L;
+    return out;
 }
 
 /**
@@ -147,7 +201,7 @@ Eigen::MatrixXd cpp_duplication_elimination_matrix(const int &n) {
  *
  * @n size of symmetric matrix.
  */
-Eigen::MatrixXd cpp_duplication_summation_matrix(const int &n) {
+Eigen::SparseMatrix<double> cpp_duplication_summation_matrix(const int &n, const bool &diag = true) {
     /* Old version
     std::vector<int> a = {0};
     for (int k = 0; k < n-1; ++k) {
@@ -174,7 +228,8 @@ Eigen::MatrixXd cpp_duplication_summation_matrix(const int &n) {
     }
     */
     // New version based on https://www.mathworks.com/matlabcentral/answers/473737-efficient-algorithm-for-a-duplication-matrix
-    int m = n * (n + 1) / 2;
+    int m = 1;
+    int j = 1;
     int nsq = n * n;
     int r = 0;
     int a = 1;
@@ -186,7 +241,14 @@ Eigen::MatrixXd cpp_duplication_summation_matrix(const int &n) {
     std::iota(sequence.begin(), sequence.end(), 0); // sequence: [0, 1, 2, ... , n-1]
     std::vector<int> cn = cumsum(sequence); // cumulative sum
 
-    for (int i = 1; i <= n; ++i) {
+    if (diag == true){
+        m = n * (n + 1) / 2;
+    }else{
+        m = n * (n - 1) / 2;
+        j = 2;
+    }
+
+    for (int i = j; i <= n; ++i) {
         r += i - 1;
         // Filling v[r:r + n - i] with a:a + n - i
         for (int j = 0; j < n - i + 1; ++j) {
@@ -199,21 +261,31 @@ Eigen::MatrixXd cpp_duplication_summation_matrix(const int &n) {
         r += n - i + 1;
         a += n - i + 1;
     }
+
     v.erase(std::remove(v.begin(), v.end(), 0), v.end());
     v2.erase(std::remove(v2.begin(), v2.end(), 0), v2.end());
     rows2.erase(std::remove(rows2.begin(), rows2.end(), 0), rows2.end());
 
-    Eigen::SparseMatrix<double> out(m, nsq);
-    for (int i = 0; i < m; ++i) {
-        out.insert(i, v[i] - 1) = 1;
-    }
+    Eigen::SparseMatrix<double> out1(m, nsq);
     Eigen::SparseMatrix<double> out2(m, nsq);
-    for (int i = 0; i < m-n; ++i) {
-        out2.insert(rows2[i]-1, v2[i] - 1) = 1;
-    }
+    Eigen::SparseMatrix<double> out;
 
-    Eigen::MatrixXd S = Eigen::MatrixXd(out + out2);
-    return S;
+    if (diag == true){
+        for (int i = 0; i < m; ++i) {
+            out1.insert(i, v[i] - 1) = 1;
+        }
+        for (int i = 0; i < m-n; ++i) {
+            out2.insert(rows2[i]-1, v2[i] - 1) = 1;
+        }
+        out = out1 + out2;
+    } else {
+        for (int i = 0; i < m; ++i) {
+            out1.insert(i, v[i] - 1) = 2;
+        }
+        out = out1;
+    }
+    
+    return out;
 }
 
 /**
@@ -222,7 +294,7 @@ Eigen::MatrixXd cpp_duplication_summation_matrix(const int &n) {
  * @T number of rows.
  * @n number of columns.
  */
-Eigen::MatrixXd cpp_commutation_matrix(const int &T, const int &n) {
+Eigen::SparseMatrix<double> cpp_commutation_matrix(const int &T, const int &n) {
     std::vector<int> i(T * n);
     std::iota (std::begin(i), std::end(i), 0);
     std::vector<int> j;
@@ -235,8 +307,7 @@ Eigen::MatrixXd cpp_commutation_matrix(const int &T, const int &n) {
     for (int idx = 0; idx < T * n; ++idx) {
         out.insert(i[idx], j[idx]) = 1.0;
     }
-    Eigen::MatrixXd K = Eigen::MatrixXd(out);
-    return K;
+    return out;
 }
 
 /**
@@ -379,13 +450,16 @@ void bind_duplication_matrix(py::module &m) {
             ----------
             n : int
                 Number of assets.
+            diag : bool
+                Include diagonal elements or not.
 
             Returns
             -------
             D: np.ndarray
                 Duplication matrix
         )pbdoc",
-        py::arg("n")
+        py::arg("n"),
+        py::arg("diag")
         );
 }
 
@@ -400,13 +474,16 @@ void bind_duplication_elimination_matrix(py::module &m) {
             ----------
             n : int
                 Number of assets.
+            diag : bool
+                Include diagonal elements or not.
 
             Returns
             -------
             L: np.ndarray
                 Duplication matrix
         )pbdoc",
-        py::arg("n")
+        py::arg("n"),
+        py::arg("diag")
     );
 }
 
@@ -421,13 +498,16 @@ void bind_duplication_summation_matrix(py::module &m) {
             ----------
             n : int
                 Number of assets.
+            diag : bool
+                Include diagonal elements or not.
 
             Returns
             -------
             S: np.ndarray
                 Duplication summation matrix.
         )pbdoc",
-        py::arg("n")
+        py::arg("n"),
+        py::arg("diag")
     );
 }
 
