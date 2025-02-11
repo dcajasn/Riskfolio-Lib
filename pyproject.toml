@@ -1,10 +1,25 @@
-[build-system]
-requires = [
-    "oldest-supported-numpy",
-    "pybind11>=2.10.1",
-    "scipy >= 1.1.0",
-    "setuptools>68.1.0",
-    "wheel"
+[tool.ruff]
+# The minimum Python version that should be supported
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "NPY201",
+    "W605",  # Check for invalid escape sequences in docstrings (errors in py >= 3.11)
 ]
 
-target-version = "py39"
+ignore = [
+    "E721" # Do not compare types, use 'isinstance()'
+]
+
+[build-system]
+requires = [
+    "numpy >= 2.0.0",
+    "scipy >= 1.13.0",
+    "setuptools >= 68.1.0",
+    "wheel",
+    "pybind11>=2.10.1",
+]
