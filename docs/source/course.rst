@@ -57,7 +57,7 @@ Courses Schedule for 2025
 
 The live classes are online through Google Meets (all classes will be recorded and uploaded to the
 google classroom of the course).
-The duration of the course is 39 hours and classes are hold on Saturday and Sunday from 10a.m. to. 1p.m. (UTC-5).
+The duration of the course is 42 hours and classes are hold on Saturday and Sunday from 10 a.m. to 1 p.m. (UTC-5).
 
 In the following table you can see the dates of the courses that will be taught in 2025:
 
@@ -304,11 +304,11 @@ The detailed content of the course follows below:
       </tr>
       <tr>
          <td>&emsp; Integer Constraints (Cardinality on Assets and Classes, and Buy in threshold constraints)</td>
-         <td style='text-align:center'>1</td>
+         <td style='text-align:center'>3</td>
       </tr>
       <tr>
          <td>&emsp; Convex Fractional Programming with Integer Variables</td>
-         <td style='text-align:center'>1</td>
+         <td style='text-align:center'>2</td>
       </tr>
       <tr>
          <td>&emsp; Risk Parity Optimization for Long Short Portfolios</td>
@@ -364,7 +364,7 @@ The detailed content of the course follows below:
       </tr>
       <tr>
          <td><b> Total</b></td>
-         <td style='text-align:center'><b>39</b></td>
+         <td style='text-align:center'><b>42</b></td>
       </tr>
       </tbody>
    </table>
