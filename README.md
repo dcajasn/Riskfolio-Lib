@@ -280,7 +280,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 ```
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (7.0.0)},
+      title = {Riskfolio-Lib (7.0.1)},
       year  = {2025},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }
