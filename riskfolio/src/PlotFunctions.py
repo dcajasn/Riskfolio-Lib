@@ -752,7 +752,7 @@ def plot_pie(
     sizes3["abs_values"] = sizes3["abs_values"] / sizes3["abs_values"].max()
     l = sizes3[sizes3["abs_values"] >= 1 - others].index.tolist()[0]
 
-    if l > 0:
+    if l >= 0:
         a1 = sizes2["abs_values"].sum() - sizes2[sizes2.index <= l]["abs_values"].sum()
         a2 = sizes2["values"].sum() - sizes2[sizes2.index <= l]["values"].sum()
         item = pd.DataFrame(["Others", a1, a2]).T
