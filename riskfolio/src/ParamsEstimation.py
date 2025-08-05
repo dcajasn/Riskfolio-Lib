@@ -214,7 +214,7 @@ def covar_matrix(
 
     if method == "hist":
         cov = np.cov(X, rowvar=False)
-    if method == "semi":
+    elif method == "semi":
         T, N = X.shape
         mu = X.mean().to_numpy().reshape(1, -1)
         a = X - np.repeat(mu, T, axis=0)
