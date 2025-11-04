@@ -1614,7 +1614,15 @@ class Portfolio(object):
             )
 
     def optimization(
-        self, model="Classic", rm="MV", obj="Sharpe", kelly=None, rf=0, l=2, hist=True
+        self,
+        model="Classic",
+        rm="MV",
+        obj="Sharpe",
+        kelly=None,
+        rf=0,
+        l=2,
+        hist=True,
+        return_cvxpy_problem=False,
     ):
         r"""
         This method that calculates the optimal portfolio according to the
@@ -1700,6 +1708,9 @@ class Portfolio(object):
         l : scalar, optional
             Risk aversion factor of the 'Utility' objective function.
             The default is 2.
+
+        return_cvxpy_problem : bool, optional
+            If True, returns the cvxpy.Problem without solving. Default is False.
         hist : bool, optional
             Indicate what kind of returns are used to calculate risk measures
             that depends on scenarios (All except 'MV' risk measure).
@@ -1712,10 +1723,15 @@ class Portfolio(object):
             Risk Factor model for returns, and '2' Risk Factor model for
             covariance and returns. The default is True.
 
+        return_cvxpy_problem : bool, optional
+            If True, returns the cvxpy.Problem without solving. Default is False.
+
         Returns
         -------
         w : DataFrame
             The weights of optimal portfolio.
+            If return_cvxpy_problem is True, returns the cvxpy.Problem.
+            If return_cvxpy_problem is True, returns the cvxpy.Problem.
 
         """
 
@@ -2946,6 +2962,8 @@ class Portfolio(object):
 
         try:
             prob = cp.Problem(objective, constraints)
+            if return_cvxpy_problem:
+                return prob
             for solver in self.solvers:
                 try:
                     if len(self.sol_params) == 0:
@@ -2998,7 +3016,14 @@ class Portfolio(object):
         return self.optimal
 
     def rp_optimization(
-        self, model="Classic", rm="MV", rf=0, b=None, b_f=None, hist=True
+        self,
+        model="Classic",
+        rm="MV",
+        rf=0,
+        b=None,
+        b_f=None,
+        hist=True,
+        return_cvxpy_problem=False,
     ):
         r"""
         This method that calculates the risk parity portfolio using the risk
@@ -3082,10 +3107,18 @@ class Portfolio(object):
             False means Risk Factor model for covariance and returns. The
             default is True.
 
+        return_cvxpy_problem : bool, optional
+            If True, returns the cvxpy.Problem without solving. Default is False.
+
+        return_cvxpy_problem : bool, optional
+            If True, returns the cvxpy.Problem without solving. Default is False.
+
         Returns
         -------
         w : DataFrame
             The weights of optimal portfolio.
+            If return_cvxpy_problem is True, returns the cvxpy.Problem.
+            If return_cvxpy_problem is True, returns the cvxpy.Problem.
 
         """
 
@@ -3840,6 +3873,8 @@ class Portfolio(object):
 
         try:
             prob = cp.Problem(objective, constraints)
+            if return_cvxpy_problem:
+                return prob
             for solver in self.solvers:
                 try:
                     if len(self.sol_params) == 0:
@@ -3881,7 +3916,9 @@ class Portfolio(object):
 
         return self.rp_optimal
 
-    def rrp_optimization(self, model="Classic", version="A", l=1, b=None, hist=True):
+    def rrp_optimization(
+        self, model="Classic", version="A", l=1, b=None, hist=True, return_cvxpy_problem=False
+    ):
         r"""
         This method that calculates the relaxed risk parity portfolio according
         to the optimization model and version selected by the user
@@ -3953,10 +3990,14 @@ class Portfolio(object):
             False means Risk Factor model for covariance. The default is
             True.
 
+        return_cvxpy_problem : bool, optional
+            If True, returns the cvxpy.Problem without solving. Default is False.
+
         Returns
         -------
         w : DataFrame
             The weights of optimal portfolio.
+            If return_cvxpy_problem is True, returns the cvxpy.Problem.
 
         """
 
@@ -4070,6 +4111,8 @@ class Portfolio(object):
 
         try:
             prob = cp.Problem(objective, constraints)
+            if return_cvxpy_problem:
+                return prob
             for solver in self.solvers:
                 try:
                     if len(self.sol_params) == 0:
@@ -4100,7 +4143,9 @@ class Portfolio(object):
 
         return self.rrp_optimal
 
-    def wc_optimization(self, obj="Sharpe", rf=0, l=2, Umu="box", Ucov="box"):
+    def wc_optimization(
+        self, obj="Sharpe", rf=0, l=2, Umu="box", Ucov="box", return_cvxpy_problem=False
+    ):
         r"""
         This method that calculates the worst case mean variance portfolio
         according to the objective function and uncertainty sets selected by
@@ -4139,10 +4184,14 @@ class Portfolio(object):
             - 'ellip': Use a elliptical uncertainty set for the covariance matrix.
             - None: Don't use an uncertainty set for covariance matrix.
 
+        return_cvxpy_problem : bool, optional
+            If True, returns the cvxpy.Problem without solving. Default is False.
+
         Returns
         -------
         w : DataFrame
             The weights of optimal portfolio.
+            If return_cvxpy_problem is True, returns the cvxpy.Problem.
 
         """
 
@@ -4400,6 +4449,8 @@ class Portfolio(object):
 
         try:
             prob = cp.Problem(objective, constraints)
+            if return_cvxpy_problem:
+                return prob
             for solver in self.solvers:
                 try:
                     if len(self.sol_params) == 0:
@@ -4436,7 +4487,14 @@ class Portfolio(object):
         return self.wc_optimal
 
     def frc_optimization(
-        self, model="Classic", obj="Sharpe", kelly=None, rf=0, l=2, hist=True
+        self,
+        model="Classic",
+        obj="Sharpe",
+        kelly=None,
+        rf=0,
+        l=2,
+        hist=True,
+        return_cvxpy_problem=False,
     ):
         r"""
         This method that calculates the risk parity portfolio using the risk
@@ -4748,6 +4806,8 @@ class Portfolio(object):
 
         try:
             prob = cp.Problem(objective, constraints)
+            if return_cvxpy_problem:
+                return prob
             for solver in self.solvers:
                 try:
                     if len(self.sol_params) == 0:
@@ -4783,7 +4843,9 @@ class Portfolio(object):
 
         return self.frc_optimal
 
-    def owa_optimization(self, obj="Sharpe", owa_w=None, kelly=None, rf=0, l=2):
+    def owa_optimization(
+        self, obj="Sharpe", owa_w=None, kelly=None, rf=0, l=2, return_cvxpy_problem=False
+    ):
         r"""
         This method that calculates the owa optimal portfolio according to the
         weight vector given by the user. The general problem that
@@ -5095,6 +5157,8 @@ class Portfolio(object):
 
         try:
             prob = cp.Problem(objective, constraints)
+            if return_cvxpy_problem:
+                return prob
             for solver in self.solvers:
                 try:
                     if len(self.sol_params) == 0:
