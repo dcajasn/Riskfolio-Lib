@@ -132,5 +132,5 @@ jobs:
         if: ${{github.event_name == 'push' && env.USE_OPENMP != 'True'}}
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels-${{ runner.os }}-py${{ matrix.python-version }}
           path: ./wheelhouse
