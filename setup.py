@@ -29,7 +29,7 @@ DESCRIPTION = "Portfolio Optimization and Quantitative Strategic Asset Allocatio
 with open("README.md", encoding='UTF-8') as fh:
     LONG_DESCRIPTION = fh.read()
 
-DISTNAME = 'Riskfolio-Lib'
+DISTNAME = 'riskfolio-lib'
 MAINTAINER = 'Dany Cajas'
 MAINTAINER_EMAIL = 'dany.cajas.n@uni.pe'
 URL = 'https://github.com/dcajasn/Riskfolio-Lib'

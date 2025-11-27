@@ -128,15 +128,9 @@ jobs:
           pip install --upgrade twine
           twine check wheelhouse/*
 
-      - name:  Release to pypi
-        if: ${{env.DEPLOY == 'True' &&  env.USE_OPENMP != 'True'}}
-        shell: bash
-        run: |
-          twine upload --skip-existing --repository-url $PYPI_SERVER wheelhouse/* -u $PYPI_USER -p $PYPI_PASSWORD
-
       - name: Upload artifacts to github
         if: ${{github.event_name == 'push' && env.USE_OPENMP != 'True'}}
         uses: actions/upload-artifact@v4
         with:
-          name: wheels-${{ runner.os }}-py${{ matrix.python-version }}
+          name: wheels
           path: ./wheelhouse
