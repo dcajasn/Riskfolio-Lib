@@ -17,8 +17,8 @@ ignore = [
 
 [build-system]
 requires = [
-    "numpy == 1.26.4",
-    "scipy == 1.13.0",
+    "numpy >= 1.26.4",
+    "scipy >= 1.13.0",
     "setuptools == 68.1.0",
     "wheel",
     "pybind11==2.13.6",

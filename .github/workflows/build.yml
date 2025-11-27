@@ -33,7 +33,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-22.04, macos-13, windows-2022 ]
+        os: [ ubuntu-22.04, macos-15, windows-2022 ]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     env:
@@ -44,7 +44,7 @@ jobs:
       MOSEK_CI_BASE64: ${{ secrets.MOSEK_CI_BASE64 }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set Additional Envs
         run: |
           echo "PYTHON_SUBVERSION=$(echo $PYTHON_VERSION | cut -c 3-)" >> $GITHUB_ENV
@@ -77,7 +77,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-22.04, macos-13, windows-2022 ]
+        os: [ ubuntu-22.04, macos-15, windows-2022 ]
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     env:
@@ -125,7 +125,7 @@ jobs:
         if: ${{github.event_name == 'push' &&  env.USE_OPENMP != 'True'}}
         shell: bash
         run: |
-          python -m pip install --upgrade twine
+          pip install --upgrade twine
           twine check wheelhouse/*
 
       - name:  Release to pypi
