@@ -170,10 +170,11 @@ Some of key functionalities that Riskfolio-Lib offers:
 - Portfolio optimization with Augmented Black Litterman model.
 - Portfolio optimization with constraints on tracking error and turnover.
 - Portfolio optimization with short positions and leveraged portfolios.
-- Portfolio optimization with constraints on number of assets and number of effective assets.
+- Portfolio optimization with constraints on maximum number of assets and number of effective assets.
 - Portfolio optimization with constraints based on graph information.
 - Portfolio optimization with inequality constraints on risk contributions for variance.
 - Portfolio optimization with inequality constraints on factor risk contributions for variance.
+- Portfolio optimization with integer constraints such as Cardinality on Assets and Categories, Mutually Exclusive and Join Investment.
 - Tools to build efficient frontier for 24 convex risk measures.
 - Tools to build linear constraints on assets, asset classes and risk factors.
 - Tools to build views on assets and asset classes.
@@ -253,18 +254,19 @@ POW - refers to problems with 3-dimensional power cone constraints.
 Riskfolio-Lib supports Python 3.9 or higher.
 
 Installation requires:
-- [numpy](http://www.numpy.org/) >= 1.24.0
-- [scipy](https://www.scipy.org/) >= 1.10.0
-- [pandas](https://pandas.pydata.org/) >= 2.0.0
-- [matplotlib](https://matplotlib.org/) >= 3.8.0
-- [clarabel](https://oxfordcontrol.github.io/ClarabelDocs/stable/) >= 0.6.0
-- [cvxpy](https://www.cvxpy.org/) >= 1.5.2
-- [scikit-learn](https://scikit-learn.org/stable/) >= 1.3.0
-- [statsmodels](https://www.statsmodels.org/) >= 0.13.5
+- [numpy](http://www.numpy.org/) >= 1.26.0
+- [scipy](https://www.scipy.org/) >= 1.16.0
+- [pandas](https://pandas.pydata.org/) >= 2.2.2
+- [matplotlib](https://matplotlib.org/) >= 3.9.2
+- [clarabel](https://oxfordcontrol.github.io/ClarabelDocs/stable/) >= 0.11.1
+- [scs](https://www.cvxgrp.org/scs/) >= 3.2.7
+- [cvxpy](https://www.cvxpy.org/) >= 1.7.2
+- [scikit-learn](https://scikit-learn.org/stable/) >= 1.7.0
+- [statsmodels](https://www.statsmodels.org/) >= 0.14.5
 - [arch](https://bashtage.github.io/arch/) >= 7.0
 - [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 3.1.2
-- [networkx](https://networkx.org) >= 3.0
-- [astropy](https://www.astropy.org) >= 5.1
+- [networkx](https://networkx.org) >= 3.4
+- [astropy](https://www.astropy.org) >= 6.1
 - [pybind11](https://pybind11.readthedocs.io/en/stable/) >= 2.10.1
 
 ## Installation
@@ -280,7 +282,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 ```
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (7.0.1)},
+      title = {Riskfolio-Lib (7.1.0)},
       year  = {2025},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }

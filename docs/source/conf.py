@@ -24,7 +24,7 @@ sys.path.insert(3, os.path.abspath('../../riskfolio/external'))
 # -- Project information -----------------------------------------------------
 
 project = 'Riskfolio-Lib'
-copyright = '2020-2024, Dany Cajas'
+copyright = '2020-2025, Dany Cajas'
 author = 'Dany Cajas'
 
 
@@ -127,11 +127,15 @@ python_version = '.'.join(map(str, sys.version_info[0:2]))
 intersphinx_mapping = {
     'sphinx': ('https://www.sphinx-doc.org/en/master/', None),
     'python': ('https://docs.python.org/' + python_version, None),
-    'matplotlib': ('https://matplotlib.org', None),
     'numpy': ('https://numpy.org/doc/stable/', None),
-    'sklearn': ('https://scikit-learn.org/stable/', None),
-    'pandas': ('https://pandas.pydata.org/docs/', None),
     'scipy': ('https://docs.scipy.org/doc/scipy/reference/', None),
+    'pandas': ('https://pandas.pydata.org/docs/', None),
+    'matplotlib': ('https://matplotlib.org', None),
+    'clarabel': ('https://oxfordcontrol.github.io/ClarabelDocs/stable/', None),
+    'scs': ('https://www.cvxgrp.org/scs/', None),
+    'cvxpy': ('https://www.cvxpy.org/', None),
+    'sklearn': ('https://scikit-learn.org/stable/', None),
+    'statsmodels': ('https://www.statsmodels.org/stable/', None),
     'arch': ('https://bashtage.github.io/arch/', None),
     'xlsxwriter': ('https://xlsxwriter.readthedocs.io', None),
     'networkx': ('https://networkx.org/documentation/stable/', None),

@@ -7,8 +7,8 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
 MAJOR = 7
-MINOR = 0
-MICRO = 1
+MINOR = 1
+MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 def write_version_py(filename='riskfolio/version.py'):
@@ -39,19 +39,21 @@ DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
 PYTHON_REQUIRES = ">=3.9"
 
 INSTALL_REQUIRES = [
-    'numpy>=1.24.0',
-    'scipy>=1.10.0',
-    'pandas>=2.0.0',
-    'matplotlib>=3.8.0',
-    'clarabel>=0.6.0',
-    'cvxpy>=1.5.2',
+    'numpy>=1.26.4',
+    'scipy>=1.16.1',
+    'pandas>=2.2.2',
+    'matplotlib>=3.9.2',
+    'clarabel>=0.11.1',
+    'SCS>=3.2.7',
+    'cvxpy>=1.6.6',
     'scikit-learn>=1.3.0',
-    'statsmodels>=0.13.5',
-    'arch>=7.0',
-    'xlsxwriter>=3.1.2',
-    'networkx>=3.0',
-    'astropy>=5.1',
-    'pybind11>=2.10.1',
+    'statsmodels>=0.14.5',
+    'arch>=7.2',
+    'xlsxwriter>=3.2.2',
+    'networkx>=3.4.2',
+    'astropy>=6.1.3',
+    'pybind11>=2.13.6',
+    'vectorbt>=0.28.0',
 ]
 
 PACKAGES = [
@@ -67,6 +69,7 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
     'License :: OSI Approved :: BSD License',
     'Topic :: Office/Business :: Financial :: Investment',
     'Topic :: Office/Business :: Financial',

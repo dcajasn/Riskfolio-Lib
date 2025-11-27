@@ -54,8 +54,8 @@ Special Constraints
 * `Short and leveraged portfolios <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%208%20-%20Short%20and%20Leveraged%20Portfolios.ipynb>`_.
 * `Portfolio Optimization with Constraints on Return and Risk Measures <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2021%20-%20Constraints%20on%20Return%20and%20Risk%20Measures.ipynb>`_.
 * `Portfolio Optimization with Dollar Neutral Constraint <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2023%20-%20Dollar%20Neutral%20Portfolios.ipynb>`_.
-* `Portfolio Optimization with Constraints on Number of Assets and Number of Effective Assets <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2026%20-%20Constraints%20on%20Numbers%20of%20Assets.ipynb>`_.
-
+* `Portfolio Optimization with Constraints on Number of Assets and Number of Effective Assets <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2026%20-%20Constraints%20on%20Maximum%20Number%20of%20Assets.ipynb>`_.
+* `Portfolio Optimization with Integer Constraints <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2052%20-%20Portfolio%20Optimization%20with%20Integer%20Constraints.ipynb>`_.
 
 Risk Factors Models
 -------------------

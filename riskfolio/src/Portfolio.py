@@ -262,6 +262,7 @@ class Portfolio(object):
         sht=False,
         uppersht=0.2,
         upperlng=1,
+        lowerlng=0,
         budget=1,
         budgetsht=0.2,
         nea=None,
@@ -288,6 +289,12 @@ class Portfolio(object):
         brcinequality=None,
         afrcinequality=None,
         bfrcinequality=None,
+        aintinequality=None,
+        bintinequality=None,
+        cintinequality=None,
+        dintinequality=None,
+        eintinequality=None,
+        fintinequality=None,
         b=None,
         network_sdp=None,
         cluster_sdp=None,
@@ -333,6 +340,7 @@ class Portfolio(object):
         self.sht = sht
         self.uppersht = uppersht
         self.upperlng = upperlng
+        self.lowerlng = lowerlng
         self.budget = budget
         self.budgetsht = budgetsht
         self.nea = nea
@@ -354,6 +362,12 @@ class Portfolio(object):
         self._brcinequality = brcinequality
         self._afrcinequality = afrcinequality
         self._bfrcinequality = bfrcinequality
+        self._aintinequality = aintinequality
+        self._bintinequality = bintinequality
+        self._cintinequality = cintinequality
+        self._dintinequality = dintinequality
+        self._eintinequality = eintinequality
+        self._fintinequality = fintinequality
         self._b = b
         self._network_sdp = network_sdp
         self._cluster_sdp = cluster_sdp
@@ -545,7 +559,7 @@ class Portfolio(object):
                 a = a
             else:
                 raise NameError(
-                    "The array ainequality must have the same number of columns than assets' number."
+                    "The matrix ainequality must have the same number of columns than assets' number."
                 )
         return a
 
@@ -589,7 +603,7 @@ class Portfolio(object):
                 a = a
             else:
                 raise NameError(
-                    "The array arcinequality must have the same number of columns than assets' number."
+                    "The matrix arcinequality must have the same number of columns than assets' number."
                 )
         return a
 
@@ -668,6 +682,214 @@ class Portfolio(object):
             else:
                 raise NameError("The matrix bfrcinequality must have one column.")
         self._bfrcinequality = a
+
+    ############
+
+    @property
+    def aintinequality(self):
+        a = self._aintinequality
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] == self.numassets:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of aintinequality must have the same number of columns than assets' number."
+                            )
+            else:
+                raise NameError("aintinequality must be a dictionary.")
+        return a
+
+    @aintinequality.setter
+    def aintinequality(self, value):
+        a = value
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] == self.numassets:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of aintinequality must have the same number of columns than assets' number."
+                            )
+            else:
+                raise NameError("aintinequality must be a dictionary.")
+        self._aintinequality = a
+
+    @property
+    def bintinequality(self):
+        a = self._bintinequality
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] == 1:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of bintinequality must have one column."
+                            )
+            else:
+                raise NameError("bintinequality must be a dictionary.")
+        return a
+
+    @bintinequality.setter
+    def bintinequality(self, value):
+        a = value
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] == 1:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of bintinequality must have one column."
+                            )
+            else:
+                raise NameError("bintinequality must be a dictionary.")
+        self._bintinequality = a
+
+    @property
+    def cintinequality(self):
+        a = self._cintinequality
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] == self.numassets:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The matrix cintinequality must have the same number of columns than assets' number."
+                            )
+            else:
+                raise NameError("cintinequality must be a dictionary.")
+        return a
+
+    @cintinequality.setter
+    def cintinequality(self, value):
+        a = value
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] == self.numassets:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of cintinequality must have the same number of columns than assets' number."
+                            )
+            else:
+                raise NameError("cintinequality must be a dictionary.")
+        self._cintinequality = a
+
+    @property
+    def dintinequality(self):
+        a = self._dintinequality
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] == 1:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of dintinequality must have one column."
+                            )
+            else:
+                raise NameError("dintinequality must be a dictionary.")
+        return a
+
+    @dintinequality.setter
+    def dintinequality(self, value):
+        a = value
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] == 1:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of dintinequality must have one column."
+                            )
+            else:
+                raise NameError("dintinequality must be a dictionary.")
+        self._dintinequality = a
+
+    @property
+    def eintinequality(self):
+        a = self._eintinequality
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] >= 2:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of eintinequality must have at least two columns."
+                            )
+            else:
+                raise NameError("eintinequality must be a dictionary.")
+        return a
+
+    @eintinequality.setter
+    def eintinequality(self, value):
+        a = value
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] >= 2:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of eintinequality must have at least two columns."
+                            )
+            else:
+                raise NameError("eintinequality must be a dictionary.")
+        self._eintinequality = a
+
+    @property
+    def fintinequality(self):
+        a = self._fintinequality
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] == 1:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of fintinequality must have one column."
+                            )
+            else:
+                raise NameError("fintinequality must be a dictionary.")
+        return a
+
+    @fintinequality.setter
+    def fintinequality(self, value):
+        a = value
+        if a is not None:
+            if isinstance(a, dict):
+                for key in a.keys():
+                    if min(a[key].shape) > 0:
+                        if a[key].shape[1] == 1:
+                            a[key] = a[key]
+                        else:
+                            raise NameError(
+                                "The non-empty components of fintinequality must have one column."
+                            )
+            else:
+                raise NameError("fintinequality must be a dictionary.")
+        self._fintinequality = a
+
+    ############
 
     @property
     def b(self):
@@ -2418,13 +2640,21 @@ class Portfolio(object):
         RLVaR_G = t9 + ln_k_g * s9 + cp.sum(psi9 + theta9)
         risk24 = RLVaR_L - RLVaR_G
 
-        # Cardinality Boolean Variables
+        # Boolean Variables
 
         flag_int = False
         if (
             self.card is not None
             or self.network_ip is not None
             or self.cluster_ip is not None
+            or (
+                self.aintinequality is not None
+                and self.bintinequality is not None
+                and self.cintinequality is not None
+                and self.dintinequality is not None
+                and self.eintinequality is not None
+                and self.fintinequality is not None
+            )
         ):
             flag_int = True
             if obj == "Sharpe":
@@ -2438,7 +2668,7 @@ class Portfolio(object):
         if obj == "Sharpe":
             constraints += [cp.sum(w) == self.budget * k, k * 1000 >= 0]
             if self.sht == False:
-                constraints += [w <= self.upperlng * k, w * 1000 >= 0]
+                constraints += [w * 1000 >= 0]
                 if flag_int:
                     constraints += [
                         e1 <= k,
@@ -2446,11 +2676,17 @@ class Portfolio(object):
                         e1 <= 100000 * e,
                         e1 >= k - 100000 * (1 - e),
                         w <= self.upperlng * e1,
+                        w >= self.lowerlng * e1,
+                    ]
+                else:
+                    constraints += [
+                        w <= self.upperlng * k,
+                        w >= self.lowerlng * k,
                     ]
             elif self.sht == True:
                 constraints += [
                     cp.sum(cp.pos(w)) * 1000
-                    <= (self.budget + self.uppersht) * k * 1000,
+                    <= (self.budget + self.budgetsht) * k * 1000,
                     cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * k * 1000,
                 ]
                 if flag_int:
@@ -2462,18 +2698,28 @@ class Portfolio(object):
                         w >= -min(self.uppersht, self.budgetsht) * e1,
                         w <= min(self.upperlng, (self.budget + self.budgetsht)) * e1,
                     ]
+                else:
+                    constraints += [
+                        w >= -min(self.uppersht, self.budgetsht) * k,
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)) * k,
+                    ]
         else:
             constraints += [cp.sum(w) == self.budget]
             if self.sht == False:
-                constraints += [w <= self.upperlng, w * 1000 >= 0]
+                constraints += [w * 1000 >= 0]
                 if flag_int:
                     constraints += [
                         w <= self.upperlng * e,
+                        w >= self.lowerlng * e,
                     ]
-
+                else:
+                    constraints += [
+                        w <= self.upperlng,
+                        w >= self.lowerlng,
+                    ]
             elif self.sht == True:
                 constraints += [
-                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.uppersht) * 1000,
+                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.budgetsht) * 1000,
                     cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * 1000,
                 ]
                 if flag_int:
@@ -2481,30 +2727,75 @@ class Portfolio(object):
                         w >= -min(self.uppersht, self.budgetsht) * e,
                         w <= min(self.upperlng, (self.budget + self.budgetsht)) * e,
                     ]
+                else:
+                    constraints += [
+                        w >= -min(self.uppersht, self.budgetsht),
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)),
+                    ]
 
         # Problem network constraints
 
         if flag_int:
+
             # Cardinality Constraint
+
             if self.card is not None:
                 constraints += [
                     cp.sum(e) <= self.card,
                 ]
+
+            # Integer Constraint
+
+            if (
+                self.aintinequality is not None
+                and self.bintinequality is not None
+                and self.cintinequality is not None
+                and self.dintinequality is not None
+                and self.eintinequality is not None
+                and self.fintinequality is not None
+            ):
+                e_set = {}
+                for key in self.aintinequality.keys():
+                    if min(self.aintinequality[key].shape) > 0:
+                        constraints += [
+                            self.aintinequality[key] @ e <= self.bintinequality[key]
+                        ]
+                    if min(self.cintinequality[key].shape) > 0:
+                        e_set[key] = cp.Variable(
+                            (int(self.cintinequality[key].shape[0] / 2), 1),
+                            boolean=True,
+                        )
+                        constraints += [
+                            self.cintinequality[key] @ e
+                            <= cp.multiply(
+                                self.dintinequality[key],
+                                cp.vstack([e_set[key], e_set[key]]),
+                            ),
+                            self.eintinequality[key] @ e_set[key]
+                            <= self.fintinequality[key],
+                        ]
+
             # Network IP Constraint
+
             if self.network_ip is not None:
                 constraints += [
                     np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
                 ]
             # Cluster IP Constraint
+
             if self.cluster_ip is not None:
                 constraints += [
                     np.unique(self.cluster_ip + np.identity(N), axis=0) @ e <= 1
                 ]
         else:
+
             # Network SDP Constraint
+
             if self.network_sdp is not None:
                 constraints += [cp.multiply(self.network_sdp, W) == 0]
+
             # Cluster SDP Constraint
+
             if self.cluster_sdp is not None:
                 constraints += [cp.multiply(self.cluster_sdp, W) == 0]
 
@@ -4229,13 +4520,21 @@ class Portfolio(object):
                 risk = g**2
                 constraints += [cp.SOC(g, G.T @ w)]
 
-        # Cardinal Boolean Variables
+        # Boolean Variables
 
         flag_int = False
         if (
             self.card is not None
             or self.network_ip is not None
             or self.cluster_ip is not None
+            or (
+                self.aintinequality is not None
+                and self.bintinequality is not None
+                and self.cintinequality is not None
+                and self.dintinequality is not None
+                and self.eintinequality is not None
+                and self.fintinequality is not None
+            )
         ):
             flag_int = True
             if obj == "Sharpe":
@@ -4249,7 +4548,7 @@ class Portfolio(object):
         if obj == "Sharpe":
             constraints += [cp.sum(w) == self.budget * k, k * 1000 >= 0]
             if self.sht == False:
-                constraints += [w <= self.upperlng * k, w * 1000 >= 0]
+                constraints += [w * 1000 >= 0]
                 if flag_int:
                     constraints += [
                         e1 <= k,
@@ -4257,14 +4556,19 @@ class Portfolio(object):
                         e1 <= 100000 * e,
                         e1 >= k - 100000 * (1 - e),
                         w <= self.upperlng * e1,
+                        w >= self.lowerlng * e1,
+                    ]
+                else:
+                    constraints += [
+                        w <= self.upperlng * k,
+                        w >= self.lowerlng * k,
                     ]
             elif self.sht == True:
                 constraints += [
                     cp.sum(cp.pos(w)) * 1000
-                    <= (self.budget + self.uppersht) * k * 1000,
+                    <= (self.budget + self.budgetsht) * k * 1000,
                     cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * k * 1000,
                 ]
-
                 if flag_int:
                     constraints += [
                         e1 <= k,
@@ -4274,17 +4578,28 @@ class Portfolio(object):
                         w >= -min(self.uppersht, self.budgetsht) * e1,
                         w <= min(self.upperlng, (self.budget + self.budgetsht)) * e1,
                     ]
+                else:
+                    constraints += [
+                        w >= -min(self.uppersht, self.budgetsht) * k,
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)) * k,
+                    ]
         else:
             constraints += [cp.sum(w) == self.budget]
             if self.sht == False:
-                constraints += [w <= self.upperlng, w * 1000 >= 0]
+                constraints += [w * 1000 >= 0]
                 if flag_int:
                     constraints += [
                         w <= self.upperlng * e,
+                        w >= self.lowerlng * e,
+                    ]
+                else:
+                    constraints += [
+                        w <= self.upperlng,
+                        w >= self.lowerlng,
                     ]
             elif self.sht == True:
                 constraints += [
-                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.uppersht) * 1000,
+                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.budgetsht) * 1000,
                     cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * 1000,
                 ]
                 if flag_int:
@@ -4292,28 +4607,70 @@ class Portfolio(object):
                         w >= -min(self.uppersht, self.budgetsht) * e,
                         w <= min(self.upperlng, (self.budget + self.budgetsht)) * e,
                     ]
+                else:
+                    constraints += [
+                        w >= -min(self.uppersht, self.budgetsht),
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)),
+                    ]
 
         if flag_int:
+
             # Cardinality Constraint
+
             if self.card is not None:
                 constraints += [
                     cp.sum(e) <= self.card,
                 ]
+
+            # Integer Constraint
+
+            if (
+                self.aintinequality is not None
+                and self.bintinequality is not None
+                and self.cintinequality is not None
+                and self.dintinequality is not None
+                and self.eintinequality is not None
+                and self.fintinequality is not None
+            ):
+                e_set = {}
+                for key in self.aintinequality.keys():
+                    if min(self.aintinequality[key].shape) > 0:
+                        constraints += [
+                            self.aintinequality[key] @ e <= self.bintinequality[key]
+                        ]
+                    if min(self.cintinequality[key].shape) > 0:
+                        e_set[key] = cp.Variable(
+                            (self.cintinequality[key].shape[0], 1), boolean=True
+                        )
+                        constraints += [
+                            self.cintinequality[key] @ e
+                            <= cp.multiply(self.dintinequality[key], e_set[key]),
+                            self.eintinequality[key] @ e_set[key]
+                            <= self.fintinequality[key],
+                        ]
+
             # Network IP Constraint
+
             if self.network_ip is not None:
                 constraints += [
                     np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
                 ]
+
             # Cluster IP Constraint
+
             if self.cluster_ip is not None:
                 constraints += [
                     np.unique(self.cluster_ip + np.identity(N), axis=0) @ e <= 1
                 ]
         else:
+
             # Network SDP Constraint
+
             if self.network_sdp is not None:
                 constraints += [cp.multiply(self.network_sdp, W) == 0]
+
             # Cluster SDP Constraint
+
             if self.cluster_sdp is not None:
                 constraints += [cp.multiply(self.cluster_sdp, W) == 0]
 
@@ -4600,27 +4957,38 @@ class Portfolio(object):
         if obj == "Sharpe":
             constraints += [cp.sum(w) == self.budget * k, k * 1000 >= 0]
             if self.sht == False:
-                constraints += [w <= self.upperlng * k, w * 1000 >= 0]
+                constraints += [
+                    w <= self.upperlng * k,
+                    w >= self.lowerlng * k,
+                    w * 1000 >= 0,
+                ]
             elif self.sht == True:
                 constraints += [
                     cp.sum(cp.pos(w)) * 1000
-                    <= (self.budget + self.uppersht) * k * 1000,
+                    <= (self.budget + self.budgetsht) * k * 1000,
                     cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * k * 1000,
+                    w >= -min(self.uppersht, self.budgetsht) * k * 1000,
+                    w <= min(self.upperlng, (self.budget + self.budgetsht)) * k * 1000,
                 ]
         else:
             constraints += [cp.sum(w) == self.budget]
             if self.sht == False:
-                constraints += [w <= self.upperlng, w * 1000 >= 0]
+                constraints += [w <= self.upperlng, w >= self.lowerlng, w * 1000 >= 0]
             elif self.sht == True:
                 constraints += [
-                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.uppersht) * 1000,
+                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.budgetsht) * 1000,
                     cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * 1000,
+                    w >= -min(self.uppersht, self.budgetsht) * 1000,
+                    w <= min(self.upperlng, (self.budget + self.budgetsht)) * 1000,
                 ]
 
         # Network SDP Constraint
+
         if self.network_sdp is not None:
             constraints += [cp.multiply(self.network_sdp, W1) == 0]
+
         # Cluster SDP Constraint
+
         if self.cluster_sdp is not None:
             constraints += [cp.multiply(self.cluster_sdp, W1) == 0]
 
@@ -4898,13 +5266,21 @@ class Portfolio(object):
         onesvec = np.ones((T, 1))
         constraints += [y @ owa_w.T <= onesvec @ a.T + b @ onesvec.T]
 
-        # Cardinality Boolean Variables
+        # Boolean Variables
 
         flag_int = False
         if (
             self.card is not None
             or self.network_ip is not None
             or self.cluster_ip is not None
+            or (
+                self.aintinequality is not None
+                and self.bintinequality is not None
+                and self.cintinequality is not None
+                and self.dintinequality is not None
+                and self.eintinequality is not None
+                and self.fintinequality is not None
+            )
         ):
             flag_int = True
             if obj == "Sharpe":
@@ -4918,7 +5294,7 @@ class Portfolio(object):
         if obj == "Sharpe":
             constraints += [cp.sum(w) == self.budget * k, k * 1000 >= 0]
             if self.sht == False:
-                constraints += [w <= self.upperlng * k, w * 1000 >= 0]
+                constraints += [w * 1000 >= 0]
                 if flag_int:
                     constraints += [
                         e1 <= k,
@@ -4926,11 +5302,17 @@ class Portfolio(object):
                         e1 <= 100000 * e,
                         e1 >= k - 100000 * (1 - e),
                         w <= self.upperlng * e1,
+                        w >= self.lowerlng * e1,
+                    ]
+                else:
+                    constraints += [
+                        w <= self.upperlng * k,
+                        w >= self.lowerlng * k,
                     ]
             elif self.sht == True:
                 constraints += [
                     cp.sum(cp.pos(w)) * 1000
-                    <= (self.budget + self.uppersht) * k * 1000,
+                    <= (self.budget + self.budgetsht) * k * 1000,
                     cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * k * 1000,
                 ]
                 if flag_int:
@@ -4942,17 +5324,28 @@ class Portfolio(object):
                         w >= -min(self.uppersht, self.budgetsht) * e1,
                         w <= min(self.upperlng, (self.budget + self.budgetsht)) * e1,
                     ]
+                else:
+                    constraints += [
+                        w >= -min(self.uppersht, self.budgetsht) * k,
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)) * k,
+                    ]
         else:
             constraints += [cp.sum(w) == self.budget]
             if self.sht == False:
-                constraints += [w <= self.upperlng, w * 1000 >= 0]
+                constraints += [w <= self.upperlng, w >= self.lowerlng, w * 1000 >= 0]
                 if flag_int:
                     constraints += [
                         w <= self.upperlng * e,
+                        w >= self.lowerlng * e,
+                    ]
+                else:
+                    constraints += [
+                        w <= self.upperlng,
+                        w >= self.lowerlng,
                     ]
             elif self.sht == True:
                 constraints += [
-                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.uppersht) * 1000,
+                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.budgetsht) * 1000,
                     cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * 1000,
                 ]
                 if flag_int:
@@ -4960,28 +5353,70 @@ class Portfolio(object):
                         w >= -min(self.uppersht, self.budgetsht) * e,
                         w <= min(self.upperlng, (self.budget + self.budgetsht)) * e,
                     ]
+                else:
+                    constraints += [
+                        w >= -min(self.uppersht, self.budgetsht),
+                        w <= min(self.upperlng, (self.budget + self.budgetsht)),
+                    ]
 
         if flag_int:
+
             # Cardinality Constraint
+
             if self.card is not None:
                 constraints += [
                     cp.sum(e) <= self.card,
                 ]
+
+            # Integer Constraint
+
+            if (
+                self.aintinequality is not None
+                and self.bintinequality is not None
+                and self.cintinequality is not None
+                and self.dintinequality is not None
+                and self.eintinequality is not None
+                and self.fintinequality is not None
+            ):
+                e_set = {}
+                for key in self.aintinequality.keys():
+                    if min(self.aintinequality[key].shape) > 0:
+                        constraints += [
+                            self.aintinequality[key] @ e <= self.bintinequality[key]
+                        ]
+                    if min(self.cintinequality[key].shape) > 0:
+                        e_set[key] = cp.Variable(
+                            (self.cintinequality[key].shape[0], 1), boolean=True
+                        )
+                        constraints += [
+                            self.cintinequality[key] @ e
+                            <= cp.multiply(self.dintinequality[key], e_set[key]),
+                            self.eintinequality[key] @ e_set[key]
+                            <= self.fintinequality[key],
+                        ]
+
             # Network IP Constraint
+
             if self.network_ip is not None:
                 constraints += [
                     np.unique(self.network_ip + np.identity(N), axis=0) @ e <= 1
                 ]
+
             # Cluster IP Constraint
+
             if self.cluster_ip is not None:
                 constraints += [
                     np.unique(self.cluster_ip + np.identity(N), axis=0) @ e <= 1
                 ]
         else:
+
             # Network SDP Constraint
+
             if self.network_sdp is not None:
                 constraints += [cp.multiply(self.network_sdp, W) == 0]
+
             # Cluster SDP Constraint
+
             if self.cluster_sdp is not None:
                 constraints += [cp.multiply(self.cluster_sdp, W) == 0]
 
@@ -5577,6 +6012,16 @@ class Portfolio(object):
 
         self.ainequality = None
         self.binequality = None
+        self.arcinequality = (None,)
+        self.brcinequality = (None,)
+        self.afrcinequality = (None,)
+        self.bfrcinequality = (None,)
+        self.aintinequality = (None,)
+        self.bintinequality = (None,)
+        self.cintinequality = (None,)
+        self.dintinequality = (None,)
+        self.eintinequality = (None,)
+        self.fintinequality = (None,)
         self.b = None
         self.network_sdp = None
         self.graph_penalty = 0.05

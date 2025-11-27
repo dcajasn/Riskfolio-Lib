@@ -19,6 +19,7 @@ import riskfolio.src.DBHT as db
 __all__ = [
     "assets_constraints",
     "factors_constraints",
+    "integer_constraints",
     "assets_views",
     "factors_views",
     "assets_clusters",
@@ -46,12 +47,12 @@ def assets_constraints(constraints, asset_classes):
         are:
 
         - Disabled: (bool) indicates if the constraint is enable.
-        - Type: (str) can be: 'Assets', 'Classes', 'All Assets', 'Each asset in a class' and 'All Classes'.
-        - Set: (str) if Type is 'Classes', 'Each asset in a class' or 'All Classes'specified the name of the asset's classes set.
+        - Type: (str) can be 'Assets', 'Classes', 'All Assets', 'Each asset in a class' and 'All Classes'.
+        - Set: (str) if Type is 'Classes', 'Each asset in a class' or 'All Classes' specified the name of the asset's classes set.
         - Position: (str) the name of the asset or asset class of the constraint.
         - Sign: (str) can be '>=' or '<='.
         - Weight: (scalar) is the maximum or minimum weight of the absolute constraint.
-        - Type Relative: (str) can be: 'Assets' or 'Classes'.
+        - Type Relative: (str) can be 'Assets' or 'Classes'.
         - Relative Set: (str) if Type Relative is 'Classes' specified the name of the set of asset classes.
         - Relative: (str) the name of the asset or asset class of the relative constraint.
         - Factor: (scalar) is the factor of the relative constraint.
@@ -105,7 +106,7 @@ def assets_constraints(constraints, asset_classes):
         constraints = pd.DataFrame(constraints)
 
 
-    The constraint looks like this:
+    The constraints look like the following image:
 
     .. image:: images/Constraints.png
 
@@ -134,144 +135,110 @@ def assets_constraints(constraints, asset_classes):
     if constraints.shape[1] != 10:
         raise ValueError("constraints must have ten columns")
 
-    n = len(constraints)
-    m = len(asset_classes)
-    data = constraints.fillna("")
-    data = data.values.tolist()
+    constraints0 = constraints.fillna("")
+    constraints0 = constraints0[constraints0["Disabled"] == False]
+    data = constraints0.values.tolist()
     assetslist = asset_classes.iloc[:, 0].values.tolist()
+
+    n, m = len(constraints0), len(asset_classes)
 
     A = []
     B = []
     for i in range(0, n):
-        if data[i][0] == False:
-            if data[i][1] == "Assets":
-                item = assetslist.index(data[i][3])
-                if data[i][4] == ">=":
-                    d = 1
-                elif data[i][4] == "<=":
-                    d = -1
-                if data[i][5] != "":
-                    A1 = [0] * m
-                    A1[item] = d
-                    A.append(A1)
-                    B.append([data[i][5] * d])
-                else:
-                    A1 = [0] * m
-                    A1[item] = 1
-                    if data[i][6] == "Assets":
-                        item2 = assetslist.index(data[i][8])
-                        A2 = [0] * m
-                        A2[item2] = 1
-                    elif data[i][6] == "Classes":
-                        A2 = np.where(
-                            asset_classes[data[i][7]].values == data[i][8], 1, 0
-                        )
-                    A1 = ((np.array(A1) + np.array(A2) * data[i][9] * -1) * d).tolist()
-                    A.append(A1)
-                    B.append([0])
-            elif data[i][1] == "All Assets":
-                item = len(assetslist)
-                if data[i][4] == ">=":
-                    d = 1
-                elif data[i][4] == "<=":
-                    d = -1
-                if data[i][5] != "":
-                    A1 = np.identity(item) * d
-                    A1 = A1.tolist()
-                    B1 = np.ones((item, 1)) * d * data[i][5]
-                    for i in range(0, item):
-                        A.append(A1[i])
-                        B.append(B1.tolist()[0])
-                else:
+        if data[i][1] == "Assets":
+            item = assetslist.index(data[i][3])
+            if data[i][4] == ">=":
+                d = 1
+            elif data[i][4] == "<=":
+                d = -1
+            if data[i][5] != "":
+                A1 = [0] * m
+                A1[item] = d
+                A.append(A1)
+                B.append([data[i][5] * d])
+            else:
+                A1 = [0] * m
+                A1[item] = 1
+                if data[i][6] == "Assets":
+                    item2 = assetslist.index(data[i][8])
+                    A2 = [0] * m
+                    A2[item2] = 1
+                elif data[i][6] == "Classes":
+                    A2 = np.where(asset_classes[data[i][7]].values == data[i][8], 1, 0)
+                A1 = ((np.array(A1) + np.array(A2) * data[i][9] * -1) * d).tolist()
+                A.append(A1)
+                B.append([0])
+        elif data[i][1] == "All Assets":
+            item = len(assetslist)
+            if data[i][4] == ">=":
+                d = 1
+            elif data[i][4] == "<=":
+                d = -1
+            if data[i][5] != "":
+                A1 = np.identity(item) * d
+                A1 = A1.tolist()
+                B1 = np.ones((item, 1)) * d * data[i][5]
+                for i in range(0, item):
+                    A.append(A1[i])
+                    B.append(B1.tolist()[0])
+            else:
+                A1 = np.identity(item)
+                if data[i][6] == "Assets":
+                    item2 = assetslist.index(data[i][8])
+                    A2 = np.zeros((item, item - 1))
+                    A2 = np.insert(A2, item2 - 1, 1, axis=1)
+                elif data[i][6] == "Classes":
                     A1 = np.identity(item)
-                    if data[i][6] == "Assets":
-                        item2 = assetslist.index(data[i][8])
-                        A2 = np.zeros((item, item - 1))
-                        A2 = np.insert(A2, item2 - 1, 1, axis=1)
-                    elif data[i][6] == "Classes":
-                        A1 = np.identity(item)
-                        A2 = np.where(
-                            asset_classes[data[i][7]].values == data[i][8], 1, 0
-                        )
-                        A2 = np.ones((item, item)) * np.array(A2)
-                    A1 = ((np.array(A1) + np.array(A2) * data[i][9] * -1) * d).tolist()
-                    for i in range(0, item):
-                        A.append(A1[i])
-                        B.append([0])
-            elif data[i][1] == "Classes":
-                if data[i][4] == ">=":
-                    d = 1
-                elif data[i][4] == "<=":
-                    d = -1
-                if data[i][5] != "":
-                    A1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
-                    A1 = np.array(A1) * d
-                    A1 = A1.tolist()
-                    A.append(A1)
-                    B.append([data[i][5] * d])
-                else:
-                    A1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
-                    if data[i][6] == "Assets":
-                        item2 = assetslist.index(data[i][8])
-                        A2 = [0] * m
-                        A2[item2] = 1
-                    elif data[i][6] == "Classes":
-                        A2 = np.where(
-                            asset_classes[data[i][7]].values == data[i][8], 1, 0
-                        )
-                    A1 = ((np.array(A1) + np.array(A2) * data[i][9] * -1) * d).tolist()
-                    A.append(A1)
+                    A2 = np.where(asset_classes[data[i][7]].values == data[i][8], 1, 0)
+                    A2 = np.ones((item, item)) * np.array(A2)
+                A1 = ((np.array(A1) + np.array(A2) * data[i][9] * -1) * d).tolist()
+                for i in range(0, item):
+                    A.append(A1[i])
                     B.append([0])
-            elif data[i][1] == "Each asset in a class":
-                if data[i][4] == ">=":
-                    d = 1
-                elif data[i][4] == "<=":
-                    d = -1
-                if data[i][5] != "":
-                    A1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
-                    l = 0
-                    for k in A1:
-                        if k == 1:
-                            A3 = [0] * m
-                            A3[l] = 1 * d
-                            A.append(A3)
-                            B.append([data[i][5] * d])
-                        l = l + 1
-                else:
-                    A1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
-                    l = 0
-                    for k in A1:
-                        if k == 1:
-                            A3 = [0] * m
-                            A3[l] = 1
-                            if data[i][6] == "Assets":
-                                item2 = assetslist.index(data[i][8])
-                                A2 = [0] * m
-                                A2[item2] = 1
-                            elif data[i][6] == "Classes":
-                                A2 = np.where(
-                                    asset_classes[data[i][7]].values == data[i][8], 1, 0
-                                )
-                            A3 = (
-                                (np.array(A3) + np.array(A2) * data[i][9] * -1) * d
-                            ).tolist()
-                            A.append(A3)
-                            B.append([0])
-                        l = l + 1
-            elif data[i][1] == "All Classes":
-                if data[i][4] == ">=":
-                    d = 1
-                elif data[i][4] == "<=":
-                    d = -1
-                if data[i][5] != "":
-                    for k in np.unique(asset_classes[data[i][2]].values):
-                        A1 = np.where(asset_classes[data[i][2]].values == k, 1, 0) * d
-                        A1 = A1.tolist()
-                        A.append(A1)
+        elif data[i][1] == "Classes":
+            if data[i][4] == ">=":
+                d = 1
+            elif data[i][4] == "<=":
+                d = -1
+            if data[i][5] != "":
+                A1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
+                A1 = np.array(A1) * d
+                A1 = A1.tolist()
+                A.append(A1)
+                B.append([data[i][5] * d])
+            else:
+                A1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
+                if data[i][6] == "Assets":
+                    item2 = assetslist.index(data[i][8])
+                    A2 = [0] * m
+                    A2[item2] = 1
+                elif data[i][6] == "Classes":
+                    A2 = np.where(asset_classes[data[i][7]].values == data[i][8], 1, 0)
+                A1 = ((np.array(A1) + np.array(A2) * data[i][9] * -1) * d).tolist()
+                A.append(A1)
+                B.append([0])
+        elif data[i][1] == "Each asset in a class":
+            if data[i][4] == ">=":
+                d = 1
+            elif data[i][4] == "<=":
+                d = -1
+            if data[i][5] != "":
+                A1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
+                l = 0
+                for k in A1:
+                    if k == 1:
+                        A3 = [0] * m
+                        A3[l] = 1 * d
+                        A.append(A3)
                         B.append([data[i][5] * d])
-                else:
-                    for k in np.unique(asset_classes[data[i][2]].values):
-                        A1 = np.where(asset_classes[data[i][2]].values == k, 1, 0)
+                    l = l + 1
+            else:
+                A1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
+                l = 0
+                for k in A1:
+                    if k == 1:
+                        A3 = [0] * m
+                        A3[l] = 1
                         if data[i][6] == "Assets":
                             item2 = assetslist.index(data[i][8])
                             A2 = [0] * m
@@ -281,10 +248,36 @@ def assets_constraints(constraints, asset_classes):
                                 asset_classes[data[i][7]].values == data[i][8], 1, 0
                             )
                         A3 = (
-                            (np.array(A1) + np.array(A2) * data[i][9] * -1) * d
+                            (np.array(A3) + np.array(A2) * data[i][9] * -1) * d
                         ).tolist()
                         A.append(A3)
                         B.append([0])
+                    l = l + 1
+        elif data[i][1] == "All Classes":
+            if data[i][4] == ">=":
+                d = 1
+            elif data[i][4] == "<=":
+                d = -1
+            if data[i][5] != "":
+                for k in np.unique(asset_classes[data[i][2]].values):
+                    A1 = np.where(asset_classes[data[i][2]].values == k, 1, 0) * d
+                    A1 = A1.tolist()
+                    A.append(A1)
+                    B.append([data[i][5] * d])
+            else:
+                for k in np.unique(asset_classes[data[i][2]].values):
+                    A1 = np.where(asset_classes[data[i][2]].values == k, 1, 0)
+                    if data[i][6] == "Assets":
+                        item2 = assetslist.index(data[i][8])
+                        A2 = [0] * m
+                        A2[item2] = 1
+                    elif data[i][6] == "Classes":
+                        A2 = np.where(
+                            asset_classes[data[i][7]].values == data[i][8], 1, 0
+                        )
+                    A3 = ((np.array(A1) + np.array(A2) * data[i][9] * -1) * d).tolist()
+                    A.append(A3)
+                    B.append([0])
 
     A = -np.array(A, ndmin=2, dtype=float)
     B = -np.array(B, ndmin=2, dtype=float)
@@ -346,7 +339,7 @@ def factors_constraints(constraints, loadings):
         constraints = pd.DataFrame(constraints)
 
 
-    The constraint looks like this:
+    The constraints look like the following image:
 
     .. image:: images/Constraints2.png
 
@@ -375,29 +368,350 @@ def factors_constraints(constraints, loadings):
     if constraints.shape[1] != 5:
         raise ValueError("constraints must have five columns")
 
-    n = len(constraints)
-    data = constraints.fillna("")
-    data = data.values.tolist()
+    constraints0 = constraints.fillna("")
+    constraints0 = constraints0[constraints0["Disabled"] == False]
+    data = constraints0.values.tolist()
+
+    n = len(constraints0)
 
     C = []
     D = []
     for i in range(0, n):
-        if data[i][0] == False:
-            if data[i][2] == ">=":
-                d = 1
-            elif data[i][2] == "<=":
-                d = -1
-            C1 = loadings[data[i][1]].values
-            if data[i][4] != "":
-                C2 = loadings[data[i][4]].values
-                C1 = C2 - C1
-            C.append(C1 * d)
-            D.append([data[i][3] * d])
+        if data[i][2] == ">=":
+            d = 1
+        elif data[i][2] == "<=":
+            d = -1
+        C1 = loadings[data[i][1]].values
+        if data[i][4] != "":
+            C2 = loadings[data[i][4]].values
+            C1 = C2 - C1
+        C.append(C1 * d)
+        D.append([data[i][3] * d])
 
     C = -np.array(C, ndmin=2, dtype=float)
     D = -np.array(D, ndmin=2, dtype=float)
 
     return C, D
+
+
+def integer_constraints(constraints, asset_classes):
+    r"""
+    Create the integer constraints matrixes A, B, C, D, E, F associated to the
+    constrainta :math:`Ak \leq B`, :math:`Ck \leq D \odot k_{s}` and
+    :math:`E k_{s}\leq F`.
+
+    Parameters
+    ----------
+    constraints : DataFrame of shape (n_constraints, n_fields)
+        Constraints DataFrame, where n_constraints is the number of constraints
+        and n_fields is the number of fields of constraints DataFrame, the fields
+        are:
+
+        - Disabled: (bool) indicates if the constraint is enable.
+        - Type: (str) can be 'Assets' and 'Classes'.
+        - Set: (str) if Type is 'Classes' specified the name of the asset's classes set.
+        - Position: (str) the name of the asset or asset class of the constraint, or 'All' for all categories.
+        - Kind: (str) can be 'CardUp' (Upper Cardinality), 'CardLow' (Lower Cardinality), 'MuEx' (Mutually Exclusive) and 'Join' (Join Investments).
+        - Value: (int or None) is the maximum or minimum value of cardinality constraints.
+        - Type Relative: (str) can be: 'Assets' or 'Classes'.
+        - Relative Set: (str) if Type Relative is 'Classes' specified the name of the set of asset classes.
+        - Relative: (str) the name of the asset or asset class of the relative constraint.
+
+    asset_classes : DataFrame of shape (n_assets, n_cols)
+        Asset's classes matrix, where n_assets is the number of assets and
+        n_cols is the number of columns of the matrix where the first column
+        is the asset list and the next columns are the different asset's
+        classes sets.
+
+    Returns
+    -------
+    A : dict
+        The dictionary that containts the matrices A of :math:`Ak \leq B`.
+
+    B : dict
+        The dictionary that containts the matrices B of :math:`Ak \leq B`.
+
+    C : dict
+        The dictionary that containts the matrices C of :math:`Ck \leq D \odot k_{s}`.
+
+    D : dict
+        The dictionary that containts the matrices D of :math:`Ck \leq D \odot k_{s}`.
+
+    E : dict
+        The dictionary that containts the matrices E of :math:`E k_{s}\leq F`.
+
+    F : dict
+        The dictionary that containts the matrices F of :math:`E k_{s}\leq F`.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    ::
+
+        import riskfolio as rp
+
+        asset_classes = {'Assets': ['FB', 'GOOGL', 'NTFX', 'BAC', 'WFC', 'TLT', 'SHV'],
+                         'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
+                                     'Fixed Income', 'Fixed Income'],
+                         'Class 2': ['Technology', 'Technology', 'Technology',
+                                     'Financial', 'Financial', 'Treasury', 'Treasury'],}
+
+        asset_classes = pd.DataFrame(asset_classes)
+        asset_classes = asset_classes.sort_values(by=['Assets'])
+
+        constraints = {'Disabled': [True, True, True, True, True, True, True, True, True, True, True, False],
+                       'Type': ['Assets', 'Assets', 'Assets', 'Assets', 'Classes', 'Classes', 'Classes', 'Classes', 'Classes', 'Classes', 'Classes', 'Classes'],
+                       'Set': ['', '', '', '', 'Industry', 'Industry', 'Industry', 'Industry', 'Industry', 'Industry', 'Industry', 'Industry'],
+                       'Position': ['', '', 'PCAR', 'PSA', '', '', 'Financials', 'Energy', 'Financials', 'Financials', 'Industrials', 'Financials'],
+                       'Kind': ['CardUp', 'CardLow', 'MuEx', 'Join', 'CardUp', 'CardLow', 'CardUp', 'CardLow', 'MuEx', 'MuEx', 'Join', 'Join'],
+                       'Value': [7.0, 16.0, '', '', 4.0, 9.0, 1.0, 1.0, '', '', '', ''],
+                       'Type Relative': ['', '', 'Assets', 'Assets', '', '', '', '', 'Assets', 'Classes', 'Assets', 'Classes'],
+                       'Relative Set': ['', '', '', '', '', '', '', '', '', 'Industry', '', 'Industry'],
+                       'Relative': ['', '', 'CPB', 'MMC', '', '', '', '', 'BAX', 'Consumer Staples', 'PSA', 'Information Technology']}
+        constraints = pd.DataFrame(constraints)
+
+
+    The constraints look like the following image:
+
+    .. image:: images/Constraints_int.png
+
+    It is easier to construct the constraints in excel and then upload to a
+    dataframe.
+
+    To create the dictionaries A, B, C, D, E, and F we use the following command:
+
+    ::
+
+        A, B, C, D, E, F = rp.integer_constraints(constraints, asset_classes)
+
+
+    The dictionaries A and B look like the following image:
+
+    .. image:: images/AxB_int.png
+
+    The dictionaries C and D look like the following image:
+
+    .. image:: images/CxD_int.png
+
+    The dictionaries E and F look like the following image:
+
+    .. image:: images/ExF_int.png
+
+    """
+
+    if not isinstance(constraints, pd.DataFrame) and not isinstance(
+        asset_classes, pd.DataFrame
+    ):
+        raise ValueError("constraints and asset_classes must be DataFrames")
+
+    if constraints.shape[1] != 9:
+        raise ValueError("constraints must have nine columns")
+
+    constraints0 = constraints.fillna("")
+    constraints0 = constraints0[constraints0["Disabled"] == False]
+    data = constraints0.values.tolist()
+    assetslist = asset_classes.iloc[:, 0].values.tolist()
+    groups = constraints0["Set"].unique().tolist()
+
+    n = len(constraints0)
+    m = len(asset_classes)
+
+    A, B, C, D, E, F, G, H, I = {}, {}, {}, {}, {}, {}, {}, {}, {}
+    for i, j in enumerate(groups):
+        A[i], B[i], C[i], D[i], E[i], F[i], I[i] = [], [], [], [], [], [], False
+
+    for group in groups:
+        G[group] = []
+        if group != "":
+            H[group] = asset_classes[group].unique().tolist()
+            for i in H[group]:
+                G1 = np.where(asset_classes[group].values == i, 1, 0).tolist()
+                G[group].append(G1)
+        G[group] = np.array(G[group])
+
+    for i in range(0, n):
+        key = groups.index(data[i][2])
+        if data[i][1].lower() == "assets":
+            if data[i][4].lower()[:4] == "card":
+                if (
+                    data[i][6].lower() != ""
+                    or data[i][7].lower() != ""
+                    or data[i][8].lower() != ""
+                ):
+                    raise ValueError(
+                        "Cardinality constraints don't require Type Relative , Relative Set and Relative columns."
+                    )
+
+                if data[i][5] != "":
+                    d = int(data[i][5])
+                    if data[i][4].lower()[4:] == "up":
+                        A1 = np.ones((m,)).tolist()
+                        B1 = [d]
+                    elif data[i][4].lower()[4:] == "low":
+                        A1 = (-np.ones((m,))).tolist()
+                        B1 = [-d]
+                    else:
+                        raise ValueError("Only CardLow and CardUp values are allowed.")
+                    A[key].append(A1)
+                    B[key].append(B1)
+                elif data[i][5] == "":
+                    raise ValueError("Cardinality constraints require a Value column.")
+
+            elif data[i][4].lower() in ["muex", "join"]:
+                item = assetslist.index(data[i][3])
+                A1 = [0] * m
+                A1[item] = 1
+                if data[i][6].lower() == "assets":
+                    item2 = assetslist.index(data[i][8])
+                    A2 = [0] * m
+                    A2[item2] = 1
+                elif data[i][6].lower() == "classes":
+                    A2 = np.where(asset_classes[data[i][7]].values == data[i][8], 1, 0)
+                if data[i][4].lower() == "muex":
+                    A1 = (np.sum(A2) * np.array(A1) + np.array(A2)).tolist()
+                    A[key].append(A1)
+                    B[key].append([np.sum(A2)])
+                elif data[i][4].lower() == "join":
+                    A1 = (np.sum(A2) * np.array(A1) - np.array(A2)).tolist()
+                    A[key].append(A1)
+                    B[key].append([0])
+
+        elif data[i][1].lower() == "classes":
+            C0 = G[data[i][2]]
+            I_m = np.identity(m)
+
+            if data[i][4].lower()[:4] == "card":
+                if (
+                    data[i][6].lower() != ""
+                    or data[i][7].lower() != ""
+                    or data[i][8].lower() != ""
+                ):
+                    raise ValueError(
+                        "Cardinality constraints don't require Type Relative, Relative Set and Relative columns."
+                    )
+
+                if data[i][5] != "":
+                    d = int(data[i][5])
+                    if data[i][3].lower() == "":
+                        A1, B1 = [], []
+                        C1 = np.vstack([C0, -C0])
+                        D1 = C0.sum(axis=1).reshape((-1, 1))
+                        D1 = np.vstack([D1, -np.ones((D1.shape[0], 1))])
+                        E1 = np.ones((C0.shape[0],))
+                        C1, D1 = C1.tolist(), D1.tolist()
+                    elif data[i][3].lower() == "all":
+                        A1 = C0
+                        B1, C1, D1, E1, F1 = [], [], [], [], []
+                    else:
+                        A1 = np.where(
+                            asset_classes[data[i][2]].values == data[i][3], 1, 0
+                        )
+                        B1, C1, D1, E1, F1 = [], [], [], [], []
+
+                    if data[i][4].lower()[4:] == "up":
+                        if len(A1) == 0:
+                            E1 = E1.tolist()
+                            F1 = [d]
+                        else:
+                            if data[i][3].lower() == "all":
+                                A1 = A1.tolist()
+                                B1 = (np.ones((C0.shape[0], 1)) * d).tolist()
+                            else:
+                                A1 = A1.tolist()
+                                B1 = [d]
+                    elif data[i][4].lower()[4:] == "low":
+                        if len(A1) == 0:
+                            E1 = (-E1).tolist()
+                            F1 = [-d]
+                        else:
+                            if data[i][3].lower() == "all":
+                                A1 = (-A1).tolist()
+                                B1 = (np.ones((C0.shape[0], 1)) * -d).tolist()
+                            else:
+                                A1 = (-A1).tolist()
+                                B1 = [-d]
+                    else:
+                        raise ValueError("Only CardLow and CardUp values are allowed.")
+
+                    if A1 != []:
+                        if data[i][3].lower() == "all":
+                            for row1 in A1:
+                                A[key].append(row1)
+                        else:
+                            A[key].append(A1)
+                    if B1 != []:
+                        if data[i][3].lower() == "all":
+                            for row1 in B1:
+                                B[key].append(row1)
+                        else:
+                            B[key].append(B1)
+                    if E1 != []:
+                        E[key].append(E1)
+                    if F1 != []:
+                        F[key].append(F1)
+                    if I[key] == False:
+                        if C1 != []:
+                            for row1 in C1:
+                                C[key].append(row1)
+                        if D1 != []:
+                            for row1 in D1:
+                                D[key].append(row1)
+                        I[key] = True
+
+                elif data[i][5] == "":
+                    raise ValueError("Cardinality constraints require a Value column.")
+
+            elif data[i][4].lower() in ["muex", "join"]:
+                if data[i][3].lower() != "":
+                    A1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
+                    if data[i][6].lower() == "assets":
+                        item = assetslist.index(data[i][8])
+                        A2 = [0] * m
+                        A2[item] = 1
+                        if data[i][4].lower() == "muex":
+                            A3 = np.sum(A1) * np.array(A2, ndmin=2) + np.array(
+                                A1, ndmin=2
+                            )
+                            B1 = [np.sum(A1)]
+                        elif data[i][4].lower() == "join":
+                            A3 = -np.array(A2) - np.array(A1, ndmin=2)
+                            B1 = [-np.sum(A1) - 1]
+
+                        A[key].append(A3.flatten().tolist())
+                        B[key].append(B1)
+
+                    elif data[i][6].lower() == "classes":
+                        A2 = np.where(
+                            asset_classes[data[i][7]].values == data[i][8], 1, 0
+                        )
+                        A3 = I_m[np.array(A2, dtype=bool)]
+                        A4 = np.repeat(np.array(A1, ndmin=2), A3.shape[0], axis=0)
+                        if data[i][4].lower() == "muex":
+                            A5 = np.sum(A1) * np.array(A3, ndmin=2) + np.array(
+                                A4, ndmin=2
+                            )
+                            B1 = np.ones((A3.shape[0], 1)) * np.sum(A1)
+                        elif data[i][4].lower() == "join":
+                            A5 = -np.array(A3, ndmin=2) - np.array(A4, ndmin=2)
+                            B1 = np.ones((A3.shape[0], 1)) * (-np.sum(A1) - 1)
+
+                        for row1 in A5:
+                            A[key].append(row1.tolist())
+                        for row1 in B1:
+                            B[key].append(row1.tolist())
+
+    for i in A.keys():
+        A[i] = np.array(A[i], ndmin=2, dtype=float)
+        B[i] = np.array(B[i], ndmin=2, dtype=float)
+        C[i] = np.array(C[i], ndmin=2, dtype=float)
+        D[i] = np.array(D[i], ndmin=2, dtype=float)
+        E[i] = np.array(E[i], ndmin=2, dtype=float)
+        F[i] = np.array(F[i], ndmin=2, dtype=float)
+
+    return A, B, C, D, E, F
 
 
 def assets_views(views, asset_classes):
@@ -465,7 +779,7 @@ def assets_views(views, asset_classes):
         views = pd.DataFrame(views)
 
 
-    The constraint looks like this:
+    The constraints look like the following image:
 
     .. image:: images/Views.png
 
@@ -479,7 +793,7 @@ def assets_views(views, asset_classes):
         P, Q = rp.assets_views(views, asset_classes)
 
 
-    The matrixes P and Q looks like this:
+    The matrixes P and Q look like the following image:
 
     .. image:: images/PxQ.png
 
@@ -495,76 +809,64 @@ def assets_views(views, asset_classes):
 
     n = len(views)
     m = len(asset_classes)
-    data = views.fillna("")
-    data = data.values.tolist()
+    views0 = views.fillna("")
+    views0 = views0[views0["Disabled"] == False]
+    data = views0.values.tolist()
     assetslist = asset_classes.iloc[:, 0].values.tolist()
 
     P = []
     Q = []
     for i in range(0, n):
         valid = False
-        if data[i][0] == False:
-            if data[i][1] == "Assets":
-                item = assetslist.index(data[i][3])
-                if data[i][4] == ">=":
-                    d = 1
-                elif data[i][4] == "<=":
-                    d = -1
-                if data[i][5] != "":
-                    P1 = [0] * m
-                    P1[item] = 1
-                    if data[i][6] == "Assets" and data[i][8] != "":
-                        item2 = assetslist.index(data[i][8])
-                        P2 = [0] * m
-                        P2[item2] = 1
-                        valid = True
-                    elif (
-                        data[i][6] == "Classes"
-                        and data[i][7] != ""
-                        and data[i][8] != ""
-                    ):
-                        P2 = np.where(
-                            asset_classes[data[i][7]].values == data[i][8], 1, 0
-                        )
-                        P2 = P2 / np.sum(P2)
-                        valid = True
-                    elif data[i][6] == "" and data[i][7] == "" and data[i][8] == "":
-                        P2 = [0] * m
-                        valid = True
-                    if valid == True:
-                        P1 = ((np.array(P1) - np.array(P2)) * d).tolist()
-                        P.append(P1)
-                        Q.append([data[i][5] * d])
-            elif data[i][1] == "Classes":
-                if data[i][4] == ">=":
-                    d = 1
-                else:
-                    d = -1
-                if data[i][5] != "":
-                    P1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
-                    P1 = P1 / np.sum(P1)
-                    if data[i][6] == "Assets" and data[i][8] != "":
-                        item2 = assetslist.index(data[i][8])
-                        P2 = [0] * m
-                        P2[item2] = 1
-                        valid = True
-                    elif (
-                        data[i][6] == "Classes"
-                        and data[i][7] != ""
-                        and data[i][8] != ""
-                    ):
-                        P2 = np.where(
-                            asset_classes[data[i][7]].values == data[i][8], 1, 0
-                        )
-                        P2 = P2 / np.sum(P2)
-                        valid = True
-                    elif data[i][6] == "" and data[i][7] == "" and data[i][8] == "":
-                        P2 = [0] * m
-                        valid = True
-                    if valid == True:
-                        P1 = ((np.array(P1) - np.array(P2)) * d).tolist()
-                        P.append(P1)
-                        Q.append([data[i][5] * d])
+        if data[i][1] == "Assets":
+            item = assetslist.index(data[i][3])
+            if data[i][4] == ">=":
+                d = 1
+            elif data[i][4] == "<=":
+                d = -1
+            if data[i][5] != "":
+                P1 = [0] * m
+                P1[item] = 1
+                if data[i][6] == "Assets" and data[i][8] != "":
+                    item2 = assetslist.index(data[i][8])
+                    P2 = [0] * m
+                    P2[item2] = 1
+                    valid = True
+                elif data[i][6] == "Classes" and data[i][7] != "" and data[i][8] != "":
+                    P2 = np.where(asset_classes[data[i][7]].values == data[i][8], 1, 0)
+                    P2 = P2 / np.sum(P2)
+                    valid = True
+                elif data[i][6] == "" and data[i][7] == "" and data[i][8] == "":
+                    P2 = [0] * m
+                    valid = True
+                if valid == True:
+                    P1 = ((np.array(P1) - np.array(P2)) * d).tolist()
+                    P.append(P1)
+                    Q.append([data[i][5] * d])
+        elif data[i][1] == "Classes":
+            if data[i][4] == ">=":
+                d = 1
+            else:
+                d = -1
+            if data[i][5] != "":
+                P1 = np.where(asset_classes[data[i][2]].values == data[i][3], 1, 0)
+                P1 = P1 / np.sum(P1)
+                if data[i][6] == "Assets" and data[i][8] != "":
+                    item2 = assetslist.index(data[i][8])
+                    P2 = [0] * m
+                    P2[item2] = 1
+                    valid = True
+                elif data[i][6] == "Classes" and data[i][7] != "" and data[i][8] != "":
+                    P2 = np.where(asset_classes[data[i][7]].values == data[i][8], 1, 0)
+                    P2 = P2 / np.sum(P2)
+                    valid = True
+                elif data[i][6] == "" and data[i][7] == "" and data[i][8] == "":
+                    P2 = [0] * m
+                    valid = True
+                if valid == True:
+                    P1 = ((np.array(P1) - np.array(P2)) * d).tolist()
+                    P.append(P1)
+                    Q.append([data[i][5] * d])
 
     P = np.array(P, ndmin=2, dtype=float)
     Q = np.array(Q, ndmin=2, dtype=float)
@@ -631,7 +933,7 @@ def factors_views(views, loadings, const=True):
         factorsviews = pd.DataFrame(factorsviews)
 
 
-    The constraint looks like this:
+    The constraints look like the following image:
 
     .. image:: images/factorsviews.png
 
@@ -647,7 +949,7 @@ def factors_views(views, loadings, const=True):
                                 const=True)
 
 
-    The matrixes P and Q looks like this:
+    The matrixes P and Q look like the following image:
 
     .. image:: images/P_fxQ_f.png
 
@@ -660,8 +962,9 @@ def factors_views(views, loadings, const=True):
         raise ValueError("constraints must have five columns")
 
     n = len(views)
-    data = views.fillna("")
-    data = data.values.tolist()
+    views0 = views.fillna("")
+    views0 = views0[views0["Disabled"] == False]
+    data = views0.values.tolist()
     factorslist = loadings.columns.tolist()
     if const == True:
         factorslist = factorslist[1:]
@@ -799,7 +1102,7 @@ def assets_clusters(
                                       leaf_order=True)
 
 
-    The clusters dataframe looks like this:
+    The clusters dataframe looks like the following image:
 
     .. image:: images/clusters_df.png
 
@@ -918,7 +1221,7 @@ def hrp_constraints(constraints, asset_classes):
 
         constraints = pd.DataFrame(constraints)
 
-    The constraint looks like this:
+    The constraints look like the following image:
 
     .. image:: images/HRPConstraints.png
 
@@ -1187,7 +1490,7 @@ def connection_matrix(
                                    graph="MST",
                                    walk_size=1)
 
-    The connection matrix dataframe looks like this:
+    The connection matrix dataframe looks like the following image:
 
     .. image:: images/Connection_df.png
 
@@ -1332,7 +1635,7 @@ def centrality_vector(
                                    codependence="pearson",
                                    graph="MST")
 
-    The neighborhood matrix looks like this:
+    The neighborhood matrix looks like the following image:
 
     .. image:: images/Centrality_df.png
 
@@ -1481,7 +1784,7 @@ def clusters_matrix(
                                  max_k=10)
 
 
-    The clusters matrix looks like this:
+    The clusters matrix looks like the following image:
 
     .. image:: images/Clusters_matrix_df.png
 

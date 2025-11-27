@@ -4930,7 +4930,7 @@ def plot_BrinsonAttribution(
             ax=None
             )
 
-    .. image:: images/BrinAttr_plot.png
+    .. image:: images/BrinAttr_Plot.png
 
 
     """

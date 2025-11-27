@@ -496,6 +496,13 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
 
     """
 
+    solvers = ["CLARABEL", "MOSEK", "COPT", "SCS", "ECOS"]
+    if solver not in solvers:
+        raise ValueError("Only solvers that support exponential cone are allowed")
+    else:
+        solvers.remove(solver)
+        solvers.insert(0, solver)
+
     a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
@@ -512,7 +519,7 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
 
     constraints = [
         cp.sum(ui) <= z,
-        cp.ExpCone(-a * 1000 - t * 1000, ones @ z * 1000, ui * 1000),
+        cp.ExpCone(-a - t, ones @ z, ui),
     ]
 
     risk = t + z * np.log(1 / (alpha * T))
@@ -520,10 +527,10 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
     prob = cp.Problem(objective, constraints)
 
     try:
-        if solver in ["CLARABEL", "MOSEK", "SCS"]:
-            prob.solve(solver=solver)
-        else:
-            prob.solve()
+        for solver_i in solvers:
+            prob.solve(solver=solver_i)
+            if risk.value is not None:
+                break
     except:
         pass
 
@@ -531,12 +538,13 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
         value = None
     else:
         value = risk.value.item()
-        t = z.value
+        t = z.value.item()
 
     if value is None:
         warnings.filterwarnings("ignore")
 
-        bnd = Bounds([-1e-24], [np.inf])
+        # Primal Formulation with Scipy
+        bnd = Bounds([1e-24], [np.inf])
         result = minimize(
             _Entropic_RM, [1], args=(X, alpha), method="SLSQP", bounds=bnd, tol=1e-12
         )
@@ -592,6 +600,13 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
 
     """
 
+    solvers = ["CLARABEL", "MOSEK", "SCS"]
+    if solver not in solvers:
+        raise ValueError("Only solvers that support 3D-power cone are allowed")
+    else:
+        solvers.remove(solver)
+        solvers.insert(0, solver)
+
     a = np.array(X * 100, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
@@ -620,10 +635,10 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     prob = cp.Problem(objective, constraints)
 
     try:
-        if solver in ["CLARABEL", "MOSEK", "SCS"]:
-            prob.solve(solver=solver)
-        else:
-            prob.solve()
+        for solver_i in solvers:
+            prob.solve(solver=solver_i)
+            if risk.value is not None:
+                break
     except:
         pass
 
@@ -659,14 +674,14 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
         c = ((1 / (alpha * T)) ** kappa - (1 / (alpha * T)) ** (-kappa)) / (2 * kappa)
         risk = t + c * z + cp.sum(psi + theta)
 
-        objective = cp.Minimize(risk)
+        objective = cp.Minimize(risk * 1000)
         prob = cp.Problem(objective, constraints)
 
         try:
-            if solver in ["CLARABEL", "MOSEK", "SCS"]:
-                prob.solve(solver=solver)
-            else:
-                prob.solve(verbose=True)
+            for solver_i in solvers:
+                prob.solve(solver=solver_i)
+                if risk.value is not None:
+                    break
         except:
             pass
 

@@ -41,6 +41,7 @@ Quantitative Strategic Asset Allocation, Easy for Everyone
 
 
 .. image:: https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib?color=green   :alt: GitHub stars   :target: https://github.com/dcajasn/Riskfolio-Lib/stargazers
+.. image:: https://static.pepy.tech/badge/Riskfolio-Lib?left_text=Downloads
 .. image:: https://static.pepy.tech/personalized-badge/riskfolio-lib?period=month&units=none&left_color=grey&right_color=orange&left_text=Downloads/Month
  :target: https://pepy.tech/project/riskfolio-lib
 .. image:: https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest
@@ -194,6 +195,7 @@ Some of key functionalities that Riskfolio-Lib offers:
 * Portfolio optimization with constraints based on graph information.
 * Portfolio optimization with inequality constraints on risk contributions for variance.
 * Portfolio optimization with inequality constraints on factor risk contributions for variance.
+* Portfolio optimization with integer constraints such as Cardinality on Assets and Categories, Mutually Exclusive and Join Investment.
 * Tools to build efficient frontier for 24 convex risk measures.
 * Tools to build linear constraints on assets, asset classes and risk factors.
 * Tools to build views on assets and asset classes.
@@ -216,7 +218,7 @@ Choosing a Solver
 =================
 
 Due to Riskfolio-Lib is based on CVXPY, Riskfolio-Lib can use the same solvers available for CVXPY.
-The list of solvers compatible with CVXPY is available in `Choosing a solver <https://www.cvxpy.org/tutorial/advanced/index.html#choosing-a-solver>`_ section of CVXPY's documentation.
+The list of solvers compatible with CVXPY is available in `Choosing a solver <https://www.cvxpy.org/tutorial/solvers/index.html#choosing-a-solver>`_ section of CVXPY's documentation.
 However, to select an adequate solver for each risk measure we can use the following table
 that specifies which type of programming technique is used to model each risk measure.
 
@@ -527,7 +529,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 
     @misc{riskfolio,
           author = {Dany Cajas},
-          title = {Riskfolio-Lib (7.0.1)},
+          title = {Riskfolio-Lib (7.1.0)},
           year  = {2025},
           url   = {https://github.com/dcajasn/Riskfolio-Lib},
           }

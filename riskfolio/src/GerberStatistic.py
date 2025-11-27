@@ -1,6 +1,7 @@
 """"""  #
 
 """
+Copyright (c) 2020-2025, Dany Cajas
 This code is mainly based on Yinsen Miao's work available in:
 https://github.com/yinsenm/gerber/blob/af04c2ee5adf342393b028b85ab5546f31c0c8d3/src/gerber.py
 """
