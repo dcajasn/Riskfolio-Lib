@@ -23,6 +23,13 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Version 7.1.0
+=============
+
+- Add the possibility to included integer constraints such as cardinality constraints on assets and categories, mutually exclusive constraints and join investment constraints in the portfolio object.
+- Add a new helper function that allows users to create the matrices that represent the integer constraints.
+- Fixed a bug related to leverage portfolios.
+
 Version 7.0.0
 =============
 
