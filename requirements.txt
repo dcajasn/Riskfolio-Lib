@@ -1,5 +1,5 @@
 numpy>=1.26.4
-scipy>=1.16.1
+scipy>=1.13.0
 pandas>=2.2.2
 matplotlib>=3.9.2
 clarabel>=0.11.1
