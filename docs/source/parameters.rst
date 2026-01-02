@@ -5,8 +5,18 @@ Parameters Estimation
 .. raw:: html
 
     <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
-        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer;">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
             Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
+.. raw:: html
+    
+    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
+            Enroll in the Portfolio Optimization with Python Course
         </button>
     </a>
     <br>
@@ -29,7 +39,7 @@ This module has functions that allows us to estimate the vector of means, covari
 - Historical estimates.
 - Estimates using exponencial weighted moving averages (EWMA).
 - Robust estimates of the covariance matrix like Ledoit and Wolf, Oracle, Shrinkage and Graphical Lasso, j-LoGo :cite:`b-jLogo`, Gerber statistic :cite:`b-Gerber2021` and Denoise :cite:`b-MLforAM` estimators.
-- Factors models to estimate the vector of means and covariance matrix.
+- Factors models to estimate the vector of means, covariance matrix, coskewness tensor and cokurtosis square matrix :cite:`b-Boudt2015`.
 - The Black Litterman model that allows to incorporate analyst's views on returns in estimates of vector of means and covariance matrix :cite:`b-BlackLitterman` :cite:`b-Black1`.
 - The Augmented Black Litterman model that allows to incorporate analyst's views on risk factors in estimates of vector of means and covariance matrix :cite:`b-WCheung`.
 - The Black Litterman Bayesian model that allows to incorporate analyst's views on risk factors in estimates of vector of means and covariance matrix :cite:`b-BLB`.

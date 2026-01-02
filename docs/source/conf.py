@@ -24,7 +24,7 @@ sys.path.insert(3, os.path.abspath('../../riskfolio/external'))
 # -- Project information -----------------------------------------------------
 
 project = 'Riskfolio-Lib'
-copyright = '2020-2025, Dany Cajas'
+copyright = '2020-2026, Dany Cajas'
 author = 'Dany Cajas'
 
 
@@ -116,6 +116,7 @@ html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 html_favicon = "_static/Riskfolio.ico"
 html_logo = "_static/Riskfolio.png"
+
 
 # -- Extension configuration -------------------------------------------------
 

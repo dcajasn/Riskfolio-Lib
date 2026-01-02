@@ -5,8 +5,18 @@ Portfolio Optimization with Python Course
 .. raw:: html
 
     <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
-        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer;">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
             Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
+.. raw:: html
+    
+    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
+            Enroll in the Portfolio Optimization with Python Course
         </button>
     </a>
     <br>
@@ -52,65 +62,17 @@ knowledge of portfolio theory, optimization, calculus, linear algebra and statis
 to advance knowledge of one programming language (Python, R, Julia, Rust, C, C++, VBA, VB.net,
 Matlab or similar).
 
-Courses Schedule for 2025
-=========================
+Courses Details
+================
 
-The live classes are online through Google Meets (all classes will be recorded and uploaded to the
-google classroom of the course).
-The duration of the course is 42 hours and classes are hold on Saturday and Sunday from 10 a.m. to 1 p.m. (UTC-5).
-
-In the following table you can see the dates of the courses that will be taught in 2025:
-
-.. raw:: html
-
-   <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
-   <style type="text/css">
-   .tg  {border-collapse:collapse;border-spacing:0;}
-   .tg td{border-color:#9b9b9b;border-style:solid;border-width:1px;font-family:Roboto, sans-serif;font-size:17px;
-   overflow:hidden;padding:10px 5px;word-break:normal;}
-   .tg th{border-color:#9b9b9b;border-style:solid;border-width:1px;font-family:Roboto, sans-serif;font-size:17px;
-   font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-   .tg .tg-1hpj{background-color:orange;border-color:#9b9b9b;color:#ffffff;font-weight:bold;text-align:center;vertical-align:top;min-width:100px}
-   .tg .tg-2uut{background-color:orange;border-color:#9b9b9b;color:#ffffff;font-weight:bold;text-align:center;vertical-align:top;min-width:200px}
-   .tg .tg-3uut{background-color:orange;border-color:#9b9b9b;color:#ffffff;font-weight:bold;text-align:center;vertical-align:top;min-width:100px}
-   .tg tbody tr:nth-child(even){background-color: #efefef}
-   .tg tbody tr:nth-child(odd){background-color: white}
-   </style>
-   <table class="tg">
-      <thead>
-      <tr>
-         <th class="tg-1hpj" >Course</th>
-         <th class="tg-2uut">Start Date</th>
-         <th class="tg-2uut">End Date</th>
-         <th class="tg-3uut">Brochure</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr>
-         <td style='text-align:center'> 2025-I</td>
-         <td> February 15th, 2025</td>
-         <td> March 29th, 2025</td>
-         <td style='text-align:center' > <a href="_static\Python_for_Finance_2025_I.pdf" target="_blank">&#128193;</a></td>
-      </tr>
-      <tr>
-         <td style='text-align:center'> 2025-II</td>
-         <td> June 14th, 2025</td>
-         <td> July 26th, 2025</td>
-         <td style='text-align:center'> <a href="_static\Python_for_Finance_2025_II.pdf" target="_blank">&#128193;</a></td>
-      </tr>
-      <tr>
-         <td style='text-align:center'> 2025-III</td>
-         <td> October 4th, 2025</td>
-         <td> November 15th, 2025</td>
-         <td style='text-align:center'> <a href="_static\Python_for_Finance_2025_III.pdf" target="_blank">&#128193;</a></td>
-      </tr>
-      </tbody>
-   </table>
+* The course will be available, with all material (recordings, codes, slides and whiteboards), starting **March 21, 2026**.
+* The classes are online and asynchronous through our Google Classroom.
+* All materials will be updated each two years.
 
 Enrollment
 ==========
 
-To enroll in the course, you need an email with an explicit "@gmail.com" domain (for example johnmarlon@gmail.com)
+To enroll in the course, you need an email with an explicit "@gmail.com" domain
 and then pay the course fee using the following PayPal link:
 
 .. raw:: html
@@ -153,27 +115,18 @@ and then pay the course fee using the following PayPal link:
    }
    </style>
    <div class="tab">
-   <button class="tablinks" onclick="openTab(event, 'paypal-container-EB28SCXPAQ4DW')" id="defaultOpen">2025-I</button>
-   <button class="tablinks" onclick="openTab(event, 'paypal-container-CNGYDJU3SAJH4')">2025-II</button>
-   <button class="tablinks" onclick="openTab(event, 'paypal-container-765QPGV5H4RVW')">2025-III</button>
+   <button class="tablinks" onclick="openTab(event, 'paypal-container-GN55W4UQ7VAMN')" id="defaultOpen">Course</button>
    </div>
 
-   <script src="https://www.paypal.com/sdk/js?client-id=BAA_FQBdhZjxYgI2N5DACAiN0--Lkv3sO9Kj0LKlFq9BWpNha13pFGIjK3X9qumuLmkh9oOPFdoSb-mJvc&components=hosted-buttons&disable-funding=venmo&currency=USD"></script>
-   <div id="paypal-container-EB28SCXPAQ4DW" class="tabcontent"></div>
-   <div id="paypal-container-CNGYDJU3SAJH4" class="tabcontent"></div>
-   <div id="paypal-container-765QPGV5H4RVW" class="tabcontent"></div>
+   <script 
+   src="https://www.paypal.com/sdk/js?client-id=BAA_FQBdhZjxYgI2N5DACAiN0--Lkv3sO9Kj0LKlFq9BWpNha13pFGIjK3X9qumuLmkh9oOPFdoSb-mJvc&components=hosted-buttons&disable-funding=venmo&currency=USD">
+   </script>
+   <div id="paypal-container-GN55W4UQ7VAMN" class="tabcontent"></div>
+   
    <script>
    paypal.HostedButtons({
-      hostedButtonId: "EB28SCXPAQ4DW",
-   }).render("#paypal-container-EB28SCXPAQ4DW")
-
-   paypal.HostedButtons({
-      hostedButtonId: "CNGYDJU3SAJH4",
-   }).render("#paypal-container-CNGYDJU3SAJH4")
-
-   paypal.HostedButtons({
-      hostedButtonId: "765QPGV5H4RVW",
-   }).render("#paypal-container-765QPGV5H4RVW")
+      hostedButtonId: "GN55W4UQ7VAMN",
+   }).render("#paypal-container-GN55W4UQ7VAMN")
 
    function openTab(evt, tabId) {
    var i, tabcontent, tablinks;
@@ -194,9 +147,9 @@ and then pay the course fee using the following PayPal link:
    </br>
 
 
-If you wish to register in a group of 4 or more, a 10% discount applies, for which you must send us an
+If you wish to register in a **group of 4 or more, a 10% discount applies**, for which you must send us an
 email to orenji.eirl@gmail.com with the information of all the students (full name, city of residence
-and an email with explicit '@gmail.com' domain) in order to send you the
+and an email with explicit '@gmail.com' domain) in order to send you a customized
 PayPal invoice with the discount.
 
 Course Content
@@ -213,158 +166,204 @@ The detailed content of the course follows below:
    overflow:hidden;padding:10px 5px;word-break:normal;}
    .tg th{border-color:#9b9b9b;border-style:solid;border-width:1px;font-family:Roboto, sans-serif;;font-size:17px;
    font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-   .tg .tg-1hpj{background-color:orange;border-color:#9b9b9b;color:#ffffff;font-weight:bold;text-align:center;vertical-align:top}
-   .tg .tg-huut{background-color:orange;border-color:#9b9b9b;color:#ffffff;font-weight:bold;text-align:center;vertical-align:top}
+   .tg .tg-1hpj{background-color: orange;border-color: #9b9b9b;color:#ffffff;font-weight:bold;text-align:center;vertical-align:top}
+   .tg .tg-huut{background-color: #FFE5B4;border-color: #9b9b9b;color: #505050;font-weight:bold;text-align:left;vertical-align:top}
    .tg tbody tr:nth-child(even){background-color: #efefef}
    .tg tbody tr:nth-child(odd){background-color: white}
    </style>
    <table class="tg">
       <thead>
       <tr>
-         <th class="tg-1hpj">Topics</th>
-         <th class="tg-huut">Hours</th>
+         <th class="tg-1hpj" colspan=2>Topics</th>
       </tr>
       </thead>
       <tbody>
       <tr>
-         <td> <b>Main Libraries </b></td>
+         <td class="tg-huut" colspan=2> <b>Scientific Computation Review</b></td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; Numpy: Linear Algebra</td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; Pandas: Dataframes</td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; Scipy: Statistical Functions and Linear Algebra</td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; Montecarlo and Quasimontecarlo Simulation Applied to Portfolio Optimization</td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; Statsmodels: Econometrics</td>
+      </tr>
+      <tr>
+         <td class="tg-huut" colspan=2><b>Convex Optimization Applied to Portfolio Optimization</b></td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp;CVXPY: Disciplined Convex Programming (DCP) Optimization </td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; Linear Programming</td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Gini Mean Difference (GMD)</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Mean Absolute Deviation (MAD)</em></td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>First Lower Partial Moment</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Conditional Value at Risk (CVaR)</em></td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Maximum Loss or Minimax</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Range</em></td>         
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Conditional Drawdown at Risk (CDaR)</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Maximum Drawdown</em></td>
+      </tr>
+
+      <tr>
+         <td colspan=2>&emsp;&emsp; Quadratic Programming</td>
+      </tr>
+      <tr>
+         <td >&emsp;&emsp;&emsp;&emsp; - <em>Variance</em></td>
+         <td >&emsp;&emsp;&emsp;&emsp; - <em>Second Lower Partial Moment</em></td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; Second Order Cone Programming</td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Standard Deviation</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Value at Risk for Elliptical Distributions</em></td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; <em>Semidefinite Programming</em></td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Variance</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Kurtosis</em></td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Approximate Kurtosis</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Skewness</em></td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; <em>Exponential Cone Programming</em></td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Entropic Value at Risk (EVaR)</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Entropic Drawdown at Risk (EDaR)</em></td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; Power Cone Programming</td>
+      </tr>
+      <tr>
+         <td >&emsp;&emsp;&emsp;&emsp; - <em>Relativistic Value at Risk (RLVaR)</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Relativistic Drawdown at Risk (RLDaR)</em></td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Even Moments</em></td>
          <td></td>
       </tr>
       <tr>
-         <td>&emsp; Numpy: Linear Algebra</td>
-         <td style='text-align:center'>2</td>
+         <td colspan=2>&emsp;&emsp; Convex Fractional Programming (Risk Adjusted Return Ratio Optimization)</td>
       </tr>
       <tr>
-         <td>&emsp; Pandas: Dataframes</td>
-         <td style='text-align:center'>1</td>
+         <td colspan=2>&emsp;&emsp;Mean Risk Optimization</td>
+      </tr>
+            <tr>
+         <td colspan=2>&emsp;&emsp;Ordered Weighted Average (OWA) Risk Measures</td>
       </tr>
       <tr>
-         <td>&emsp; Scipy: Statistical Functions and Linear Algebra</td>
-         <td style='text-align:center'>1</td>
+         <td colspan=2>&emsp;&emsp;Risk Parity Optimization</td>
       </tr>
       <tr>
-         <td>&emsp; Montecarlo and Quasimontecarlo Simulation for Portfolio Optimization</td>
-         <td style='text-align:center'>2</td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Least Squares Approach</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Risk Budgeting Approach</em></td>
       </tr>
       <tr>
-         <td ><b>Convex Optimization for Portfolio Optimization</b></td>
-         <td style='text-align:center'></td>
-      </tr>
-      <tr>
-         <td>&emsp;CVXPY: Disciplined Convex Programming (DCP) Optimization </td>
-         <td style='text-align:center'></td>
-      </tr>
-      <tr>
-         <td>&emsp;&emsp; <em>Linear Programming (CVaR, CDaR, Minimax)</em></td>
-         <td style='text-align:center'>3</td>
-      </tr>
-      <tr>
-         <td>&emsp;&emsp; <em>Quadratic Programming (Variance)</em></td>
-         <td style='text-align:center'>1.5</td>
-      </tr>
-      <tr>
-         <td>&emsp;&emsp; <em>Second Order Cone Programming (Standard Deviation)</em></td>
-         <td style='text-align:center'>1.5</td>
-      </tr>
-      <tr>
-         <td>&emsp;&emsp; <em>Semidefinite Programming (Variance, Kurtosis and Approximate Kurtosis)</em></td>
-         <td style='text-align:center'>3</td>
-      </tr>
-      <tr>
-         <td>&emsp;&emsp; <em>Exponential Cone Programming (Entropic Value at Risk)</em></td>
-         <td style='text-align:center'>1</td>
-      </tr>
-      <tr>
-         <td>&emsp;&emsp; <em>Power Cone Programming (Relativistic Value at Risk)</em></td>
-         <td style='text-align:center'>1</td>
-      </tr>
-      <tr>
-         <td>&emsp;&emsp; <em>Convex Fractional Programming (Risk Adjusted Return Ratio Optimization)</em></td>
-         <td style='text-align:center'>1</td>
-      </tr>
-      <tr>
-         <td>&emsp;Mean Risk Optimization</td>
-         <td style='text-align:center'>2</td>
-      </tr>
-      <tr>
-         <td>&emsp;Risk Parity Optimization (Least Squares and Risk Budgeting approaches)</td>
-         <td style='text-align:center'>2</td>
-      </tr>
-      <tr>
-         <td>&emsp;Worst Case Optimization (Box and Elliptical Uncertainty Sets)</td>
-         <td style='text-align:center'>2</td>
-      </tr>
-      <tr>
-         <td><b>Integer Programming for Portfolio Optimization	</b></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Semidefinite Approach</em></td>
          <td></td>
       </tr>
       <tr>
-         <td>&emsp; Value at Risk Optimization</td>
-         <td style='text-align:center'>1</td>
+         <td colspan=2>&emsp;&emsp;Worst Case Optimization</td>
       </tr>
       <tr>
-         <td>&emsp; Integer Constraints (Cardinality on Assets and Classes, and Buy in threshold constraints)</td>
-         <td style='text-align:center'>3</td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Box Uncertainty Sets</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Elliptical Uncertainty Sets</em></td>
       </tr>
       <tr>
-         <td>&emsp; Convex Fractional Programming with Integer Variables</td>
-         <td style='text-align:center'>2</td>
+         <td class="tg-huut" colspan=2><b>Integer Programming Applied to Portfolio Optimization	</b></td>
       </tr>
       <tr>
-         <td>&emsp; Risk Parity Optimization for Long Short Portfolios</td>
-         <td style='text-align:center'>1</td>
+         <td colspan=2>&emsp;&emsp; Value at Risk Optimization</td>
       </tr>
       <tr>
-         <td><b>Machine Learning for Portfolio Optimization</b></td>
-         <td style='text-align:center'></td>
+         <td colspan=2>&emsp;&emsp; Integer Constraints</td>
       </tr>
       <tr>
-         <td>&emsp; Hierarchical Risk Parity</td>
-         <td style='text-align:center'>2</td>
+         <td colspan=2>&emsp;&emsp; Convex Fractional Programming with Integer Variables</td>
       </tr>
       <tr>
-         <td>&emsp; Hierarchical Equal Risk Contribution</td>
-         <td style='text-align:center'>1</td>
+         <td colspan=2>&emsp;&emsp; Risk Parity Optimization for Long Short Portfolios</td>
       </tr>
       <tr>
-         <td>&emsp; Nested Clustered Optimization</td>
-         <td style='text-align:center'>1</td>
+         <td class="tg-huut" colspan=2><b>Machine Learning Algorithms Applied to Portfolio Optimization</b></td>
       </tr>
       <tr>
-         <td><b>Graph Theory for Portfolio Optimization</b></td>
-         <td></td>
+         <td colspan=2>&emsp;&emsp; Hierarchical Risk Parity</td>
       </tr>
       <tr>
-         <td>&emsp; Centrality Measures Constraints (Average Connectivity of Graphs)</td>
-         <td style='text-align:center'>1</td>
+         <td colspan=2>&emsp;&emsp; Hierarchical Equal Risk Contribution</td>
       </tr>
       <tr>
-         <td>&emsp; Network Constraints (Relative Positions on Graphs)</td>
-         <td style='text-align:center'>1</td>
+         <td colspan=2>&emsp;&emsp; Nested Clustered Optimization</td>
       </tr>
       <tr>
-         <td>&emsp; Clusters Constraints (Clusters based on Dendrogram)</td>
-         <td style='text-align:center'>1</td>
+         <td class="tg-huut" colspan=2><b>Graph Theory Applied to Portfolio Optimization</b></td>
       </tr>
       <tr>
-         <td><b>Backtesting of Portfolio Optimization Strategies</b></td>
-         <td></td>
+         <td colspan=2>&emsp;&emsp; Centrality Measures Constraints (Average Connectivity of Graphs)</td>
       </tr>
       <tr>
-         <td>&emsp; The Walk Forward Method (Rolling and Expanding Window)</td>
-         <td style='text-align:center'>2</td>
+         <td colspan=2>&emsp;&emsp; Network Constraints (Relative Positions on Graphs)</td>
       </tr>
       <tr>
-         <td>&emsp; The Cross-Validation Method</td>
-         <td style='text-align:center'>1</td>
+         <td colspan=2>&emsp;&emsp; Clusters Constraints (Clusters based on Dendrogram)</td>
       </tr>
       <tr>
-         <td >&emsp; The Combinatorial Purged Cross-Validation Method</td>
-         <td style='text-align:center'>1</td>
+         <td class="tg-huut" colspan=2><b>Estimation of Input Parameters that Incorporate Additional Information</b></td>
       </tr>
       <tr>
-         <td><b> Total</b></td>
-         <td style='text-align:center'><b>42</b></td>
+         <td colspan=2>&emsp;&emsp; Risk Factors Models</td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Explicit Risk Factors</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Implicit Risk Factors</em></td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; Black Litterman Models</td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp;&emsp;&emsp; - <em>Original Black Litterman Model (Views on Assets)</em></td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp;&emsp;&emsp; - <em>Augmented Black Litterman Model (Views on Assets and Risk Factors)</em></td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp;&emsp;&emsp; - <em>Black Litterman Bayesian (Views on Risk Factors)</em></td>
+      </tr>
+      <tr>
+         <td class="tg-huut" colspan=2><b>Backtesting of Portfolio Optimization Strategies</b></td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; The Walk Forward Method (Rolling and Expanding Window)</td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; The Cross-Validation Method</td>
+      </tr>
+      <tr>
+         <td colspan=2>&emsp;&emsp; The Combinatorial Purged Cross-Validation Method</td>
       </tr>
       </tbody>
    </table>

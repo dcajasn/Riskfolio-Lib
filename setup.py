@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2025 Dany Cajas
+# Copyright (C) 2020-2026 Dany Cajas
 
 import os
 import numpy as np
@@ -7,7 +7,7 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
 MAJOR = 7
-MINOR = 1
+MINOR = 2
 MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
@@ -70,6 +70,7 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
     'License :: OSI Approved :: BSD License',
     'Topic :: Office/Business :: Financial :: Investment',
     'Topic :: Office/Business :: Financial',

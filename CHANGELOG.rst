@@ -5,8 +5,19 @@ Changelog
 .. raw:: html
 
     <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
-        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer;">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
             Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
+
+.. raw:: html
+    
+    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
+            Enroll in the Portfolio Optimization with Python Course
         </button>
     </a>
     <br>
@@ -22,6 +33,14 @@ Changelog
 .. raw:: html
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
+
+Version 7.2.0
+=============
+
+- Add functions that allow to calculate estimators of coskewness tensor and cokurtosis square matrix based on risk factor models.
+- Add the possibility to optimize portfolio kurtosis using an estimator of cokurtosis square matrix based on risk factor models.
+- Add the possibility to add constraints on portfolio kurtosis using an estimator of cokurtosis square matrix based on risk factor models.
 
 Version 7.1.0
 =============

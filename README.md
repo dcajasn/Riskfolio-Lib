@@ -6,6 +6,11 @@
 <div>
 <img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/refs/heads/master/docs/source/_static/Button.png" height="40" />
 </div>
+</a>
+<a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+<div>
+<img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/refs/heads/master/docs/source/_static/Button2.png" height="40" />
+</div>
 <br>
 </a>
 
@@ -18,14 +23,14 @@
 
 <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
-[![GitHub stars](https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib?color=green)](https://github.com/dcajasn/Riskfolio-Lib/stargazers)
-[![Downloads](https://static.pepy.tech/badge/Riskfolio-Lib?left_text=Downloads)](https://pepy.tech/project/Riskfolio-Lib)
-[![Downloads](https://static.pepy.tech/personalized-badge/riskfolio-lib?period=month&left_color=grey&right_color=orange&left_text=downloads/month)](https://pepy.tech/project/riskfolio-lib)
+[![GitHub stars](https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/stargazers)
+[![Downloads](https://static.pepy.tech/personalized-badge/riskfolio-lib?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=BRIGHTGREEN&left_text=downloads)](https://pepy.tech/projects/riskfolio-lib)
+[![Downloads](https://static.pepy.tech/personalized-badge/riskfolio-lib?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=ORANGE&left_text=downloads)](https://pepy.tech/projects/riskfolio-lib)
 [![Documentation Status](https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest)](https://riskfolio-lib.readthedocs.io/en/latest/?badge=latest)
 [![GitHub license](https://img.shields.io/github/license/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD)
 
-[![Star History Chart](https://api.star-history.com/svg?repos=dcajasn/Riskfolio-Lib&type=Timeline)](https://star-history.com/#dcajasn/Riskfolio-Lib&Timeline)
+[![Star History Chart](https://api.star-history.com/svg?repos=dcajasn/Riskfolio-Lib&type=timeline&legend=top-left)](https://www.star-history.com/#dcajasn/Riskfolio-Lib&type=timeline&legend=top-left)
 
 ## Description
 
@@ -268,12 +273,15 @@ Installation requires:
 - [networkx](https://networkx.org) >= 3.4
 - [astropy](https://www.astropy.org) >= 6.1
 - [pybind11](https://pybind11.readthedocs.io/en/stable/) >= 2.10.1
+- [vectorbt](https://vectorbt.dev) >= 0.28.0
+
 
 ## Installation
 
 The latest stable release (and older versions) can be installed from PyPI:
 
     pip install riskfolio-lib
+
 
 ## Citing
 
@@ -282,7 +290,7 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 ```
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (7.1.0)},
+      title = {Riskfolio-Lib (7.2.0)},
       year  = {2025},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }

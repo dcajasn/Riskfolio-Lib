@@ -1,8 +1,3 @@
-.. Riskfolio documentation master file, created by
-   sphinx-quickstart on Fri Feb  7 02:11:42 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 #################
 Reports Functions
 #################
@@ -10,8 +5,18 @@ Reports Functions
 .. raw:: html
 
     <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
-        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer;">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
             Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
+.. raw:: html
+    
+    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
+            Enroll in the Portfolio Optimization with Python Course
         </button>
     </a>
     <br>

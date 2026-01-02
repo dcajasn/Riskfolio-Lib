@@ -5,8 +5,18 @@ Portfolio Optimization
 .. raw:: html
 
     <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
-        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer;">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
             Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
+.. raw:: html
+    
+    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
+            Enroll in the Portfolio Optimization with Python Course
         </button>
     </a>
     <br>
@@ -200,9 +210,9 @@ the relaxed risk parity model :cite:`a-GambetaKwon`:
     \begin{aligned}
     &\underset{w}{\min} & & \psi - \gamma & \\
     &\text{s.t.} & & \zeta = \Sigma w \\
-    & & & w^{T} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) & \\
+    & & & w^{\prime} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) & \\
     & & & w_{i} \zeta_{i} \geq \gamma^{2} b_{i} & \forall i=1 , \ldots , N \\
-    & & & \lambda w^{T} \Theta w \leq \rho^{2} & \\
+    & & & \lambda w^{\prime} \Theta w \leq \rho^{2} & \\
     & & & \mu w \geq \overline{\mu} & \\
     & & & Aw \leq b & \\
     & & & \sum^{N}_{i=1} w_{i} = 1 & \\
@@ -256,7 +266,7 @@ that results from optimize one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\min} & & \underset{\Sigma \, \in \, U_{\Sigma}}{\max} w^{T} \Sigma w\\
+    &\underset{w}{\min} & & \underset{\Sigma \, \in \, U_{\Sigma}}{\max} w^{\prime} \Sigma w\\
     &\text{s.t.} & & Aw \leq b\\
     \end{aligned}
 
@@ -266,7 +276,7 @@ that results from optimize one of the following 4 objective functions:
 .. math::
     \begin{aligned}
     &\underset{w}{\max} & & \cfrac{\underset{\mu \, \in \, U_{\mu}}{\min} \mu w - r_{f}}
-    {\underset{\Sigma \, \in \, U_{\Sigma}}{\max} \sqrt{w^{T} \Sigma w}}\\
+    {\underset{\Sigma \, \in \, U_{\Sigma}}{\max} \sqrt{w^{\prime} \Sigma w}}\\
     &\text{s.t.} & & Aw \leq b\\
     \end{aligned}
 
@@ -276,7 +286,7 @@ that results from optimize one of the following 4 objective functions:
 .. math::
     \begin{aligned}
     &\underset{w}{\max} & & \underset{\mu \, \in \, U_{\mu}}{\min} \mu w
-    - \underset{\Sigma \, \in \, U_{\Sigma}}{\max}  \lambda w^{T} \Sigma w\\
+    - \underset{\Sigma \, \in \, U_{\Sigma}}{\max}  \lambda w^{\prime} \Sigma w\\
     &\text{s.t.} & & Aw \leq b\\
     \end{aligned}
 
@@ -294,7 +304,7 @@ where:
 .. math::
     \begin{aligned}
     U^{box}_{\mu} & = \left \{ \mu \, | \, | \mu - \hat{\mu} | \leq \delta \right \} \\
-    U^{ellip}_{\mu} & = \left \{ \mu \, | \left ( \mu - \hat{\mu} \right ) \Sigma^{-1}_{\mu} \left ( \mu - \hat{\mu} \right )^{T} \leq k^{2}_{\mu} \right \} \\
+    U^{ellip}_{\mu} & = \left \{ \mu \, | \left ( \mu - \hat{\mu} \right ) \Sigma^{-1}_{\mu} \left ( \mu - \hat{\mu} \right )^{\prime} \leq k^{2}_{\mu} \right \} \\
     \end{aligned}
 
 
@@ -303,7 +313,7 @@ where:
 .. math::
     \begin{aligned}
     U^{box}_{\Sigma} & = \left \{ \Sigma \, | \, \Sigma_{lower} \leq \Sigma \leq \Sigma_{upper} \, , \, \Sigma \succeq 0 \right \} \\
-    U^{ellip}_{\Sigma} & = \left \{ \Sigma \, | \left ( \text{vec}(\Sigma) - \text{vec}(\hat{\Sigma}) \right ) \Sigma^{-1}_{\Sigma} \left ( \text{vec}(\Sigma) - \text{vec}(\hat{\Sigma}) \right )^{T} \leq k^{2}_{\Sigma} \, , \, \Sigma \succeq 0 \right \}  \\
+    U^{ellip}_{\Sigma} & = \left \{ \Sigma \, | \left ( \text{vec}(\Sigma) - \text{vec}(\hat{\Sigma}) \right ) \Sigma^{-1}_{\Sigma} \left ( \text{vec}(\Sigma) - \text{vec}(\hat{\Sigma}) \right )^{\prime} \leq k^{2}_{\Sigma} \, , \, \Sigma \succeq 0 \right \}  \\
     \end{aligned}
 
 

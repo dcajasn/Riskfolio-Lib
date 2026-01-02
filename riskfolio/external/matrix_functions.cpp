@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2025, Dany Cajas
+ * Copyright (c) 2020-2026, Dany Cajas
  * All rights reserved.
  * This work is licensed under BSD 3-Clause "New" or "Revised" License.
  * License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -88,7 +88,7 @@ Eigen::SparseMatrix<double> cpp_duplication_matrix(const int &n, const bool &dia
         std::vector<int> rows(nsq), cols(m);
         std::iota(rows.begin(), rows.end(), 0);
 
-        for (size_t i; i < nsq; ++i){
+        for (int i; i < nsq; ++i){
             std::cout << rows[i] <<' ';
         }
 
@@ -334,7 +334,7 @@ Eigen::MatrixXd cpp_coskewness_matrix(Eigen::MatrixXd Y, const bool &semi=false)
 }
 
 /**
- * Calculates cokurtosis square tensor of size "n" as shown in Cajas, D. (2022).
+ * Calculates cokurtosis square matrix of size "n" as shown in Cajas, D. (2022).
  * Convex Optimization of Portfolio Kurtosis. In SSRN Electronic Journal.
  * Elsevier BV. https://doi.org/10.2139/ssrn.4202967
  *
@@ -438,6 +438,111 @@ Eigen::MatrixXd cpp_dcorr_matrix(Eigen::MatrixXd Y){
 
     return corr;
 }
+
+/**
+ * Calculates the coskewness matrix of residuals of a risk factors model.
+ * 
+ * @residuals ndarray of residuals of the risk factors model of shape n_samples x 1. 
+ */
+Eigen::MatrixXd cpp_residuals_coskewness_fm(Eigen::MatrixXd residuals){
+    int n = static_cast<int>(residuals.cols());
+    int N = n * n;
+
+    Eigen::MatrixXd e3 = residuals.array().pow(3).colwise().mean();
+    Eigen::MatrixXd r_M3_fm = Eigen::MatrixXd::Zero(n, N);
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            for (int k = 0; k < n; ++k) {
+
+                int row = i;
+                int col = j * n + k;
+
+                if (i == j && j == k) {
+                    r_M3_fm(row, col) = e3(i);
+                }
+
+            }
+        }
+    }
+
+    return r_M3_fm;
+}
+
+/**
+ * Calculates the cokurtosis square matrix of residuals of a risk factors model.
+ * 
+ * @B the loadings matrix.
+ * @S_f covariance matrix of the risk factors.
+ * @residuals ndarray of residuals of the risk factors model of shape n_samples x 1.
+ */
+Eigen::MatrixXd cpp_residuals_cokurtosis_fm(Eigen::MatrixXd B, Eigen::MatrixXd S_f, Eigen::MatrixXd residuals){
+    int n = static_cast<int>(B.rows());
+    int N = n * n;
+
+    Eigen::MatrixXd e2 = residuals.array().pow(2).colwise().mean();
+    Eigen::MatrixXd e4 = residuals.array().pow(4).colwise().mean();
+    Eigen::MatrixXd covs = B * S_f * B.transpose();
+    Eigen::MatrixXd r_M4_fm = Eigen::MatrixXd::Zero(N, N);
+
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            for (int k = 0; k < n; ++k) {
+                for (int l = 0; l < n; ++l) {
+
+                    int row = i * n + k;
+                    int col = j * n + l;
+
+                    if (i == j && j == k && k == l) {
+                        r_M4_fm(row, col) = 6 * e2(i) * covs(i, i) + e4(i);
+                    }
+                    else if (i == j && j == k) {
+                        r_M4_fm(row, col) = 3 * e2(i) * covs(i, l);
+                    }
+                    else if (i == j && j == l) {
+                        r_M4_fm(row, col) = 3 * e2(i) * covs(i, k);
+                    }
+                    else if (i == k && k == l) {
+                        r_M4_fm(row, col) = 3 * e2(i) * covs(i, j);
+                    }
+                    else if (j == k && k == l) {
+                        r_M4_fm(row, col) = 3 * e2(j) * covs(j, i);
+                    }
+                    else if (i == j && k == l && i != k) {
+                        r_M4_fm(row, col) = e2(k) * covs(i, i) + e2(i) * covs(k, k) + e2(i) * e2(k);
+                    }
+                    else if (i == k && j == l && i != l) {
+                        r_M4_fm(row, col) = e2(j) * covs(i, i) + e2(i) * covs(j, j) + e2(i) * e2(j);
+                    }
+                    else if (i == l && j == k && i != j) {
+                        r_M4_fm(row, col) = e2(j) * covs(i, i) + e2(i) * covs(j, j) + e2(i) * e2(j);
+                    }
+                    else if (i == j) {
+                        r_M4_fm(row, col) = e2(i) * covs(k, l);
+                    }
+                    else if (i == k) {
+                        r_M4_fm(row, col) = e2(i) * covs(j, l);
+                    }
+                    else if (i == l) {
+                        r_M4_fm(row, col) = e2(i) * covs(j, k);
+                    }
+                    else if (j == k) {
+                        r_M4_fm(row, col) = e2(j) * covs(i, l);
+                    }
+                    else if (j == l) {
+                        r_M4_fm(row, col) = e2(j) * covs(i, k);
+                    }
+                    else if (k == l) {
+                        r_M4_fm(row, col) = e2(k) * covs(i, j);
+                    }
+                }
+            }
+        }
+    }
+
+    return r_M4_fm;
+}
+
 
 void bind_duplication_matrix(py::module &m) {
     m.def(
@@ -651,6 +756,56 @@ void bind_dcorr_matrix(py::module &m) {
                 Distance correlation matrix.
         )pbdoc",
         py::arg("Y")
+    );
+}
+
+void bind_residuals_coskewness_fm(py::module &m) {
+    m.def(
+        "cpp_residuals_coskewness_fm",
+        &cpp_residuals_coskewness_fm,
+        R"pbdoc(
+            Calculates the coskewness tensor of residuals of a risk factors model.
+
+            Parameters
+            ----------            
+            residuals : ndarray
+                Ndarray of residuals of the risk factors model of shape n_samples x 1. 
+
+            Returns
+            -------
+            r_M3_fm: ndarray
+                Coskewness tensor of residuals of a risk factors model.
+        )pbdoc",
+        py::arg("residuals")
+    );
+}
+
+void bind_residuals_cokurtosis_fm(py::module &m) {
+    m.def(
+        "cpp_residuals_cokurtosis_fm",
+        &cpp_residuals_cokurtosis_fm,
+        R"pbdoc(
+            Calculates the cokurtosis square matrix of residuals of a risk factors model.
+
+            Parameters
+            ----------
+            B : ndarray
+                The loadings matrix.
+            
+            S_f : ndarray
+                Covariance matrix of the risk factors.
+            
+            residuals : ndarray
+                Ndarray of residuals of the risk factors model of shape n_samples x 1. 
+
+            Returns
+            -------
+            r_M4_fm: ndarray
+                Cokurtosis square matrix of residuals of a risk factors model.
+        )pbdoc",
+        py::arg("B"),
+        py::arg("S_f"),
+        py::arg("residuals")
     );
 }
 

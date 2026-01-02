@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2025, Dany Cajas
+ * Copyright (c) 2020-2026, Dany Cajas
  * All rights reserved.
  * This work is licensed under BSD 3-Clause "New" or "Revised" License.
  * License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -22,4 +22,6 @@ PYBIND11_MODULE(functions, m) {
     bind_k_eigh(m);
     bind_dcorr(m);
     bind_dcorr_matrix(m);
+    bind_residuals_coskewness_fm(m);
+    bind_residuals_cokurtosis_fm(m);
 }

@@ -1,7 +1,7 @@
 """"""  #
 
 """
-Copyright (c) 2020-2025, Dany Cajas
+Copyright (c) 2020-2026, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -879,23 +879,29 @@ def risk_factors(
     const=True,
     method_mu="hist",
     method_cov="hist",
+    method_kurt="hist",
     feature_selection="stepwise",
     stepwise="Forward",
     criterion="pvalue",
     threshold=0.05,
     n_components=0.95,
+    higher_comoments=False,
     dict_mu={},
     dict_cov={},
+    dict_kurt={},
 ):
     r"""
-    Estimate the expected returns vector and covariance matrix based on risk
-    factors models :cite:`b-Ross` :cite:`b-Fan`.
+    Estimate the expected returns vector, covariance matrix, coskewness tensor and
+    cokurtosis square matrix based on risk factors models :cite:`b-Ross`
+    :cite:`b-Fan` :cite:`b-Boudt2015`.
 
     .. math::
         \begin{aligned}
         R & = \alpha + B F + \epsilon \\
-        \mu_{f} & = \alpha +BE(F) \\
-        \Sigma_{f} & = B \Sigma_{F} B^{T} + \Sigma_{\epsilon} \\
+        \mu_{f} & = \alpha + B \mu_{F} \\
+        \Sigma_{f} & = B \Sigma_{F} B^{\prime} + \Sigma_{\epsilon} \\
+        \Phi_{f} & = B \Phi_{F} \left ( B^{\prime} \otimes B^{\prime} \right )+ \Phi_{\epsilon} \\
+        \Psi_{f} & = \left ( B \otimes B \right ) \Psi_{F} \left ( B^{\prime} \otimes B^{\prime} \right ) + \Psi_{\epsilon} \\
         \end{aligned}
 
 
@@ -907,16 +913,30 @@ def risk_factors(
 
     :math:`B` is the loadings matrix.
 
-    :math:`F` is the expected returns vector of the risk factors.
+    :math:`\mu_{F}` is the expected returns vector of the risk factors.
 
     :math:`\Sigma_{F}` is the covariance matrix of the risk factors.
 
+    :math:`\Phi_{F}` is the coskewness tensor of the risk factors.
+
+    :math:`\Psi_{F}` is the cokurtosis square matrix of the risk factors.
+
     :math:`\Sigma_{\epsilon}` is the covariance matrix of error terms.
 
+    :math:`\Phi_{\epsilon}` is the coskewness tensor of error terms.
+
+    :math:`\Psi_{\epsilon}` is the cokurtosis square matrix of error terms.
+    
     :math:`\mu_{f}` is the expected returns vector obtained with the
     risk factor model.
 
     :math:`\Sigma_{f}` is the covariance matrix obtained with the risk
+    factor model.
+
+    :math:`\Phi_{f}` is the coskewness tensor obtained with the risk
+    factor model.
+
+    :math:`\Psi_{f}` is the cokurtosis square matrix obtained with the risk
     factor model.
 
     Parameters
@@ -961,6 +981,15 @@ def risk_factors(
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
         - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
+    method_kurt : str, optional
+        The method used to estimate the cokurtosis square matrix:
+        The default is 'hist'. Possible values are:
+
+        - 'hist': use historical estimates.
+        - 'semi': use semi lower cokurtosis square matrix.
+        - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
+        - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
     feature_selection: str, 'stepwise' or 'PCR', optional
         Indicate the method used to estimate the loadings matrix.
         The default is 'stepwise'.  Possible values are:
@@ -992,6 +1021,8 @@ def risk_factors(
         Other variables related to the expected returns.
     dict_cov : dict
         Other variables related to the covariance estimation.
+    dict_kurt : dict
+        Other variables related to the cokurtosis estimation.
 
     Returns
     -------
@@ -999,6 +1030,10 @@ def risk_factors(
         The mean vector of risk factors model.
     cov : DataFrame
         The covariance matrix of risk factors model.
+    skew : DataFrame
+        The coskewness tensor of risk factors model.
+    kurt : DataFrame
+        The cokurtosis square matrix of risk factors model.
     returns : DataFrame
         The returns based on a risk factor model.
     B : DataFrame
@@ -1051,11 +1086,27 @@ def risk_factors(
     S_e = np.diag(np.var(np.array(e), ddof=1, axis=0))
     S = B_ @ S_f @ B_.T + S_e
 
+    if higher_comoments:
+        cols = list(product(assets, assets))
+        cols = [str(y) + " - " + str(x) for x, y in cols]
+
+        skew_f = cf.coskewness_matrix(X1).to_numpy()
+        skew_e = cf.residuals_coskewness_fm(e)
+        skew = B_ @ skew_f @ np.kron(B_, B_).T + skew_e
+        skew = pd.DataFrame(skew, index=assets, columns=cols)
+
+        kurt_f = cokurt_matrix(X1, method=method_kurt, **dict_kurt).to_numpy()
+        kurt_e = cf.residuals_cokurtosis_fm(B_, S_f, e)
+        kurt = np.kron(B_, B_) @ kurt_f @ np.kron(B_, B_).T + kurt_e
+        kurt = pd.DataFrame(kurt, index=cols, columns=cols)
+    else:
+        skew, kurt = None, None
+
     mu = pd.DataFrame(mu.T, columns=assets)
     cov = pd.DataFrame(S, index=assets, columns=assets)
     returns = pd.DataFrame(returns, index=dates, columns=assets)
 
-    return mu, cov, returns, B
+    return mu, cov, returns, B, skew, kurt
 
 
 def black_litterman(
@@ -1078,9 +1129,9 @@ def black_litterman(
     .. math::
         \begin{aligned}
         \Pi & = \delta \Sigma w \\
-        \Pi_{BL} & = \left [ (\tau\Sigma)^{-1}+ P^{T} \Omega^{-1}P \right]^{-1}
-        \left[(\tau\Sigma)^{-1} \Pi + P^{T} \Omega^{-1} Q \right] \\
-        M & = \left((\tau\Sigma)^{-1} + P^{T}\Omega^{-1} P \right)^{-1} \\
+        \Pi_{BL} & = \left [ (\tau\Sigma)^{-1}+ P^{\prime} \Omega^{-1}P \right]^{-1}
+        \left[(\tau\Sigma)^{-1} \Pi + P^{\prime} \Omega^{-1} Q \right] \\
+        M & = \left((\tau\Sigma)^{-1} + P^{\prime}\Omega^{-1} P \right)^{-1} \\
         \mu_{BL} & = \Pi_{BL} + r_{f} \\
         \Sigma_{BL} & = \Sigma + M \\
         \end{aligned}
@@ -1240,14 +1291,14 @@ def augmented_black_litterman(
 
     .. math::
         \begin{aligned}
-        \Pi^{a} & = \delta \left [ \begin{array}{c} \Sigma \\ \Sigma_{F} B^{T} \\ \end{array} \right ] w \\
+        \Pi^{a} & = \delta \left [ \begin{array}{c} \Sigma \\ \Sigma_{F} B^{\prime} \\ \end{array} \right ] w \\
         P^{a} & = \left [ \begin{array}{cc} P & 0 \\ 0 & P_{F} \\ \end{array} \right ] \\
         Q^{a} & = \left [ \begin{array}{c} Q \\ Q_{F} \\ \end{array} \right ] \\
-        \Sigma^{a} & = \left [ \begin{array}{cc} \Sigma & B \Sigma_{F}\\ \Sigma_{F} B^{T} & \Sigma_{F} \\ \end{array} \right ] \\
+        \Sigma^{a} & = \left [ \begin{array}{cc} \Sigma & B \Sigma_{F}\\ \Sigma_{F} B^{\prime} & \Sigma_{F} \\ \end{array} \right ] \\
         \Omega^{a} & = \left [ \begin{array}{cc} \Omega & 0 \\ 0 & \Omega_{F} \\ \end{array} \right ] \\
-        \Pi^{a}_{BL} & = \left [ (\tau \Sigma^{a})^{-1} + (P^{a})^{T} (\Omega^{a})^{-1} P^{a} \right ]^{-1}
-        \left [ (\tau\Sigma^{a})^{-1} \Pi^{a} + (P^{a})^{T} (\Omega^{a})^{-1} Q^{a} \right ] \\
-        M^{a} & = \left ( (\tau\Sigma^{a})^{-1} + (P^{a})^{T} (\Omega^{a})^{-1} P^{a} \right )^{-1} \\
+        \Pi^{a}_{BL} & = \left [ (\tau \Sigma^{a})^{-1} + (P^{a})^{\prime} (\Omega^{a})^{-1} P^{a} \right ]^{-1}
+        \left [ (\tau\Sigma^{a})^{-1} \Pi^{a} + (P^{a})^{\prime} (\Omega^{a})^{-1} Q^{a} \right ] \\
+        M^{a} & = \left ( (\tau\Sigma^{a})^{-1} + (P^{a})^{\prime} (\Omega^{a})^{-1} P^{a} \right )^{-1} \\
         \mu^{a}_{BL} & = \Pi^{a}_{BL} + r_{f} \\
         \Sigma^{a}_{BL} & = \Sigma^{a} + M^{a} \\
         \end{aligned}
@@ -1383,9 +1434,9 @@ def augmented_black_litterman(
     assets = X.columns.tolist()
     N = len(assets)
 
-    w = np.array(w, ndmin=2)
-    if w.shape[0] == 1:
-        w = w.T
+    w_ = np.array(w, ndmin=2)
+    if w_.shape[0] == 1:
+        w_ = w_.T
 
     if B is not None:
         B_ = np.array(B, ndmin=2)
@@ -1402,25 +1453,24 @@ def augmented_black_litterman(
     S_f = np.array(covar_matrix(F, method=method_cov, **dict_cov), ndmin=2)
 
     if P is not None and Q is not None and P_f is None and Q_f is None:
-        S_a = S
-        P_a = P
-        Q_a = Q
-        Omega = np.array(np.diag(np.diag(P @ (tau * S) @ P.T)), ndmin=2)
-        Omega_a = Omega
+        S_a = np.array(S, ndmin=2)
+        P_a = np.array(P, ndmin=2)
+        Q_a = np.array(Q, ndmin=2)
+        Omega_a = np.array(np.diag(np.diag(P_a @ (tau * S_a) @ P_a.T)), ndmin=2)
 
         if eq == True:
-            PI_a_ = delta * S_a @ w
+            PI_a_ = delta * S_a @ w_
         elif eq == False:
             PI_a_ = mu.T - rf
+
     elif P is None and Q is None and P_f is not None and Q_f is not None:
-        S_a = S_f
-        P_a = P_f
-        Q_a = Q_f
-        Omega_f = np.array(np.diag(np.diag(P_f @ (tau * S_f) @ P_f.T)), ndmin=2)
-        Omega_a = Omega_f
+        S_a = np.array(S_f, ndmin=2)
+        P_a = np.array(P_f, ndmin=2)
+        Q_a = np.array(Q_f, ndmin=2)
+        Omega_a = np.array(np.diag(np.diag(P_a @ (tau * S_a) @ P_a.T)), ndmin=2)
 
         if eq == True:
-            PI_a_ = delta * (S_f @ B.T) @ w
+            PI_a_ = delta * (S_a @ B_.T) @ w_
         elif eq == False:
             PI_a_ = mu_f.T - rf
 
@@ -1442,7 +1492,7 @@ def augmented_black_litterman(
         Omega_a = np.hstack((np.vstack((Omega, zeros.T)), np.vstack((zeros, Omega_f))))
 
         if eq == True:
-            PI_a_ = delta * (np.vstack((S, S_f @ B_.T)) @ w)
+            PI_a_ = delta * (np.vstack((S, S_f @ B_.T)) @ w_)
         elif eq == False:
             PI_a_ = np.vstack((mu.T, mu_f.T)) - rf
 
@@ -1481,7 +1531,6 @@ def black_litterman_bayesian(
     Q_f,
     delta=1,
     rf=0,
-    eq=True,
     const=True,
     method_mu="hist",
     method_cov="hist",
@@ -1494,11 +1543,11 @@ def black_litterman_bayesian(
 
     .. math::
         \begin{aligned}
-        \Sigma_{F} & = B \Sigma_{F} B^{T} + D \\
-        \overline{\Pi}_{F} & = \left ( \Sigma_{F}^{-1} + P_{F}^{T}\Omega_{F}^{-1}P_{F} \right )^{-1} \left ( \Sigma_{F}^{-1}\Pi_{F} + P_{F}^{T}\Omega_{F}^{-1}Q_{F} \right) \\
-        \overline{\Sigma}_{F} & = \left ( \Sigma_{F}^{-1} + P_{F}^{T}\Omega_{F}^{-1}P_{F} \right )^{-1} \\
-        \Sigma_{BLB} & = \left( \Sigma^{-1} - \Sigma^{-1} B \left( \overline{\Sigma}_{F}^{-1} + B^{T}\Sigma^{-1}B \right)^{-1} B^{T}\Sigma^{-1} \right )^{-1} \\
-        \mu_{BLB} & = \Sigma_{BLB} \left ( \Sigma^{-1} B \left( \overline{\Sigma}_{F}^{-1} +B^{T}\Sigma^{-1}B \right)^{-1} \overline{\Sigma}_{F}^{-1} \overline{\Pi}_{F} \right ) + r_{f} \\
+        \Sigma_{F} & = B \Sigma_{F} B^{\prime} + D \\
+        \overline{\Pi}_{F} & = \left ( \Sigma_{F}^{-1} + P_{F}^{\prime}\Omega_{F}^{-1}P_{F} \right )^{-1} \left ( \Sigma_{F}^{-1}\Pi_{F} + P_{F}^{\prime}\Omega_{F}^{-1}Q_{F} \right) \\
+        \overline{\Sigma}_{F} & = \left ( \Sigma_{F}^{-1} + P_{F}^{\prime}\Omega_{F}^{-1}P_{F} \right )^{-1} \\
+        \Sigma_{BLB} & = \left( \Sigma^{-1} - \Sigma^{-1} B \left( \overline{\Sigma}_{F}^{-1} + B^{\prime}\Sigma^{-1}B \right)^{-1} B^{\prime}\Sigma^{-1} \right )^{-1} \\
+        \mu_{BLB} & = \Sigma_{BLB} \left ( \Sigma^{-1} B \left( \overline{\Sigma}_{F}^{-1} +B^{\prime}\Sigma^{-1}B \right)^{-1} \overline{\Sigma}_{F}^{-1} \overline{\Pi}_{F} \right ) + r_{f} \\
         \end{aligned}
 
 
@@ -1551,9 +1600,6 @@ def black_litterman_bayesian(
         Risk aversion factor. The default value is 1.
     rf : scalar, optional
         Risk free rate. The default is 0.
-    eq : bool, optional
-        Indicate if use equilibrium or historical excess returns.
-        The default is True.
     const : bool, optional
         Indicate if the loadings matrix has a constant.
         The default is True.

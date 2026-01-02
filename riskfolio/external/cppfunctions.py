@@ -1,7 +1,7 @@
 """"""  #
 
 """
-Copyright (c) 2020-2025, Dany Cajas
+Copyright (c) 2020-2026, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -11,6 +11,22 @@ import numpy as np
 import pandas as pd
 from riskfolio.external.functions import *
 from itertools import product
+
+__all__ = [
+    "duplication_matrix",
+    "duplication_elimination_matrix",
+    "duplication_summation_matrix",
+    "commutation_matrix",
+    "coskewness_matrix",
+    "semi_coskewness_matrix",
+    "cokurtosis_matrix",
+    "semi_cokurtosis_matrix",
+    "k_eigh",
+    "d_corr",
+    "d_corr_matrix",
+    "residuals_coskewness_fm",
+    "residuals_cokurtosis_fm",
+]
 
 
 def duplication_matrix(n: int, diag: bool = True):
@@ -189,7 +205,7 @@ def cokurtosis_matrix(Y: np.ndarray):
     return S4
 
 
-def semi_cokurtosis_matrix(Y):
+def semi_cokurtosis_matrix(Y: np.ndarray):
     r"""
     Calculates lower semi cokurtosis square matrix as shown in :cite:`d-Cajas4`.
 
@@ -224,7 +240,7 @@ def semi_cokurtosis_matrix(Y):
     return s_S4
 
 
-def k_eigh(Y, k):
+def k_eigh(Y: np.ndarray, k: int):
     r"""
     Calculates lower semi cokurtosis square matrix as shown in :cite:`d-Cajas4`.
 
@@ -248,7 +264,7 @@ def k_eigh(Y, k):
     return eigvalues, eigvectors
 
 
-def d_corr(X, Y):
+def d_corr(X: np.ndarray, Y: np.ndarray):
     r"""
     Calculates the distance correlation of X and Y.
 
@@ -275,7 +291,7 @@ def d_corr(X, Y):
     return value
 
 
-def d_corr_matrix(Y):
+def d_corr_matrix(Y: np.ndarray):
     r"""
     Calculates the distance correlation matrix of matrix of variables Y.
 
@@ -296,5 +312,65 @@ def d_corr_matrix(Y):
     """
     Y_ = np.array(Y, ndmin=2)
     value = cpp_dcorr_matrix(Y_)
+
+    return value
+
+
+def residuals_coskewness_fm(residuals: np.ndarray):
+    r"""
+    Calculates the coskewness tensor of residuals of a risk factors model.
+
+    Parameters
+    ----------
+    residuals : ndarray or dataframe
+        Ndarray or DataFrame of residuals of the risk factors model of shape n_samples x 1.
+
+    Returns
+    -------
+    value : float
+        Coskewness tensor of residuals of a risk factors model.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    residuals_ = np.array(residuals, ndmin=2)
+
+    value = cpp_residuals_coskewness_fm(residuals_)
+
+    return value
+
+
+def residuals_cokurtosis_fm(B: np.ndarray, S_f: np.ndarray, residuals: np.ndarray):
+    r"""
+    Calculates the cokurtosis square matrix of residuals of a risk factors model.
+
+    Parameters
+    ----------
+    B : ndarray or dataframe
+        The loadings matrix.
+
+    S_f : ndarray or dataframe
+        Covariance matrix of the risk factors.
+
+    residuals : ndarray or dataframe
+        Ndarray or DataFrame of residuals of the risk factors model of shape n_samples x 1.
+
+    Returns
+    -------
+    value : float
+        Cokurtosis square matrix of residuals of a risk factors model.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    B_ = np.array(B, ndmin=2)
+    S_f_ = np.array(S_f, ndmin=2)
+    residuals_ = np.array(residuals, ndmin=2)
+
+    value = cpp_residuals_cokurtosis_fm(B_, S_f_, residuals_)
 
     return value

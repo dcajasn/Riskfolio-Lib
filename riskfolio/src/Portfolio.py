@@ -427,6 +427,7 @@ class Portfolio(object):
         self.n_components = None
         self.mu_fm = None
         self.cov_fm = None
+        self.kurt_fm = None
         self.mu_bl = None
         self.cov_bl = None
         self.mu_bl_fm = None
@@ -1200,49 +1201,53 @@ class Portfolio(object):
         if value == False:
             print("You must convert self.cov to a positive definite matrix")
 
-        if method_kurt not in [None, "semi"]:
+        if method_kurt is not None:
             T, N = self.returns.shape
             self.L_2 = cf.duplication_elimination_matrix(N)
             self.S_2 = cf.duplication_summation_matrix(N)
-            self.kurt = pe.cokurt_matrix(self.returns, method=method_kurt, **dict_kurt)
-            value = af.is_pos_def(self.kurt, threshold=1e-8)
-            for i in range(5):
-                if value == False:
-                    try:
-                        self.kurt = af.cov_fix(
-                            self.kurt, method="clipped", threshold=1e-5
-                        )
-                        value = af.is_pos_def(self.kurt, threshold=1e-8)
-                    except:
+
+            if method_kurt != "semi":
+                self.kurt = pe.cokurt_matrix(
+                    self.returns, method=method_kurt, **dict_kurt
+                )
+                value = af.is_pos_def(self.kurt, threshold=1e-8)
+                for i in range(5):
+                    if value == False:
+                        try:
+                            self.kurt = af.cov_fix(
+                                self.kurt, method="clipped", threshold=1e-5
+                            )
+                            value = af.is_pos_def(self.kurt, threshold=1e-8)
+                        except:
+                            break
+                    else:
                         break
-                else:
-                    break
 
-            if value == False:
-                print("You must convert self.kurt to a positive definite matrix")
-
-            self.skurt = pe.cokurt_matrix(self.returns, method="semi")
-            value = af.is_pos_def(self.skurt, threshold=1e-6)
-            for i in range(5):
                 if value == False:
-                    try:
-                        self.skurt = af.cov_fix(
-                            self.skurt, method="clipped", threshold=1e-6
-                        )
-                        value = af.is_pos_def(self.skurt, threshold=1e-6)
-                    except:
+                    print("You must convert self.kurt to a positive definite matrix")
+            elif method_kurt == "semi":
+                self.skurt = pe.cokurt_matrix(self.returns, method="semi")
+                value = af.is_pos_def(self.skurt, threshold=1e-6)
+                for i in range(5):
+                    if value == False:
+                        try:
+                            self.skurt = af.cov_fix(
+                                self.skurt, method="clipped", threshold=1e-6
+                            )
+                            value = af.is_pos_def(self.skurt, threshold=1e-6)
+                        except:
+                            break
+                    else:
                         break
-                else:
-                    break
 
-            if value == False:
-                print("You must convert self.skurt to a positive definite matrix")
+                if value == False:
+                    print("You must convert self.skurt to a positive definite matrix")
 
-        else:
-            self.kurt = None
-            self.skurt = None
-            self.L_2 = None
-            self.S_2 = None
+            else:
+                self.kurt = None
+                self.skurt = None
+                self.L_2 = None
+                self.S_2 = None
 
     def blacklitterman_stats(
         self,
@@ -1363,11 +1368,14 @@ class Portfolio(object):
         self,
         method_mu="hist",
         method_cov="hist",
+        method_kurt="hist",
         B=None,
         const=True,
+        higher_comoments=False,
         dict_load={},
         dict_mu={},
         dict_cov={},
+        dict_kurt={},
     ):
         r"""
         Calculate the inputs that will be used by the optimization method when
@@ -1402,6 +1410,15 @@ class Portfolio(object):
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`a-Gerber2021`.
             - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`a-Gerber2021`.
+        method_kurt : str, optional
+            The method used to estimate the cokurtosis square matrix:
+            The default is 'hist'. Possible values are:
+
+            - 'hist': use historical estimates.
+            - 'semi': use semi lower cokurtosis square matrix.
+            - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
+            - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
+            - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
         B : DataFrame of shape (n_assets, n_factors), optional
             Loadings matrix, where the number of rows represent the assets and the
             columns the risk factors. If is not specified, is estimated using
@@ -1415,6 +1432,8 @@ class Portfolio(object):
             Other variables related to the mean vector estimation method.
         dict_cov : dict
             Other variables related to the covariance estimation method.
+        dict_kurt : dict
+            Other variables related to the cokurtosis estimation.
 
         See Also
         --------
@@ -1459,19 +1478,23 @@ class Portfolio(object):
         elif B is not None:
             self.B = B
 
-        mu, cov, returns, B_ = pe.risk_factors(
+        mu, cov, returns, B_, _, kurt = pe.risk_factors(
             X,
             Y,
             B=self.B,
             const=const,
             method_mu=method_mu,
             method_cov=method_cov,
+            method_kurt=method_kurt,
+            higher_comoments=higher_comoments,
             dict_mu=dict_mu,
             dict_cov=dict_cov,
+            dict_kurt=dict_kurt,
         )
 
         self.mu_fm = mu
         self.cov_fm = cov
+        self.kurt_fm = kurt
         self.returns_fm = returns
 
         if B_.shape[1] == len(self.factorslist):
@@ -1496,6 +1519,23 @@ class Portfolio(object):
 
         if value == False:
             print("You must convert self.cov_fm to a positive definite matrix")
+
+        if higher_comoments:
+            value = af.is_pos_def(self.kurt_fm, threshold=1e-6)
+            for i in range(5):
+                if value == False:
+                    try:
+                        self.kurt_fm = af.cov_fix(
+                            self.kurt_fm, method="clipped", threshold=1e-6
+                        )
+                        value = af.is_pos_def(self.kurt_fm, threshold=1e-6)
+                    except:
+                        break
+                else:
+                    break
+
+            if value == False:
+                print("You must convert self.kurt_fm to a positive definite matrix")
 
     def blfactors_stats(
         self,
@@ -1621,7 +1661,6 @@ class Portfolio(object):
                 Q_f=Q_f,
                 delta=delta,
                 rf=rf,
-                eq=eq,
                 const=const,
                 method_mu=method_mu,
                 method_cov=method_cov,
@@ -1945,18 +1984,25 @@ class Portfolio(object):
 
         mu = None
         sigma = None
+        kurt = None
         returns = None
         if model == "Classic":
             mu = np.array(self.mu, ndmin=2)
             sigma = np.array(self.cov, ndmin=2)
+            if self.kurt is not None:
+                kurt = np.array(self.kurt, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
         elif model == "FM":
             mu = np.array(self.mu_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_fm, ndmin=2)
+                if self.kurt_fm is not None:
+                    kurt = np.array(self.kurt_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
+                if self.kurt is not None:
+                    kurt = np.array(self.kurt, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
         elif model == "BL":
             mu = np.array(self.mu_bl, ndmin=2)
@@ -1964,17 +2010,25 @@ class Portfolio(object):
                 sigma = np.array(self.cov_bl, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
+            if self.kurt is not None:
+                kurt = np.array(self.kurt, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
         elif model == "BL_FM":
             mu = np.array(self.mu_bl_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_bl_fm, ndmin=2)
+                if self.kurt_fm is not None:
+                    kurt = np.array(self.kurt_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
+                if self.kurt is not None:
+                    kurt = np.array(self.kurt, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
             elif hist == 2:
                 sigma = np.array(self.cov_fm, ndmin=2)
+                if self.kurt_fm is not None:
+                    kurt = np.array(self.kurt_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
 
         # General Model Variables
@@ -1995,7 +2049,7 @@ class Portfolio(object):
         if rm in ["KT", "SKT"]:
             sdpmodel = True
         elif (
-            self.kurt is not None
+            kurt is not None
             or self.skurt is not None
             or self.network_sdp is not None
             or self.cluster_sdp is not None
@@ -2467,14 +2521,14 @@ class Portfolio(object):
 
         # Kurtosis Model Variables
 
-        if self.kurt is not None:
+        if kurt is not None:
             ktconstraints = []
 
             if N > self.n_max_kurt:
                 K = 2 * N
                 g2 = cp.Variable((K, 1))
                 risk19 = cp.pnorm(g2, p=2)
-                A = af.block_vec_pq(self.kurt, N, N)
+                A = af.block_vec_pq(kurt, N, N)
                 s_A, V_A = cf.k_eigh(A, K)
                 s_A = np.clip(s_A, 0, np.inf)
 
@@ -2489,11 +2543,11 @@ class Portfolio(object):
             else:
                 L_2 = self.L_2
                 S_2 = self.S_2
-                Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
+                Sqrt_Sigma_4 = S_2 @ kurt @ S_2.T
                 Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
                 g2 = cp.Variable(nonneg=True)
                 risk19 = g2
-                z = L_2 @ cp.reshape(cp.vec(W), (N * N, 1))
+                z = L_2 @ cp.reshape(cp.vec(W, order="F"), (N * N, 1), order="F")
                 ktconstraints += [cp.SOC(g2, Sqrt_Sigma_4 @ z)]
 
         # Semi Kurtosis Model Variables
@@ -2523,7 +2577,7 @@ class Portfolio(object):
                 Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
                 sg2 = cp.Variable(nonneg=True)
                 risk20 = sg2
-                sz = L_2 @ cp.reshape(cp.vec(W), (N * N, 1))
+                sz = L_2 @ cp.reshape(cp.vec(W, order="F"), (N * N, 1), order="F")
                 sktconstraints += [cp.SOC(sg2, Sqrt_SSigma_4 @ sz)]
 
         # Relativistic Value at Risk Variables
@@ -2815,7 +2869,8 @@ class Portfolio(object):
             A_rc = np.array(self.arcinequality, ndmin=2) * 1000
             B_rc = np.array(self.brcinequality, ndmin=2) * 1000
             constraints += [
-                A_rc @ cp.reshape(cp.diag(sigma @ W), (N, 1)) - B_rc * risk1 <= 0
+                A_rc @ cp.reshape(cp.diag(sigma @ W), (N, 1), order="F") - B_rc * risk1
+                <= 0
             ]
 
         # Number of Effective Assets Constraints
@@ -3013,7 +3068,7 @@ class Portfolio(object):
             constraints += tgrgconstraints
             tgmodel = True
 
-        if self.kurt is not None:
+        if kurt is not None:
             if self.upperkt is not None:
                 if obj == "Sharpe":
                     constraints += [risk19 <= self.upperkt * k]
@@ -3134,7 +3189,7 @@ class Portfolio(object):
             if self.uppertgrg is None:
                 constraints += tgrgconstraints
         elif rm == "KT":
-            if self.kurt is not None:
+            if kurt is not None:
                 risk = risk19
                 if self.upperkt is None:
                     constraints += ktconstraints
@@ -3384,18 +3439,25 @@ class Portfolio(object):
 
         mu = None
         sigma = None
+        kurt = None
         returns = None
         if model in ["Classic", "FC"]:
             mu = np.array(self.mu, ndmin=2)
             sigma = np.array(self.cov, ndmin=2)
+            if self.kurt is not None:
+                kurt = np.array(self.kurt, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
         elif model == "FM":
             mu = np.array(self.mu_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_fm, ndmin=2)
+                if self.kurt_fm is not None:
+                    kurt = np.array(self.kurt_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
+                if self.kurt is not None:
+                    kurt = np.array(self.kurt, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
 
         # General Model Variables
@@ -3827,7 +3889,7 @@ class Portfolio(object):
 
         # Kurtosis Model Variables
 
-        if self.kurt is not None:
+        if kurt is not None:
             W = cp.Variable((N, N), symmetric=True)
             M1 = cp.vstack([W, w.T])
             M2 = cp.vstack([w, np.ones((1, 1))])
@@ -3838,7 +3900,7 @@ class Portfolio(object):
                 K = 2 * N
                 g2 = cp.Variable((K, 1))
                 risk19 = cp.pnorm(g2, p=2)
-                A = af.block_vec_pq(self.kurt, N, N)
+                A = af.block_vec_pq(kurt, N, N)
                 s_A, V_A = np.linalg.eig(A)
                 s_A = np.clip(s_A, 0, np.inf)
 
@@ -3853,11 +3915,11 @@ class Portfolio(object):
             else:
                 L_2 = self.L_2
                 S_2 = self.S_2
-                Sqrt_Sigma_4 = S_2 @ self.kurt @ S_2.T
+                Sqrt_Sigma_4 = S_2 @ kurt @ S_2.T
                 Sqrt_Sigma_4 = sqrtm(Sqrt_Sigma_4)
                 g2 = cp.Variable(nonneg=True)
                 risk19 = g2
-                z = L_2 @ cp.reshape(cp.vec(W), (N * N, 1))
+                z = L_2 @ cp.reshape(cp.vec(W, order="F"), (N * N, 1), order="F")
                 ktconstraints += [cp.SOC(g2, Sqrt_Sigma_4 @ z)]
 
         # Semi Kurtosis Model Variables
@@ -3891,7 +3953,7 @@ class Portfolio(object):
                 Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
                 sg2 = cp.Variable(nonneg=True)
                 risk20 = sg2
-                sz = L_2 @ cp.reshape(cp.vec(SW), (N * N, 1))
+                sz = L_2 @ cp.reshape(cp.vec(SW, order="F"), (N * N, 1), order="F")
                 sktconstraints += [cp.SOC(sg2, Sqrt_SSigma_4 @ sz)]
 
         # Relativistic Value at Risk Variables
@@ -4063,7 +4125,7 @@ class Portfolio(object):
             constraints += tgconstraints
             constraints += tgrgconstraints
         elif rm == "KT":
-            if self.kurt is not None:
+            if kurt is not None:
                 risk = risk19
                 constraints += ktconstraints
             else:
@@ -4510,7 +4572,9 @@ class Portfolio(object):
             constraints += [W == Au - Al, Au >= 0, Al >= 0]
         elif Ucov == "ellip":
             risk = cp.trace(sigma @ (W + Z))
-            risk += k_sigma * cp.pnorm(sqrtm(cov_sigma) @ (cp.vec(W) + cp.vec(Z)), 2)
+            risk += k_sigma * cp.pnorm(
+                sqrtm(cov_sigma) @ (cp.vec(W, order="F") + cp.vec(Z, order="F")), 2
+            )
             constraints += [Z >> 0]
         else:
             if sdpmodel:
@@ -5008,7 +5072,7 @@ class Portfolio(object):
             A_frc = np.array(self.afrcinequality, ndmin=2) * 1000
             B_frc = np.array(self.bfrcinequality, ndmin=2) * 1000
             constraints += [
-                A_frc @ cp.reshape(cp.diag(B2.T @ sigma @ B2 @ W1), (N_f, 1))
+                A_frc @ cp.reshape(cp.diag(B2.T @ sigma @ B2 @ W1), (N_f, 1), order="F")
                 - B_frc * risk
                 <= 0
             ]

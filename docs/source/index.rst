@@ -8,15 +8,26 @@ Riskfolio-Lib
    :keywords lang=en: portfolio optimization python, portfolio optimization, Markowitz portfolio optimization, cvar portfolio optimization, asset allocation, strategic asset allocation
    :keywords lang=es: optimización de portafolios python, optimización de portafolios, optimización de portafolios de Markowitz, optimización de portafolios con cvar, asignación de activos, asignación estratégica de activos
 
-
+..........................................................
 Quantitative Strategic Asset Allocation, Easy for Everyone
-##########################################################
+..........................................................
 
 .. raw:: html
 
     <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
-        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer;">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
             Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
+
+.. raw:: html
+    
+    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
+            Enroll in the Portfolio Optimization with Python Course
         </button>
     </a>
     <br>
@@ -40,17 +51,20 @@ Quantitative Strategic Asset Allocation, Easy for Everyone
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a><br>
 
 
-.. image:: https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib?color=green   :alt: GitHub stars   :target: https://github.com/dcajasn/Riskfolio-Lib/stargazers
-.. image:: https://static.pepy.tech/badge/Riskfolio-Lib?left_text=Downloads
-.. image:: https://static.pepy.tech/personalized-badge/riskfolio-lib?period=month&units=none&left_color=grey&right_color=orange&left_text=Downloads/Month
- :target: https://pepy.tech/project/riskfolio-lib
+.. image:: https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib
+   :alt: GitHub stars
+   :target: https://github.com/dcajasn/Riskfolio-Lib/stargazers
+.. image:: https://static.pepy.tech/personalized-badge/riskfolio-lib?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=BRIGHTGREEN&left_text=downloads
+   :target: https://pepy.tech/project/riskfolio-lib
+.. image:: https://static.pepy.tech/personalized-badge/riskfolio-lib?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=ORANGE&left_text=downloads
+   :target: https://pepy.tech/project/riskfolio-lib
 .. image:: https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest
 .. raw:: html
 
     <a href="https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt"><img alt="GitHub license" src="https://img.shields.io/github/license/dcajasn/Riskfolio-Lib"></a>
 
 .. image:: https://mybinder.org/badge_logo.svg
- :target: https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD
+   :target: https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD
 
 
 Description
@@ -529,8 +543,8 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 
     @misc{riskfolio,
           author = {Dany Cajas},
-          title = {Riskfolio-Lib (7.1.0)},
-          year  = {2025},
+          title = {Riskfolio-Lib (7.2.0)},
+          year  = {2026},
           url   = {https://github.com/dcajasn/Riskfolio-Lib},
           }
 
