@@ -1,4 +1,4 @@
-Tutorials:
+# Tutorials
 
 - Classic Mean Risk Optimization [Tutorial 1](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%201%20-%20Classic%20Mean%20Risk%20Optimization.ipynb)
 - Portfolio Optimization using Risk Factors and Stepwise Regression [Tutorial 2](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%202%20-%20Portfolio%20Optimization%20using%20Risk%20Factors%20and%20Stepwise%20Regression.ipynb)

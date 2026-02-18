@@ -2573,6 +2573,8 @@ class Portfolio(object):
                     sktconstraints += [sg2[i, 0] == cp.trace(SBi[i] @ W)]
 
             else:
+                L_2 = self.L_2
+                S_2 = self.S_2
                 Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
                 Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
                 sg2 = cp.Variable(nonneg=True)
@@ -3949,6 +3951,8 @@ class Portfolio(object):
                     sktconstraints += [sg2[i, 0] == cp.trace(SBi[i] @ SW)]
 
             else:
+                L_2 = self.L_2
+                S_2 = self.S_2
                 Sqrt_SSigma_4 = S_2 @ self.skurt @ S_2.T
                 Sqrt_SSigma_4 = sqrtm(Sqrt_SSigma_4)
                 sg2 = cp.Variable(nonneg=True)

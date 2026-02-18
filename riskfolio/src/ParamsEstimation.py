@@ -926,7 +926,7 @@ def risk_factors(
     :math:`\Phi_{\epsilon}` is the coskewness tensor of error terms.
 
     :math:`\Psi_{\epsilon}` is the cokurtosis square matrix of error terms.
-    
+
     :math:`\mu_{f}` is the expected returns vector obtained with the
     risk factor model.
 
@@ -1452,49 +1452,53 @@ def augmented_black_litterman(
     mu_f = np.array(mean_vector(F, method=method_mu, **dict_mu), ndmin=2)
     S_f = np.array(covar_matrix(F, method=method_cov, **dict_cov), ndmin=2)
 
+    S_a = np.bmat([[S, B_ @ S_f], [S_f @ B_.T, S_f]])
+    mu_vstack = np.vstack((mu.T, mu_f.T))
+    S_vstack = np.vstack((S, S_f @ B_.T))
+
     if P is not None and Q is not None and P_f is None and Q_f is None:
-        S_a = np.array(S, ndmin=2)
-        P_a = np.array(P, ndmin=2)
+        zeros_2 = np.zeros((P.shape[0], S_f.shape[1]))
+        P_a = np.bmat([np.array(P, ndmin=2), zeros_2])
         Q_a = np.array(Q, ndmin=2)
         Omega_a = np.array(np.diag(np.diag(P_a @ (tau * S_a) @ P_a.T)), ndmin=2)
 
         if eq == True:
-            PI_a_ = delta * S_a @ w_
+            PI_a_ = delta * S_vstack @ w_
         elif eq == False:
             PI_a_ = mu.T - rf
 
     elif P is None and Q is None and P_f is not None and Q_f is not None:
-        S_a = np.array(S_f, ndmin=2)
-        P_a = np.array(P_f, ndmin=2)
+        zeros_1 = np.zeros((P_f.shape[0], S.shape[1]))
+        P_a = np.bmat([zeros_1, np.array(P_f, ndmin=2)])
         Q_a = np.array(Q_f, ndmin=2)
         Omega_a = np.array(np.diag(np.diag(P_a @ (tau * S_a) @ P_a.T)), ndmin=2)
 
         if eq == True:
-            PI_a_ = delta * (S_a @ B_.T) @ w_
+            print(S_a.shape)
+            print(B_.T.shape)
+            PI_a_ = delta * S_vstack @ w_
         elif eq == False:
             PI_a_ = mu_f.T - rf
 
     elif P is not None and Q is not None and P_f is not None and Q_f is not None:
-        S_a = np.hstack((np.vstack((S, S_f @ B_.T)), np.vstack((B_ @ S_f, S_f))))
-
         P = np.array(P, ndmin=2)
         Q = np.array(Q, ndmin=2)
         P_f = np.array(P_f, ndmin=2)
         Q_f = np.array(Q_f, ndmin=2)
-        zeros_1 = np.zeros((P_f.shape[0], P.shape[1]))
-        zeros_2 = np.zeros((P.shape[0], P_f.shape[1]))
-        P_a = np.hstack((np.vstack((P, zeros_1)), np.vstack((zeros_2, P_f))))
+        zeros_1 = np.zeros((P_f.shape[0], S.shape[1]))
+        zeros_2 = np.zeros((P.shape[0], S_f.shape[1]))
+        P_a = np.bmat([[P, zeros_2], [zeros_1, P_f]])
         Q_a = np.vstack((Q, Q_f))
 
         Omega = np.array(np.diag(np.diag(P @ (tau * S) @ P.T)), ndmin=2)
         Omega_f = np.array(np.diag(np.diag(P_f @ (tau * S_f) @ P_f.T)), ndmin=2)
-        zeros = np.zeros((Omega.shape[0], Omega_f.shape[0]))
-        Omega_a = np.hstack((np.vstack((Omega, zeros.T)), np.vstack((zeros, Omega_f))))
+        zeros_3 = np.zeros((Omega.shape[0], Omega_f.shape[0]))
+        Omega_a = np.bmat([[Omega, zeros_3], [zeros_3.T, Omega_f]])
 
         if eq == True:
-            PI_a_ = delta * (np.vstack((S, S_f @ B_.T)) @ w_)
+            PI_a_ = delta * S_vstack @ w_
         elif eq == False:
-            PI_a_ = np.vstack((mu.T, mu_f.T)) - rf
+            PI_a_ = mu_vstack - rf
 
     PI_a = inv(inv(tau * S_a) + P_a.T @ inv(Omega_a) @ P_a) @ (
         inv(tau * S_a) @ PI_a_ + P_a.T @ inv(Omega_a) @ Q_a
@@ -1507,11 +1511,6 @@ def augmented_black_litterman(
     mu_a = mu_a.T
     cov_a = S_a + M_a
     w_a = inv(delta * cov_a) @ PI_a
-
-    if P is None and Q is None and P_f is not None and Q_f is not None:
-        mu_a = mu_a @ B_.T
-        cov_a = B_ @ cov_a @ B_.T
-        w_a = inv(delta * cov_a) @ B_ @ PI_a
 
     if const == True:
         mu_a = mu_a[:, :N] + alpha.T

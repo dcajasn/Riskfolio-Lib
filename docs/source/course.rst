@@ -65,9 +65,9 @@ Matlab or similar).
 Courses Details
 ================
 
-* The course will be available, with all material (recordings, codes, slides and whiteboards), starting **March 21, 2026**.
+* The course will be available, with all materials (recordings, codes, slides and whiteboards), starting **March 21, 2026**.
 * The classes are online and asynchronous through our Google Classroom.
-* All materials will be updated each two years.
+* The materials will be updated every two years.
 
 Enrollment
 ==========
@@ -146,6 +146,7 @@ and then pay the course fee using the following PayPal link:
    </script>
    </br>
 
+After pay the PayPal invoice you must send us an email to orenji.eirl@gmail.com to confirm your registration in the course.
 
 If you wish to register in a **group of 4 or more, a 10% discount applies**, for which you must send us an
 email to orenji.eirl@gmail.com with the information of all the students (full name, city of residence
@@ -221,20 +222,27 @@ The detailed content of the course follows below:
          <td>&emsp;&emsp;&emsp;&emsp; - <em>Conditional Drawdown at Risk (CDaR)</em></td>
          <td>&emsp;&emsp;&emsp;&emsp; - <em>Maximum Drawdown</em></td>
       </tr>
-
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Linear Inequalities Constraints</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Turnover Constraints</em></td>
+      </tr>
       <tr>
          <td colspan=2>&emsp;&emsp; Quadratic Programming</td>
       </tr>
       <tr>
-         <td >&emsp;&emsp;&emsp;&emsp; - <em>Variance</em></td>
-         <td >&emsp;&emsp;&emsp;&emsp; - <em>Second Lower Partial Moment</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Variance</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Tracking Error based on Weights</em></td>
       </tr>
       <tr>
          <td colspan=2>&emsp;&emsp; Second Order Cone Programming</td>
       </tr>
       <tr>
          <td>&emsp;&emsp;&emsp;&emsp; - <em>Standard Deviation</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Second Lower Partial Moment</em></td>
+      </tr>
+      </tr>
          <td>&emsp;&emsp;&emsp;&emsp; - <em>Value at Risk for Elliptical Distributions</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Index Tracking Error</em></td>
       </tr>
       <tr>
          <td colspan=2>&emsp;&emsp; <em>Semidefinite Programming</em></td>
@@ -271,8 +279,12 @@ The detailed content of the course follows below:
       <tr>
          <td colspan=2>&emsp;&emsp;Mean Risk Optimization</td>
       </tr>
-            <tr>
+      <tr>
          <td colspan=2>&emsp;&emsp;Ordered Weighted Average (OWA) Risk Measures</td>
+      </tr>
+      </tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>OWA Risk Measures</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Higher L-moments</em></td>
       </tr>
       <tr>
          <td colspan=2>&emsp;&emsp;Risk Parity Optimization</td>
@@ -296,10 +308,26 @@ The detailed content of the course follows below:
          <td class="tg-huut" colspan=2><b>Integer Programming Applied to Portfolio Optimization	</b></td>
       </tr>
       <tr>
-         <td colspan=2>&emsp;&emsp; Value at Risk Optimization</td>
+         <td colspan=2>&emsp;&emsp; Quantile Optimization</td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Value at Risk</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Drawdown at Risk</em></td>
       </tr>
       <tr>
          <td colspan=2>&emsp;&emsp; Integer Constraints</td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Cardinality Constraint on Assets</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Cardinality Constraint on Sets</em></td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Join Investment Constraints</em></td>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Mutually Exclusive Investment Constraints</em></td>
+      </tr>
+      <tr>
+         <td>&emsp;&emsp;&emsp;&emsp; - <em>Buy in Threshold Constraint</em></td>
+         <td></td>
       </tr>
       <tr>
          <td colspan=2>&emsp;&emsp; Convex Fractional Programming with Integer Variables</td>

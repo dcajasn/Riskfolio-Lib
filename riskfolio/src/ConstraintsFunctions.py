@@ -807,12 +807,12 @@ def assets_views(views, asset_classes):
     if views.shape[1] != 9:
         raise ValueError("constraints must have nine columns")
 
-    n = len(views)
-    m = len(asset_classes)
     views0 = views.fillna("")
     views0 = views0[views0["Disabled"] == False]
     data = views0.values.tolist()
     assetslist = asset_classes.iloc[:, 0].values.tolist()
+    n = len(views0)
+    m = len(asset_classes)
 
     P = []
     Q = []
@@ -961,13 +961,13 @@ def factors_views(views, loadings, const=True):
     if views.shape[1] != 5:
         raise ValueError("constraints must have five columns")
 
-    n = len(views)
     views0 = views.fillna("")
     views0 = views0[views0["Disabled"] == False]
     data = views0.values.tolist()
     factorslist = loadings.columns.tolist()
     if const == True:
         factorslist = factorslist[1:]
+    n = len(views0)
     m = len(factorslist)
 
     P = []

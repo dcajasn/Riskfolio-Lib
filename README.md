@@ -25,9 +25,9 @@
 
 [![GitHub stars](https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/stargazers)
 [![Downloads](https://static.pepy.tech/personalized-badge/riskfolio-lib?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=BRIGHTGREEN&left_text=downloads)](https://pepy.tech/projects/riskfolio-lib)
-[![Downloads](https://static.pepy.tech/personalized-badge/riskfolio-lib?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=ORANGE&left_text=downloads)](https://pepy.tech/projects/riskfolio-lib)
+[![Downloads per Month](https://static.pepy.tech/personalized-badge/riskfolio-lib?period=monthly&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=ORANGE&left_text=downloads%2Fmonth)](https://pepy.tech/projects/riskfolio-lib)
 [![Documentation Status](https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest)](https://riskfolio-lib.readthedocs.io/en/latest/?badge=latest)
-[![GitHub license](https://img.shields.io/github/license/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt)
+[![GitHub License](https://img.shields.io/github/license/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD)
 
 [![Star History Chart](https://api.star-history.com/svg?repos=dcajasn/Riskfolio-Lib&type=timeline&legend=top-left)](https://www.star-history.com/#dcajasn/Riskfolio-Lib&type=timeline&legend=top-left)
@@ -260,7 +260,7 @@ Riskfolio-Lib supports Python 3.9 or higher.
 
 Installation requires:
 - [numpy](http://www.numpy.org/) >= 1.26.0
-- [scipy](https://www.scipy.org/) >= 1.16.0
+- [scipy](https://www.scipy.org/) >= 1.13.0
 - [pandas](https://pandas.pydata.org/) >= 2.2.2
 - [matplotlib](https://matplotlib.org/) >= 3.9.2
 - [clarabel](https://oxfordcontrol.github.io/ClarabelDocs/stable/) >= 0.11.1
@@ -268,11 +268,11 @@ Installation requires:
 - [cvxpy](https://www.cvxpy.org/) >= 1.7.2
 - [scikit-learn](https://scikit-learn.org/stable/) >= 1.7.0
 - [statsmodels](https://www.statsmodels.org/) >= 0.14.5
-- [arch](https://bashtage.github.io/arch/) >= 7.0
-- [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 3.1.2
-- [networkx](https://networkx.org) >= 3.4
-- [astropy](https://www.astropy.org) >= 6.1
-- [pybind11](https://pybind11.readthedocs.io/en/stable/) >= 2.10.1
+- [arch](https://bashtage.github.io/arch/) >= 7.2
+- [xlsxwriter](https://xlsxwriter.readthedocs.io) >= 3.2.2
+- [networkx](https://networkx.org) >= 3.4.2
+- [astropy](https://www.astropy.org) >= 6.1.3
+- [pybind11](https://pybind11.readthedocs.io/en/stable/) >= 2.13.6
 - [vectorbt](https://vectorbt.dev) >= 0.28.0
 
 
@@ -290,8 +290,8 @@ If you use Riskfolio-Lib for published work, please use the following BibTeX ent
 ```
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (7.2.0)},
-      year  = {2025},
+      title = {Riskfolio-Lib (7.2.1)},
+      year  = {2026},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }
 ```

@@ -241,7 +241,7 @@ class HCPortfolio(object):
                 if self.kurt:
                     method_kurt = "hist"
                 elif self.skurt:
-                    method_kurt = "hist"
+                    method_kurt = "semi"
                 else:
                     method_kurt = None
 
@@ -271,7 +271,7 @@ class HCPortfolio(object):
                 if self.kurt:
                     method_kurt = "hist"
                 elif self.skurt:
-                    method_kurt = "hist"
+                    method_kurt = "semi"
                 else:
                     method_kurt = None
                 port.assets_stats(

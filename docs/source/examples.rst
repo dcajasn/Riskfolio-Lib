@@ -74,13 +74,13 @@ Risk Factors Models
 * `Mean Risk Portfolio Optimization using Risk Factors and Principal Component Regression <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%209%20-%20Portfolio%20Optimization%20using%20Risk%20Factors%20and%20Principal%20Components%20Regression%20(PCR).ipynb>`_.
 * `Fixed Income Portfolio Optimization and Immunization <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%204%20-%20Bond%20Portfolio%20Optimization%20and%20Immunization.ipynb>`_.
 * `Vanilla Risk Parity Optimization using Risk Factors and Stepwise Regression <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2011%20-%20Risk%20Parity%20Portfolio%20Optimization%20using%20Risk%20Factors%20and%20Stepwise%20Regression.ipynb>`_.
-* `Mean Kurtosis Portfolio Optimization using Risk Factors<https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2053%20-%20Mean%20Kurtosis%20Optimization%20using%20Risk%20Factors.ipynb>`_.
+* `Mean Kurtosis Portfolio Optimization using Risk Factors <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2053%20-%20Mean%20Kurtosis%20Optimization%20using%20Risk%20Factors.ipynb>`_.
 
 
 Black Litterman Models
 ----------------------
 * `Mean Risk Portfolio Optimization using Black Litterman Model <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%203%20-%20Mean%20Risk%20Optimization%20using%20Black%20Litterman.ipynb>`_.
-* `Mean Risk Portfolio Optimization using Black Litterman Model and Risk Factors Models (Black Litterman Bayesian and Augmented Black Litterman) <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2020%20-%20Mean%20Risk%20Optimization%20using%20Black%20Litterman%20and%20Risk%20Factors.ipynb>`_.
+* `Mean Risk Portfolio Optimization using Black Litterman Model and Risk Factors Models (Black Litterman Bayesian and Augmented Black Litterman) <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2020%20-%20Mean%20Risk%20Optimization%20using%20Black%20Litterman%20and%20Risk%20Factors%20Models.ipynb>`_.
 
 
 Risk Parity Models
