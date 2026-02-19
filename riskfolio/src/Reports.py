@@ -15,7 +15,6 @@ import datetime
 import riskfolio.src.PlotFunctions as plf
 import riskfolio.src.RiskFunctions as rk
 
-
 __all__ = [
     "jupyter_report",
     "excel_report",

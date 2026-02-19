@@ -24,7 +24,6 @@ import riskfolio.src.AuxFunctions as af
 import riskfolio.src.DBHT as db
 import riskfolio.src.ConstraintsFunctions as ct
 
-
 __all__ = [
     "plot_series",
     "plot_frontier",
@@ -3115,7 +3114,7 @@ def plot_clusters(
             S = (1 - dist**2).to_numpy()
         else:
             S = codep.to_numpy()  # similarity matrix
-        (_, _, _, _, _, clustering) = db.DBHTs(
+        _, _, _, _, _, clustering = db.DBHTs(
             D, S, leaf_order=leaf_order
         )  # DBHT clustering
     else:
@@ -3495,7 +3494,7 @@ def plot_dendrogram(
             S = (1 - dist**2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix
-        (_, _, _, _, _, clustering) = db.DBHTs(
+        _, _, _, _, _, clustering = db.DBHTs(
             D, S, leaf_order=leaf_order
         )  # DBHT clustering
     else:
@@ -3780,7 +3779,7 @@ def plot_network(
             S = (1 - dist**2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix
-        (_, Rpm, _, _, _, clustering) = db.DBHTs(
+        _, Rpm, _, _, _, clustering = db.DBHTs(
             D, S, leaf_order=leaf_order
         )  # DBHT clustering
         MAdj = pd.DataFrame(Rpm, index=labels, columns=labels)
@@ -4087,7 +4086,7 @@ def plot_network_allocation(
             S = (1 - dist**2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix
-        (_, Rpm, _, _, _, clustering) = db.DBHTs(
+        _, Rpm, _, _, _, clustering = db.DBHTs(
             D, S, leaf_order=leaf_order
         )  # DBHT clustering
         MAdj = pd.DataFrame(Rpm, index=labels, columns=labels)
@@ -4391,7 +4390,7 @@ def plot_clusters_network(
             S = (1 - dist**2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix
-        (_, Rpm, _, _, _, clustering) = db.DBHTs(
+        _, Rpm, _, _, _, clustering = db.DBHTs(
             D, S, leaf_order=leaf_order
         )  # DBHT clustering
     else:
@@ -4700,7 +4699,7 @@ def plot_clusters_network_allocation(
             S = (1 - dist**2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix
-        (_, Rpm, _, _, _, clustering) = db.DBHTs(
+        _, Rpm, _, _, _, clustering = db.DBHTs(
             D, S, leaf_order=leaf_order
         )  # DBHT clustering
     else:

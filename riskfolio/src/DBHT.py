@@ -15,7 +15,6 @@ import scipy.sparse as sp
 from scipy.spatial.distance import squareform
 from scipy.cluster.hierarchy import from_mlab_linkage, optimal_leaf_ordering
 
-
 __all__ = [
     "DBHTs",
     "j_LoGo",
@@ -75,11 +74,11 @@ def DBHTs(D, S, leaf_order=True):
         Linkage matrix using DBHT hierarchy.
     """
 
-    (Rpm, _, _, _, _) = PMFG_T2s(S)
+    Rpm, _, _, _, _ = PMFG_T2s(S)
     Apm = Rpm.copy()
     Apm[Apm != 0] = D[Apm != 0].copy()
-    (Dpm, _) = distance_wei(Apm)
-    (H1, Hb, Mb, CliqList, Sb) = CliqHierarchyTree2s(Rpm, method1="uniqueroot")
+    Dpm, _ = distance_wei(Apm)
+    H1, Hb, Mb, CliqList, Sb = CliqHierarchyTree2s(Rpm, method1="uniqueroot")
     del H1, Sb
     Mb = Mb[0 : CliqList.shape[0], :]
     Mv = np.empty((Rpm.shape[0], 0))
@@ -88,7 +87,7 @@ def DBHTs(D, S, leaf_order=True):
         vec[np.int32(np.unique(CliqList[Mb[:, i] != 0, :]))] = 1
         Mv = np.hstack((Mv, vec.reshape(-1, 1)))
 
-    (Adjv, T8) = BubbleCluster8s(Rpm, Dpm, Hb, Mb, Mv, CliqList)
+    Adjv, T8 = BubbleCluster8s(Rpm, Dpm, Hb, Mb, Mv, CliqList)
     Z = HierarchyConstruct4s(Rpm, Dpm, T8, Adjv, Mv)
 
     if leaf_order == True:
@@ -329,7 +328,7 @@ def distance_wei(L):
             L1[:, V] = 0  # no in-edges as already shortest
             for v in V.tolist():
                 # T = np.ravel(np.argwhere(L1[v, :]))  # neighbours of shortest nodes
-                (_, T, _) = sp.find(L1[v, :])  # neighbours of shortest nodes
+                _, T, _ = sp.find(L1[v, :])  # neighbours of shortest nodes
                 d = np.min(
                     np.vstack(
                         (D[np.ix_([u], T)], D[np.ix_([u], [v])] + L1[np.ix_([v], T)])
@@ -401,7 +400,7 @@ def CliqHierarchyTree2s(Apm, method1):
     else:
         A = 1.0 * (Apm != 0)
 
-    (K3, E, clique) = clique3(A)
+    K3, E, clique = clique3(A)
     del K3, E  # , N3
 
     Nc = clique.shape[0]
@@ -411,7 +410,7 @@ def CliqHierarchyTree2s(Apm, method1):
     del clique
     for n in range(0, Nc):
         cliq_vec = CliqList[n, :]
-        (T, IndxNot) = FindDisjoint(A, cliq_vec)
+        T, IndxNot = FindDisjoint(A, cliq_vec)
         indx0 = np.argwhere(np.ravel(T) == 0)
         indx1 = np.argwhere(np.ravel(T) == 1)
         indx2 = np.argwhere(np.ravel(T) == 2)
@@ -466,7 +465,7 @@ def CliqHierarchyTree2s(Apm, method1):
     H1 = H.copy()
 
     if (H1.shape[0] == 0) != 1:
-        (H2, Mb) = BubbleHierarchy(Pred, Sb, A, CliqList)
+        H2, Mb = BubbleHierarchy(Pred, Sb, A, CliqList)
     else:
         H2 = np.empty((0, 0))
         Mb = np.empty((0, 0))
@@ -481,7 +480,7 @@ def BuildHierarchy(M):
     Pred = -1 * np.ones(M.shape[1])
     for n in range(0, M.shape[1]):
         # Children = np.argwhere(np.ravel(M[:, n]) == 1)
-        (_, Children, _) = sp.find(M[:, n] == 1)
+        _, Children, _ = sp.find(M[:, n] == 1)
         ChildrenSum = np.sum(M[Children, :], axis=0)
         Parents = np.argwhere(np.ravel(ChildrenSum) == len(Children))
         Parents = Parents[Parents != n]
@@ -510,7 +509,7 @@ def FindDisjoint(Adj, Cliq):
     Temp[np.int32(Cliq), :] = 0
     Temp[:, np.int32(Cliq)] = 0
     # %d = bfs(Temp,IndxNot(1));
-    (d, _) = breadth(Temp, IndxNot[0])
+    d, _ = breadth(Temp, IndxNot[0])
     d[np.isinf(d)] = -1
     d[IndxNot[0]] = 0
     Indx1 = d == -1
@@ -565,7 +564,7 @@ def BubbleHierarchy(Pred, Sb, A, CliqList):
 
         for n in range(0, len(Root)):
             # DirectChild = np.ravel(np.argwhere(Pred == Root[n]))
-            (_, DirectChild, _) = sp.find(Pred == Root[n])
+            _, DirectChild, _ = sp.find(Pred == Root[n])
             TempVec = np.zeros((Nc, 1))
             TempVec[np.append(DirectChild, np.int32(Root[n])), 0] = 1
             Mb = np.hstack((Mb, TempVec))
@@ -620,7 +619,7 @@ def clique3(A):
 
     P = sp.csr_matrix(np.triu(P))
 
-    (r, c, _) = sp.find(P != 0)
+    r, c, _ = sp.find(P != 0)
     E = np.hstack((r.reshape(-1, 1), c.reshape(-1, 1)))
 
     K3 = {}
@@ -630,7 +629,7 @@ def clique3(A):
         j = c[n]
         a = A[i, :] * A[j, :]
         # indx = np.ravel(np.argwhere(a != 0))
-        (_, indx, _) = sp.find(a != 0)
+        _, indx, _ = sp.find(a != 0)
         K3[n] = indx
         N3[n] = len(indx)
 
@@ -707,7 +706,7 @@ def breadth(CIJ, source):
     while (Q.shape[0] == 0) == 0:
         u = Q[0]
         # ns = np.argwhere(CIJ[u, :])
-        (_, ns, _) = sp.find(CIJ[u, :])
+        _, ns, _ = sp.find(CIJ[u, :])
         for v in ns:
             # this allows the 'source' distance to itself to be recorded
             if distance[v].all() == 0:
@@ -757,12 +756,12 @@ def BubbleCluster8s(Rpm, Dpm, Hb, Mb, Mv, CliqList):
         of vertex n to kth discrete cluster.
     """
 
-    (Hc, Sep) = DirectHb(
+    Hc, Sep = DirectHb(
         Rpm, Hb, Mb, Mv, CliqList
     )  # Assign directions on the bubble tree
     N = Rpm.shape[0]  # Number of vertices in the PMFG
     # indx = np.ravel(np.argwhere(Sep == 1))  # Look for the converging bubbles
-    (_, indx, _) = sp.find(Sep == 1)  # Look for the converging bubbles
+    _, indx, _ = sp.find(Sep == 1)  # Look for the converging bubbles
     Adjv = np.empty((0, 0))
     if len(indx) > 1:
         Adjv = np.zeros(
@@ -772,19 +771,19 @@ def BubbleCluster8s(Rpm, Dpm, Hb, Mb, Mv, CliqList):
         # converging bubble
         for n in range(0, len(indx)):
             # %[d dt p]=bfs(Hc.T, indx[n]);
-            (d, _) = breadth(Hc.T, indx[n])
+            d, _ = breadth(Hc.T, indx[n])
             d[np.isinf(d)] = -1
             d[indx[n]] = 0
-            (r, c, _) = sp.find(Mv[:, d != -1] != 0)
+            r, c, _ = sp.find(Mv[:, d != -1] != 0)
             Adjv[np.unique(r), n] = 1
             del d, r, c  # %, dt, p
 
         Tc = -1 * np.ones(N)  # Set the discrete cluster membership vector at default
         Bubv = Mv[:, indx]  # Gather the list of vertices in the converging bubbles
-        (_, cv, _) = sp.find(
+        _, cv, _ = sp.find(
             np.sum(Bubv.T, axis=0).T == 1
         )  # Identify vertices which belong to single converging bubbles
-        (_, uv, _) = sp.find(
+        _, uv, _ = sp.find(
             np.sum(Bubv.T, axis=0).T > 1
         )  # Identify vertices which belong to more than one converging bubbles.
         Mdjv = np.zeros(
@@ -805,7 +804,7 @@ def BubbleCluster8s(Rpm, Dpm, Hb, Mb, Mv, CliqList):
             imx = np.argmax(v_cont / all_cont)
             Mdjv[uv[v], imx] = 1  # Pick the most strongly associated converging bubble
 
-        (v, ci, _) = sp.find(1 * (Mdjv != 0))
+        v, ci, _ = sp.find(1 * (Mdjv != 0))
         Tc[v] = ci
         del (
             v,
@@ -857,7 +856,7 @@ def DirectHb(Rpm, Hb, Mb, Mv, CliqList):
     """
 
     Hb_temp = 1 * (Hb != 0)
-    (r, c, _) = sp.find(sp.triu(sp.csr_matrix(Hb_temp)) != 0)
+    r, c, _ = sp.find(sp.triu(sp.csr_matrix(Hb_temp)) != 0)
     CliqEdge = np.empty((0, 3))
     for n in range(0, len(r)):
         data = np.argwhere(np.logical_and(Mb[:, r[n]] != 0, Mb[:, c[n]] != 0))
@@ -875,7 +874,7 @@ def DirectHb(Rpm, Hb, Mb, Mv, CliqList):
         Temp = Hb_temp.copy()
         Temp[CliqEdge[n, 0], CliqEdge[n, 1]] = 0
         Temp[CliqEdge[n, 1], CliqEdge[n, 0]] = 0
-        (d, _) = breadth(Temp, np.array([0]))
+        d, _ = breadth(Temp, np.array([0]))
         d[np.isinf(d)] = -1
         d[0] = 0
         vo = np.int32(CliqList[CliqEdge[n, 2], :])
@@ -953,13 +952,13 @@ def HierarchyConstruct4s(Rpm, Dpm, Tc, Adjv, Mv):
         Mvv = BubbleMember(
             Dpm, Rpm, Mv, Mc
         )  # Assign each vertex in the nth cluster to a specific bubble.
-        (_, Bub, _) = sp.find(
+        _, Bub, _ = sp.find(
             np.sum(Mvv, axis=0) > 0
         )  # Get the list of bubbles which contain the vertices of nth cluster
         nc = np.sum(Tc == kvec[n], axis=0) - 1  ##########
         # %Apply the linkage within the bubbles.
         for m in range(0, len(Bub)):
-            (_, V, _) = sp.find(
+            _, V, _ = sp.find(
                 Mvv[:, Bub[m]] != 0
             )  # Retrieve the list of vertices assigned to mth bubble.
             if len(V) > 1:
@@ -971,7 +970,7 @@ def HierarchyConstruct4s(Rpm, Dpm, Tc, Adjv, Mv):
                 ]  # Initiate the label vector which labels for the clusters.
                 LabelVec2 = LabelVec1.copy()
                 for v in range(0, len(V) - 1):
-                    (PairLink, dvu) = LinkageFunction(
+                    PairLink, dvu = LinkageFunction(
                         dpm, LabelVec
                     )  # Look for the pair of clusters which produces the best linkage
                     LabelVec[
@@ -987,7 +986,7 @@ def HierarchyConstruct4s(Rpm, Dpm, Tc, Adjv, Mv):
                 del LabelVec, dpm, LabelVec2
             del V
 
-        (_, V, _) = sp.find(E[:, kvec[n] - 1] != 0)
+        _, V, _ = sp.find(E[:, kvec[n] - 1] != 0)
         dpm = Dpm[np.ix_(V, V)]
         # %Perform linkage merging between the bubbles
         LabelVec = LabelVec1[
@@ -995,7 +994,7 @@ def HierarchyConstruct4s(Rpm, Dpm, Tc, Adjv, Mv):
         ]  # Initiate the label vector which labels for the clusters.
         LabelVec2 = LabelVec1.copy()
         for b in range(0, len(Bub) - 1):
-            (PairLink, dvu) = LinkageFunction(dpm, LabelVec)
+            PairLink, dvu = LinkageFunction(dpm, LabelVec)
             # %[PairLink,dvu]=LinkageFunction(rpm,LabelVec);
             LabelVec[
                 np.logical_or(LabelVec == PairLink[0], LabelVec == PairLink[1])
@@ -1014,7 +1013,7 @@ def HierarchyConstruct4s(Rpm, Dpm, Tc, Adjv, Mv):
     LabelVec2 = LabelVec1.copy()
     dcl = np.ones(len(LabelVec1))
     for n in range(0, len(kvec) - 1):
-        (PairLink, dvu) = LinkageFunction(Dpm, LabelVec1)
+        PairLink, dvu = LinkageFunction(Dpm, LabelVec1)
         # %[PairLink,dvu]=LinkageFunction(Rpm,LabelVec);
         LabelVec2[np.logical_or(LabelVec1 == PairLink[0], LabelVec1 == PairLink[1])] = (
             np.max(LabelVec1, axis=0) + 1
@@ -1063,11 +1062,11 @@ def LinkageFunction(d, labelvec):
 
 def BubbleMember(Dpm, Rpm, Mv, Mc):
     Mvv = np.zeros((Mv.shape[0], Mv.shape[1]))
-    (_, vu, _) = sp.find(np.sum(Mc.T, axis=0) > 1)
-    (_, v, _) = sp.find(np.sum(Mc.T, axis=0) == 1)
+    _, vu, _ = sp.find(np.sum(Mc.T, axis=0) > 1)
+    _, v, _ = sp.find(np.sum(Mc.T, axis=0) == 1)
     Mvv[v, :] = Mc[v, :]
     for n in range(0, len(vu)):
-        (_, bub, _) = sp.find(Mc[vu[n], :] != 0)
+        _, bub, _ = sp.find(Mc[vu[n], :] != 0)
         vu_bub = np.sum(Rpm[:, vu[n]].reshape(-1, 1) * Mv[:, bub], axis=0).T
         all_bub = np.diag(Mv[:, bub].T @ Rpm @ Mv[:, bub]) / 2
         frac = vu_bub / all_bub

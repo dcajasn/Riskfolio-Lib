@@ -20,7 +20,6 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import warnings
 
-
 __all__ = [
     "MAD",
     "SemiDeviation",
@@ -957,7 +956,7 @@ def EDaR_Abs(X, alpha=0.05, solver="CLARABEL"):
         DD.append(-(peak - i))
     del DD[0]
 
-    (value, t) = EVaR_Hist(np.array(DD), alpha=alpha, solver=solver)
+    value, t = EVaR_Hist(np.array(DD), alpha=alpha, solver=solver)
 
     return (value, t)
 
@@ -1338,7 +1337,7 @@ def EDaR_Rel(X, alpha=0.05, solver="CLARABEL"):
         DD.append(-(peak - i) / peak)
     del DD[0]
 
-    (value, t) = EVaR_Hist(np.array(DD), alpha=alpha, solver=solver)
+    value, t = EVaR_Hist(np.array(DD), alpha=alpha, solver=solver)
 
     return (value, t)
 

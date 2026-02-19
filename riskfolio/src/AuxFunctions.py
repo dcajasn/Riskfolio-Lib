@@ -27,7 +27,6 @@ import riskfolio.external.cppfunctions as cf
 import riskfolio.src.GerberStatistic as gs
 import re
 
-
 __all__ = [
     "is_pos_def",
     "cov2corr",

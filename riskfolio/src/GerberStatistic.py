@@ -10,7 +10,6 @@ import numpy as np
 import pandas as pd
 import riskfolio.src.AuxFunctions as af
 
-
 __all__ = [
     "gerber_cov_stat0",
     "gerber_cov_stat1",

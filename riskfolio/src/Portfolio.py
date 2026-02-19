@@ -21,7 +21,6 @@ import riskfolio.src.AuxFunctions as af
 import riskfolio.src.OwaWeights as owa
 import riskfolio.external.cppfunctions as cf
 
-
 __all__ = [
     "Portfolio",
 ]
@@ -137,16 +136,16 @@ class Portfolio(object):
         The matrix :math:`b` of the linear constraint :math:`A \leq b`.
         The default is None.
     arcinequality : nd-array, optional
-        The matrix :math:`A_{rc}` of the linear constraint :math:`A_{rc} \text{diag}(\text{Tr}(\Sigma X)) \leq b_{rc} \text{Tr}(\Sigma X)`.
+        The matrix :math:`A_{RC}` of the linear constraint :math:`A_{RC} \text{diag}(\text{Tr}(\Sigma X)) \leq b_{RC} \text{Tr}(\Sigma X)`.
         The default is None.
     brcinequality : 1d-array, optional
-        The matrix :math:`B_{rc}` of the linear constraint :math:`A_{rc} \text{diag}(\text{Tr}(\Sigma X)) \leq b_{rc} \text{Tr}(\Sigma X)`.
+        The matrix :math:`B_{RC}` of the linear constraint :math:`A_{RC} \text{diag}(\text{Tr}(\Sigma X)) \leq b_{RC} \text{Tr}(\Sigma X)`.
         The default is None.
     afrcinequality : nd-array, optional
-        The matrix :math:`A_{frc}` of the linear constraint :math:`A_{frc} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{frc} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right )`.
+        The matrix :math:`A_{FRC}` of the linear constraint :math:`A_{FRC} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{FRC} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right )`.
         The default is None.
     bfrcinequality : 1d-array, optional
-        The matrix :math:`b_{frc}` of the linear constraint :math:`A_{frc} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{frc} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right )`.
+        The matrix :math:`b_{FRC}` of the linear constraint :math:`A_{FRC} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{FRC} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right )`.
         The default is None.
     b : 1d-array, optional
         The risk budgeting constraint vector. The default is None.
@@ -1884,10 +1883,10 @@ class Portfolio(object):
 
         .. math::
             \begin{align}
-            &\underset{w}{\text{optimize}} & & F(w)\\
-            &\text{s. t.} & & Aw \leq b\\
-            & & & A RC(w) \leq b \sigma^{2}(w)\\
-            & & & \phi_{i}(w) \leq c_{i}\\
+            \underset{w}{\text{optimize}} & \quad F(w)\\
+            \text{s.t.}\quad & \quad Aw \leq b\\
+            & \quad A_{\text{RC}} \text{diag}\left (\Sigma W \right) \leq b_{\text{RC}} \, \text{Tr} \left ( \Sigma W \right ) \\
+            & \quad \phi_{i}(w) \leq c_{i}\\
             \end{align}
 
         Where:
@@ -1896,7 +1895,8 @@ class Portfolio(object):
 
         :math:`Aw \leq b` is a set of linear constraints on asset weights.
 
-        :math:`A RC(w) \leq b \sigma^{2}(w)` is a set of linear risk contribution constraints for variance.
+        :math:`A_{\text{RC}} \text{diag}\left (\Sigma W \right) \leq b_{\text{RC}} \, \text{Tr} \left ( \Sigma W \right )`
+          is a set of linear risk contribution constraints for variance.
 
         :math:`\phi_{i}(w) \leq c_{i}` are constraints on maximum values of
         several risk measures.
@@ -3357,11 +3357,11 @@ class Portfolio(object):
 
         .. math::
             \begin{aligned}
-            &\underset{w}{\min} & & \phi(w)\\
-            &\text{s.t.} & & \mathbf{b}^{\prime} \log(w) \geq c\\
-            & & & \mu w \geq \overline{\mu} \\
-            & & & Aw \leq b \\
-            & & & w \geq 0 \\
+            \min_{w} & \quad \phi(w)\\
+            \text{s.t.} & \quad \mathbf{b}^{\prime} \log(w) \geq c\\
+            & \quad \mu w \geq \overline{\mu} \\
+            & \quad Aw \leq b \\
+            & \quad w \geq 0 \\
             \end{aligned}
 
         Where:
@@ -4246,15 +4246,15 @@ class Portfolio(object):
 
         .. math::
             \begin{aligned}
-            &\underset{w}{\min} & & \psi - \gamma & \\
-            &\text{s.t.} & & \zeta = \Sigma w \\
-            & & & w^{T} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) & \\
-            & & & w_{i} \zeta_{i} \geq \gamma^{2} \mathbf{b}_{i} & \forall i=1 , \ldots , N \\
-            & & & \lambda w^{T} \Theta w \leq \rho^{2} & \\
-            & & & \mu w \geq \overline{\mu} & \\
-            & & & Aw \leq b & \\
-            & & & \sum^{N}_{i=1} w_{i} = 1 & \\
-            & & & \psi, \gamma, \rho, w  \geq 0 & \\
+            \min_{w} & \quad \psi - \gamma & \\
+            \text{s.t.} & \quad \zeta = \Sigma w \\
+            & \quad w^{T} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) & \\
+            & \quad w_{i} \zeta_{i} \geq \gamma^{2} \mathbf{b}_{i} & \forall i=1 , \ldots , N \\
+            & \quad \lambda w^{T} \Theta w \leq \rho^{2} & \\
+            & \quad \mu w \geq \overline{\mu} & \\
+            & \quad Aw \leq b & \\
+            & \quad \sum^{N}_{i=1} w_{i} = 1 & \\
+            & \quad \psi, \gamma, \rho, w  \geq 0 & \\
             \end{aligned}
 
         Where:
@@ -4870,12 +4870,12 @@ class Portfolio(object):
 
         .. math::
             \begin{aligned}
-            &\underset{w_f}{\text{optimize}} & & F(w)\\
-            &\text{s.t.} & & \begin{bmatrix} W_{\text{f}}  & w_{\text{f}} \\ w^{\prime}_{\text{f}} & 1 \end{bmatrix} \succeq 0 \\
-            & & & A w \leq b \\
-            & & & w = (B^{\prime})^{+} w_{\text{f}} \\
-            & & & A_{\text{frc}} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{\text{frc}} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \\
-            & & & W_{\text{f}} \in \mathbf{S}^{n}\\
+            \underset{w_f}{\text{optimize}} & \quad F(w)\\
+            \text{s.t.} \quad & \quad \begin{bmatrix} W_{F}  & w_{F} \\ w^{\prime}_{F} & 1 \end{bmatrix} \succeq 0 \\
+            & \quad A w \leq b \\
+            & \quad w = (B^{\prime})^{+} w_{F} \\
+            & \quad A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+            & \quad W_{F} \in \mathbf{S}^{m}\\
             \end{aligned}
 
         Where:
@@ -4888,9 +4888,9 @@ class Portfolio(object):
 
         :math:`Aw \leq b`: is a set of linear constraints on asset weights.
 
-        :math:`\bar{\Sigma} = \left ((B^{\prime})^{+} \right )^{\prime} \Sigma (B^{\prime})^{+} $, $X_{\text{f}}`.
+        :math:`\bar{\Sigma} = \left ((B^{\prime})^{+} \right )^{\prime} \Sigma (B^{\prime})^{+}`.
 
-        :math:`A_{\text{frc}} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{\text{frc}} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right )`: is a set of linear factor risk contribution constraints.
+        :math:`A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right )`: is a set of linear factor risk contribution constraints.
 
         Parameters
         ----------
@@ -5227,8 +5227,8 @@ class Portfolio(object):
 
         .. math::
             \begin{align}
-            &\underset{w}{\text{optimize}} & & F(w)\\
-            &\text{s. t.} & & Aw \leq b\\
+            \underset{w}{\text{optimize}} & \quad F(w)\\
+            \text{s.t.} \quad & \quad Aw \leq b\\
             \end{align}
 
         Where:

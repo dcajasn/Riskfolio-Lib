@@ -24,7 +24,6 @@ import riskfolio.src.DBHT as db
 import riskfolio.src.GerberStatistic as gs
 import riskfolio.external.cppfunctions as cf
 
-
 __all__ = [
     "mean_vector",
     "covar_matrix",
@@ -248,7 +247,7 @@ def covar_matrix(
         S = np.cov(X, rowvar=False)
         R = np.corrcoef(X, rowvar=False)
         D = np.sqrt(np.clip((1 - R) / 2, a_min=0.0, a_max=1.0))
-        (_, _, separators, cliques, _) = db.PMFG_T2s(1 - D**2, nargout=4)
+        _, _, separators, cliques, _ = db.PMFG_T2s(1 - D**2, nargout=4)
         cov = db.j_LoGo(S, separators, cliques)
         cov = np.linalg.inv(cov)
     elif method in ["fixed", "spectral", "shrink"]:

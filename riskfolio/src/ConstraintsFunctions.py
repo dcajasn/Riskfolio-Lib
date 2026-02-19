@@ -15,7 +15,6 @@ from scipy.spatial.distance import squareform
 import riskfolio.src.AuxFunctions as af
 import riskfolio.src.DBHT as db
 
-
 __all__ = [
     "assets_constraints",
     "factors_constraints",
@@ -1130,7 +1129,7 @@ def assets_clusters(
             S = (1 - dist**2).to_numpy()
         else:
             S = codep.copy().to_numpy()  # similarity matrix
-        (_, _, _, _, _, clustering) = db.DBHTs(
+        _, _, _, _, _, clustering = db.DBHTs(
             D, S, leaf_order=leaf_order
         )  # DBHT clustering
     else:
@@ -1521,7 +1520,7 @@ def connection_matrix(
             S = (1 - dist**2).to_numpy()
         else:
             S = codep.copy().to_numpy()
-        (_, Rpm, _, _, _, clustering) = db.DBHTs(D, S)  # DBHT clustering
+        _, Rpm, _, _, _, clustering = db.DBHTs(D, S)  # DBHT clustering
         MAdj = pd.DataFrame(Rpm, index=assets, columns=assets)
         G = nx.from_pandas_adjacency(MAdj)
     elif graph == "MST":

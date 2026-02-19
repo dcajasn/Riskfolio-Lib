@@ -46,11 +46,11 @@ one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & R (w)\\
-    &\text{s.t.} & & Aw \leq b\\
-    & & & A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
-    & & &\varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
-    & & & R (w) \geq \overline{\mu}
+    \max_{w} & \quad R (w)\\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
+    & \quad \varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
+    & \quad R (w) \geq \overline{\mu} \\
     \end{aligned}
 
 
@@ -58,11 +58,11 @@ one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\min} & & \varrho_{k}(w)\\
-    &\text{s.t.} & & A w \leq b\\
-    & & & A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
-    & & &\varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
-    & & & R (w) \geq \overline{\mu}
+    \min_{w} & \quad \varrho_{k}(w)\\
+    \text{s.t.} & \quad A w \leq b\\
+    & \quad A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
+    & \quad \varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
+    & \quad R (w) \geq \overline{\mu} \\
     \end{aligned}
 
 
@@ -70,11 +70,11 @@ one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & \frac{R (w) - r_{f}}{\varrho_{k}(w)}\\
-    &\text{s.t.} & & Aw \leq b\\
-    & & & A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
-    & & &\varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
-    & & & R (w) \geq \overline{\mu}
+    \max_{w} & \quad \frac{R (w) - r_{f}}{\varrho_{k}(w)}\\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
+    & \quad \varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
+    & \quad R (w) \geq \overline{\mu} \\
     \end{aligned}
 
 
@@ -82,17 +82,17 @@ one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & R (w) - \lambda \varrho_{k}(w)\\
-    &\text{s.t.} & & Aw \leq b\\
-    & & & A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
-    & & &\varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
-    & & & R (w) \geq \overline{\mu}
+    \max_{w} & \quad R (w) - \lambda \varrho_{k}(w)\\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
+    & \quad \varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
+    & \quad R (w) \geq \overline{\mu} \\
     \end{aligned}
 
 
 where:
 
-:math:`R (w)` is the return function, posible values are:
+:math:`R (w)` is the return function, possible values are:
 
     - :math:`\mu w`: arithmetic return.
     - :math:`\mu w - 0.5 w^{\tau} \Sigma w`: approximate logarithmic return :cite:`a-Thorp`.
@@ -108,9 +108,11 @@ where:
 
 :math:`r`: is the matrix of assets returns.
 
+:math:`c_i`: is the upper bound of risk measure :math:`i`.
+
 :math:`Aw \leq b`: is a set of linear constraints.
 
-:math:`& & & A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\` is a set of linear risk contribution constraints for variance based on :cite:`a-Cajas13`.
+:math:`A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)` is a set of linear risk contribution constraints for variance based on :cite:`a-Cajas13`.
 
 :math:`\varrho_{i}(w)`: are 24 available risk measures. The available risk measures are:
 
@@ -156,11 +158,11 @@ the general vanilla risk parity model :cite:`a-Roncalli` :cite:`a-RichardRoncall
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\min} & & \varrho(w) \\
-    &\text{s.t.} & & \mathbf{b}^{\prime} \log(w) \geq c \\
-    & & & \mu w \geq \overline{\mu} \\
-    & & & Aw \leq b \\
-    & & & w \geq 0 \\
+    \min_{w} & \quad \varrho(w) \\
+    \text{s.t.} & \quad \mathbf{b}^{\prime} \log(w) \geq c \\
+    & \quad \mu w \geq \overline{\mu} \\
+    & \quad Aw \leq b \\
+    & \quad w \geq 0 \\
     \end{aligned}
 
 where:
@@ -172,6 +174,8 @@ where:
 :math:`\mathbf{b}`: is a vector of risk contribution targets.
 
 :math:`Aw \leq b`: is a set of linear constraints.
+
+:math:`c`: is an arbitrary constant.
 
 :math:`\varrho(w)`: are 20 available risk measures. The available risk
 measures are:
@@ -208,15 +212,15 @@ the relaxed risk parity model :cite:`a-GambetaKwon`:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\min} & & \psi - \gamma & \\
-    &\text{s.t.} & & \zeta = \Sigma w \\
-    & & & w^{\prime} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) & \\
-    & & & w_{i} \zeta_{i} \geq \gamma^{2} b_{i} & \forall i=1 , \ldots , N \\
-    & & & \lambda w^{\prime} \Theta w \leq \rho^{2} & \\
-    & & & \mu w \geq \overline{\mu} & \\
-    & & & Aw \leq b & \\
-    & & & \sum^{N}_{i=1} w_{i} = 1 & \\
-    & & & \psi, \gamma, \rho, w  \geq 0 & \\
+    \min_{w} & \quad \psi - \gamma & \\
+    \text{s.t.} & \quad \zeta = \Sigma w \\
+    & \quad w^{\prime} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) & \\
+    & \quad w_{i} \zeta_{i} \geq \gamma^{2} b_{i} & \forall i=1 , \ldots , N \\
+    & \quad \lambda w^{\prime} \Theta w \leq \rho^{2} & \\
+    & \quad \mu w \geq \overline{\mu} & \\
+    & \quad Aw \leq b & \\
+    & \quad \sum^{N}_{i=1} w_{i} = 1 & \\
+    & \quad \psi, \gamma, \rho, w  \geq 0 & \\
     \end{aligned}
 
 
@@ -257,8 +261,8 @@ that results from optimize one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & \underset{\mu \, \in \, U_{\mu}}{\min} \mu w\\
-    &\text{s.t.} & & Aw \leq b\\
+    \max_{w} & \quad \min_{\mu \, \in \, U_{\mu}} \mu w\\
+    \text{s.t.} & \quad Aw \leq b\\
     \end{aligned}
 
 
@@ -266,8 +270,8 @@ that results from optimize one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\min} & & \underset{\Sigma \, \in \, U_{\Sigma}}{\max} w^{\prime} \Sigma w\\
-    &\text{s.t.} & & Aw \leq b\\
+    \min_{w} & \quad \max_{\Sigma \, \in \, U_{\Sigma}} w^{\prime} \Sigma w\\
+    \text{s.t.} & \quad  Aw \leq b\\
     \end{aligned}
 
 
@@ -275,9 +279,9 @@ that results from optimize one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & \cfrac{\underset{\mu \, \in \, U_{\mu}}{\min} \mu w - r_{f}}
-    {\underset{\Sigma \, \in \, U_{\Sigma}}{\max} \sqrt{w^{\prime} \Sigma w}}\\
-    &\text{s.t.} & & Aw \leq b\\
+    \underset{w}{\max} & \quad \cfrac{\min_{\mu \, \in \, U_{\mu}} \mu w - r_{f}}
+    {\max_{\Sigma \, \in \, U_{\Sigma}} \sqrt{w^{\prime} \Sigma w}}\\
+    \text{s.t.} & \quad Aw \leq b\\
     \end{aligned}
 
 
@@ -285,9 +289,9 @@ that results from optimize one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & \underset{\mu \, \in \, U_{\mu}}{\min} \mu w
-    - \underset{\Sigma \, \in \, U_{\Sigma}}{\max}  \lambda w^{\prime} \Sigma w\\
-    &\text{s.t.} & & Aw \leq b\\
+    \max_{w} & \quad \min_{\mu \, \in \, U_{\mu}} \mu w
+    - \max_{\Sigma \, \in \, U_{\Sigma}} \lambda w^{\prime} \Sigma w\\
+    \text{s.t.} & \quad Aw \leq b\\
     \end{aligned}
 
 
@@ -334,28 +338,28 @@ one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & R (w)\\
-    &\text{s.t.} & & \begin{bmatrix} W_{\text{f}}  & w_{\text{f}} \\ w^{\prime}_{\text{f}} & 1 \end{bmatrix} \succeq 0 \\
-    & & & w = (B^{\prime})^{+} w_{\text{f}} \\
-    & & & Aw \leq b\\
-    & & & A_{\text{frc}} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{\text{frc}} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \\
-    & & & \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \leq c \\
-    & & & R (w) \geq \overline{\mu}
-    & & & W_{\text{f}} \in \mathbf{S}^{n}\\
+    \max_{w} & \quad R (w)\\
+    \text{s.t.} & \quad \begin{bmatrix} W_{F}  & W_{F} \\ w^{\prime}_{F} & 1 \end{bmatrix} \succeq 0 \\
+    & \quad w = (B^{\prime})^{+} W_{F} \\
+    & \quad Aw \leq b\\
+    & \quad A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+    & \quad \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \leq c \\
+    & \quad R (w) \geq \overline{\mu} \\
+    & \quad W_{F} \in \mathbf{S}^{m}\\
     \end{aligned}
 
 - **Minimum Risk Portfolio:**
 
 .. math::
     \begin{aligned} 
-    &\underset{w}{\min} & & \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \\
-    &\text{s.t.} & & \begin{bmatrix} W_{\text{f}}  & w_{\text{f}} \\ w^{\prime}_{\text{f}} & 1 \end{bmatrix} \succeq 0 \\
-    & & & w = (B^{\prime})^{+} w_{\text{f}} \\
-    & & & Aw \leq b\\
-    & & & A_{\text{frc}} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{\text{frc}} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \\
-    & & & \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \leq c \\
-    & & & R (w) \geq \overline{\mu}
-    & & & W_{\text{f}} \in \mathbf{S}^{n}\\
+    \min_{w} & \quad \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+    \text{s.t.} & \quad \begin{bmatrix} W_{F}  & w_{F} \\ w^{\prime}_{F} & 1 \end{bmatrix} \succeq 0 \\
+    & \quad w = (B^{\prime})^{+} w_{F} \\
+    & \quad Aw \leq b\\
+    & \quad A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+    & \quad \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \leq c \\
+    & \quad R (w) \geq \overline{\mu} \\
+    & \quad W_{F} \in \mathbf{S}^{m}\\
     \end{aligned}
 
 
@@ -363,14 +367,14 @@ one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & \frac{R (w) - r_{f}}{\text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right )}\\
-    &\text{s.t.} & & \begin{bmatrix} W_{\text{f}}  & w_{\text{f}} \\ w^{\prime}_{\text{f}} & 1 \end{bmatrix} \succeq 0 \\
-    & & & w = (B^{\prime})^{+} w_{\text{f}} \\
-    & & & Aw \leq b\\
-    & & & A_{\text{frc}} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{\text{frc}} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \\
-    & & & \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \leq c \\
-    & & & R (w) \geq \overline{\mu}
-    & & & W_{\text{f}} \in \mathbf{S}^{n}\\
+    \max_{w} & \quad \frac{R (w) - r_{f}}{\text{Tr} \left ( \bar{\Sigma} W_{F} \right )}\\
+    \text{s.t.} & \quad \begin{bmatrix} W_{F}  & w_{F} \\ w^{\prime}_{F} & 1 \end{bmatrix} \succeq 0 \\
+    & \quad w = (B^{\prime})^{+} w_{F} \\
+    & \quad Aw \leq b\\
+    & \quad A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+    & \quad \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \leq c \\
+    & \quad R (w) \geq \overline{\mu} \\
+    & \quad W_{F} \in \mathbf{S}^{m}\\
     \end{aligned}
 
 
@@ -378,19 +382,19 @@ one of the following 4 objective functions:
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & R (w) - \lambda \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right )\\
-    &\text{s.t.} & & \begin{bmatrix} W_{\text{f}}  & w_{\text{f}} \\ w^{\prime}_{\text{f}} & 1 \end{bmatrix} \succeq 0 \\
-    & & & w = (B^{\prime})^{+} w_{\text{f}} \\
-    & & & Aw \leq b\\
-    & & & A_{\text{frc}} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{\text{frc}} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \\
-    & & & \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \leq c \\
-    & & & R (w) \geq \overline{\mu}
-    & & & W_{\text{f}} \in \mathbf{S}^{n}\\
+    \max_{w} & \quad R (w) - \lambda \text{Tr} \left ( \bar{\Sigma} W_{F} \right )\\
+    \text{s.t.} & \quad \begin{bmatrix} W_{F}  & w_{F} \\ w^{\prime}_{F} & 1 \end{bmatrix} \succeq 0 \\
+    & \quad w = (B^{\prime})^{+} w_{F} \\
+    & \quad Aw \leq b\\
+    & \quad A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+    & \quad \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \leq c \\
+    & \quad R (w) \geq \overline{\mu} \\
+    & \quad W_{F} \in \mathbf{S}^{m}\\
     \end{aligned}
 
 where:
 
-:math:`R (w)` is the return function, posible values are:
+:math:`R (w)` is the return function, possible values are:
 
     - :math:`\mu w`: arithmetic return.
     - :math:`\mu w - 0.5 w^{\tau} \Sigma w`: approximate logarithmic return :cite:`a-Thorp`.
@@ -408,11 +412,13 @@ where:
 
 :math:`r`: is the matrix of assets returns.
 
-:math:`\bar{\Sigma} = \left ((B^{\prime})^{+} \right )^{\prime} \Sigma (B^{\prime})^{+} $, $X_{\text{f}}`.
+:math:`c`: is the upper bound of risk measure.
+
+:math:`\bar{\Sigma} = \left ((B^{\prime})^{+} \right )^{\prime} \Sigma (B^{\prime})^{+}`.
 
 :math:`Aw \leq b`: is a set of linear constraints.
 
-:math:`A_{\text{frc}} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{\text{frc}} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right )` is a set of linear factor risk contribution constraints for variance based on :cite:`a-Cajas13`.
+:math:`A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right )` is a set of linear factor risk contribution constraints for variance based on :cite:`a-Cajas13`.
 
 
 Ordered Weighted Averaging (OWA) Portfolio
@@ -421,34 +427,44 @@ Ordered Weighted Averaging (OWA) Portfolio
 Riskfolio-Lib allows to calculate the OWA portfolio optimization model :cite:`a-Cajas3`. We can use
 this function to calculate the Higher L-Moment portfolio optimization model :cite:`a-Cajas6`.
 
+- **Maximum Return Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \min_{w} & \quad R (w) \\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad y = rw \\
+    & \quad \sum^{T}_{i=0} v_{[i]}y_{[i]} \leq c \\
+    \end{aligned}
+
 - **Minimum Risk Portfolio:**
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\min} & & \sum^{T}_{i=0} v_{[i]}y_{[i]} \\
-    &\text{s.t.} & & Aw \leq b\\
-    & & & y = rw \\
-    & & & R (w) \geq \overline{\mu} \\
+    \min_{w} & \quad \sum^{T}_{i=0} v_{[i]}y_{[i]} \\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad y = rw \\
+    & \quad R (w) \geq \overline{\mu} \\
     \end{aligned}
 
 - **Maximum Risk Adjusted Return Ratio Portfolio:**
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & \frac{R (w) - r_{f}}{\sum^{T}_{i=0} v_{[i]}y_{[i]}}\\
-    &\text{s.t.} & & Aw \leq b\\
-    & & & y = rw \\
-    & & & R (w) \geq \overline{\mu} \\
+    \max_{w} & \quad \frac{R (w) - r_{f}}{\sum^{T}_{i=0} v_{[i]}y_{[i]}}\\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad y = rw \\
+    & \quad R (w) \geq \overline{\mu} \\
     \end{aligned}
 
 - **Maximum Utility Portfolio:**
 
 .. math::
     \begin{aligned}
-    &\underset{w}{\max} & & R (w) - \lambda \left ( \sum^{T}_{i=0} v_{[i]}y_{[i]} \right) \\
-    &\text{s.t.} & & Aw \leq b\\
-    & & & y = rw \\
-    & & & R (w) \geq \overline{\mu} \\
+    \max_{w} & \quad R (w) - \lambda \left ( \sum^{T}_{i=0} v_{[i]}y_{[i]} \right) \\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad y = rw \\
+    & \quad R (w) \geq \overline{\mu} \\
     \end{aligned}
 
 Where:
@@ -456,6 +472,8 @@ Where:
 :math:`w` are the weights of the portfolio.
 
 :math:`v` are the weights of the owa operator.
+
+:math:`c`: is the upper bound of risk measure.
 
 :math:`\mu`: is the vector of expected returns.
 

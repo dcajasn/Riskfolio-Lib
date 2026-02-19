@@ -18,7 +18,6 @@ import riskfolio.src.ParamsEstimation as pe
 import riskfolio.src.DBHT as db
 import riskfolio.src.GerberStatistic as gs
 
-
 __all__ = [
     "HCPortfolio",
 ]
@@ -337,7 +336,7 @@ class HCPortfolio(object):
                 S = codep.to_numpy()  # similarity matrix
             else:
                 S = self.codep.to_numpy()  # similarity matrix
-            (_, _, _, _, _, clustering) = db.DBHTs(
+            _, _, _, _, _, clustering = db.DBHTs(
                 D, S, leaf_order=leaf_order
             )  # DBHT clustering
         else:
