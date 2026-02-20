@@ -358,7 +358,7 @@ that specifies which type of programming technique is used to model each risk me
             <td></td>
             <td></td>
             <td></td>
-            <td style='text-align:center'>X</td>
+            <td style='text-align:center'>X**</td>
             <td></td>
         </tr>
         <tr>
@@ -403,7 +403,7 @@ that specifies which type of programming technique is used to model each risk me
             <td></td>
             <td></td>
             <td></td>
-            <td style='text-align:center'>X</td>
+            <td style='text-align:center'>X**</td>
             <td></td>
         </tr>
         <tr>
@@ -457,7 +457,7 @@ that specifies which type of programming technique is used to model each risk me
             <td></td>
             <td></td>
             <td></td>
-            <td style='text-align:center'>X</td>
+            <td style='text-align:center'>X**</td>
             <td></td>
         </tr>
         <tr>
@@ -481,7 +481,7 @@ that specifies which type of programming technique is used to model each risk me
         </tbody>
     </table>
 
-(*) When SDP graph theory constraints are included. In the case of integer programming graph theory constraints, the model assume the SOCP formulation.
+(*) When SDP graph theory constraints or risk contribution constraints are included. In the case integer programming graph theory constraints are included, the model assume the SOCP formulation.
 
 (**) For these models is highly recommended to use MOSEK as solver, due to in some cases CLARABEL cannot find a solution and SCS takes too much time to solve them.
 

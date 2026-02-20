@@ -222,22 +222,22 @@ Due to Riskfolio-Lib is based on CVXPY, Riskfolio-Lib can use the same solvers a
 | Second Lower Partial Moment (SLPM)    |    |    | X    |     |     |     |
 | Conditional Value at Risk (CVaR)      | X  |    |      |     |     |     |
 | Tail Gini (TG)                        |    |    |      |     |     | X** |
-| Entropic Value at Risk (EVaR)         |    |    |      |     | X   |     |
+| Entropic Value at Risk (EVaR)         |    |    |      |     | X** |     |
 | Relativistic Value at Risk (RLVaR)    |    |    |      |     |     | X** |
 | Worst Realization (WR)                | X  |    |      |     |     |     |
 | CVaR Range (CVRG)                     | X  |    |      |     |     |     |
 | Tail Gini Range (TGRG)                |    |    |      |     |     | X** |
-| EVaR Range (EVRG)                     |    |    |      |     | X   |     |
+| EVaR Range (EVRG)                     |    |    |      |     | X** |     |
 | RLVaR Range (RVRG)                    |    |    |      |     |     | X** |
 | Range (RG)                            | X  |    |      |     |     |     |
 | Average Drawdown (ADD)                | X  |    |      |     |     |     |
 | Ulcer Index (UCI)                     |    |    | X    |     |     |     |
 | Conditional Drawdown at Risk (CDaR)   | X  |    |      |     |     |     |
-| Entropic Drawdown at Risk (EDaR)      |    |    |      |     | X   |     |
+| Entropic Drawdown at Risk (EDaR)      |    |    |      |     | X** |     |
 | Relativistic Drawdown at Risk (RLDaR) |    |    |      |     |     | X** |
 | Maximum Drawdown (MDD)                | X  |    |      |     |     |     |
 
-(*) When SDP graph theory constraints are included. In the case of integer programming graph theory constraints, the model assume the SOCP formulation.
+(*) When SDP graph theory constraints or risk contribution constraints are included. In the case integer programming graph theory constraints are included, the model assume the SOCP formulation.
 
 (**) For these models is highly recommended to use MOSEK as solver, due to in some cases CLARABEL cannot find a solution and SCS takes too much time to solve them.
 
