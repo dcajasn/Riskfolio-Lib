@@ -65,7 +65,7 @@ Matlab or similar).
 Courses Details
 ================
 
-* The course will be available, with all materials (recordings, codes, slides and whiteboards), starting **March 21, 2026**.
+* The course will be available, with all materials (recordings, codes, slides and whiteboards), starting **March 28, 2026**.
 * The classes are online and asynchronous through our Google Classroom.
 * The materials will be updated every two years.
 
