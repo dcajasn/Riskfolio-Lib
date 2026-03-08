@@ -3,13 +3,10 @@ Riskfolio-Lib
 #############
 
 .. meta::
-   :description lang=en: Portfolio Optimization and Quantitative Strategic Asset Allocation in Python.
-   :description lang=es: Optimización de Portafolios y Asignación Estratégica de Activos con Python.
-   :keywords lang=en: portfolio optimization python, portfolio optimization, Markowitz portfolio optimization, cvar portfolio optimization, asset allocation, strategic asset allocation
-   :keywords lang=es: optimización de portafolios python, optimización de portafolios, optimización de portafolios de Markowitz, optimización de portafolios con cvar, asignación de activos, asignación estratégica de activos
+   :description lang=en: Portfolio Optimization in Python
 
 ..........................................................
-Quantitative Strategic Asset Allocation, Easy for Everyone
+Portfolio Optimization in Python, Easy for Everyone
 ..........................................................
 
 .. raw:: html
@@ -70,8 +67,8 @@ Quantitative Strategic Asset Allocation, Easy for Everyone
 Description
 ===========
 
-Riskfolio-Lib is a library for making portfolio optimization and quantitative strategic asset allocation 
-in Python made in Peru |:peru:|. Its objective is to help students, academics and practitioners to build 
+Riskfolio-Lib is a library for making **Portfolio Optimization in Python** made in Peru |:peru:|. 
+Its objective is to help students, academics and practitioners to build 
 investment portfolios based on mathematically complex models with low effort. It is built on top of
 `CVXPY <https://www.cvxpy.org/>`_ and closely integrated with `Pandas <https://pandas.pydata.org/>`_ data structures.
 

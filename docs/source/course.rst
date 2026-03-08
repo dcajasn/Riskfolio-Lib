@@ -2,6 +2,9 @@
 Portfolio Optimization with Python Course
 ###########################################
 
+.. meta::
+   :description lang=en: Portfolio Optimization with Python Course
+
 .. raw:: html
 
     <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
