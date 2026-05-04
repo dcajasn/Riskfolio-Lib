@@ -18,3 +18,4 @@ from .AuxFunctions import *
 from .DBHT import *
 from .OwaWeights import *
 from .GerberStatistic import *
+from .SentimentFunctions import *

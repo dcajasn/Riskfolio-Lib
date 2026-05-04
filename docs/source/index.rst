@@ -568,6 +568,7 @@ Contents
     Hierarchical Clustering Models <hcportfolio>
     Parameters Estimation <parameters>
     Constraints Functions <constraints>
+    Adanos Sentiment Functions <sentiment>
     Risk Functions <risk>
     Plot Functions <plot>
     Reports <reports>
