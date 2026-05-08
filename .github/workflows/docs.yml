@@ -29,7 +29,10 @@ jobs:
           python-version: "3.12"
 
       - name: Configure GitHub Pages
+        if: github.event_name != 'pull_request'
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Install dependencies
         run: |
@@ -43,6 +46,7 @@ jobs:
           sphinx-build -b html docs/source docs/build/html
 
       - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
           path: docs/build/html
