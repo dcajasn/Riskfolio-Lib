@@ -50,6 +50,7 @@ rmeasures = [
     "EDaR",
     "RLDaR",
     "UCI",
+    "MVSK",
 ]
 
 
@@ -1940,6 +1941,7 @@ class Portfolio(object):
             - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
             - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns. I recommend only use this function with MOSEK solver.
             - 'UCI': Ulcer Index of uncompounded cumulative returns.
+            - 'MVSK': Mean-Variance-Skewness-Kurtosis via YAND algorithm. Requires ``yand-mvsk`` package. Uses ``l`` as CRRA risk aversion parameter.
 
         obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
             Objective function of the optimization model.
@@ -2030,6 +2032,51 @@ class Portfolio(object):
                 if self.kurt_fm is not None:
                     kurt = np.array(self.kurt_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
+
+        # MVSK Model (Yau's Affine-Normal Descent) — bypasses cvxpy pipeline
+        if rm == "MVSK":
+            try:
+                from yand_mvsk import yand_mvsk_solve, crra_coefficients
+            except ImportError:
+                raise ImportError(
+                    "MVSK optimization requires the yand-mvsk package. "
+                    "Install it with: pip install yand-mvsk"
+                )
+
+            returns = np.array(returns, ndmin=2)
+            T, N = returns.shape
+            gamma = max(l, 0.5)
+            c = crra_coefficients(gamma)
+            tau = max(self.lowerlng, 1e-8) if self.lowerlng is not None else 1e-8
+            result = yand_mvsk_solve(returns, c, tau=tau)
+
+            if not result.converged:
+                import warnings
+
+                warnings.warn(
+                    f"YAND-MVSK did not converge after {result.n_iter} iterations "
+                    f"(KKT residual: {result.kkt_residual:.2e})."
+                )
+
+            weights = result.x.reshape(1, -1)
+            if self.sht == False:
+                weights = np.abs(weights) / np.sum(np.abs(weights)) * self.budget
+
+            portafolio = {}
+            for i in self.assetslist:
+                portafolio[i] = [weights[0, self.assetslist.index(i)]]
+
+            try:
+                self.optimal = pd.DataFrame(
+                    portafolio, index=["weights"], dtype=np.float64
+                ).T
+            except:
+                self.optimal = None
+                print(
+                    "The problem doesn't have a solution with actual input parameters"
+                )
+
+            return self.optimal
 
         # General Model Variables
 
