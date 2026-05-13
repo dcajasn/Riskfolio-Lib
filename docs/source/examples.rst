@@ -81,7 +81,7 @@ Black Litterman Models
 ----------------------
 * `Mean Risk Portfolio Optimization using Black Litterman Model <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%203%20-%20Mean%20Risk%20Optimization%20using%20Black%20Litterman.ipynb>`_.
 * `Mean Risk Portfolio Optimization using Black Litterman Model and Risk Factors Models (Black Litterman Bayesian and Augmented Black Litterman) <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2020%20-%20Mean%20Risk%20Optimization%20using%20Black%20Litterman%20and%20Risk%20Factors%20Models.ipynb>`_.
-* `Black Litterman with Adanos Market Sentiment Views <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2054%20-%20Black%20Litterman%20with%20Adanos%20Market%20Sentiment%20Views.ipynb>`_.
+* `Black Litterman with Adanos Market Sentiment Views (Commercial API) <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2054%20-%20Black%20Litterman%20with%20Adanos%20Market%20Sentiment%20Views.ipynb>`_.
 
 
 Risk Parity Models
