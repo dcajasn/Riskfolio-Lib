@@ -1,0 +1,6 @@
+[submodule "lib/eigen-3.4.0"]
+	path = lib/eigen-3.4.0
+	url = https://gitlab.com/libeigen/eigen.git
+[submodule "lib/spectra-1.0.1"]
+	path = lib/spectra-1.0.1
+	url = https://github.com/yixuan/spectra.git
