@@ -17,6 +17,8 @@ __all__ = [
     "duplication_elimination_matrix",
     "duplication_summation_matrix",
     "commutation_matrix",
+    "covariance_matrix",
+    "semi_covariance_matrix",
     "coskewness_matrix",
     "semi_coskewness_matrix",
     "cokurtosis_matrix",
@@ -100,19 +102,69 @@ def commutation_matrix(T: int, n: int):
     return cpp_commutation_matrix(T, n)
 
 
-def coskewness_matrix(Y: np.ndarray):
+def covariance_matrix(
+    Y: np.ndarray | pd.DataFrame,
+    P: np.ndarray | pd.DataFrame = None
+):
     r"""
-    Calculates coskewness rectangular matrix as shown in :cite:`d-Cajas4`.
+    Calculates covariance matrix as shown in :cite:`d-Cajas4` and with probabilities
 
     Parameters
     ----------
     Y : ndarray or dataframe
         Returns series of shape n_sample x n_features.
 
+    P : ndarray or dataframe, optional
+        Probability vector of shape n_samples x 1. If None, it is assumed
+        that all observations have the same probability of 1/n_samples.
+
     Returns
     -------
-    M3 : ndarray
-        The lower semi coskewness rectangular matrix.
+    M2 : ndarray
+        The covariance matrix.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    flag = False
+    if isinstance(Y, pd.DataFrame):
+        assets = Y.columns.tolist()
+        flag = True
+
+    Y_ = np.array(Y, ndmin=2)
+    if P is not None:
+        P_ = np.array(P, ndmin=1)
+        M2 = cpp_covariance_matrix_prob(Y_, P_, semi=False)
+    else:
+        M2 = cpp_covariance_matrix(Y_, semi=False)
+
+    if flag:
+        M2 = pd.DataFrame(M2, index=assets, columns=assets)
+
+    return M2
+
+def semi_covariance_matrix(
+    Y: np.ndarray | pd.DataFrame,
+    P: np.ndarray | pd.DataFrame = None
+):
+    r"""
+    Calculates lower semi covariance matrix as shown in :cite:`d-Cajas4` and with probabilities
+
+    Parameters
+    ----------
+    Y : ndarray or dataframe
+        Returns series of shape n_sample x n_features.
+
+    P : ndarray or dataframe, optional
+        Probability vector of shape n_samples x 1. If None, it is assumed
+        that all observations have the same probability of 1/n_samples.
+
+    Returns
+    -------
+    M2 : ndarray
+        The lower semi covariance matrix.
 
     Raises
     ------
@@ -127,7 +179,57 @@ def coskewness_matrix(Y: np.ndarray):
         flag = True
 
     Y_ = np.array(Y, ndmin=2)
-    M3 = cpp_coskewness_matrix(Y_, semi=False)
+    if P is not None:
+        P_ = np.array(P, ndmin=1)
+        s_M2 = cpp_covariance_matrix_prob(Y_, P_, semi=True)
+    else:
+        s_M2 = cpp_covariance_matrix(Y_, semi=True)
+
+    if flag:
+        s_M2 = pd.DataFrame(s_M2, index=assets, columns=cols)
+
+    return s_M2
+
+
+def coskewness_matrix(
+    Y: np.ndarray | pd.DataFrame,
+    P: np.ndarray | pd.DataFrame = None
+):
+    r"""
+    Calculates coskewness rectangular matrix as shown in :cite:`d-Cajas4` and with probabilities
+
+    Parameters
+    ----------
+    Y : ndarray or dataframe
+        Returns series of shape n_sample x n_features.
+
+    P : ndarray or dataframe, optional
+        Probability vector of shape n_samples x 1. If None, it is assumed
+        that all observations have the same probability of 1/n_samples.
+
+    Returns
+    -------
+    M3 : ndarray
+        The coskewness rectangular matrix.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    """
+    flag = False
+    if isinstance(Y, pd.DataFrame):
+        assets = Y.columns.tolist()
+        cols = list(product(assets, assets))
+        cols = [str(y) + " - " + str(x) for x, y in cols]
+        flag = True
+
+    Y_ = np.array(Y, ndmin=2)
+    if P is not None:
+        P_ = np.array(P, ndmin=1)
+        M3 = cpp_coskewness_matrix_prob(Y_, P_, semi=False)
+    else:
+        M3 = cpp_coskewness_matrix(Y_, semi=False)
 
     if flag:
         M3 = pd.DataFrame(M3, index=assets, columns=cols)
@@ -135,14 +237,21 @@ def coskewness_matrix(Y: np.ndarray):
     return M3
 
 
-def semi_coskewness_matrix(Y: np.ndarray):
+def semi_coskewness_matrix(
+    Y: np.ndarray | pd.DataFrame,
+    P: np.ndarray | pd.DataFrame = None
+    ):
     r"""
-    Calculates lower semi coskewness rectangular matrix as shown in :cite:`d-Cajas4`.
+    Calculates lower semi coskewness rectangular matrix as shown in :cite:`d-Cajas4` and with probabilities.
 
     Parameters
     ----------
     Y : ndarray or dataframe
         Returns series of shape n_samples x n_features.
+
+    P : ndarray or dataframe, optional
+        Probability vector of shape n_samples x 1. If None, it is assumed
+        that all observations have the same probability of 1/n_samples.
 
     Returns
     -------
@@ -162,7 +271,11 @@ def semi_coskewness_matrix(Y: np.ndarray):
         flag = True
 
     Y_ = np.array(Y, ndmin=2)
-    s_M3 = cpp_coskewness_matrix(Y_, semi=True)
+    if P is not None:
+        P_ = np.array(P, ndmin=1)
+        s_M3 = cpp_coskewness_matrix_prob(Y_, P_, semi=True)
+    else:
+        s_M3 = cpp_coskewness_matrix(Y_, semi=True)
 
     if flag:
         s_M3 = pd.DataFrame(s_M3, index=assets, columns=cols)
@@ -170,15 +283,22 @@ def semi_coskewness_matrix(Y: np.ndarray):
     return s_M3
 
 
-def cokurtosis_matrix(Y: np.ndarray):
+def cokurtosis_matrix(
+    Y: np.ndarray | pd.DataFrame,
+    P: np.ndarray | pd.DataFrame = None
+    ):
     r"""
-    Calculates cokurtosis square matrix as shown in :cite:`d-Cajas4`.
+    Calculates cokurtosis square matrix as shown in :cite:`d-Cajas4` and with probabilities
 
     Parameters
     ----------
     Y : ndarray or dataframe
         Returns series of shape n_samples x n_features.
 
+    P : ndarray or dataframe, optional
+        Probability vector of shape n_samples x 1. If None, it is assumed
+        that all observations have the same probability of 1/n_samples.
+        
     Returns
     -------
     S4 : ndarray
@@ -197,7 +317,11 @@ def cokurtosis_matrix(Y: np.ndarray):
         flag = True
 
     Y_ = np.array(Y, ndmin=2)
-    S4 = cpp_cokurtosis_matrix(Y_, semi=False)
+    if P is not None:
+        P_ = np.array(P, ndmin=1)
+        S4 = cpp_cokurtosis_matrix_prob(Y_, P_, semi=False)
+    else:
+        S4 = cpp_cokurtosis_matrix(Y_, semi=False)
 
     if flag:
         S4 = pd.DataFrame(S4, index=cols, columns=cols)
@@ -205,15 +329,22 @@ def cokurtosis_matrix(Y: np.ndarray):
     return S4
 
 
-def semi_cokurtosis_matrix(Y: np.ndarray):
+def semi_cokurtosis_matrix(
+    Y: np.ndarray | pd.DataFrame,
+    P: np.ndarray | pd.DataFrame = None
+    ):
     r"""
-    Calculates lower semi cokurtosis square matrix as shown in :cite:`d-Cajas4`.
+    Calculates lower semi cokurtosis square matrix as shown in :cite:`d-Cajas4` and with probabilities
 
     Parameters
     ----------
     Y : ndarray or dataframe
         Returns series of shape n_sample x n_features.
 
+    P : ndarray or dataframe, optional
+        Probability vector of shape n_samples x 1. If None, it is assumed
+        that all observations have the same probability of 1/n_samples.
+        
     Returns
     -------
     s_S4 : ndarray
@@ -232,7 +363,11 @@ def semi_cokurtosis_matrix(Y: np.ndarray):
         flag = True
 
     Y_ = np.array(Y, ndmin=2)
-    s_S4 = cpp_cokurtosis_matrix(Y_, semi=True)
+    if P is not None:
+        P_ = np.array(P, ndmin=1)
+        s_S4 = cpp_cokurtosis_matrix_prob(Y_, P_, semi=True)
+    else:
+        s_S4 = cpp_cokurtosis_matrix(Y_, semi=True)
 
     if flag:
         s_S4 = pd.DataFrame(s_S4, index=cols, columns=cols)

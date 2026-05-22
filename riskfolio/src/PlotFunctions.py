@@ -1399,11 +1399,11 @@ def plot_risk_con(
             classes = asset_classes.columns.tolist()
 
             if isinstance(classes_col, str) and classes_col in classes:
-                A = asset_classes.loc[:, classes_col].to_frame()
-                col = A.columns.to_list()[0]
+                A = asset_classes.loc[:, [classes[0], classes_col]]
+                col = A.columns.to_list()[1]
             elif isinstance(classes_col, int) and classes[classes_col] in classes:
-                A = asset_classes.iloc[:, classes_col].to_frame()
-                col = A.columns.to_list()[0]
+                A = asset_classes.iloc[:, [0, classes_col]]
+                col = A.columns.to_list()[1]
             else:
                 raise ValueError(
                     "classes_col must be a valid column or column position of asset_classes"
@@ -1476,7 +1476,6 @@ def plot_risk_con(
         RC = RC / np.sum(RC)
 
     if asset_classes is not None and classes_col is not None:
-        A = asset_classes.copy()
         B = pd.DataFrame(RC, index=X)
         A = pd.merge(A, B, left_on=classes[0], right_index=True, how="left")
         A = A.groupby([col]).sum()[0]

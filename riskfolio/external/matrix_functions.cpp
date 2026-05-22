@@ -311,6 +311,57 @@ Eigen::SparseMatrix<double> cpp_commutation_matrix(const int &T, const int &n) {
 }
 
 /**
+ * Calculates covariance matrix of size "n" as shown in Cajas, D. (2022).
+ * Convex Optimization of Portfolio Kurtosis. In SSRN Electronic Journal.
+ * Elsevier BV. https://doi.org/10.2139/ssrn.4202967
+ *
+ * @Y array of size n_samples x n_features.
+ * @semi flag that indicates if calculates lower semi covariance matrix.
+ */
+Eigen::MatrixXd cpp_covariance_matrix(Eigen::MatrixXd Y, const bool &semi=false) {
+    int T = Y.rows();
+    Eigen::VectorXd mu = Y.colwise().mean();
+    Eigen::MatrixXd X = Y - mu.transpose().replicate(T, 1);
+    if (semi == true){
+        X = X.cwiseMin(0);
+    }
+    Eigen::MatrixXd M2 = X.transpose() * X / T;
+    return M2;
+}
+
+/**
+ * Calculates covariance matrix of size "n" for scenarios with probabilities
+ *
+ * @Y array of size n_samples x n_features.
+ * @P array of size n_samples with probabilities of each scenario.
+ * @semi flag that indicates if calculates lower semi covariance matrix.
+ */
+Eigen::MatrixXd cpp_covariance_matrix_prob(Eigen::MatrixXd Y, Eigen::VectorXd P, const bool &semi=false) {
+    /* Old version
+    double T = Y.rows();
+    Eigen::VectorXd mu = P.transpose() * Y;
+    Eigen::MatrixXd X = Y - mu.transpose().replicate(T, 1);
+    if (semi == true){
+        X = X.cwiseMin(0);
+    }
+    Eigen::MatrixXd S2 = Eigen::MatrixXd::Zero(X.cols(), X.cols());
+    for (int i = 0; i < T; ++i) {
+        S2 += P(i) * X.row(i).transpose() * X.row(i);
+    }
+    */
+    // New version
+    Eigen::Index T = Y.rows();
+    Eigen::VectorXd mu = P.transpose() * Y;
+    Eigen::MatrixXd X = Y - mu.transpose().replicate(T, 1);
+    if (semi == true){
+        X = X.cwiseMin(0);
+    }
+    Eigen::MatrixXd Xw = X.array().colwise() * P.array();
+    Eigen::MatrixXd S2 = X.transpose() * Xw;
+    return S2;
+}
+
+/**
  * Calculates coskewness tensor of size "n" as shown in Cajas, D. (2022).
  * Convex Optimization of Portfolio Kurtosis. In SSRN Electronic Journal.
  * Elsevier BV. https://doi.org/10.2139/ssrn.4202967
@@ -319,7 +370,7 @@ Eigen::SparseMatrix<double> cpp_commutation_matrix(const int &T, const int &n) {
  * @semi flag that indicates if calculates lower semi skewness rectangular matrix.
  */
 Eigen::MatrixXd cpp_coskewness_matrix(Eigen::MatrixXd Y, const bool &semi=false) {
-    double T = Y.rows();
+    int T = Y.rows();
     Eigen::VectorXd mu = Y.colwise().mean();
     Eigen::MatrixXd X = Y - mu.transpose().replicate(T, 1);
     if (semi == true){
@@ -334,6 +385,53 @@ Eigen::MatrixXd cpp_coskewness_matrix(Eigen::MatrixXd Y, const bool &semi=false)
 }
 
 /**
+ * Calculates coskewness tensor of size "n" for scenarios with probabilities
+ *
+ * @Y array of size n_samples x n_features.
+ * @P array of size n_samples with probabilities of each scenario.
+ * @semi flag that indicates if calculates lower semi skewness rectangular matrix.
+ */
+Eigen::MatrixXd cpp_coskewness_matrix_prob(Eigen::MatrixXd Y, Eigen::VectorXd P, const bool &semi=false) {
+    /* Old version
+    double T = Y.rows();
+    Eigen::VectorXd mu = P.transpose() * Y;
+    Eigen::MatrixXd X = Y - mu.transpose().replicate(T, 1);
+    if (semi == true){
+        X = X.cwiseMin(0);
+    }
+    Eigen::MatrixXd M3 = Eigen::MatrixXd::Zero(X.cols(), X.cols() * X.cols());
+    Eigen::RowVectorXd V(X.cols() * X.cols());
+    for (int i = 0; i < T; ++i) {
+        V = Eigen::kroneckerProduct(X.row(i), X.row(i)).eval();
+        M3 += (P(i) * X.row(i).transpose() * V).matrix();
+    }
+    */
+   // New version
+    Eigen::Index T = Y.rows();
+    Eigen::Index n = Y.cols();
+    Eigen::Index n2 = n * n;
+    Eigen::VectorXd mu = P.transpose() * Y;
+    Eigen::MatrixXd X = Y - mu.transpose().replicate(T, 1);
+    if (semi == true){
+        X = X.cwiseMin(0);
+    }
+    Eigen::MatrixXd M3 = Eigen::MatrixXd::Zero(n, n2);
+    Eigen::VectorXd v(n2);
+
+    for (Eigen::Index i = 0; i < T; ++i) {
+        const Eigen::RowVectorXd xi = X.row(i);
+
+        // Build vec(x_i' * x_i) in the same order as kron(x_i, x_i).
+        for (Eigen::Index j = 0; j < n; ++j) {
+            v.segment(j * n, n).noalias() = xi(j) * xi.transpose();
+        }
+
+        M3.noalias() += P(i) * xi.transpose() * v.transpose();
+    }
+    return M3;
+}
+
+/**
  * Calculates cokurtosis square matrix of size "n" as shown in Cajas, D. (2022).
  * Convex Optimization of Portfolio Kurtosis. In SSRN Electronic Journal.
  * Elsevier BV. https://doi.org/10.2139/ssrn.4202967
@@ -342,7 +440,7 @@ Eigen::MatrixXd cpp_coskewness_matrix(Eigen::MatrixXd Y, const bool &semi=false)
  * @semi flag that indicates if calculates lower semi cokurtosis square matrix.
  */
 Eigen::MatrixXd cpp_cokurtosis_matrix(Eigen::MatrixXd Y, const bool &semi=false) {
-    double T = Y.rows();
+    int T = Y.rows();
     Eigen::VectorXd mu = Y.colwise().mean();
     Eigen::MatrixXd X = Y - mu.transpose().replicate(T, 1);
     if (semi == true){
@@ -353,6 +451,55 @@ Eigen::MatrixXd cpp_cokurtosis_matrix(Eigen::MatrixXd Y, const bool &semi=false)
     Eigen::MatrixXd V2 = Eigen::kroneckerProduct(X, ones).eval();
     Eigen::MatrixXd V = (V1.array() * V2.array()).matrix();
     Eigen::MatrixXd S4 = V.transpose() * V / T;
+    return S4;
+}
+
+/**
+ * Calculates cokurtosis square matrix of size "n" for scenarios with probabilities
+ *
+ * @Y array of size n_samples x n_features.
+ * @P array of size n_samples with probabilities of each scenario.
+ * @semi flag that indicates if calculates lower semi cokurtosis square matrix.
+ */
+Eigen::MatrixXd cpp_cokurtosis_matrix_prob(Eigen::MatrixXd Y, Eigen::VectorXd P, const bool &semi=false) {
+    /* Old version
+    double T = Y.rows();
+    Eigen::VectorXd mu = P.transpose() * Y;
+    Eigen::MatrixXd X = Y - mu.transpose().replicate(T, 1);
+    if (semi == true){
+        X = X.cwiseMin(0);
+    }
+    Eigen::MatrixXd S4 = Eigen::MatrixXd::Zero(X.cols() * X.cols(), X.cols() * X.cols());
+    Eigen::RowVectorXd V(X.cols() * X.cols());
+    for (int i = 0; i < T; ++i) {
+        V = Eigen::kroneckerProduct(X.row(i), X.row(i)).eval();
+        S4 += P(i) * V.transpose() * V;
+    }
+    */
+    // New version
+    Eigen::Index T = Y.rows();
+    Eigen::Index n = Y.cols();
+    Eigen::Index n2 = n * n;
+    Eigen::VectorXd mu = P.transpose() * Y;
+    Eigen::MatrixXd X = Y - mu.transpose().replicate(T, 1);
+    if (semi == true){
+        X = X.cwiseMin(0);
+    }
+    Eigen::MatrixXd S4 = Eigen::MatrixXd::Zero(n2, n2);
+    Eigen::VectorXd v(n2);
+
+    for (Eigen::Index i = 0; i < T; ++i) {
+        const Eigen::RowVectorXd xi = X.row(i);
+
+        // Build vec(x_i' * x_i) in the same order as kron(x_i, x_i).
+        for (Eigen::Index j = 0; j < n; ++j) {
+            v.segment(j * n, n).noalias() = xi(j) * xi.transpose();
+        }
+
+        // Accumulate only one triangular part; mirror it once at the end.
+        S4.selfadjointView<Eigen::Lower>().rankUpdate(v, P(i));
+    }
+    S4.triangularView<Eigen::StrictlyUpper>() = S4.transpose().triangularView<Eigen::StrictlyUpper>();
     return S4;
 }
 
@@ -640,6 +787,62 @@ void bind_commutation_matrix(py::module &m) {
     );
 }
 
+void bind_covariance_matrix(py::module &m) {
+    m.def(
+        "cpp_covariance_matrix",
+        &cpp_covariance_matrix,
+        R"pbdoc(
+            Calculate covariance and lower semi covariance matrix as shown in :cite:`d-Cajas4`.
+
+            Parameters
+            ----------
+            Y : ndarray or dataframe
+                Returns series of shape n_samples x n_features.
+
+            semi: bool
+                Flag that indicates if we calculate covariance or lower semi covariance matrix.
+
+            Returns
+            -------
+            M2: np.ndarray
+                Covariance or lower semi covariance matrix.
+        )pbdoc",
+        py::arg("Y"),
+        py::arg("semi")=false
+    );
+}
+
+
+void bind_covariance_matrix_prob(py::module &m) {
+    m.def(
+        "cpp_covariance_matrix_prob",
+        &cpp_covariance_matrix_prob,
+        R"pbdoc(
+            Calculate covariance and lower semi covariance matrix with probabilities.
+
+            Parameters
+            ----------
+            Y : ndarray or dataframe
+                Returns series of shape n_samples x n_features.
+
+            P : ndarray or dataframe
+                Probabilities of each scenario of shape n_samples x 1.
+
+            semi: bool
+                Flag that indicates if we calculate covariance or lower semi covariance matrix.
+
+            Returns
+            -------
+            M2: np.ndarray
+                Covariance or lower semi covariance matrix.
+        )pbdoc",
+        py::arg("Y"),
+        py::arg("P"),
+        py::arg("semi")=false
+    );
+}
+
+
 void bind_coskewness_matrix(py::module &m) {
     m.def(
         "cpp_coskewness_matrix",
@@ -660,10 +863,41 @@ void bind_coskewness_matrix(py::module &m) {
             M3: np.ndarray
                 Coskewness or lower semi coskewness rectangular matrix.
         )pbdoc",
-        py::arg("n"),
+        py::arg("Y"),
         py::arg("semi")=false
     );
 }
+
+
+void bind_coskewness_matrix_prob(py::module &m) {
+    m.def(
+        "cpp_coskewness_matrix_prob",
+        &cpp_coskewness_matrix_prob,
+        R"pbdoc(
+            Calculate coskewness and lower semi coskewness rectangular matrix with probabilities.
+
+            Parameters
+            ----------
+            Y : ndarray or dataframe
+                Returns series of shape n_samples x n_features.
+
+            P : ndarray or dataframe
+                Probabilities of each scenario of shape n_samples x 1.
+
+            semi: bool
+                Flag that indicates if we calculate coskewness or lower semi coskewness rectangular matrix.
+
+            Returns
+            -------
+            M3: np.ndarray
+                Coskewness or lower semi coskewness rectangular matrix.
+        )pbdoc",
+        py::arg("Y"),
+        py::arg("P"),
+        py::arg("semi")=false
+    );
+}
+
 
 void bind_cokurtosis_matrix(py::module &m) {
     m.def(
@@ -685,10 +919,41 @@ void bind_cokurtosis_matrix(py::module &m) {
             S4: np.ndarray
                 Cokurtosis or lower semi cokurtosis square matrix.
         )pbdoc",
-        py::arg("n"),
+        py::arg("Y"),
         py::arg("semi")=false
     );
 }
+
+
+void bind_cokurtosis_matrix_prob(py::module &m) {
+    m.def(
+        "cpp_cokurtosis_matrix_prob",
+        &cpp_cokurtosis_matrix_prob,
+        R"pbdoc(
+            Calculate cokurtosis and lower semi cokurtosis square matrix with probabilities.
+
+            Parameters
+            ----------
+            Y : ndarray or dataframe
+                Returns series of shape n_samples x n_features.
+
+            P : ndarray or dataframe
+                Probabilities of each scenario of shape n_samples x 1.
+
+            semi: bool
+                Flag that indicates if we calculate cokurtosis or lower semi cokurtosis square matrix.
+
+            Returns
+            -------
+            S4: np.ndarray
+                Cokurtosis or lower semi cokurtosis square matrix.
+        )pbdoc",
+        py::arg("Y"),
+        py::arg("P"),
+        py::arg("semi")=false
+    );
+}
+
 
 void bind_k_eigh(py::module &m) {
     m.def(

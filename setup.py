@@ -7,8 +7,8 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
 MAJOR = 7
-MINOR = 2
-MICRO = 1
+MINOR = 3
+MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 def write_version_py(filename='riskfolio/version.py'):
@@ -24,7 +24,7 @@ version = '%(version)s'
 
 write_version_py()
 
-DESCRIPTION = "Portfolio Optimization and Quantitative Strategic Asset Allocation in Python"
+DESCRIPTION = "Portfolio Optimization in Python"
 
 with open("README.md", encoding='UTF-8') as fh:
     LONG_DESCRIPTION = fh.read()
@@ -34,7 +34,7 @@ MAINTAINER = 'Dany Cajas'
 MAINTAINER_EMAIL = 'dany.cajas.n@uni.pe'
 URL = 'https://github.com/dcajasn/Riskfolio-Lib'
 LICENSE = 'BSD (3-clause)'
-KEYWORDS = 'finance, portfolio, optimization, quant, asset, allocation, investing'
+KEYWORDS = 'finance, portfolio, optimization, quant, asset allocation, investing'
 DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
 PYTHON_REQUIRES = ">=3.9"
 

@@ -801,10 +801,10 @@ def assets_views(views, asset_classes):
     if not isinstance(views, pd.DataFrame) and not isinstance(
         asset_classes, pd.DataFrame
     ):
-        raise ValueError("constraints and asset_classes must be DataFrames")
+        raise ValueError("views and asset_classes must be DataFrames")
 
     if views.shape[1] != 9:
-        raise ValueError("constraints must have nine columns")
+        raise ValueError("views must have nine columns")
 
     views0 = views.fillna("")
     views0 = views0[views0["Disabled"] == False]
@@ -955,10 +955,10 @@ def factors_views(views, loadings, const=True):
     """
 
     if not isinstance(views, pd.DataFrame) and not isinstance(loadings, pd.DataFrame):
-        raise ValueError("constraints and loadings must be DataFrames")
+        raise ValueError("views and loadings must be DataFrames")
 
     if views.shape[1] != 5:
-        raise ValueError("constraints must have five columns")
+        raise ValueError("views must have five columns")
 
     views0 = views.fillna("")
     views0 = views0[views0["Disabled"] == False]
@@ -1382,11 +1382,11 @@ def risk_constraint(asset_classes, kind="vanilla", classes_col=None):
         classes = asset_classes.columns.tolist()
 
         if isinstance(classes_col, str) and classes_col in classes:
-            A = asset_classes.loc[:, classes_col].to_frame()
-            col = A.columns.to_list()[0]
+            A = asset_classes.loc[:, [classes[0], classes_col]]
+            col = A.columns.to_list()[1]
         elif isinstance(classes_col, int) and classes[classes_col] in classes:
-            A = asset_classes.iloc[:, classes_col].to_frame()
-            col = A.columns.to_list()[0]
+            A = asset_classes.iloc[:, [0, classes_col]]
+            col = A.columns.to_list()[1]
         else:
             raise ValueError(
                 "classes_col must be a valid column or column position of asset_classes"
