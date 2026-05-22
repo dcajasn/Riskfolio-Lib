@@ -19,7 +19,7 @@ ignore = [
 requires = [
     "numpy >= 1.26.4",
     "scipy >= 1.13.0",
-    "setuptools == 68.1.0",
+    "setuptools == 78.1.1",
     "wheel",
     "pybind11==2.13.6",
 ]
