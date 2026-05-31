@@ -21,6 +21,7 @@ __all__ = [
     "integer_constraints",
     "assets_views",
     "factors_views",
+    "entropy_pooling_views",
     "assets_clusters",
     "hrp_constraints",
     "risk_constraint",
@@ -35,7 +36,7 @@ __all__ = [
 
 def assets_constraints(constraints, asset_classes):
     r"""
-    Create the linear constraints matrixes A and B of the constraint
+    Create the linear constraints matrices A and B of the constraint
     :math:`Aw \leq B`.
 
     Parameters
@@ -80,7 +81,7 @@ def assets_constraints(constraints, asset_classes):
 
         import riskfolio as rp
 
-        asset_classes = {'Assets': ['FB', 'GOOGL', 'NTFX', 'BAC', 'WFC', 'TLT', 'SHV'],
+        asset_classes = {'Assets': ['META', 'GOOGL', 'NFLX', 'BAC', 'WFC', 'TLT', 'SHV'],
                          'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
                                      'Fixed Income', 'Fixed Income'],
                          'Class 2': ['Technology', 'Technology', 'Technology',
@@ -99,7 +100,7 @@ def assets_constraints(constraints, asset_classes):
                        'Weight': [0.6, 0.5, 0.1, '', '', 0.02, ''],
                        'Type Relative': ['', '', '', 'Assets', 'Classes', '', 'Assets'],
                        'Relative Set': ['', '', '', '', 'Class 1', '', ''],
-                       'Relative': ['', '', '', 'FB', 'Fixed Income', '', 'TLT'],
+                       'Relative': ['', '', '', 'META', 'Fixed Income', '', 'TLT'],
                        'Factor': ['', '', '', 1.2, 0.5, '', 0.4]}
 
         constraints = pd.DataFrame(constraints)
@@ -107,22 +108,22 @@ def assets_constraints(constraints, asset_classes):
 
     The constraints look like the following image:
 
-    .. image:: images/Constraints.png
+    .. image:: ../images/Constraints.png
 
     It is easier to construct the constraints in excel and then upload to a
     dataframe.
 
-    To create the matrixes A and B we use the following command:
+    To create the matrices A and B we use the following command:
 
     ::
 
         A, B = rp.assets_constraints(constraints, asset_classes)
 
 
-    The matrixes A and B looks like this (all constraints were converted to a linear
+    The matrices A and B looks like this (all constraints were converted to a linear
     constraint):
 
-    .. image:: images/AxB.png
+    .. image:: ../images/AxB.png
 
     """
 
@@ -286,7 +287,7 @@ def assets_constraints(constraints, asset_classes):
 
 def factors_constraints(constraints, loadings):
     r"""
-    Create the factors constraints matrixes C and D of the constraint
+    Create the factors constraints matrices C and D of the constraint
     :math:`Cw \leq D`.
 
     Parameters
@@ -340,22 +341,22 @@ def factors_constraints(constraints, loadings):
 
     The constraints look like the following image:
 
-    .. image:: images/Constraints2.png
+    .. image:: ../images/Constraints2.png
 
     It is easier to construct the constraints in excel and then upload to a
     dataframe.
 
-    To create the matrixes C and D we use the following command:
+    To create the matrices C and D we use the following command:
 
     ::
 
         C, D = rp.factors_constraints(constraints, loadings)
 
 
-    The matrixes C and D looks like this (all constraints were converted to a linear
+    The matrices C and D looks like this (all constraints were converted to a linear
     constraint):
 
-    .. image:: images/CxD.png
+    .. image:: ../images/CxD.png
 
     """
 
@@ -395,8 +396,8 @@ def factors_constraints(constraints, loadings):
 
 def integer_constraints(constraints, asset_classes):
     r"""
-    Create the integer constraints matrixes A, B, C, D, E, F associated to the
-    constrainta :math:`Ak \leq B`, :math:`Ck \leq D \odot k_{s}` and
+    Create the integer constraints matrices A, B, C, D, E, F associated to the
+    constraints :math:`Ak \leq B`, :math:`Ck \leq D \odot k_{s}` and
     :math:`E k_{s}\leq F`.
 
     Parameters
@@ -452,7 +453,7 @@ def integer_constraints(constraints, asset_classes):
 
         import riskfolio as rp
 
-        asset_classes = {'Assets': ['FB', 'GOOGL', 'NTFX', 'BAC', 'WFC', 'TLT', 'SHV'],
+        asset_classes = {'Assets': ['META', 'GOOGL', 'NFLX', 'BAC', 'WFC', 'TLT', 'SHV'],
                          'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
                                      'Fixed Income', 'Fixed Income'],
                          'Class 2': ['Technology', 'Technology', 'Technology',
@@ -461,21 +462,21 @@ def integer_constraints(constraints, asset_classes):
         asset_classes = pd.DataFrame(asset_classes)
         asset_classes = asset_classes.sort_values(by=['Assets'])
 
-        constraints = {'Disabled': [True, True, True, True, True, True, True, True, True, True, True, False],
+        constraints = {'Disabled': [False, False, False, False, False, False, False, False, False, False, False, False],
                        'Type': ['Assets', 'Assets', 'Assets', 'Assets', 'Classes', 'Classes', 'Classes', 'Classes', 'Classes', 'Classes', 'Classes', 'Classes'],
-                       'Set': ['', '', '', '', 'Industry', 'Industry', 'Industry', 'Industry', 'Industry', 'Industry', 'Industry', 'Industry'],
-                       'Position': ['', '', 'PCAR', 'PSA', '', '', 'Financials', 'Energy', 'Financials', 'Financials', 'Industrials', 'Financials'],
+                       'Set': ['', '', '', '', 'Class 2', 'Class 2', 'Class 2', 'Class 2', 'Class 2', 'Class 2', 'Class 2', 'Class 2'],
+                       'Position': ['', '', 'META', 'TLT', '', '', 'Financial', 'Technology', 'Financial', 'Financial', 'Treasury', 'Treasury'],
                        'Kind': ['CardUp', 'CardLow', 'MuEx', 'Join', 'CardUp', 'CardLow', 'CardUp', 'CardLow', 'MuEx', 'MuEx', 'Join', 'Join'],
-                       'Value': [7.0, 16.0, '', '', 4.0, 9.0, 1.0, 1.0, '', '', '', ''],
+                       'Value': [4.0, 3.0, '', '', 1.0, 2.0, 1.0, 1.0, '', '', '', ''],
                        'Type Relative': ['', '', 'Assets', 'Assets', '', '', '', '', 'Assets', 'Classes', 'Assets', 'Classes'],
-                       'Relative Set': ['', '', '', '', '', '', '', '', '', 'Industry', '', 'Industry'],
-                       'Relative': ['', '', 'CPB', 'MMC', '', '', '', '', 'BAX', 'Consumer Staples', 'PSA', 'Information Technology']}
+                       'Relative Set': ['', '', '', '', '', '', '', '', '', 'Class 2', '', 'Class 2'],
+                       'Relative': ['', '', 'BAC', 'GOOGL', '', '', '', '', 'TLT', 'Financial', 'BAC', 'Technology']}
         constraints = pd.DataFrame(constraints)
 
 
     The constraints look like the following image:
 
-    .. image:: images/Constraints_int.png
+    .. image:: ../images/Constraints_int.png
 
     It is easier to construct the constraints in excel and then upload to a
     dataframe.
@@ -489,15 +490,15 @@ def integer_constraints(constraints, asset_classes):
 
     The dictionaries A and B look like the following image:
 
-    .. image:: images/AxB_int.png
+    .. image:: ../images/AxB_int.png
 
     The dictionaries C and D look like the following image:
 
-    .. image:: images/CxD_int.png
+    .. image:: ../images/CxD_int.png
 
     The dictionaries E and F look like the following image:
 
-    .. image:: images/ExF_int.png
+    .. image:: ../images/ExF_int.png
 
     """
 
@@ -715,7 +716,7 @@ def integer_constraints(constraints, asset_classes):
 
 def assets_views(views, asset_classes):
     r"""
-    Create the assets views matrixes P and Q of the views :math:`Pw = Q`.
+    Create the assets views matrices P and Q of the views :math:`Pw = Q`.
 
     Parameters
     ----------
@@ -756,7 +757,7 @@ def assets_views(views, asset_classes):
     --------
     ::
 
-        asset_classes = {'Assets': ['FB', 'GOOGL', 'NTFX', 'BAC', 'WFC', 'TLT', 'SHV'],
+        asset_classes = {'Assets': ['META', 'GOOGL', 'NFLX', 'BAC', 'WFC', 'TLT', 'SHV'],
                          'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
                                       'Fixed Income', 'Fixed Income'],
                          'Class 2': ['Technology', 'Technology', 'Technology',
@@ -768,43 +769,43 @@ def assets_views(views, asset_classes):
         views = {'Disabled': [False, False, False, False],
                  'Type': ['Assets', 'Classes', 'Classes', 'Assets'],
                  'Set': ['', 'Class 2','Class 1', ''],
-                 'Position': ['WFC', 'Financial', 'Equity', 'FB'],
+                 'Position': ['WFC', 'Financial', 'Equity', 'META'],
                  'Sign': ['<=', '>=', '>=', '>='],
                  'Return': [ 0.3, 0.1, 0.05, 0.03 ],
                  'Type Relative': [ 'Assets', 'Classes', 'Assets', ''],
                  'Relative Set': [ '', 'Class 1', '', ''],
-                 'Relative': ['FB', 'Fixed Income', 'TLT', '']}
+                 'Relative': ['META', 'Fixed Income', 'TLT', '']}
 
         views = pd.DataFrame(views)
 
 
     The constraints look like the following image:
 
-    .. image:: images/Views.png
+    .. image:: ../images/Views.png
 
     It is easier to construct the constraints in excel and then upload to a
     dataframe.
 
-    To create the matrixes P and Q we use the following command:
+    To create the matrices P and Q we use the following command:
 
     ::
 
         P, Q = rp.assets_views(views, asset_classes)
 
 
-    The matrixes P and Q look like the following image:
+    The matrices P and Q look like the following image:
 
-    .. image:: images/PxQ.png
+    .. image:: ../images/PxQ.png
 
     """
 
     if not isinstance(views, pd.DataFrame) and not isinstance(
         asset_classes, pd.DataFrame
     ):
-        raise ValueError("views and asset_classes must be DataFrames")
+        raise ValueError("constraints and asset_classes must be DataFrames")
 
     if views.shape[1] != 9:
-        raise ValueError("views must have nine columns")
+        raise ValueError("constraints must have nine columns")
 
     views0 = views.fillna("")
     views0 = views0[views0["Disabled"] == False]
@@ -880,7 +881,7 @@ def assets_views(views, asset_classes):
 
 def factors_views(views, loadings, const=True):
     r"""
-    Create the factors constraints matrixes C and D of the constraint
+    Create the factors constraints matrices C and D of the constraint
     :math:`Cw \geq D`.
 
     Parameters
@@ -934,12 +935,12 @@ def factors_views(views, loadings, const=True):
 
     The constraints look like the following image:
 
-    .. image:: images/factorsviews.png
+    .. image:: ../images/factorsviews.png
 
     It is easier to construct the constraints in excel and then upload to a
     dataframe.
 
-    To create the matrixes P and Q we use the following command:
+    To create the matrices P and Q we use the following command:
 
     ::
 
@@ -948,17 +949,17 @@ def factors_views(views, loadings, const=True):
                                 const=True)
 
 
-    The matrixes P and Q look like the following image:
+    The matrices P and Q look like the following image:
 
-    .. image:: images/P_fxQ_f.png
+    .. image:: ../images/P_fxQ_f.png
 
     """
 
     if not isinstance(views, pd.DataFrame) and not isinstance(loadings, pd.DataFrame):
-        raise ValueError("views and loadings must be DataFrames")
+        raise ValueError("constraints and loadings must be DataFrames")
 
     if views.shape[1] != 5:
-        raise ValueError("views must have five columns")
+        raise ValueError("constraints must have five columns")
 
     views0 = views.fillna("")
     views0 = views0[views0["Disabled"] == False]
@@ -990,6 +991,438 @@ def factors_views(views, loadings, const=True):
     Q = np.array(Q, ndmin=2, dtype=float)
 
     return P, Q
+
+
+def entropy_pooling_views(
+    views: pd.DataFrame,
+    asset_classes: pd.DataFrame,
+    returns: pd.DataFrame,
+):
+    r"""
+    Create the linear constraints matrices P_eq, Q_eq, P_in and Q_in of the
+    constraint :math:`P_{eq} Z = Q_{eq}` and :math:`P_{in} Z \geq Q_{in}`.
+
+    Parameters
+    ----------
+    views : pd.DataFrame of shape (n_views, n_fields)
+        views DataFrame, where n_views is the number of views
+        and n_fields is the number of fields of views DataFrame, the fields
+        are:
+
+        - Disabled: (bool) indicates if the constraint is enable.
+        - Kind: (str) can be: 'Mean', 'Var', 'Covar', 'Corr', 'Skew' and 'Kurt'.
+        - Type: (str) can be: 'Assets' or 'Classes'. Type 'Classes' is only available for kind 'Mean'.
+        - Set: (str) if Type is 'Classes' specified the name of the set of asset classes.
+        - Position: (str) the name of the asset or asset class of the view.
+        - Sign: (str) can be '>=', '==' or '<='. Sign '<=' is only available for kind 'Mean'.
+        - Return: (scalar) is the return of the view.
+        - Type Relative: (str) can be: 'Assets' or 'Classes'. Type 'Classes' is only available for kind 'Mean'.
+        - Relative Set: (str) if Type Relative is 'Classes' specified the name of the set of asset classes.
+        - Relative: (str) the name of the asset or asset class of the relative view.
+
+    asset_classes : pd.DataFrame of shape (n_assets, n_cols)
+        Asset's classes matrix, where n_assets is the number of assets and
+        n_cols is the number of columns of the matrix where the first column
+        is the asset list and the next columns are the different asset's
+        classes sets.
+
+    returns : pd.DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
+
+    Returns
+    -------
+    P_eq : np.ndarray
+        Matrix P of equality constraint :math:`P_{eq} Z = Q_{eq}`.
+    Q_eq : np.ndarray
+        Matrix Q of equality constraint :math:`P_{eq} Z = Q_{eq}`.
+    P_in : np.ndarray
+        Matrix P of inequality constraint :math:`P_{eq} Z \geq Q_{eq}`.
+    Q_in : np.ndarray
+        Matrix Q of inequality constraint :math:`P_{eq} Z \geq Q_{eq}`.
+
+    Raises
+    ------
+        ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    ::
+
+        asset_classes = {'Assets': ['META', 'GOOGL', 'NFLX', 'BAC', 'WFC', 'TLT', 'SHV'],
+                         'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
+                                      'Fixed Income', 'Fixed Income'],
+                         'Class 2': ['Technology', 'Technology', 'Technology',
+                                      'Financial', 'Financial', 'Treasury', 'Treasury'],}
+
+        asset_classes = pd.DataFrame(asset_classes)
+        asset_classes = asset_classes.sort_values(by=['Assets'])
+
+        views = {'Disabled': [False, True, True, True, True, False, False, False],
+                 'Kind':['Mean', 'Mean', 'Mean', 'Std', 'Covar', 'Corr', 'Skew', 'Kurt'],
+                 'Type': ['Assets', 'Assets', 'Assets', 'Assets', 'Assets', 'Assets',
+                          'Assets', 'Assets'],
+                 'Set': ['', '', '', '', '', '', '', ''],
+                 'Position': ['BAC', 'BAC', 'BAC', 'BAC', 'BAC', 'BAC', 'BAC', 'BAC'],
+                 'Sign': ['==', '>=', '>=', '==', '==', '==', '==', '=='],
+                 'Weight': [0.0006, 0.0008, 0.0008, 0.04, 0.0009, 0.7, 0.5, 4],
+                 'Type Relative': ['', 'Assets', 'Classes', '', 'Assets', 'Assets', '', ''],
+                 'Relative Set': ['', '', 'Class 2', '', '', '', '', ''],
+                 'Relative': ['', 'TLT', 'Treasury', '', 'GOOGL', 'GOOGL', '', ''],
+                 'Factor': ['', '', '', '', '', '', '', '']
+                 }
+
+        views = pd.DataFrame(views)
+
+    The constraints look like the following image:
+
+    .. image:: ../images/EP_Views.png
+
+    It is easier to construct the constraints in excel and then upload to a
+    dataframe.
+
+    To create the matrices P and Q we use the following command:
+
+    ::
+
+        P_eq, Q_eq, P_in, Q_in = rp.assets_views(views, asset_classes)
+
+
+    The matrices P_eq and Q_eq, and P_in and Q_in look like the following image:
+
+    .. image:: ../images/P_eqxQ_eq.png
+
+    """
+
+    if not isinstance(views, pd.DataFrame) and not isinstance(
+        asset_classes, pd.DataFrame
+    ):
+        raise ValueError("views and asset_classes must be DataFrames")
+
+    if views.shape[1] != 11:
+        raise ValueError("views must have eleven columns")
+
+    views0 = views.fillna("")
+    views0 = views0[views0["Disabled"] == False]
+    data = views0.values.tolist()
+    assetslist = asset_classes.iloc[:, 0].values.tolist()
+    n = len(views0)
+    m = len(asset_classes)
+    T, _ = returns.shape
+    returns_ = returns.T.values.tolist()
+    returns_2 = np.square(returns).T.values.tolist()
+    returns_3 = np.power(returns, 3).T.values.tolist()
+    returns_4 = np.power(returns, 4).T.values.tolist()
+    means_ = returns.mean().values.tolist()
+    stds_ = returns.std(ddof=0).values.tolist()
+
+    P_eq = []
+    Q_eq = []
+    P_in = []
+    Q_in = []
+    for i in range(0, n):
+        valid = False
+        if data[i][1] == "Mean":
+            if data[i][2] == "Assets":
+                item = assetslist.index(data[i][4])
+                if data[i][5] == ">=" or data[i][5] == "==":
+                    d = 1
+                elif data[i][5] == "<=":
+                    d = -1
+                if data[i][6] != "":
+                    P1 = returns_[item]
+                    Q1 = [data[i][6] * d]
+                    if data[i][7] == "Assets" and data[i][9] != "":
+                        item2 = assetslist.index(data[i][9])
+                        P2 = returns_[item2]
+                    elif (
+                        data[i][7] == "Classes"
+                        and data[i][8] != ""
+                        and data[i][9] != ""
+                    ):
+                        items = np.arange(0, m, 1)[
+                            np.where(
+                                asset_classes[data[i][8]].values == data[i][9], 1, 0
+                            ).astype(bool)
+                        ]
+                        P2 = 0
+                        for item0 in items:
+                            P2 += np.array(returns_[item0]) / len(items)
+                        P2 = P2.tolist()
+                    elif data[i][7] == "" and data[i][8] == "" and data[i][9] == "":
+                        P2 = [0] * T
+                        if data[i][5] == "==":
+                            means_[item] = Q1[-1]
+
+                    P1 = (
+                        ((np.array(P1, ndmin=2) - np.array(P2, ndmin=2)) * d)
+                        .flatten()
+                        .tolist()
+                    )
+
+                    if data[i][5] == "==":
+                        P_eq.append(P1)
+                        Q_eq.append(Q1)
+                    else:
+                        P_in.append(P1)
+                        Q_in.append(Q1)
+
+            elif data[i][2] == "Classes":
+                if data[i][5] == ">=" or data[i][5] == "==":
+                    d = 1
+                elif data[i][5] == "<=":
+                    d = -1
+                if data[i][6] != "":
+                    items = np.arange(0, m, 1)[
+                        np.where(
+                            asset_classes[data[i][3]].values == data[i][4], 1, 0
+                        ).astype(bool)
+                    ]
+                    P1 = 0
+                    for item0 in items:
+                        P1 += np.array(returns_[item0]) / len(items)
+                    P1 = P1.tolist()
+                    Q1 = [data[i][6] * d]
+
+                    if data[i][7] == "Assets" and data[i][9] != "":
+                        item2 = assetslist.index(data[i][94])
+                        P2 = returns_[item2]
+                        valid = True
+                    elif (
+                        data[i][7] == "Classes"
+                        and data[i][8] != ""
+                        and data[i][9] != ""
+                    ):
+                        items = np.arange(0, m, 1)[
+                            np.where(
+                                asset_classes[data[i][8]].values == data[i][9], 1, 0
+                            ).astype(bool)
+                        ]
+                        P2 = 0
+                        for item0 in items:
+                            P2 += np.array(returns_[item0]) / len(items)
+                        P2 = P2.tolist()
+                        valid = True
+                    elif data[i][7] == "" and data[i][8] == "" and data[i][9] == "":
+                        P2 = [0] * m
+                        valid = True
+
+                    if valid == True:
+                        if isinstance(data[i][10], float):
+                            P1 = (
+                                (
+                                    np.array(P1, ndmin=2)
+                                    - np.array(P2, ndmin=2) * data[i][10]
+                                )
+                                * d
+                            ).tolist()
+                        else:
+                            P1 = (
+                                (np.array(P1, ndmin=2) - np.array(P2, ndmin=2)) * d
+                            ).tolist()
+
+                    if data[i][5] == "==":
+                        P_eq.append(P1)
+                        Q_eq.append(Q1)
+                    else:
+                        P_in.append(P1)
+                        Q_in.append(Q1)
+
+    for i in range(0, n):
+        valid = False
+        if data[i][1] == "Std":
+            if data[i][2] == "Assets":
+                item = assetslist.index(data[i][4])
+                if data[i][5] == ">=" or data[i][5] == "==":
+                    d = 1
+                elif data[i][5] == "<=":
+                    raise ValueError("'Std' only supports '>=' and '==' views.")
+                if data[i][6] != "":
+                    P1 = []
+                    P1.append(returns_[item])
+                    P1.append(returns_2[item])
+                    Q1 = []
+                    Q1.append([means_[item]])
+                    Q1.append([means_[item] ** 2 + data[i][6] ** 2])
+                    if data[i][5] == "==":
+                        stds_[item] = data[i][6]
+
+                    if (
+                        data[i][7] != ""
+                        or data[i][8] != ""
+                        or data[i][9] != ""
+                        or data[i][10] != ""
+                    ):
+                        raise ValueError(
+                            "'Var' not supports relative views on Assets and Classes"
+                        )
+
+                    if data[i][5] == "==":
+                        for P1_i, Q1_i in zip(P1, Q1):
+                            P_eq.append(P1_i)
+                            Q_eq.append(Q1_i)
+                    else:
+                        for P1_i, Q1_i in zip(P1[:-1], Q1[:-1]):
+                            P_eq.append(P1_i)
+                            Q_eq.append(Q1_i)
+
+                        P_in.append(P1[-1])
+                        Q_in.append(Q1[-1])
+
+            elif data[i][2] == "Classes":
+                raise ValueError("'Var' only accepts views on Assets")
+
+    for i in range(0, n):
+        valid = False
+        if data[i][1] in ["Skew", "Kurt", "Covar", "Corr"]:
+            if data[i][2] == "Assets":
+                item = assetslist.index(data[i][4])
+                if data[i][5] == ">=" or data[i][5] == "==":
+                    d = 1
+                elif data[i][5] == "<=":
+                    raise ValueError(
+                        "'Covar', 'Corr', 'Skew' and 'Kurt' only support '>=' and '==' views."
+                    )
+                if data[i][6] != "":
+                    if data[i][1] == "Skew":
+                        P1 = []
+                        P1.append(returns_[item])
+                        P1.append(returns_2[item])
+                        P1.append(returns_3[item])
+                        Q1 = []
+                        Q1.append([means_[item]])
+                        Q1.append([means_[item] ** 2 + stds_[item] ** 2])
+                        Q1.append(
+                            [
+                                3 * means_[item] * stds_[item] ** 2
+                                + means_[item] ** 3
+                                + data[i][6] * stds_[item] ** 3
+                            ]
+                        )
+
+                    elif data[i][1] == "Kurt":
+                        P1 = []
+                        P1.append(returns_[item])
+                        P1.append(returns_2[item])
+                        P1.append(
+                            np.array(returns_4[item], ndmin=1)
+                            - 4 * means_[item] * np.array(returns_3[item], ndmin=1)
+                        )
+                        Q1 = []
+                        Q1.append([means_[item]])
+                        Q1.append([means_[item] ** 2 + stds_[item] ** 2])
+                        Q1.append(
+                            [
+                                -6 * means_[item] ** 2 * stds_[item] ** 2
+                                - 3 * means_[item] ** 4
+                                + (data[i][6] + 3) * stds_[item] ** 4
+                            ]
+                        )
+
+                    elif (
+                        data[i][1] == "Covar"
+                        and data[i][7] == "Assets"
+                        and data[i][9] != ""
+                    ):
+                        item2 = assetslist.index(data[i][9])
+                        P1 = []
+                        P1.append(returns_[item])
+                        P1.append(returns_[item2])
+                        P1.append(
+                            [i * j for i, j in zip(returns_[item], returns_[item2])]
+                        )
+                        Q1 = []
+                        Q1.append([means_[item]])
+                        Q1.append([means_[item2]])
+                        Q1.append([means_[item] * means_[item2] + data[i][6]])
+
+                    elif (
+                        data[i][1] == "Corr"
+                        and data[i][7] == "Assets"
+                        and data[i][9] != ""
+                    ):
+                        item2 = assetslist.index(data[i][9])
+                        P1 = []
+                        P1.append(returns_[item])
+                        P1.append(returns_[item2])
+                        P1.append(returns_2[item])
+                        P1.append(returns_2[item2])
+                        P1.append(
+                            [i * j for i, j in zip(returns_[item], returns_[item2])]
+                        )
+                        Q1 = []
+                        Q1.append([means_[item]])
+                        Q1.append([means_[item2]])
+                        Q1.append([means_[item] ** 2 + stds_[item] ** 2])
+                        Q1.append([means_[item2] ** 2 + stds_[item2] ** 2])
+                        Q1.append(
+                            [
+                                means_[item] * means_[item2]
+                                + data[i][6] * stds_[item] * stds_[item2]
+                            ]
+                        )
+
+                    if data[i][1] in ["Skew", "Kurt"] and (
+                        data[i][7] != ""
+                        or data[i][8] != ""
+                        or data[i][9] != ""
+                        or data[i][10] != ""
+                    ):
+                        raise ValueError(
+                            "'Skew' and 'Kurt' not support relative views on Assets and Classes"
+                        )
+
+                    if data[i][1] in ["Covar", "Corr"] and (
+                        data[i][7] == ""
+                        or data[i][8] != ""
+                        or data[i][9] == ""
+                        or data[i][10] != ""
+                    ):
+                        raise ValueError(
+                            "'Covar' and 'Corr' only support relative views on Assets"
+                        )
+
+                    if data[i][5] == "==":
+                        for P1_i, Q1_i in zip(P1, Q1):
+                            P_eq.append(P1_i)
+                            Q_eq.append(Q1_i)
+                    else:
+                        for P1_i, Q1_i in zip(P1[:-1], Q1[:-1]):
+                            P_eq.append(P1_i)
+                            Q_eq.append(Q1_i)
+
+                        P_in.append(P1[-1])
+                        Q_in.append(Q1[-1])
+
+            elif data[i][2] == "Classes":
+                raise ValueError("Only 'Mean' accept views on Classes")
+
+    P_eq = np.array(P_eq, ndmin=2, dtype=float)
+    Q_eq = np.array(Q_eq, ndmin=2, dtype=float)
+    P_in = np.array(P_in, ndmin=2, dtype=float)
+    Q_in = np.array(Q_in, ndmin=2, dtype=float)
+
+    P1 = np.hstack([P_eq, Q_eq])
+    P2 = np.hstack([P_in, Q_in])
+
+    _, idx = np.unique(P1, axis=0, return_index=True)
+    P1 = P1[np.sort(idx)]
+
+    _, idx = np.unique(P2, axis=0, return_index=True)
+    P2 = P2[np.sort(idx)]
+
+    P_eq, Q_eq = P1[:, :-1], P1[:, -1:]
+    P_in, Q_in = P2[:, :-1], P2[:, -1:]
+
+    if P_eq.shape[1] == 0:
+        P_in = None
+        Q_in = None
+
+    if P_in.shape[1] == 0:
+        P_in = None
+        Q_in = None
+
+    return P_eq, Q_eq, P_in, Q_in
 
 
 def assets_clusters(
@@ -1103,7 +1536,7 @@ def assets_clusters(
 
     The clusters dataframe looks like the following image:
 
-    .. image:: images/clusters_df.png
+    .. image:: ../images/clusters_df.png
 
     """
 
@@ -1201,7 +1634,7 @@ def hrp_constraints(constraints, asset_classes):
     --------
     ::
 
-        asset_classes = {'Assets': ['FB', 'GOOGL', 'NTFX', 'BAC', 'WFC', 'TLT', 'SHV'],
+        asset_classes = {'Assets': ['META', 'GOOGL', 'NFLX', 'BAC', 'WFC', 'TLT', 'SHV'],
                          'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
                                      'Fixed Income', 'Fixed Income'],
                          'Class 2': ['Technology', 'Technology', 'Technology',
@@ -1214,7 +1647,7 @@ def hrp_constraints(constraints, asset_classes):
                        'Type': ['Assets', 'Assets', 'All Assets', 'All Assets',
                                 'Each asset in a class', 'Each asset in a class'],
                        'Set': ['', '', '', '','Class 1', 'Class 2'],
-                       'Position': ['BAC', 'FB', '', '', 'Equity', 'Treasury'],
+                       'Position': ['BAC', 'META', '', '', 'Equity', 'Treasury'],
                        'Sign': ['>=', '<=', '<=', '>=', '<=', '<='],
                        'Weight': [0.02, 0.085, 0.09, 0.01, 0.07, 0.06]}
 
@@ -1222,7 +1655,7 @@ def hrp_constraints(constraints, asset_classes):
 
     The constraints look like the following image:
 
-    .. image:: images/HRPConstraints.png
+    .. image:: ../images/HRPConstraints.png
 
     It is easier to construct the constraints in excel and then upload to a
     dataframe.
@@ -1237,7 +1670,7 @@ def hrp_constraints(constraints, asset_classes):
     The pd.Series w_max and w_min looks like this (all constraints were
     merged to a single upper bound for each asset):
 
-    .. image:: images/HRP_Bounds.png
+    .. image:: ../images/HRP_Bounds.png
 
     """
 
@@ -1348,7 +1781,7 @@ def risk_constraint(asset_classes, kind="vanilla", classes_col=None):
     --------
     ::
 
-        asset_classes = {'Assets': ['FB', 'GOOGL', 'NTFX', 'BAC', 'WFC', 'TLT', 'SHV'],
+        asset_classes = {'Assets': ['META', 'GOOGL', 'NFLX', 'BAC', 'WFC', 'TLT', 'SHV'],
                          'Class 1': ['Equity', 'Equity', 'Equity', 'Equity', 'Equity',
                                       'Fixed Income', 'Fixed Income'],
                          'Class 2': ['Technology', 'Technology', 'Technology',
@@ -1491,7 +1924,7 @@ def connection_matrix(
 
     The connection matrix dataframe looks like the following image:
 
-    .. image:: images/Connection_df.png
+    .. image:: ../images/Connection_df.png
 
     """
 
@@ -1636,7 +2069,7 @@ def centrality_vector(
 
     The neighborhood matrix looks like the following image:
 
-    .. image:: images/Centrality_df.png
+    .. image:: ../images/Centrality_df.png
 
     """
 
@@ -1785,7 +2218,7 @@ def clusters_matrix(
 
     The clusters matrix looks like the following image:
 
-    .. image:: images/Clusters_matrix_df.png
+    .. image:: ../images/Clusters_matrix_df.png
 
     """
 

@@ -9,6 +9,7 @@ License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENS
 
 import numpy as np
 import pandas as pd
+import cvxpy as cp
 import statsmodels.api as sm
 import scipy.stats as st
 import sklearn.covariance as skcov
@@ -36,6 +37,7 @@ __all__ = [
     "black_litterman",
     "augmented_black_litterman",
     "black_litterman_bayesian",
+    "entropy_pooling",
     "bootstrapping",
     "normal_simulation",
 ]
@@ -1286,7 +1288,7 @@ def augmented_black_litterman(
 ):
     r"""
     Estimate the expected returns vector and covariance matrix based
-    on the Augmented Black Litterman model :cite:`b-WCheung`.
+    on the Augmented Black Litterman model :cite:`b-Cheung2007`.
 
     .. math::
         \begin{aligned}
@@ -1699,6 +1701,107 @@ def black_litterman_bayesian(
     w = pd.DataFrame(w, index=assets)
 
     return mu, cov, w
+
+
+def entropy_pooling(
+    X: np.ndarray | pd.DataFrame,
+    P_eq: np.ndarray = None,
+    Q_eq: np.ndarray = None,
+    P_in: np.ndarray = None,
+    Q_in: np.ndarray = None,
+    higher_comoments: bool = False,
+    solver: str = "CLARABEL",
+):
+    r"""
+    Estimate the optimal scenario weights and comoments parameters using the
+    Entropy Pooling model. The Entropy Pooling model consist in solve the
+    following optimization problem:
+
+    .. math::
+        \begin{align}
+        \min_{Z} & \quad \sum^{T}_{i=1}Z_{i} \ln (Z_{i}) - Z_{i} ln \left ( \frac{1}{T} \right) \\
+        \text{s. t.} & \quad Z \geq 0\\
+        & \quad Z \leq 1\\
+        & \quad \mathbf{1}^{\prime}_{T} Z = 1\\
+        & \quad P_{eq} Z = Q_{eq}\\
+        & \quad P_{in} Z \geq Q_{in}\\
+        \end{align}
+
+    Where:
+
+    :math:`Z` are the scenario weights.
+
+    Parameters
+    ----------
+    X : DataFrame of shape (n_samples, n_assets)
+        Assets returns DataFrame, where n_samples is the number of
+        observations and n_assets is the number of assets.
+    P_eq : np.array, optional
+        Matrix P of views that can be expressed as equality constraints.
+    Q_eq : np.array, optional
+        Matrix Q of views that can be expressed as equality constraints.
+    P_in : np.array, optional
+        Matrix P of views that can be expressed as inequality constraints.
+    Q_in : np.array, optional
+        Matrix Q of views that can be expressed as inequality constraints.
+    higher_comoments : bool, optional
+        If True calculate coskewness tensor and cokurtosis square matrix.
+    solver : str, optional
+        Solver used to solve the Entropy Pooling problem. The default is value 'CLARABEL'.
+
+    Returns
+    -------
+
+    Z : np.array
+        Optimal scenario weights based on the Entropy Pooling model.
+
+    """
+
+    X_ = np.array(X, ndmin=2)
+    T, n = X_.shape
+    ones = np.ones((T, 1)) / T
+
+    # Variable
+    Z = cp.Variable((T, 1))
+
+    # Constraints
+    constraints = [
+        cp.sum(Z) == 1,
+        Z >= 0,
+        Z <= 1,
+    ]
+    if P_eq is not None:
+        constraints += [
+            P_eq @ Z == Q_eq,
+        ]
+    if P_in is not None:
+        constraints += [
+            P_in @ Z >= Q_in,
+        ]
+
+    # Objective function
+    entropy = -cp.sum(cp.entr(Z)) - Z.T @ np.log(ones)
+    objective = cp.Minimize(entropy)
+
+    # Solving the problem
+    prob = cp.Problem(objective, constraints)
+    prob.solve(solver=solver)
+    Z = Z.value
+
+    if Z is not None:
+        mu = Z.T @ X
+        cov = cf.covariance_matrix(X, Z)
+        if higher_comoments:
+            skew = cf.coskewness_matrix(X, Z)
+            kurt = cf.cokurtosis_matrix(X, Z)
+        else:
+            skew = None
+            kurt = None
+        return mu, cov, skew, kurt, Z
+    else:
+        raise ValueError(
+            "Views are incompatible, please try again by removing one of the views."
+        )
 
 
 def bootstrapping(

@@ -22,3 +22,88 @@ header.md-header{
         min-height: unset;
     }
 }
+
+nav.md-tabs{
+    background-color: #2AA63E;
+    color: #FFF;
+    font-weight: 500;
+    opacity: 1;
+}
+nav.md-tabs li:hover{
+    background-color: #32CD32;
+}
+
+.md-banner {
+    background-color: #44403B;   /* background */
+    color: #F9FAFB;                /* text color */
+    text-align: center;          /* center text */
+    font-weight: 500;
+
+}
+
+.md-banner a {
+    color: gold;              /* link color */
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.md-banner a:hover {
+    color: gold;
+    text-decoration: underline;
+}
+
+/* Format of links in text */
+
+.md-content a {
+    color: #D68910;
+}
+
+.md-content a:hover {
+    color: orange;
+    text-decoration: underline;
+}
+
+/* Sidebar links color */
+
+.md-nav a:hover {
+    color: orange;
+}
+
+.md-nav__title {
+    color: #D68910;
+}
+
+.md-nav__container > a[href="index.html"] span {
+    color: #D68910 ;
+}
+
+.md-nav--primary .md-nav__link:hover {
+    color: #D68910;
+}
+
+.md-nav--primary .md-nav__link--active {
+    color: #D68910;
+    font-weight: 600;
+}
+@media only screen and (max-width: 75em){
+.md-nav__link--active,
+    .md-nav__link--active .md-ellipsis {
+        color: #D68910;
+        font-weight: 600;
+    }
+    .md-nav__icon {
+        color: #D68910;
+    }
+}
+
+.md-nav--secondary .md-nav__link:hover {
+    color: #D68910;
+}
+
+/* Ensure right TOC sidebar remains scrollable on long pages. */
+@media screen and (min-width: 60em) {
+    .md-sidebar--secondary .md-sidebar__scrollwrap {
+        max-height: calc(100vh - 10rem);
+        overflow-y: auto;
+    }
+}

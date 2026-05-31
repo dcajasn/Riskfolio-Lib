@@ -24,7 +24,8 @@ Changelog
     <br>
 
 .. image:: https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86
- :target: https://github.com/sponsors/dcajasn
+   :target: https://github.com/sponsors/dcajasn
+   :height: 1.75em
 
 .. raw:: html
    
@@ -34,6 +35,18 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Version 7.3.0
+=============
+
+- Add the Entropy Pooling model that allows users to incorporate their views in the probabilities of 
+  sample scenarios and then estimate the mean vector, covariance matrix, coskewness tensor and 
+  cokurtosis matrix based on the distorted probabilities.
+- Add the mean variance skewness kurtosis (MVSK) portfolio model (semidefinite relaxation), that 
+  allows users to incorporate higher moments in the portfolio optimization problem.
+- Add two new convex risk measures: Even Moments and Even Semi Moments, to the Portfolio object.
+- Add two new risk measures: Even Moments and Even Semi Moments, to the HCPortfolio object.
+- Add helper functions that allows users to calculate covariance matrix, coskewness tensor and 
+  cokurtosis matrix based on the probabilities of sample scenarios.
 
 Version 7.2.0
 =============

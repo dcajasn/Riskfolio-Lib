@@ -51,6 +51,10 @@ class HCPortfolio(object):
     kappa_g : float, optional
         Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
         The default is None.
+    p_em : int, optional
+        Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
+    p_esm : int, optional
+        Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
     solver_rl: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
@@ -72,6 +76,8 @@ class HCPortfolio(object):
         b_sim=None,
         kappa=0.30,
         kappa_g=None,
+        p_em=2,
+        p_esm=2,
         solver_rl="CLARABEL",
         solvers=["CLARABEL", "SCS", "ECOS"],
         w_max=None,
@@ -84,6 +90,9 @@ class HCPortfolio(object):
         self.b_sim = b_sim
         self._kappa = kappa
         self._kappa_g = kappa_g
+        self._p_em = p_em
+        self._p_esm = p_esm
+
         self.solver_rl = solver_rl
         self.solvers = solvers
         self.asset_order = None
@@ -156,6 +165,36 @@ class HCPortfolio(object):
         else:
             self._kappa_g = a
 
+    @property
+    def p_em(self):
+        return self._p_em
+
+    @p_em.setter
+    def p_em(self, value):
+        a = value
+        if isinstance(a, int) and a >= 2:
+            self._p_em = a
+        else:
+            print(
+                "p_em must be an integer higher equal than 2, values lower to 2 are setting to 2"
+            )
+            self._p_em = 2
+
+    @property
+    def p_esm(self):
+        return self._p_esm
+
+    @p_esm.setter
+    def p_esm(self, value):
+        a = value
+        if isinstance(a, int) and a >= 2:
+            self._p_esm = a
+        else:
+            print(
+                "p_esm must be an integer higher equal than 2, values lower to 2 are setting to 2"
+            )
+            self._p_esm = 2
+
     # get naive-risk weights
     def _naive_risk(self, returns, cov, rm="MV", rf=0):
         assets = returns.columns.tolist()
@@ -183,6 +222,8 @@ class HCPortfolio(object):
                         b_sim=self.b_sim,
                         kappa=self.kappa,
                         kappa_g=self.kappa_g,
+                        p_em=self.p_em,
+                        p_esm=self.p_esm,
                         solver=self.solver_rl,
                     )
                 else:
@@ -198,6 +239,8 @@ class HCPortfolio(object):
                         b_sim=self.b_sim,
                         kappa=self.kappa,
                         kappa_g=self.kappa_g,
+                        p_em=self.p_em,
+                        p_esm=self.p_esm,
                         solver=self.solver_rl,
                     )
                 inv_risk[k, 0] = risk
@@ -235,12 +278,14 @@ class HCPortfolio(object):
                     b_sim=self.b_sim,
                     kappa=self.kappa,
                     kappa_g=self.kappa_g,
+                    p_em=self.p_em,
+                    p_esm=self.p_esm,
                 )
 
                 if self.kurt:
                     method_kurt = "hist"
                 elif self.skurt:
-                    method_kurt = "semi"
+                    method_kurt = "hist"
                 else:
                     method_kurt = None
 
@@ -265,12 +310,14 @@ class HCPortfolio(object):
                     b_sim=self.b_sim,
                     kappa=self.kappa,
                     kappa_g=self.kappa_g,
+                    p_em=self.p_em,
+                    p_esm=self.p_esm,
                 )
 
                 if self.kurt:
                     method_kurt = "hist"
                 elif self.skurt:
-                    method_kurt = "semi"
+                    method_kurt = "hist"
                 else:
                     method_kurt = None
                 port.assets_stats(
@@ -477,10 +524,7 @@ class HCPortfolio(object):
         Z,
         rm="MV",
         rf=0,
-        linkage="ward",
         model="HERC",
-        upper_bound=None,
-        lower_bound=None,
     ):
         # Transform linkage to tree and reverse order
         root, nodes = hr.to_tree(Z, rd=True)
@@ -786,9 +830,11 @@ class HCPortfolio(object):
             - 'vol': Standard Deviation.
             - 'MV': Variance.
             - 'KT': Square Root Kurtosis.
+            - 'EM': p_em Root of Even Moment of Order 2 * p_em.
             - 'MAD': Mean Absolute Deviation.
             - 'MSV': Semi Standard Deviation.
             - 'SKT': Square Root Semi Kurtosis.
+            - 'ESM': p_esm Root of Even Semi Moment of Order 2 * p_esm.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'VaR': Value at Risk.

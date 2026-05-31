@@ -136,16 +136,34 @@ class Portfolio(object):
         The matrix :math:`b` of the linear constraint :math:`A \leq b`.
         The default is None.
     arcinequality : nd-array, optional
-        The matrix :math:`A_{RC}` of the linear constraint :math:`A_{RC} \text{diag}(\text{Tr}(\Sigma X)) \leq b_{RC} \text{Tr}(\Sigma X)`.
+        The matrix :math:`A_{rc}` of the linear constraint :math:`A_{rc} \text{diag}(\text{Tr}(\Sigma X)) \leq b_{rc} \text{Tr}(\Sigma X)`.
         The default is None.
     brcinequality : 1d-array, optional
-        The matrix :math:`B_{RC}` of the linear constraint :math:`A_{RC} \text{diag}(\text{Tr}(\Sigma X)) \leq b_{RC} \text{Tr}(\Sigma X)`.
+        The matrix :math:`B_{rc}` of the linear constraint :math:`A_{rc} \text{diag}(\text{Tr}(\Sigma X)) \leq b_{rc} \text{Tr}(\Sigma X)`.
         The default is None.
     afrcinequality : nd-array, optional
-        The matrix :math:`A_{FRC}` of the linear constraint :math:`A_{FRC} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{FRC} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right )`.
+        The matrix :math:`A_{frc}` of the linear constraint :math:`A_{frc} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{frc} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right )`.
         The default is None.
     bfrcinequality : 1d-array, optional
-        The matrix :math:`b_{FRC}` of the linear constraint :math:`A_{FRC} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{FRC} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right )`.
+        The matrix :math:`b_{frc}` of the linear constraint :math:`A_{frc} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{frc} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right )`.
+        The default is None.
+    aintinequality : nd-array, optional
+        The matrix :math:`A_{int}` of the linear integer constraint :math:`A_{int}k \leq B_{int}`.
+        The default is None.
+    bintinequality : 1d-array, optional
+        The matrix :math:`B_{int}` of the linear integer constraint :math:`A_{int}k \leq B_{int}`.
+        The default is None.
+    cintinequality : nd-array, optional
+        The matrix :math:`C_{int}` of the linear integer constraint :math:`C_{int}k \leq D_{int} \odot k_{s}`.
+        The default is None.
+    dintinequality : 1d-array, optional
+        The matrix :math:`D_{int}` of the linear integer constraint :math:`C_{int}k \leq D_{int} \odot k_{s}`.
+        The default is None.
+    eintinequality : nd-array, optional
+        The matrix :math:`E_{int}` of the linear integer constraint :math:`E_{int} k_{s}\leq F_{int}`.
+        The default is None.
+    fintinequality : 1d-array, optional
+        The matrix :math:`F_{int}` of the linear integer constraint :math:`E_{int} k_{s}\leq F_{int}`.
         The default is None.
     b : 1d-array, optional
         The risk budgeting constraint vector. The default is None.
@@ -189,6 +207,8 @@ class Portfolio(object):
         Constraint on min level of expected return. The default is None.
     upperdev : float, optional
         Constraint on max level of standard deviation. The default is None.
+    lowerskew : float, optional
+        Constraint on min level of skewness. The default is None.
     upperkt : float, optional
         Constraint on max level of square root kurtosis. The default is None.
     uppermad : float, optional
@@ -253,6 +273,10 @@ class Portfolio(object):
         Fourth p-norm used to approximate GMD, TG and TGRG. The default is 10.
     p_5 : float, optional
         Fifth p-norm used to approximate GMD, TG and TGRG. The default is 50.
+    p_em : int, optional
+        Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
+    p_esm : int, optional
+        Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
     """
 
     def __init__(
@@ -304,6 +328,7 @@ class Portfolio(object):
         bcentrality=None,
         lowerret=None,
         upperdev=None,
+        lowerskew=None,
         upperkt=None,
         uppermad=None,
         uppergmd=None,
@@ -327,11 +352,15 @@ class Portfolio(object):
         upperEDaR=None,
         upperRLDaR=None,
         upperuci=None,
+        upperem=None,
+        upperesm=None,
         p_1=2,
         p_2=3,
         p_3=4,
         p_4=10,
         p_5=50,
+        p_em=2,
+        p_esm=2,
     ):
         # Optimization Models Options
 
@@ -377,6 +406,7 @@ class Portfolio(object):
         self._bcentrality = bcentrality
         self.lowerret = lowerret
         self.upperdev = upperdev
+        self.lowerskew = lowerskew
         self.upperkt = upperkt
         self.uppermad = uppermad
         self.uppergmd = uppergmd
@@ -400,11 +430,15 @@ class Portfolio(object):
         self.upperEDaR = upperEDaR
         self.upperRLDaR = upperRLDaR
         self.upperuci = upperuci
+        self.upperem = upperem
+        self.upperesm = upperesm
         self.p_1 = p_1
         self.p_2 = p_2
         self.p_3 = p_3
         self.p_4 = p_4
         self.p_5 = p_5
+        self.p_em = p_em
+        self.p_esm = p_esm
 
         self.allowTO = allowTO
         self.turnover = turnover
@@ -415,6 +449,7 @@ class Portfolio(object):
 
         self.mu = None
         self.cov = None
+        self.skew = None
         self.kurt = None
         self.skurt = None
         self.L_2 = None
@@ -426,12 +461,17 @@ class Portfolio(object):
         self.n_components = None
         self.mu_fm = None
         self.cov_fm = None
+        self.skew_fm = None
         self.kurt_fm = None
         self.mu_bl = None
         self.cov_bl = None
         self.mu_bl_fm = None
         self.cov_bl_fm = None
         self.returns_fm = None
+        self.mu_ep = None
+        self.cov_ep = None
+        self.skew_ep = None
+        self.kurt_ep = None
         self.z_EVaR = None
         self.z_EDaR = None
         self.z_RLVaR = None
@@ -1163,7 +1203,6 @@ class Portfolio(object):
 
             - None: do not calculate kurtosis square matrix.
             - 'hist': use historical estimates. For more information see :cite:`a-Cajas4`.
-            - 'semi': use semi cokurtosis square matrix. For more information see :cite:`a-Cajas4`.
             - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`a-MLforAM`.
             - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`a-MLforAM`.
@@ -1201,11 +1240,20 @@ class Portfolio(object):
             print("You must convert self.cov to a positive definite matrix")
 
         if method_kurt is not None:
-            T, N = self.returns.shape
-            self.L_2 = cf.duplication_elimination_matrix(N)
-            self.S_2 = cf.duplication_summation_matrix(N)
+            if method_kurt == "semi":
+                raise ValueError(
+                    "method_kurt not support 'semi' value because semi cokurtosis matrix is calculated when cokurtosis matrix is calculated"
+                )
+            else:
+                T, N = self.returns.shape
+                self.L_2 = cf.duplication_elimination_matrix(N)
+                self.D_2 = cf.duplication_matrix(N)
+                self.S_2 = cf.duplication_summation_matrix(N)
 
-            if method_kurt != "semi":
+                # Calculate cokurtosis matrix
+
+                self.skew = cf.coskewness_matrix(self.returns)
+
                 self.kurt = pe.cokurt_matrix(
                     self.returns, method=method_kurt, **dict_kurt
                 )
@@ -1224,7 +1272,7 @@ class Portfolio(object):
 
                 if value == False:
                     print("You must convert self.kurt to a positive definite matrix")
-            elif method_kurt == "semi":
+
                 self.skurt = pe.cokurt_matrix(self.returns, method="semi")
                 value = af.is_pos_def(self.skurt, threshold=1e-6)
                 for i in range(5):
@@ -1242,11 +1290,13 @@ class Portfolio(object):
                 if value == False:
                     print("You must convert self.skurt to a positive definite matrix")
 
-            else:
-                self.kurt = None
-                self.skurt = None
-                self.L_2 = None
-                self.S_2 = None
+        else:
+            self.skew = None
+            self.kurt = None
+            self.skurt = None
+            self.L_2 = None
+            self.D_2 = None
+            self.S_2 = None
 
     def blacklitterman_stats(
         self,
@@ -1477,7 +1527,7 @@ class Portfolio(object):
         elif B is not None:
             self.B = B
 
-        mu, cov, returns, B_, _, kurt = pe.risk_factors(
+        mu, cov, returns, B_, skew, kurt = pe.risk_factors(
             X,
             Y,
             B=self.B,
@@ -1493,6 +1543,7 @@ class Portfolio(object):
 
         self.mu_fm = mu
         self.cov_fm = cov
+        self.skew_fm = skew
         self.kurt_fm = kurt
         self.returns_fm = returns
 
@@ -1706,6 +1757,57 @@ class Portfolio(object):
         if value == False:
             print("You must convert self.cov_bl_fm to a positive definite matrix")
 
+    def entropy_pooling_stats(
+        self,
+        P_eq: np.array = None,
+        Q_eq: np.array = None,
+        P_in: np.array = None,
+        Q_in: np.array = None,
+        higher_comoments: bool = False,
+        solver: str = "CLARABEL",
+    ):
+        r"""
+        Estimate the optimal scenario weights and comoments parameters using the
+        Entropy Pooling model. The Entropy Pooling model consist in solve the
+        following optimization problem:
+
+        Parameters
+        ----------
+        P_eq : np.array, optional
+            Matrix P of views that can be expressed as equality constraints.
+        Q_eq : np.array, optional
+            Matrix Q of views that can be expressed as equality constraints.
+        P_in : np.array, optional
+            Matrix P of views that can be expressed as inequality constraints.
+        Q_in : np.array, optional
+            Matrix Q of views that can be expressed as inequality constraints.
+        higher_comoments : bool, optional
+            If True calculate coskewness tensor and cokurtosis square matrix.
+        solver : str, optional
+            Solver used to solve the Entropy Pooling problem. The default value
+            is 'CLARABEL'.
+
+        See Also
+        --------
+        riskfolio.src.ParamsEstimation.entropy_pooling
+
+        """
+
+        mu_ep, cov_ep, skew_ep, kurt_ep, _ = pe.entropy_pooling(
+            self.returns,
+            P_eq=P_eq,
+            Q_eq=Q_eq,
+            P_in=P_in,
+            Q_in=Q_in,
+            higher_comoments=higher_comoments,
+            solver=solver,
+        )
+
+        self.mu_ep = mu_ep
+        self.cov_ep = cov_ep
+        self.skew_ep = skew_ep
+        self.kurt_ep = kurt_ep
+
     def wc_stats(
         self,
         box="s",
@@ -1769,17 +1871,17 @@ class Portfolio(object):
             Method used to calculate the distance parameter of the elliptical uncertainty set of the mean.
             The default is 'normal'. Possible values are:
 
-                - 'normal': assumes normal distribution of returns. Uses a bootstrapping method. :cite:`a-Yang2019` and :cite:`a-Tutuncu2004` .
-                - 'general': for any possible distribution of returns. Uses the ratio √((1-q)/q). :cite:`a-Fabozzi` and :cite:`a-ElGhaoui2003`.
-                - int or float value: we can use a custom distance parameter, that following lobo could be 1 or a near parameter. :cite:`a-Lobo`.
+            - 'normal': assumes normal distribution of returns. Uses a bootstrapping method. :cite:`a-Yang2019` and :cite:`a-Tutuncu2004` .
+            - 'general': for any possible distribution of returns. Uses the ratio √((1-q)/q). :cite:`a-Fabozzi` and :cite:`a-ElGhaoui2003`.
+            - int or float value: we can use a custom distance parameter, that following lobo could be 1 or a near parameter. :cite:`a-Lobo`.
 
         method_k_sigma : string or int or float
             Method used to calculate the distance parameter of the elliptical uncertainty set of the covariance matrix.
             The default is 'normal'. Possible values are:
 
-                - 'normal': assumes normal distribution of returns. Uses a bootstrapping method. :cite:`a-Yang2019` and :cite:`a-Tutuncu2004` .
-                - 'general': for any possible distribution of returns. Uses the ratio √((1-q)/q). :cite:`a-Fabozzi` and :cite:`a-ElGhaoui2003`.
-                - int or float value: we can use a custom distance parameter, that following lobo could be 1 or a near parameter. :cite:`a-Lobo`.
+            - 'normal': assumes normal distribution of returns. Uses a bootstrapping method. :cite:`a-Yang2019` and :cite:`a-Tutuncu2004` .
+            - 'general': for any possible distribution of returns. Uses the ratio √((1-q)/q). :cite:`a-Fabozzi` and :cite:`a-ElGhaoui2003`.
+            - int or float value: we can use a custom distance parameter, that following lobo could be 1 or a near parameter. :cite:`a-Lobo`.
 
         seed: int
             Seed used to generate the boostrapping sample. The defailt is 0.
@@ -1884,8 +1986,8 @@ class Portfolio(object):
         .. math::
             \begin{align}
             \underset{w}{\text{optimize}} & \quad F(w)\\
-            \text{s.t.}\quad & \quad Aw \leq b\\
-            & \quad A_{\text{RC}} \text{diag}\left (\Sigma W \right) \leq b_{\text{RC}} \, \text{Tr} \left ( \Sigma W \right ) \\
+            \text{s. t.} & \quad Aw \leq b\\
+            & \quad A RC(w) \leq b \sigma^{2}(w)\\
             & \quad \phi_{i}(w) \leq c_{i}\\
             \end{align}
 
@@ -1895,22 +1997,22 @@ class Portfolio(object):
 
         :math:`Aw \leq b` is a set of linear constraints on asset weights.
 
-        :math:`A_{\text{RC}} \text{diag}\left (\Sigma W \right) \leq b_{\text{RC}} \, \text{Tr} \left ( \Sigma W \right )`
-          is a set of linear risk contribution constraints for variance.
+        :math:`A RC(w) \leq b \sigma^{2}(w)` is a set of linear risk contribution constraints for variance.
 
         :math:`\phi_{i}(w) \leq c_{i}` are constraints on maximum values of
         several risk measures.
 
         Parameters
         ----------
-        model : str can be {'Classic', 'BL', 'FM' or 'BLFM'}
+        model : str can be {'Classic', 'BL', 'FM', 'BLFM', 'EP'}
             The model used for optimize the portfolio.
             The default is 'Classic'. Possible values are:
 
             - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
             - 'BL': use estimates of expected return vector and covariance matrix based on the Black Litterman model.
-            - 'FM': use estimates of expected return vector and covariance matrix based on a Risk Factor model specified by the user.
+            - 'FM': use estimates of expected return vector, covariance matrix and cokurtosis square matrix based on a Risk Factor model specified by the user.
             - 'BLFM': use estimates of expected return vector and covariance matrix based on Black Litterman applied to a Risk Factor model specified by the user.
+            - 'EP': use estimates of expected return vector, covariance matrix and cokurtosis square matrix based on Entropy Pooling model.
 
         rm : str, optional
             The risk measure used to optimize the portfolio.
@@ -1918,10 +2020,12 @@ class Portfolio(object):
 
             - 'MV': Standard Deviation.
             - 'KT': Square Root of Kurtosis.
+            - 'EM': p_em Root of Even Moment of order 2 * p_em.
             - 'MAD': Mean Absolute Deviation.
             - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
             - 'SKT': Square Root of Semi Kurtosis.
+            - 'ESM': p_esm Root of Even Semi Moment of order 2 * p_esm.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
@@ -1975,7 +2079,7 @@ class Portfolio(object):
 
         Returns
         -------
-        w : DataFrame
+        optimal : DataFrame
             The weights of optimal portfolio.
 
         """
@@ -2030,6 +2134,17 @@ class Portfolio(object):
                 if self.kurt_fm is not None:
                     kurt = np.array(self.kurt_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
+        elif model == "EP":
+            mu = np.array(self.mu_ep, ndmin=2)
+            if hist == False:
+                sigma = np.array(self.cov_ep, ndmin=2)
+                if self.kurt_ep is not None:
+                    kurt = np.array(self.kurt_ep, ndmin=2)
+            elif hist == True:
+                sigma = np.array(self.cov, ndmin=2)
+                if self.kurt is not None:
+                    kurt = np.array(self.kurt, ndmin=2)
+            returns = np.array(self.returns, ndmin=2)
 
         # General Model Variables
 
@@ -2113,9 +2228,9 @@ class Portfolio(object):
 
         madmodel = False
         Y = cp.Variable((T, 1))
-        a = returns - np.repeat(mu, T, axis=0)
+        Rc = returns - np.repeat(mu, T, axis=0)
         risk2 = cp.sum(Y) / T
-        madconstraints = [a @ w * 1000 >= -Y * 1000, Y * 1000 >= 0]
+        madconstraints = [Y * 1000 >= -Rc @ w * 1000, Y * 1000 >= 0]
 
         # Semi Variance Model Variables
 
@@ -2696,6 +2811,52 @@ class Portfolio(object):
         RLVaR_G = t9 + ln_k_g * s9 + cp.sum(psi9 + theta9)
         risk24 = RLVaR_L - RLVaR_G
 
+        # Even Moment of order 2p Risk Variables
+
+        p_em = self.p_em
+        u10 = cp.Variable((T, 1))
+        theta10 = cp.Variable((T, 1))
+        g10 = cp.Variable(nonneg=True)
+
+        emconstraints = [
+            cp.sum(u10) <= g10,
+            cp.PowCone3D(u10 * T, g10 * onesvec, theta10, 1 / p_em),
+        ]
+        if obj == "Sharpe":
+            emconstraints += [
+                cp.PowCone3D(theta10, onesvec * k, Rc @ w, 1 / 2),
+            ]
+        else:
+            emconstraints += [
+                cp.PowCone3D(theta10, onesvec, Rc @ w, 1 / 2),
+            ]
+
+        risk25 = g10
+
+        # Even Semi Moment of order 2p Risk Variables
+
+        p_esm = self.p_esm
+        y = cp.Variable((T, 1), nonneg=True)
+        u11 = cp.Variable((T, 1))
+        theta11 = cp.Variable((T, 1))
+        g11 = cp.Variable(nonneg=True)
+
+        esmconstraints = [
+            cp.sum(u11) <= g11,
+            cp.PowCone3D(u11 * T, g11 * onesvec, theta11, 1 / p_esm),
+            y >= -Rc @ w,
+        ]
+        if obj == "Sharpe":
+            esmconstraints += [
+                cp.PowCone3D(theta11, onesvec * k, y, 1 / 2),
+            ]
+        else:
+            esmconstraints += [
+                cp.PowCone3D(theta11, onesvec, y, 1 / 2),
+            ]
+
+        risk26 = g11
+
         # Boolean Variables
 
         flag_int = False
@@ -3116,6 +3277,20 @@ class Portfolio(object):
             constraints += rvrgconstraints
             rlvarmodel = True
 
+        if self.upperem is not None:
+            if obj == "Sharpe":
+                constraints += [risk25 <= self.upperem * k]
+            else:
+                constraints += [risk25 <= self.upperem]
+            constraints += emconstraints
+
+        if self.upperesm is not None:
+            if obj == "Sharpe":
+                constraints += [risk26 <= self.upperesm * k]
+            else:
+                constraints += [risk26 <= self.upperesm]
+            constraints += esmconstraints
+
         # Defining risk function
 
         if rm == "MV":
@@ -3226,6 +3401,14 @@ class Portfolio(object):
             rlvarmodel = True
             if self.upperrvrg is None:
                 constraints += rvrgconstraints
+        elif rm == "EM":
+            risk = risk25
+            if self.upperem is None:
+                constraints += emconstraints
+        elif rm == "ESM":
+            risk = risk26
+            if self.upperesm is None:
+                constraints += esmconstraints
 
         if madmodel == True:
             constraints += madconstraints
@@ -3357,11 +3540,11 @@ class Portfolio(object):
 
         .. math::
             \begin{aligned}
-            \min_{w} & \quad \phi(w)\\
-            \text{s.t.} & \quad \mathbf{b}^{\prime} \log(w) \geq c\\
-            & \quad \mu w \geq \overline{\mu} \\
-            & \quad Aw \leq b \\
-            & \quad w \geq 0 \\
+            &\underset{w}{\min} & & \phi(w)\\
+            &\text{s.t.} & & \mathbf{b}^{\prime} \log(w) \geq c\\
+            & & & \mu w \geq \overline{\mu} \\
+            & & & Aw \leq b \\
+            & & & w \geq 0 \\
             \end{aligned}
 
         Where:
@@ -3394,10 +3577,12 @@ class Portfolio(object):
 
             - 'MV': Standard Deviation.
             - 'KT': Square Root of Kurtosis.
+            - 'EM': p_em Root of Even Moment of order 2 * p_em.
             - 'MAD': Mean Absolute Deviation.
             - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
             - 'SKT': Square Root of Semi Kurtosis.
+            - 'ESM': p_esm Root of Even Semi Moment of order 2 * p_esm.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
@@ -3432,7 +3617,7 @@ class Portfolio(object):
 
         Returns
         -------
-        w : DataFrame
+        rp_optimal : DataFrame
             The weights of optimal portfolio.
 
         """
@@ -3523,11 +3708,9 @@ class Portfolio(object):
         # MAD Model Variables
 
         Y = cp.Variable((T, 1))
-        u = np.repeat(mu, T, axis=0)
-        a = returns - u
+        Rc = returns - np.repeat(mu, T, axis=0)
         risk2 = cp.sum(Y) / T
-        # madconstraints=[a @ w >= -Y, a @ w <= Y, Y >= 0]
-        madconstraints = [a @ w * 1000 >= -Y * 1000, Y * 1000 >= 0]
+        madconstraints = [Y * 1000 >= -Rc @ w * 1000, Y * 1000 >= 0]
 
         # Semi Variance Model Variables
 
@@ -4068,6 +4251,38 @@ class Portfolio(object):
         RLVaR_G = t9 + ln_k_g * s9 + cp.sum(psi9 + theta9)
         risk24 = RLVaR_L - RLVaR_G
 
+        # Even Moment of order 2 * p_em Risk Variables
+
+        p_em = self.p_em
+        u10 = cp.Variable((T, 1))
+        theta10 = cp.Variable((T, 1))
+        g10 = cp.Variable(nonneg=True)
+
+        emconstraints = [
+            cp.sum(u10) <= g10,
+            cp.PowCone3D(u10 * T, g10 * onesvec, theta10, 1 / p_em),
+            cp.PowCone3D(theta10, onesvec, Rc @ w, 1 / 2),
+        ]
+
+        risk25 = g10
+
+        # Even Semi Moment of order 2 * p_esm Risk Variables
+
+        p_esm = self.p_esm
+        y = cp.Variable((T, 1), nonneg=True)
+        u11 = cp.Variable((T, 1))
+        theta11 = cp.Variable((T, 1))
+        g11 = cp.Variable(nonneg=True)
+
+        esmconstraints = [
+            cp.sum(u11) <= g11,
+            cp.PowCone3D(u11 * T, g11 * onesvec, theta11, 1 / p_esm),
+            cp.PowCone3D(theta11, onesvec, y, 1 / 2),
+            y >= -Rc @ w,
+        ]
+
+        risk26 = g11
+
         # Problem Linear Constraints
 
         if self.ainequality is not None and self.binequality is not None:
@@ -4159,6 +4374,12 @@ class Portfolio(object):
             risk = risk24
             constraints += rlvarconstraints
             constraints += rvrgconstraints
+        elif rm == "EM":
+            risk = risk25
+            constraints += emconstraints
+        elif rm == "ESM":
+            risk = risk26
+            constraints += esmconstraints
 
         # Risk budgeting constraint
 
@@ -4246,15 +4467,15 @@ class Portfolio(object):
 
         .. math::
             \begin{aligned}
-            \min_{w} & \quad \psi - \gamma & \\
+            \min_{w} & \quad \psi - \gamma \\
             \text{s.t.} & \quad \zeta = \Sigma w \\
-            & \quad w^{T} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) & \\
+            & \quad w^{T} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) \\
             & \quad w_{i} \zeta_{i} \geq \gamma^{2} \mathbf{b}_{i} & \forall i=1 , \ldots , N \\
-            & \quad \lambda w^{T} \Theta w \leq \rho^{2} & \\
-            & \quad \mu w \geq \overline{\mu} & \\
-            & \quad Aw \leq b & \\
-            & \quad \sum^{N}_{i=1} w_{i} = 1 & \\
-            & \quad \psi, \gamma, \rho, w  \geq 0 & \\
+            & \quad \lambda w^{T} \Theta w \leq \rho^{2} \\
+            & \quad \mu w \geq \overline{\mu} \\
+            & \quad Aw \leq b \\
+            & \quad \sum^{N}_{i=1} w_{i} = 1 \\
+            & \quad \psi, \gamma, \rho, w  \geq 0 \\
             \end{aligned}
 
         Where:
@@ -4312,7 +4533,7 @@ class Portfolio(object):
 
         Returns
         -------
-        w : DataFrame
+        rrp_optimal : DataFrame
             The weights of optimal portfolio.
 
         """
@@ -4498,7 +4719,7 @@ class Portfolio(object):
 
         Returns
         -------
-        w : DataFrame
+        wc_optimal : DataFrame
             The weights of optimal portfolio.
 
         """
@@ -4870,12 +5091,12 @@ class Portfolio(object):
 
         .. math::
             \begin{aligned}
-            \underset{w_f}{\text{optimize}} & \quad F(w)\\
-            \text{s.t.} \quad & \quad \begin{bmatrix} W_{F}  & w_{F} \\ w^{\prime}_{F} & 1 \end{bmatrix} \succeq 0 \\
+            \underset{w_{f}}{\text{optimize}} & \quad F(w)\\
+            \text{s.t.} & \quad \begin{bmatrix} W_{\text{f}}  & w_{\text{f}} \\ w^{\prime}_{\text{f}} & 1 \end{bmatrix} \succeq 0 \\
             & \quad A w \leq b \\
-            & \quad w = (B^{\prime})^{+} w_{F} \\
-            & \quad A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
-            & \quad W_{F} \in \mathbf{S}^{m}\\
+            & \quad w = (B^{\prime})^{+} w_{\text{f}} \\
+            & \quad A_{\text{frc}} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{\text{frc}} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right ) \\
+            & \quad W_{\text{f}} \in \mathbf{S}^{n}\\
             \end{aligned}
 
         Where:
@@ -4888,9 +5109,9 @@ class Portfolio(object):
 
         :math:`Aw \leq b`: is a set of linear constraints on asset weights.
 
-        :math:`\bar{\Sigma} = \left ((B^{\prime})^{+} \right )^{\prime} \Sigma (B^{\prime})^{+}`.
+        :math:`\bar{\Sigma} = \left ((B^{\prime})^{+} \right )^{\prime} \Sigma (B^{\prime})^{+} $, $X_{\text{f}}`.
 
-        :math:`A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right )`: is a set of linear factor risk contribution constraints.
+        :math:`A_{\text{frc}} \text{diag}\left ( \bar{\Sigma} W_{\text{f}} \right) \leq b_{\text{frc}} \, \text{Tr} \left ( \bar{\Sigma} W_{\text{f}} \right )`: is a set of linear factor risk contribution constraints.
 
         Parameters
         ----------
@@ -4930,7 +5151,7 @@ class Portfolio(object):
 
         Returns
         -------
-        w : DataFrame
+        frc_optimal : DataFrame
             The weights of optimal portfolio.
 
         """
@@ -5227,8 +5448,8 @@ class Portfolio(object):
 
         .. math::
             \begin{align}
-            \underset{w}{\text{optimize}} & \quad F(w)\\
-            \text{s.t.} \quad & \quad Aw \leq b\\
+            &\underset{w}{\text{optimize}} & & F(w)\\
+            &\text{s. t.} & & Aw \leq b\\
             \end{align}
 
         Where:
@@ -5246,6 +5467,7 @@ class Portfolio(object):
             - 'MinRisk': Minimize the selected risk measure.
             - 'Utility': Maximize the Utility function :math:`\mu w - l \phi_{i}(w)`.
             - 'Sharpe': Maximize the risk adjusted return ratio based on the selected risk measure.
+            - 'MaxRet': Maximize the expected return of the portfolio.
 
         owa_w : 1darray, optional
             The owa weight used to define the owa risk measure.
@@ -5264,16 +5486,17 @@ class Portfolio(object):
 
         Returns
         -------
-        w : DataFrame
+        owa_optimal : DataFrame
             The weights of optimal portfolio.
 
         """
 
         # General model Variables
 
-        mu = self.mu.to_numpy()
-        sigma = self.cov.to_numpy()
-        returns = self.returns.to_numpy()
+        mu = np.array(self.mu, ndmin=2)
+        sigma = np.array(self.cov, ndmin=2)
+        returns = np.array(self.returns, ndmin=2)
+
         w = cp.Variable((mu.shape[1], 1))
         k = cp.Variable((1, 1))
         rf0 = rf
@@ -5633,6 +5856,314 @@ class Portfolio(object):
 
         return self.owa_optimal
 
+    def mvsk_optimization(
+        self, model="Classic", obj="Sharpe", rf=0, l=[2, 3, 4], solvers=["SCS"]
+    ):
+        r"""
+        This method that calculates the MVSK portfolio using a semidefinite
+        relaxation of higher moments. The general problem that solves is:
+
+        .. math::
+            \begin{align}
+            \underset{w}{\text{optimize}} & \quad F(w)\\
+            \text{s. t.} & \quad Aw \leq b\\
+            \end{align}
+
+        Where:
+
+        :math:`F(w)` is a function based on the first fourth portfolio moments.
+
+        :math:`Aw \leq b` is a set of linear constraints on asset weights.
+
+        Parameters
+        ----------
+        model : str can be {'Classic', 'FM', 'EP'}
+            The model used for optimize the portfolio.
+            The default is 'Classic'. Possible values are:
+
+            - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
+            - 'FM': use estimates of expected return vector, covariance matrix and cokurtosis square matrix based on a Risk Factor model specified by the user.
+            - 'EP': use estimates of expected return vector, covariance matrix and cokurtosis square matrix based on Entropy Pooling model.
+
+        obj : str can be {'MinRisk', 'Utility', 'Sharpe' or 'MaxRet'}.
+            Objective function of the optimization model.
+            The default is 'Sharpe'. Possible values are:
+
+            - 'MinRisk': Minimize the risk function based on portfolio variance, skewness and kurtosis.
+            - 'Utility': Maximize the Utility function based on the first fourth portfolio moments.
+            - 'Sharpe': Maximize the risk adjusted return ratio based on portfolio variance, skewness and kurtosis.
+            - 'MaxRet': Maximize the expected return of the portfolio.
+
+        rf : float, optional
+            Risk free rate, must be in the same period of assets returns.
+            The default is 0.
+        l : list, optional
+            List with the risk aversion factors of the portfolio variance,
+            skewness and kurtosis. The default is '[2, 3, 4]'.
+        solvers : list, optional
+            List of solvers used to solve the MVSK problem. It is recommended to use
+            solvers that supports first-order algorithms such as 'SCS' because
+            the problem is hard and it consumes a lot of resources. The default
+            value is'SCS'.
+
+        Returns
+        -------
+        mvsk_optimal : DataFrame
+            The weights of optimal MVSK portfolio.
+
+        """
+
+        # General model Variables
+
+        mu = None
+        sigma = None
+        skew = None
+        kurt = None
+        returns = None
+        if model == "Classic":
+            mu = np.array(self.mu, ndmin=2)
+            sigma = np.array(self.cov, ndmin=2)
+            skew = np.array(self.skew, ndmin=2)
+            kurt = np.array(self.kurt, ndmin=2)
+            returns = np.array(self.returns, ndmin=2)
+        elif model == "FM":
+            mu = np.array(self.mu_fm, ndmin=2)
+            sigma = np.array(self.cov_fm, ndmin=2)
+            skew = np.array(self.skew_fm, ndmin=2)
+            kurt = np.array(self.kurt_fm, ndmin=2)
+            returns = np.array(self.returns_fm, ndmin=2)
+        elif model == "EP":
+            mu = np.array(self.mu_ep, ndmin=2)
+            sigma = np.array(self.cov_ep, ndmin=2)
+            skew = np.array(self.skew_ep, ndmin=2)
+            kurt = np.array(self.kurt_ep, ndmin=2)
+            returns = np.array(self.returns, ndmin=2)
+
+        if skew is None or kurt is None:
+            raise ValueError("You need to estimate cokurtosis matrix")
+
+        self.solvers = solvers
+
+        w = cp.Variable((mu.shape[1], 1))
+        k = cp.Variable((1, 1))
+        rf0 = rf
+        T, N = returns.shape
+        rows = int(N * (N + 1) / 2)
+
+        L2 = self.L_2
+        D2 = self.D_2
+        S2 = self.S_2
+        S_kurt = S2 @ kurt @ S2.T
+
+        # Return Variables
+
+        ret = mu @ w
+
+        # MVSK Model Variables
+
+        W2 = cp.Variable((N, N), symmetric=True)  # represents x @ x.T
+        W3 = cp.Variable((rows, N))  # represents z @ x.T
+        W4 = cp.Variable((rows, rows), symmetric=True)  # represents z @ z.T
+        vec_W2 = L2 @ cp.reshape(cp.vec(W2, order="F"), (N**2, 1), order="F")
+        if obj == "Sharpe":
+            M = cp.bmat([[k, w.T, vec_W2.T], [w, W2, W3.T], [vec_W2, W3, W4]])
+        else:
+            M = cp.bmat([[np.eye(1), w.T, vec_W2.T], [w, W2, W3.T], [vec_W2, W3, W4]])
+        constraints = []
+        constraints += [M >> 0]
+
+        variance = cp.trace(sigma @ W2)
+        skewness = cp.trace(skew @ D2 @ W3)
+        kurtosis = cp.trace(S_kurt @ W4)
+        risk = l[0] * variance - l[1] * skewness + l[2] * kurtosis
+
+        # Problem Weight Constraints
+
+        if obj == "Sharpe":
+            constraints += [cp.sum(w) == self.budget * k, k * 1000 >= 0]
+            if self.sht == False:
+                constraints += [
+                    w * 1000 >= 0,
+                    w <= self.upperlng * k,
+                    w >= self.lowerlng * k,
+                ]
+            elif self.sht == True:
+                constraints += [
+                    cp.sum(cp.pos(w)) * 1000
+                    <= (self.budget + self.budgetsht) * k * 1000,
+                    cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * k * 1000,
+                    w >= -min(self.uppersht, self.budgetsht) * k,
+                    w <= min(self.upperlng, (self.budget + self.budgetsht)) * k,
+                ]
+        else:
+            constraints += [cp.sum(w) == self.budget]
+            if self.sht == False:
+                constraints += [
+                    w * 1000 >= 0,
+                    w <= self.upperlng,
+                    w >= self.lowerlng,
+                ]
+            elif self.sht == True:
+                constraints += [
+                    cp.sum(cp.pos(w)) * 1000 <= (self.budget + self.budgetsht) * 1000,
+                    cp.sum(cp.neg(w)) * 1000 <= self.budgetsht * 1000,
+                    w >= -min(self.uppersht, self.budgetsht),
+                    w <= min(self.upperlng, (self.budget + self.budgetsht)),
+                ]
+
+            # Network SDP Constraint
+
+            if self.network_sdp is not None:
+                constraints += [cp.multiply(self.network_sdp, W2) == 0]
+
+            # Cluster SDP Constraint
+
+            if self.cluster_sdp is not None:
+                constraints += [cp.multiply(self.cluster_sdp, W2) == 0]
+
+        # Problem Linear Constraints
+
+        if self.ainequality is not None and self.binequality is not None:
+            A = np.array(self.ainequality, ndmin=2) * 1000
+            B = np.array(self.binequality, ndmin=2) * 1000
+            if obj == "Sharpe":
+                constraints += [A @ w - B @ k <= 0]
+            else:
+                constraints += [A @ w - B <= 0]
+
+        # Number of Effective Assets Constraints
+
+        if self.nea is not None:
+            if obj == "Sharpe":
+                constraints += [cp.norm(w, "fro") <= 1 / self.nea**0.5 * k]
+            else:
+                constraints += [cp.norm(w, "fro") <= 1 / self.nea**0.5]
+
+        # Tracking Error Model Variables
+
+        c = np.array(self.benchweights, ndmin=2)
+        if self.kindbench == True:
+            bench = returns @ c
+        elif self.kindbench == False:
+            bench = np.array(self.benchindex, ndmin=2)
+
+        # Tracking error Constraints
+
+        if obj == "Sharpe":
+            if self.allowTE == True:
+                TE_1 = cp.norm(returns @ w - bench @ k, "fro") / cp.sqrt(T - 1)
+                constraints += [TE_1 * 1000 <= self.TE * k * 1000]
+        else:
+            if self.allowTE == True:
+                TE_1 = cp.norm(returns @ w - bench, "fro") / cp.sqrt(T - 1)
+                constraints += [TE_1 * 1000 <= self.TE * 1000]
+
+        # Turnover Constraints
+
+        if obj == "Sharpe":
+            if self.allowTO == True:
+                TO_1 = cp.abs(w - c @ k) * 1000
+                constraints += [TO_1 <= self.turnover * k * 1000]
+        else:
+            if self.allowTO == True:
+                TO_1 = cp.abs(w - c) * 1000
+                constraints += [TO_1 <= self.turnover * 1000]
+
+        # Moments Constraints
+
+        if self.lowerret is not None:
+            if obj == "Sharpe":
+                constraints += [ret >= self.lowerret * k]
+            else:
+                constraints += [ret >= self.lowerret]
+
+        if self.upperdev is not None:
+            if obj == "Sharpe":
+                constraints += [variance * 1000 <= self.upperdev**2 * k * 1000]
+            else:
+                constraints += [variance * 1000 <= self.upperdev**2 * 1000]
+
+        if self.lowerskew is not None:
+            if obj == "Sharpe":
+                constraints += [skewness * 1000 >= self.lowerskew * k * 1000]
+            else:
+                constraints += [skewness * 1000 >= self.lowerskew * 1000]
+
+        if self.upperkt is not None:
+            if obj == "Sharpe":
+                constraints += [kurtosis * 1000 <= self.upperkt**2 * k * 1000]
+            else:
+                constraints += [kurtosis * 1000 <= self.upperkt**2 * 1000]
+
+        # Problem centrality measures constraints
+
+        if self.acentrality is not None and self.bcentrality is not None:
+            if obj == "Sharpe":
+                constraints += [self.acentrality @ w == self.bcentrality * k]
+            else:
+                constraints += [self.acentrality @ w == self.bcentrality]
+
+        # Frontier Variables
+
+        portafolio = {}
+
+        for i in self.assetslist:
+            portafolio.update({i: []})
+
+        # Optimization Process
+
+        # Defining objective function
+        if obj == "Sharpe":
+            if (mu < 0).all():
+                constraints += [risk <= 1]
+                objective = cp.Maximize(ret * 1000 - rf0 * k * 1000)
+            else:
+                constraints += [ret - rf0 * k == 1]
+                objective = cp.Minimize(risk * 1000)
+        elif obj == "MinRisk":
+            objective = cp.Minimize(risk)
+        elif obj == "Utility":
+            objective = cp.Maximize(ret - risk)
+        elif obj == "MaxRet":
+            objective = cp.Maximize(ret * 1000)
+
+        try:
+            prob = cp.Problem(objective, constraints)
+            for solver in self.solvers:
+                try:
+                    if len(self.sol_params) == 0:
+                        prob.solve(solver=solver)
+                    else:
+                        prob.solve(solver=solver, **self.sol_params[solver])
+                except:
+                    pass
+                if w.value is not None:
+                    break
+
+            if obj == "Sharpe":
+                weights = np.array(w.value / k.value, ndmin=2).T
+            else:
+                weights = np.array(w.value, ndmin=2).T
+
+            if self.sht == False:
+                weights = np.abs(weights) / np.sum(np.abs(weights)) * self.budget
+
+            for j in self.assetslist:
+                portafolio[j].append(weights[0, self.assetslist.index(j)])
+
+        except:
+            pass
+
+        try:
+            self.mvsk_optimal = pd.DataFrame(
+                portafolio, index=["weights"], dtype=np.float64
+            ).T
+        except:
+            self.mvsk_optimal = None
+            print("The problem doesn't have a solution with actual input parameters")
+
+        return self.mvsk_optimal
+
     def frontier_limits(self, model="Classic", rm="MV", kelly=None, rf=0, hist=True):
         r"""
         Method that calculates the minimum risk and maximum return portfolios
@@ -5640,19 +6171,28 @@ class Portfolio(object):
 
         Parameters
         ----------
-        model : str, optional
-            Methodology used to estimate input parameters.
-            The default is 'Classic'.
+        model : str can be {'Classic', 'BL', 'FM', 'BLFM', 'EP'}
+            The model used for optimize the portfolio.
+            The default is 'Classic'. Possible values are:
+
+            - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
+            - 'BL': use estimates of expected return vector and covariance matrix based on the Black Litterman model.
+            - 'FM': use estimates of expected return vector, covariance matrix and cokurtosis square matrix based on a Risk Factor model specified by the user.
+            - 'BLFM': use estimates of expected return vector and covariance matrix based on Black Litterman applied to a Risk Factor model specified by the user.
+            - 'EP': use estimates of expected return vector, covariance matrix and cokurtosis square matrix based on Entropy Pooling model.
+
         rm : str, optional
             The risk measure used to optimize the portfolio.
             The default is 'MV'. Possible values are:
 
             - 'MV': Standard Deviation.
             - 'KT': Square Root of Kurtosis.
+            - 'EM': p_em Root of Even Moment of order 2 * p_em.
             - 'MAD': Mean Absolute Deviation.
             - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
             - 'SKT': Square Root of Semi Kurtosis.
+            - 'ESM': p_esm Root of Even Semi Moment of order 2 * p_esm.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
@@ -5734,19 +6274,28 @@ class Portfolio(object):
 
         Parameters
         ----------
-        model : str, optional
-            Methodology used to estimate input parameters.
-            The default is 'Classic'.
+        model : str can be {'Classic', 'BL', 'FM', 'BLFM', 'EP'}
+            The model used for optimize the portfolio.
+            The default is 'Classic'. Possible values are:
+
+            - 'Classic': use estimates of expected return vector and covariance matrix that depends on historical data.
+            - 'BL': use estimates of expected return vector and covariance matrix based on the Black Litterman model.
+            - 'FM': use estimates of expected return vector, covariance matrix and cokurtosis square matrix based on a Risk Factor model specified by the user.
+            - 'BLFM': use estimates of expected return vector and covariance matrix based on Black Litterman applied to a Risk Factor model specified by the user.
+            - 'EP': use estimates of expected return vector, covariance matrix and cokurtosis square matrix based on Entropy Pooling model.
+
         rm : str, optional
             The risk measure used to optimize the portfolio.
             The default is 'MV'. Possible values are:
 
             - 'MV': Standard Deviation.
             - 'KT': Square Root of Kurtosis.
+            - 'EM': p_em Root of Even Moment of order 2 * p_em.
             - 'MAD': Mean Absolute Deviation.
             - 'GMD': Gini Mean Difference.
             - 'MSV': Semi Standard Deviation.
             - 'SKT': Square Root of Semi Kurtosis.
+            - 'ESM': p_esm Root of Even Semi Moment of order 2 * p_esm.
             - 'FLPM': First Lower Partial Moment (Omega Ratio).
             - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
             - 'CVaR': Conditional Value at Risk.
@@ -5776,9 +6325,9 @@ class Portfolio(object):
             The default is 50.
         rf : scalar, optional
             Risk free rate. The default is 0.
-        solver: str, optional
-            Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
-            The default value is 'CLARABEL'.
+        solver : str, optional
+            Solver available for CVXPY that supports power cone programming.
+            Used to calculate RLVaR and RLDaR. The default value is 'CLARABEL'.
         hist : bool, optional
             Indicate what kind of returns are used to calculate risk measures
             that depends on scenarios (All except 'MV' risk measure).
@@ -5837,6 +6386,13 @@ class Portfolio(object):
             elif hist == 2:
                 sigma = np.array(self.cov_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
+        elif model == "EP":
+            mu = np.array(self.mu_ep, ndmin=2)
+            if hist == False:
+                sigma = np.array(self.cov_ep, ndmin=2)
+            elif hist == True:
+                sigma = np.array(self.cov, ndmin=2)
+            returns = np.array(self.returns, ndmin=2)
 
         alpha = self.alpha
         a_sim = self.a_sim
@@ -5857,6 +6413,9 @@ class Portfolio(object):
             kappa_g = kappa
         else:
             kappa_g = self.kappa_g
+
+        p_em = self.p_em
+        p_esm = self.p_esm
 
         limits = self.frontier_limits(model=model, rm=rm, kelly=kelly, rf=rf, hist=hist)
 
@@ -5938,6 +6497,12 @@ class Portfolio(object):
         elif rm == "RVRG":
             risk_min = rk.RVRG(returns @ w_min, alpha, beta, kappa, kappa_g, solver)
             risk_max = rk.RVRG(returns @ w_max, alpha, beta, kappa, kappa_g, solver)
+        elif rm == "EM":
+            risk_min = rk.EvenMoment(returns @ w_min, p_em)
+            risk_max = rk.EvenMoment(returns @ w_max, p_em)
+        elif rm == "ESM":
+            risk_min = rk.EvenSemiMoment(returns @ w_min, p_esm)
+            risk_max = rk.EvenSemiMoment(returns @ w_max, p_esm)
 
         mus = np.linspace(ret_min, ret_max, int(points))
 
@@ -5946,10 +6511,12 @@ class Portfolio(object):
         risk_lims = [
             "upperdev",
             "upperkt",
+            "upperem",
             "uppermad",
             "uppergmd",
             "uppersdev",
             "upperskt",
+            "upperesm",
             "upperCVaR",
             "uppertg",
             "upperEVaR",
@@ -5973,10 +6540,12 @@ class Portfolio(object):
         risk_names = [
             "MV",
             "KT",
+            "EM",
             "MAD",
             "GMD",
             "MSV",
             "SKT",
+            "ESM",
             "CVaR",
             "TG",
             "EVaR",
@@ -6039,19 +6608,25 @@ class Portfolio(object):
     def reset_risk_constraints(self):
         r"""
         Reset all risk constraints.
-
         """
         cons = [
             "lowerret",
             "upperdev",
             "upperkt",
             "uppermad",
+            "uppergmd",
             "uppersdev",
             "upperskt",
             "upperCVaR",
+            "uppertg",
             "upperEVaR",
             "upperRLVaR",
             "upperwr",
+            "upperrg",
+            "uppercvrg",
+            "uppertgrg",
+            "upperevrg",
+            "upperrvrg",
             "upperflpm",
             "upperslpm",
             "uppermdd",
@@ -6060,13 +6635,8 @@ class Portfolio(object):
             "upperEDaR",
             "upperRLDaR",
             "upperuci",
-            "uppergmd",
-            "uppertg",
-            "upperrg",
-            "uppercvrg",
-            "uppertgrg",
-            "upperevrg",
-            "upperrvrg",
+            "upperem",
+            "upperesm",
         ]
 
         for i in cons:
@@ -6117,6 +6687,10 @@ class Portfolio(object):
             "mu_bl_fm",
             "cov_bl_fm",
             "returns_fm",
+            "mu_ep",
+            "cov_ep",
+            "skew_ep",
+            "kurt_ep",
             "cov_l",
             "cov_u",
             "cov_mu",

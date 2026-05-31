@@ -103,8 +103,7 @@ def commutation_matrix(T: int, n: int):
 
 
 def covariance_matrix(
-    Y: np.ndarray | pd.DataFrame,
-    P: np.ndarray | pd.DataFrame = None
+    Y: np.ndarray | pd.DataFrame, P: np.ndarray | pd.DataFrame = None
 ):
     r"""
     Calculates covariance matrix as shown in :cite:`d-Cajas4` and with probabilities
@@ -145,9 +144,9 @@ def covariance_matrix(
 
     return M2
 
+
 def semi_covariance_matrix(
-    Y: np.ndarray | pd.DataFrame,
-    P: np.ndarray | pd.DataFrame = None
+    Y: np.ndarray | pd.DataFrame, P: np.ndarray | pd.DataFrame = None
 ):
     r"""
     Calculates lower semi covariance matrix as shown in :cite:`d-Cajas4` and with probabilities
@@ -192,8 +191,7 @@ def semi_covariance_matrix(
 
 
 def coskewness_matrix(
-    Y: np.ndarray | pd.DataFrame,
-    P: np.ndarray | pd.DataFrame = None
+    Y: np.ndarray | pd.DataFrame, P: np.ndarray | pd.DataFrame = None
 ):
     r"""
     Calculates coskewness rectangular matrix as shown in :cite:`d-Cajas4` and with probabilities
@@ -238,9 +236,8 @@ def coskewness_matrix(
 
 
 def semi_coskewness_matrix(
-    Y: np.ndarray | pd.DataFrame,
-    P: np.ndarray | pd.DataFrame = None
-    ):
+    Y: np.ndarray | pd.DataFrame, P: np.ndarray | pd.DataFrame = None
+):
     r"""
     Calculates lower semi coskewness rectangular matrix as shown in :cite:`d-Cajas4` and with probabilities.
 
@@ -284,9 +281,8 @@ def semi_coskewness_matrix(
 
 
 def cokurtosis_matrix(
-    Y: np.ndarray | pd.DataFrame,
-    P: np.ndarray | pd.DataFrame = None
-    ):
+    Y: np.ndarray | pd.DataFrame, P: np.ndarray | pd.DataFrame = None
+):
     r"""
     Calculates cokurtosis square matrix as shown in :cite:`d-Cajas4` and with probabilities
 
@@ -298,7 +294,7 @@ def cokurtosis_matrix(
     P : ndarray or dataframe, optional
         Probability vector of shape n_samples x 1. If None, it is assumed
         that all observations have the same probability of 1/n_samples.
-        
+
     Returns
     -------
     S4 : ndarray
@@ -330,9 +326,8 @@ def cokurtosis_matrix(
 
 
 def semi_cokurtosis_matrix(
-    Y: np.ndarray | pd.DataFrame,
-    P: np.ndarray | pd.DataFrame = None
-    ):
+    Y: np.ndarray | pd.DataFrame, P: np.ndarray | pd.DataFrame = None
+):
     r"""
     Calculates lower semi cokurtosis square matrix as shown in :cite:`d-Cajas4` and with probabilities
 
@@ -344,7 +339,7 @@ def semi_cokurtosis_matrix(
     P : ndarray or dataframe, optional
         Probability vector of shape n_samples x 1. If None, it is assumed
         that all observations have the same probability of 1/n_samples.
-        
+
     Returns
     -------
     s_S4 : ndarray

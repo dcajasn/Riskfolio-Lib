@@ -34,25 +34,43 @@ Authors
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
-* **Dany Cajas**
+.. |linkedin| raw:: html
 
-I'm a BSc in  Economic Engineering at Universidad Nacional de
-Ingeniería and MA in Finance at Universidad del Pacífico. I am very interested
-in quantitative finance. For more about me, you can visit:
+    <a href="https://www.linkedin.com/in/dany-cajas/" target="_blank">
+    <img align="center" alt="Dany Cajas @LinkedIn" width="22px" src="https://www.readmecodegen.com/api/social-icon?name=linkedin&size=96" />
+    </a>
 
-- My blog `financioneroncios <https://financioneroncios.wordpress.com/>`_.
-- My `linkedin <https://www.linkedin.com/in/dany-cajas/>`_.
-- My `SSRN author page <https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=2931756>`_ where you can find all my working papers.
-- Or write me to `dcajasn@gmail.com <dcajasn@gmail.com>`_.
+.. |email| raw:: html
 
-I like to learn and apply my knowledge in practical applications; for this
-reason, I started my blog to practice and share in my native language the things
-that I've been learned until now. One topic that always have been very
-interesting to me is portfolio optimization. However, I realized that
-open-source libraries (python) are few (there are among one and four) and are
-mainly focused on mean variance optimization, ignoring advances in other
-convex risk measures (CVaR, MAD, Maximum Drawdown, etc.) and other
-estimations techniques like robust estimates, Black Litterman and risk factors
-models. For this reason, I developed Riskfolio-Lib, a well documented library
-that will help students, academics and practitioners to apply mathematically
-complex optimization models in their strategic asset allocation process.
+    <a href="mailto:dcajasn@gmail.com" target="_blank">
+    <img align="center" alt="Dany Cajas @Mail" width="22px" src="https://www.readmecodegen.com/api/social-icon?name=gmail&size=96" />
+    </a>
+
+
+Dany Cajas
+==========
+
+I am the creator and sole maintainer of Riskfolio-Lib. I earned a BSc in Economic Engineering
+from Universidad Nacional de Ingeniería and an MA in Finance from Universidad del Pacífico, 
+both in Peru 🇵🇪.
+
+I have worked in Peruvian financial institutions in the areas of risk management and financial 
+planning. In addition, I have served as a professor of quantitative finance, data science and 
+econometrics at Universidad Nacional de Ingeniería.
+
+Currently, I work as an independent researcher and consultant in quantitative finance. My research 
+interests include portfolio optimization, risk management, and financial econometrics. I am 
+passionate about developing open-source tools that enable students, academics, and practitioners 
+to apply advanced mathematical optimization models to strategic asset allocation and portfolio 
+construction.
+
+For more about my work, you can visit:
+
+- My book `Advanced Portfolio Optimization: A Cutting-edge Quantitative Approach <https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037>`_.
+- My `SSRN Author Page <https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=2931756>`_.
+- My blog `Financioneroncios <https://financioneroncios.wordpress.com/>`_.
+
+For those that are interested in hiring my consulting services, please contact me at:
+
+- |linkedin| `LinkedIn <https://www.linkedin.com/in/dany-cajas/>`_.
+- |email| `Email <mailto:dcajasn@gmail.com>`_.

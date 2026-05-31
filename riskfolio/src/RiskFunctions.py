@@ -25,6 +25,8 @@ __all__ = [
     "SemiDeviation",
     "Kurtosis",
     "SemiKurtosis",
+    "EvenMoment",
+    "EvenSemiMoment",
     "VaR_Hist",
     "CVaR_Hist",
     "WR",
@@ -76,7 +78,7 @@ def MAD(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Returns
@@ -112,7 +114,7 @@ def SemiDeviation(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -152,7 +154,7 @@ def Kurtosis(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -192,7 +194,7 @@ def SemiKurtosis(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -222,6 +224,96 @@ def SemiKurtosis(X):
     return value
 
 
+def EvenMoment(X, p: int = 2):
+    r"""
+    Calculate the p-th Root of Even Moment of order 2 * p of a returns series.
+
+    .. math::
+        \text{EM}_{p}(X) = \left [ \frac{1}{T}\sum_{t=1}^{T}
+        (X_{t} - \mathbb{E}(X_{t}))^{2p} \right ]^{1/p}
+
+    Parameters
+    ----------
+    X : np.array
+        Returns series, must have Tx1 size.
+
+    p : int
+        Order of the Even Moment. It must be higher equal than 2.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        p-th Root Even Moment of order 2 * p of a returns series.
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+    if isinstance(p, int) == False or p < 2:
+        raise ValueError("p must be an integer higher equal than 2")
+
+    T, N = a.shape
+    mu = np.mean(a, axis=0).reshape(1, -1)
+    mu = np.repeat(mu, T, axis=0)
+    value = mu - a
+    value = np.linalg.norm(value.flatten(), ord=int(2 * p))
+    value = np.power(value, 2).item() / T ** (1 / p)
+
+    return value
+
+
+def EvenSemiMoment(X, p: int = 2):
+    r"""
+    Calculate the p-th Root of Semi Even Moment of order 2 * p of a returns series.
+
+    .. math::
+        \text{ESM}_{p}(X) = \left [ \frac{1}{T}\sum_{t=1}^{T}
+        \min (X_{t} - \mathbb{E}(X_{t}), 0)^{2p} \right ]^{1/p}
+
+    Parameters
+    ----------
+    X : np.array
+        Returns series, must have Tx1 size.
+
+    p : int
+        Order of the Semi Even Moment. It must be higher equal than 2.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        p-th Root Semi Even Moment of order 2 * p of a returns series.
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+    if isinstance(p, int) == False or p < 2:
+        raise ValueError("p must be an integer higher equal than 2")
+
+    T, N = a.shape
+    mu = np.mean(a, axis=0).reshape(1, -1)
+    mu = np.repeat(mu, T, axis=0)
+    value = mu - a
+    value = np.linalg.norm(value[np.where(value >= 0)].flatten(), ord=int(2 * p))
+    value = np.power(value, 2).item() / T ** (1 / p)
+
+    return value
+
+
 def VaR_Hist(X, alpha=0.05):
     r"""
     Calculate the Value at Risk (VaR) of a returns series.
@@ -232,7 +324,7 @@ def VaR_Hist(X, alpha=0.05):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of VaR. The default is 0.05.
@@ -272,7 +364,7 @@ def CVaR_Hist(X, alpha=0.05):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of CVaR. The default is 0.05.
@@ -315,7 +407,7 @@ def WR(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -361,7 +453,7 @@ def LPM(X, MAR=0, p=1):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     MAR : float, optional
         Minimum acceptable return. The default is 0.
@@ -414,7 +506,7 @@ def Entropic_RM(X, z=1, alpha=0.05):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     z : float, optional
         Risk aversion parameter, must be greater than zero. The default is 1.
@@ -475,7 +567,7 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of EVaR. The default is 0.05.
@@ -577,7 +669,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of EVaR. The default is 0.05.
@@ -703,7 +795,7 @@ def MDD_Abs(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -751,7 +843,7 @@ def ADD_Abs(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -808,7 +900,7 @@ def DaR_Abs(X, alpha=0.05):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size..
     alpha : float, optional
         Significance level of DaR. The default is 0.05.
@@ -866,7 +958,7 @@ def CDaR_Abs(X, alpha=0.05):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size..
     alpha : float, optional
         Significance level of CDaR. The default is 0.05.
@@ -922,7 +1014,7 @@ def EDaR_Abs(X, alpha=0.05, solver="CLARABEL"):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size..
     alpha : float, optional
         Significance level of EDaR. The default is 0.05.
@@ -973,7 +1065,7 @@ def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of EVaR. The default is 0.05.
@@ -1028,7 +1120,7 @@ def UCI_Abs(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -1083,7 +1175,7 @@ def MDD_Rel(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -1132,7 +1224,7 @@ def ADD_Rel(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -1189,7 +1281,7 @@ def DaR_Rel(X, alpha=0.05):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size..
     alpha : float, optional
         Significance level of DaR. The default is 0.05.
@@ -1247,7 +1339,7 @@ def CDaR_Rel(X, alpha=0.05):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size..
     alpha : float, optional
         Significance level of CDaR. The default is 0.05.
@@ -1303,7 +1395,7 @@ def EDaR_Rel(X, alpha=0.05, solver="CLARABEL"):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size..
     alpha : float, optional
         Significance level of EDaR. The default is 0.05.
@@ -1354,7 +1446,7 @@ def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of RLDaR. The default is 0.05.
@@ -1409,7 +1501,7 @@ def UCI_Rel(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -1458,7 +1550,7 @@ def GMD(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -1492,7 +1584,7 @@ def TG(X, alpha=0.05, a_sim=100):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of Tail Gini. The default is 0.05.
@@ -1530,7 +1622,7 @@ def RG(X):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
 
     Raises
@@ -1560,11 +1652,11 @@ def RG(X):
 
 def VRG(X, alpha=0.05, beta=None):
     r"""
-    Calculate the CVaR range of a returns series.
+    Calculate the VaR range of a returns series.
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of VaR of losses. The default is 0.05.
@@ -1607,7 +1699,7 @@ def CVRG(X, alpha=0.05, beta=None):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of CVaR of losses. The default is 0.05.
@@ -1646,7 +1738,7 @@ def TGRG(X, alpha=0.05, a_sim=100, beta=None, b_sim=None):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of Tail Gini of losses. The default is 0.05.
@@ -1690,7 +1782,7 @@ def EVRG(X, alpha=0.05, beta=None, solver="CLARABEL"):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of EVaR of losses. The default is 0.05.
@@ -1736,7 +1828,7 @@ def RVRG(X, alpha=0.05, beta=None, kappa=0.3, kappa_g=None, solver="CLARABEL"):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     alpha : float, optional
         Significance level of RLVaR of losses. The default is 0.05.
@@ -1797,7 +1889,7 @@ def L_Moment(X, k=2):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     k : int
         Order of the l-moment. Must be an integer higher or equal than 1.
@@ -1834,7 +1926,7 @@ def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"):
 
     Parameters
     ----------
-    X : 1d-array
+    X : np.array
         Returns series, must have Tx1 size.
     k : int
         Order of the l-moment. Must be an integer higher or equal than 2.
@@ -1942,6 +2034,8 @@ def Sharpe_Risk(
     b_sim=None,
     kappa=0.3,
     kappa_g=None,
+    p_em=2,
+    p_esm=2,
     solver="CLARABEL",
 ):
     r"""
@@ -1949,7 +2043,7 @@ def Sharpe_Risk(
 
     Parameters
     ----------
-    w : DataFrame or 1d-array of shape (n_assets, 1)
+    w : DataFrame or np.array of shape (n_assets, 1)
         Weights matrix, where n_assets is the number of assets.
     cov : DataFrame of shape (n_assets, n_assets)
         Covariance matrix, where n_assets is the number of assets.
@@ -1962,10 +2056,12 @@ def Sharpe_Risk(
 
         - 'MV': Standard Deviation.
         - 'KT': Square Root Kurtosis.
+        - 'EM': Even Moment of order 2 * p_em.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'SKT': Square Root Semi Kurtosis.
+        - 'ESM': Even Semi Moment of order 2 * p_em.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
@@ -2014,6 +2110,10 @@ def Sharpe_Risk(
     kappa_g : float, optional
         Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
         The default is None.
+    p_em : int, optional
+        Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
+    p_esm : int, optional
+        Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
     solver: str, optional
         Solver available for CVXPY that supports exponential and power cone
         programming. Used to calculate RLVaR and RLDaR. The default value is
@@ -2128,6 +2228,10 @@ def Sharpe_Risk(
         risk = Kurtosis(a)
     elif rm == "SKT":
         risk = SemiKurtosis(a)
+    elif rm == "EM":
+        risk = EvenMoment(a, p=p_em)
+    elif rm == "ESM":
+        risk = EvenSemiMoment(a, p=p_esm)
 
     value = risk
 
@@ -2147,14 +2251,15 @@ def Sharpe(
     b_sim=None,
     kappa=0.3,
     kappa_g=None,
+    p_em=2,
+    p_esm=2,
     solver="CLARABEL",
 ):
     r"""
     Calculate the Risk Adjusted Return Ratio from a portfolio returns series.
 
     .. math::
-        \text{Sharpe}(X) =  \frac{\mathbb{E}(X) -
-        r_{f}}{\phi(X)}
+        \text{Sharpe}(X) = \frac{\mathbb{E}(X) - r_{f}}{\phi(X)}
 
     Where:
 
@@ -2172,7 +2277,7 @@ def Sharpe(
     returns : DataFrame or nd-array of shape (n_samples, n_features)
         Features matrix, where n_samples is the number of samples and
         n_features is the number of features.
-    w : DataFrame or 1d-array of shape (n_assets, 1)
+    w : DataFrame or np.array of shape (n_assets, 1)
         Weights matrix, where n_assets is the number of assets.
     mu : DataFrame or nd-array of shape (1, n_assets)
         Vector of expected returns, where n_assets is the number of assets.
@@ -2184,10 +2289,12 @@ def Sharpe(
 
         - 'MV': Standard Deviation.
         - 'KT': Square Root Kurtosis.
+        - 'EM': Even Moment of order 2 * p_em.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'SKT': Square Root Semi Kurtosis.
+        - 'ESM': Even Semi Moment of order 2 * p_em.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
@@ -2236,6 +2343,10 @@ def Sharpe(
     kappa_g : float, optional
         Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
         The default is None.
+    p_em : int, optional
+        Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
+    p_esm : int, optional
+        Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
@@ -2297,6 +2408,8 @@ def Sharpe(
         b_sim=b_sim,
         kappa=kappa,
         kappa_g=kappa_g,
+        p_em=p_em,
+        p_esm=p_esm,
         solver=solver,
     )
 
@@ -2322,6 +2435,8 @@ def Risk_Contribution(
     b_sim=None,
     kappa=0.3,
     kappa_g=None,
+    p_em=2,
+    p_esm=2,
     solver="CLARABEL",
 ):
     r"""
@@ -2342,10 +2457,12 @@ def Risk_Contribution(
 
         - 'MV': Standard Deviation.
         - 'KT': Square Root Kurtosis.
+        - 'EM': Even Moment of order 2 * p_em.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'SKT': Square Root Semi Kurtosis.
+        - 'ESM': Even Semi Moment of order 2 * p_esm.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
@@ -2393,6 +2510,10 @@ def Risk_Contribution(
     kappa_g : float, optional
         Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
         The default is None.
+    p_em : int, optional
+        Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
+    p_esm : int, optional
+        Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
@@ -2549,6 +2670,12 @@ def Risk_Contribution(
         elif rm == "SKT":
             risk_1 = SemiKurtosis(a_1) * 0.5
             risk_2 = SemiKurtosis(a_2) * 0.5
+        elif rm == "EM":
+            risk_1 = EvenMoment(a_1, p=p_em) * 0.5
+            risk_2 = EvenMoment(a_2, p=p_em) * 0.5
+        elif rm == "ESM":
+            risk_1 = EvenSemiMoment(a_1, p=p_esm) * 0.5
+            risk_2 = EvenSemiMoment(a_2, p=p_esm) * 0.5
 
         RC_i = (risk_1 - risk_2) / (2 * d_i) * w_[i, 0]
         RC.append(RC_i)
@@ -2570,6 +2697,8 @@ def Risk_Margin(
     b_sim=None,
     kappa=0.3,
     kappa_g=None,
+    p_em=2,
+    p_esm=2,
     solver="CLARABEL",
 ):
     r"""
@@ -2591,10 +2720,12 @@ def Risk_Margin(
 
         - 'MV': Standard Deviation.
         - 'KT': Square Root Kurtosis.
+        - 'EM': Even Moment of order 2 * p_em.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'SKT': Square Root Semi Kurtosis.
+        - 'ESM': Even Semi Moment of order 2 * p_esm.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
@@ -2643,6 +2774,10 @@ def Risk_Margin(
     kappa_g : float, optional
         Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
         The default is None.
+    p_em : int, optional
+        Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
+    p_esm : int, optional
+        Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
     solver: str, optional
         Solver available for CVXPY that supports exponential and power cone
         programming. Used to calculate EVaR, EVRG, EDaR, RLVaR, RVRG and RLDaR.
@@ -2799,6 +2934,12 @@ def Risk_Margin(
         elif rm == "SKT":
             risk_1 = SemiKurtosis(a_1) * 0.5
             risk_2 = SemiKurtosis(a_2) * 0.5
+        elif rm == "EM":
+            risk_1 = EvenMoment(a_1, p=p_em) * 0.5
+            risk_2 = EvenMoment(a_2, p=p_em) * 0.5
+        elif rm == "ESM":
+            risk_1 = EvenSemiMoment(a_1, p=p_esm) * 0.5
+            risk_2 = EvenSemiMoment(a_2, p=p_esm) * 0.5
 
         RM_i = (risk_1 - risk_2) / (2 * d_i)
         RM.append(RM_i)
@@ -2823,6 +2964,8 @@ def Factors_Risk_Contribution(
     b_sim=None,
     kappa=0.3,
     kappa_g=None,
+    p_em=2,
+    p_esm=2,
     solver="CLARABEL",
     feature_selection="stepwise",
     stepwise="Forward",
@@ -2858,10 +3001,12 @@ def Factors_Risk_Contribution(
 
         - 'MV': Standard Deviation.
         - 'KT': Square Root Kurtosis.
+        - 'EM': Even Moment of order 2 * p_em.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'SKT': Square Root Semi Kurtosis.
+        - 'ESM': Even Semi Moment of order 2 * p_esm.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'VaR': Value at Risk.
@@ -2909,6 +3054,10 @@ def Factors_Risk_Contribution(
     kappa_g : float, optional
         Deformation parameter of RLVaR and RLDaR for gains, must be between 0 and 1.
         The default is None.
+    p_em : int, optional
+        Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
+    p_esm : int, optional
+        Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is None.
@@ -2968,6 +3117,9 @@ def Factors_Risk_Contribution(
         beta=beta,
         b_sim=b_sim,
         kappa=kappa,
+        kappa_g=kappa_g,
+        p_em=p_em,
+        p_esm=p_esm,
         solver=solver,
     ).reshape(-1, 1)
 
@@ -3083,7 +3235,7 @@ def BrinsonAttribution(
             classes_col='Industry',
             )
 
-    .. image:: images/BrinAttr.png
+    .. image:: ../images/BrinAttr.png
 
 
     """

@@ -1,0 +1,607 @@
+#############################
+Convex Portfolio Optimization
+#############################
+
+.. raw:: html
+
+    <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
+            Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
+.. raw:: html
+    
+    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
+            Enroll in the Portfolio Optimization with Python Course
+        </button>
+    </a>
+    <br>
+    <br>
+
+.. image:: https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86
+   :target: https://github.com/sponsors/dcajasn
+   :height: 1.75em
+
+.. raw:: html
+   
+    <br>
+   
+.. raw:: html
+
+    <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
+
+Convex Portfolio Models
+=======================
+
+Mean Risk Portfolio Optimization
+--------------------------------
+
+Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
+one of the following 4 objective functions:
+
+- **Maximum Return Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w} & \quad R (w)\\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
+    & \quad \varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
+    & \quad R (w) \geq \overline{\mu} \\
+    \end{aligned}
+
+
+- **Minimum Risk Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \min_{w} & \quad \varrho_{k}(w)\\
+    \text{s.t.} & \quad A w \leq b\\
+    & \quad A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
+    & \quad \varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
+    & \quad R (w) \geq \overline{\mu} \\
+    \end{aligned}
+
+
+- **Maximum Risk Adjusted Return Ratio Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w} & \quad \frac{R (w) - r_{f}}{\varrho_{k}(w)}\\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
+    & \quad \varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
+    & \quad R (w) \geq \overline{\mu} \\
+    \end{aligned}
+
+
+- **Maximum Utility Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w} & \quad R (w) - \lambda \varrho_{k}(w)\\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)\\
+    & \quad \varrho_{i}(w) \leq c_{i} \; \forall \; i \; \in \; [1,24] \\
+    & \quad R (w) \geq \overline{\mu} \\
+    \end{aligned}
+
+
+where:
+
+:math:`R (w)` is the return function, possible values are:
+
+- :math:`\mu w`: arithmetic return.
+- :math:`\mu w - 0.5 w^{\tau} \Sigma w`: approximate logarithmic return :cite:`a-Thorp`.
+- :math:`\frac{1}{T} \sum^{T}_{i=1} \ln (1+ r_{i} w)`: exact logarithmic return :cite:`a-Cajas2`.
+
+:math:`w`: is the vector of weights of the optimum portfolio.
+
+:math:`W`: is the symmetric matrix variable that approximates :math:`w w^{\prime}`.
+
+:math:`\mu`: is the vector of expected returns.
+
+:math:`\Sigma`: is the covariance matrix of assets returns.
+
+:math:`r`: is the matrix of assets returns.
+
+:math:`c_i`: is the upper bound of risk measure :math:`i`.
+
+:math:`Aw \leq b`: is a set of linear constraints.
+
+:math:`A_{\text{RC}} \text{RC}(w) \leq b_{\text{RC}} \text{Tr} \left ( \Sigma W \right)(w)` is a set of linear risk contribution constraints for variance based on :cite:`a-Cajas13`.
+
+:math:`\varrho_{i}(w)`: are 24 available risk measures. The available risk measures are:
+
+- Standard Deviation :cite:`a-Markowitz`.
+- Square Root Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas7`.
+- p-th Root Even Moment of Order 2p :cite:`a-Cajas15`.
+- Mean Absolute Deviation :cite:`a-Konno`.
+- Gini Mean Difference :cite:`a-Yitzhaki1`, :cite:`a-Cajas3`, :cite:`a-Cajas12`.
+- Conditional Value at Risk Range :cite:`a-Cajas3`, :cite:`a-Cajas2025book`.
+- Tail Gini Range :cite:`a-Cajas3`, :cite:`a-Cajas2025book`.
+- Entropic Value at Risk Range :cite:`a-Cajas2025book`.
+- Relativistic Value at Risk Range.:cite:`a-Cajas2025book`.
+- Range :cite:`a-Cajas3`.
+- Semi Standard Deviation :cite:`a-Mansini3`.
+- Square Root Semi Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas7`.
+- p-th Root Even Semi Moment of Order 2p :cite:`a-Cajas15`.
+- First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
+- Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
+- Conditional Value at Risk :cite:`a-Rockafellar`.
+- Tail Gini :cite:`a-Ogryczak2002`, :cite:`a-Cajas3`, :cite:`a-Cajas12`.
+- Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`, :cite:`a-Cajas1`.
+- Relativistic Value at Risk :cite:`a-Cajas5`.
+- Worst Realization (Minimax) :cite:`a-Mansini2`.
+- Average Drawdown of uncompounded cumulative returns :cite:`a-Uryasev1`.
+- Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
+- Conditional Drawdown at Risk of uncompounded cumulative returns :cite:`a-Uryasev1`.
+- Entropic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas1`.
+- Relativistic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas5`.
+- Maximum Drawdown of uncompounded cumulative returns (Calmar Ratio) :cite:`a-Uryasev1`.
+
+:math:`c_{i}`: are maximum values on each risk measure.
+
+:math:`r_{f}`: is the risk free rate. When the risk measure is the first or
+second lower partial moment, :math:`r_{f}` is the minimum acceptable return
+:math:`\text{MAR}`.
+
+:math:`\lambda`: is the risk aversion coefficient of the investor.
+
+
+Risk Parity Portfolio Optimization
+----------------------------------
+
+Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
+the general vanilla risk parity model :cite:`a-Roncalli` :cite:`a-RichardRoncalli`:
+
+.. math::
+    \begin{aligned}
+    \min_{w} & \quad \varrho(w) \\
+    \text{s.t.} & \quad \mathbf{b}^{\prime} \log(w) \geq c \\
+    & \quad \mu w \geq \overline{\mu} \\
+    & \quad Aw \leq b \\
+    & \quad w \geq 0 \\
+    \end{aligned}
+
+where:
+    
+:math:`w`: is the vector of weights of the optimum portfolio.
+
+:math:`\mu`: is the vector of expected returns.
+
+:math:`\mathbf{b}`: is a vector of risk contribution targets.
+
+:math:`Aw \leq b`: is a set of linear constraints.
+
+:math:`c`: is an arbitrary constant.
+
+:math:`\varrho(w)`: are 20 available risk measures. The available risk
+measures are:
+
+- Standard Deviation :cite:`a-Markowitz`.
+- Square Root Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas7`.
+- Mean Absolute Deviation :cite:`a-Konno`.
+- Gini Mean Difference :cite:`a-Yitzhaki1`, :cite:`a-Cajas3`, :cite:`a-Cajas12`.
+- Conditional Value at Risk Range :cite:`a-Cajas3`, :cite:`a-Cajas2025book`.
+- Tail Gini Range :cite:`a-Cajas3`, :cite:`a-Cajas2025book`.
+- Entropic Value at Risk Range :cite:`a-Cajas2025book`.
+- Relativistic Value at Risk Range :cite:`a-Cajas2025book`.
+- Semi Standard Deviation :cite:`a-Mansini3`.
+- Square Root Semi Kurtosis :cite:`a-Cajas4`, :cite:`a-Cajas7`.
+- First Lower Partial Moment (Omega Ratio) :cite:`a-Mansini1`.
+- Second Lower Partial Moment (Sortino Ratio) :cite:`a-Mansini1`.
+- Conditional Value at Risk :cite:`a-Rockafellar`.
+- Tail Gini :cite:`a-Ogryczak2002`, :cite:`a-Cajas3`, :cite:`a-Cajas12`.
+- Entropic Value at Risk :cite:`a-Ahmadi2012`, :cite:`a-Ahmadi2017`, :cite:`a-Cajas1`.
+- Relativistic Value at Risk :cite:`a-Cajas5`.
+- Ulcer Index of uncompounded cumulative returns :cite:`a-martin1989`.
+- Conditional Drawdown at Risk of uncompounded cumulative returns :cite:`a-Uryasev1`.
+- Entropic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas1`.
+- Relativistic Drawdown at Risk of uncompounded cumulative returns :cite:`a-Cajas5`.
+
+:math:`c`: is an arbitrary constant.
+
+
+Relaxed Risk Parity Portfolio Optimization
+------------------------------------------
+
+Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
+the relaxed risk parity model :cite:`a-GambetaKwon`:
+
+.. math::
+    \begin{aligned}
+    \min_{w} & \quad \psi - \gamma & \\
+    \text{s.t.} & \quad \zeta = \Sigma w \\
+    & \quad w^{\prime} \Sigma w \leq \left ( \psi^{2} - \rho^{2} \right ) & \\
+    & \quad w_{i} \zeta_{i} \geq \gamma^{2} b_{i} & \forall i=1 , \ldots , N \\
+    & \quad \lambda w^{\prime} \Theta w \leq \rho^{2} & \\
+    & \quad \mu w \geq \overline{\mu} & \\
+    & \quad Aw \leq b & \\
+    & \quad \sum^{N}_{i=1} w_{i} = 1 & \\
+    & \quad \psi, \gamma, \rho, w  \geq 0 & \\
+    \end{aligned}
+
+
+where:
+    
+:math:`w`: is the vector of weights of the optimum portfolio.
+
+:math:`\mu`: is the vector of expected returns.
+
+:math:`\Sigma`: is the covariance matrix of assets returns.
+
+:math:`\psi`: is the average risk of the portfolio.
+
+:math:`\gamma`: is the lower bound of each asset risk contribution.
+
+:math:`\mathbf{b}`: is the vector of risk contribution targets.
+
+:math:`\zeta_{i}`: is the marginal risk of asset :math:`i`.
+
+:math:`\rho`: is a regularization variable.
+
+:math:`\lambda`: is a penalty parameter of :math:`\rho`.
+
+:math:`\Theta = \text{diag}(\Sigma)`
+
+:math:`Aw \leq b`: is a set of linear constraints.
+
+
+Worst Case Mean Variance Portfolio Optimization
+-----------------------------------------------
+
+Riskfolio-Lib allows to calculate worst case mean variance optimum portfolios
+:cite:`a-Lobo` :cite:`a-fabozzi2007robust` :cite:`a-Tutuncu` :cite:`a-Palomar` 
+that results from optimize one of the following 4 objective functions:
+       
+
+- **Worst Case Maximum Return Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w} & \quad \min_{\mu \, \in \, U_{\mu}} \mu w\\
+    \text{s.t.} & \quad Aw \leq b\\
+    \end{aligned}
+
+
+- **Worst Case Minimum Risk Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \min_{w} & \quad \max_{\Sigma \, \in \, U_{\Sigma}} w^{\prime} \Sigma w\\
+    \text{s.t.} & \quad  Aw \leq b\\
+    \end{aligned}
+
+
+- **Worst Case Maximum Risk Adjusted Return Ratio Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \underset{w}{\max} & \quad \cfrac{\min_{\mu \, \in \, U_{\mu}} \mu w - r_{f}}
+    {\max_{\Sigma \, \in \, U_{\Sigma}} \sqrt{w^{\prime} \Sigma w}}\\
+    \text{s.t.} & \quad Aw \leq b\\
+    \end{aligned}
+
+
+- **Worst Case Maximum Utility Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w} & \quad \min_{\mu \, \in \, U_{\mu}} \mu w
+    - \max_{\Sigma \, \in \, U_{\Sigma}} \lambda w^{\prime} \Sigma w\\
+    \text{s.t.} & \quad Aw \leq b\\
+    \end{aligned}
+
+
+where:
+
+:math:`w` are the weights of the portfolio.
+
+:math:`\mu`: is the vector of expected returns.
+
+:math:`\Sigma` is the covariance matrix.
+
+:math:`U_{\mu}` is the uncertainty set of the mean vector. The uncertainty sets can be:
+
+.. math::
+    \begin{aligned}
+    U^{box}_{\mu} & = \left \{ \mu \, | \, | \mu - \hat{\mu} | \leq \delta \right \} \\
+    U^{ellip}_{\mu} & = \left \{ \mu \, | \left ( \mu - \hat{\mu} \right ) \Sigma^{-1}_{\mu} \left ( \mu - \hat{\mu} \right )^{\prime} \leq k^{2}_{\mu} \right \} \\
+    \end{aligned}
+
+
+:math:`U_{\Sigma}` is the uncertainty set of the covariance matrix. The uncertainty sets can be:
+
+.. math::
+    \begin{aligned}
+    U^{box}_{\Sigma} & = \left \{ \Sigma \, | \, \Sigma_{lower} \leq \Sigma \leq \Sigma_{upper} \, , \, \Sigma \succeq 0 \right \} \\
+    U^{ellip}_{\Sigma} & = \left \{ \Sigma \, | \left ( \text{vec}(\Sigma) - \text{vec}(\hat{\Sigma}) \right ) \Sigma^{-1}_{\Sigma} \left ( \text{vec}(\Sigma) - \text{vec}(\hat{\Sigma}) \right )^{\prime} \leq k^{2}_{\Sigma} \, , \, \Sigma \succeq 0 \right \}  \\
+    \end{aligned}
+
+
+:math:`Aw \leq b`: is a set of linear constraints.
+
+:math:`r_{f}`: is the risk free rate. 
+
+:math:`\lambda`: is the risk aversion coefficient of the investor.
+
+
+Mean Variance Portfolio Optimization with Factor Risk Contribution Constraints
+------------------------------------------------------------------------------
+
+Riskfolio-Lib allows to calculate optimum portfolios that results from optimize
+one of the following 4 objective functions:
+
+- **Maximum Return Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w} & \quad R (w)\\
+    \text{s.t.} & \quad \begin{bmatrix} W_{F}  & W_{F} \\ w^{\prime}_{F} & 1 \end{bmatrix} \succeq 0 \\
+    & \quad w = (B^{\prime})^{+} W_{F} \\
+    & \quad Aw \leq b\\
+    & \quad A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+    & \quad \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \leq c \\
+    & \quad R (w) \geq \overline{\mu} \\
+    & \quad W_{F} \in \mathbf{S}^{m}\\
+    \end{aligned}
+
+- **Minimum Risk Portfolio:**
+
+.. math::
+    \begin{aligned} 
+    \min_{w} & \quad \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+    \text{s.t.} & \quad \begin{bmatrix} W_{F}  & w_{F} \\ w^{\prime}_{F} & 1 \end{bmatrix} \succeq 0 \\
+    & \quad w = (B^{\prime})^{+} w_{F} \\
+    & \quad Aw \leq b\\
+    & \quad A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+    & \quad \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \leq c \\
+    & \quad R (w) \geq \overline{\mu} \\
+    & \quad W_{F} \in \mathbf{S}^{m}\\
+    \end{aligned}
+
+
+- **Maximum Risk Adjusted Return Ratio Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w} & \quad \frac{R (w) - r_{f}}{\text{Tr} \left ( \bar{\Sigma} W_{F} \right )}\\
+    \text{s.t.} & \quad \begin{bmatrix} W_{F}  & w_{F} \\ w^{\prime}_{F} & 1 \end{bmatrix} \succeq 0 \\
+    & \quad w = (B^{\prime})^{+} w_{F} \\
+    & \quad Aw \leq b\\
+    & \quad A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+    & \quad \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \leq c \\
+    & \quad R (w) \geq \overline{\mu} \\
+    & \quad W_{F} \in \mathbf{S}^{m}\\
+    \end{aligned}
+
+
+- **Maximum Utility Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w} & \quad R (w) - \lambda \text{Tr} \left ( \bar{\Sigma} W_{F} \right )\\
+    \text{s.t.} & \quad \begin{bmatrix} W_{F}  & w_{F} \\ w^{\prime}_{F} & 1 \end{bmatrix} \succeq 0 \\
+    & \quad w = (B^{\prime})^{+} w_{F} \\
+    & \quad Aw \leq b\\
+    & \quad A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \\
+    & \quad \text{Tr} \left ( \bar{\Sigma} W_{F} \right ) \leq c \\
+    & \quad R (w) \geq \overline{\mu} \\
+    & \quad W_{F} \in \mathbf{S}^{m}\\
+    \end{aligned}
+
+where:
+
+:math:`R (w)` is the return function, possible values are:
+
+- :math:`\mu w`: arithmetic return.
+- :math:`\mu w - 0.5 w^{\tau} \Sigma w`: approximate logarithmic return :cite:`a-Thorp`.
+- :math:`\frac{1}{T} \sum^{T}_{i=1} \ln (1+ r_{i} w)`: exact logarithmic return :cite:`a-Cajas2`.
+
+:math:`w_f` are the weights of the risk factors.
+
+:math:`W_f`: is the symmetric matrix variable that approximates :math:`w_f w^{\prime}_f`.
+
+:math:`B` is the loadings matrix.
+
+:math:`\mu`: is the vector of expected returns.
+
+:math:`\Sigma`: is the covariance matrix of assets returns.
+
+:math:`r`: is the matrix of assets returns.
+
+:math:`c`: is the upper bound of risk measure.
+
+:math:`\bar{\Sigma} = \left ((B^{\prime})^{+} \right )^{\prime} \Sigma (B^{\prime})^{+}`.
+
+:math:`Aw \leq b`: is a set of linear constraints.
+
+:math:`A_{\text{FRC}} \text{diag}\left ( \bar{\Sigma} W_{F} \right) \leq b_{\text{FRC}} \, \text{Tr} \left ( \bar{\Sigma} W_{F} \right )` is a set of linear factor risk contribution constraints for variance based on :cite:`a-Cajas13`.
+
+
+Ordered Weighted Averaging (OWA) Portfolio
+------------------------------------------
+
+Riskfolio-Lib allows to calculate the OWA portfolio optimization model :cite:`a-Cajas3`. We can use
+this function to calculate the Higher L-Moment portfolio optimization model :cite:`a-Cajas6`.
+
+- **Maximum Return Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \min_{w} & \quad R (w) \\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad y = rw \\
+    & \quad \sum^{T}_{i=0} v_{[i]}y_{[i]} \leq c \\
+    \end{aligned}
+
+- **Minimum Risk Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \min_{w} & \quad \sum^{T}_{i=0} v_{[i]}y_{[i]} \\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad y = rw \\
+    & \quad R (w) \geq \overline{\mu} \\
+    \end{aligned}
+
+- **Maximum Risk Adjusted Return Ratio Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w} & \quad \frac{R (w) - r_{f}}{\sum^{T}_{i=0} v_{[i]}y_{[i]}}\\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad y = rw \\
+    & \quad R (w) \geq \overline{\mu} \\
+    \end{aligned}
+
+- **Maximum Utility Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w} & \quad R (w) - \lambda \left ( \sum^{T}_{i=0} v_{[i]}y_{[i]} \right) \\
+    \text{s.t.} & \quad Aw \leq b\\
+    & \quad y = rw \\
+    & \quad R (w) \geq \overline{\mu} \\
+    \end{aligned}
+
+Where:
+
+:math:`w` are the weights of the portfolio.
+
+:math:`v` are the weights of the owa operator.
+
+:math:`c`: is the upper bound of risk measure.
+
+:math:`\mu`: is the vector of expected returns.
+
+:math:`X_{[i]}`: is the element of order :math:`i` in ascending order of vector :math:`X`.
+
+Mean-Variance-Skewness-Kurtosis (MVSK) Portfolio
+------------------------------------------------
+
+Riskfolio-Lib allows to calculate the utility function version of the MVSK portfolio optimization model
+based on the semidefinite relaxation proposed by :cite:`a-Cajas14`. 
+
+- **Maximum Return Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w, \, W^{(2)}, \, W^{(3)*}, \, W^{(4)*}} \; & \quad  M^{\prime}_{1}w \\
+    \text{s.t.} \qquad \,\,\,
+    & \quad M^{(4)*} \succeq 0 \\
+    & \quad M^{(4)*} =  \begin{bmatrix}
+        1 \qquad & \quad w^{\prime} \quad & \text{vec}(W^{(2)})^{\prime} L^{\prime}_{2} \\
+        w \qquad & \quad W^{(2)} \quad & \quad W^{(3)*\prime} & \\
+        L_{2}\text{vec}(W^{(2)}) &\quad W^{(3)*} \quad & \quad W^{(4)*} \\
+    \end{bmatrix} \\
+    & \quad \text{Tr}(\Sigma_{2} \, W^{(2)}) \leq \overline{\mu}_{2}\\
+    & \quad \text{Tr}(M_{3} \, D_{2} \, W^{(3)*}) \geq \overline{\mu}_{3} \\
+    & \quad -  \lambda_{4} \text{Tr}(S_{2} \, \Sigma_{4} \, S^{\prime}_{2} \, W^{(4)*}) \leq \overline{\mu}_{4}\\
+    & \quad W^{(2)} \in \mathbf{S}^{n}\\
+    & \quad W^{(4)*} \in \mathbf{S}^{n(n+1)/2} \\
+    & \quad Aw \leq b\\
+    \end{aligned}
+
+- **Minimum Risk Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \min_{w, \, W^{(2)}, \, W^{(3)*}, \, W^{(4)*}} \; & \quad \lambda_{2} \text{Tr}(\Sigma_{2} \, W^{(2)}) - \lambda_{3} \text{Tr}(M_{3} \, D_{2} \, W^{(3)*}) \\
+    & \quad +  \lambda_{4} \text{Tr}(S_{2} \, \Sigma_{4} \, S^{\prime}_{2} \, W^{(4)*})\\
+    \text{s.t.} \qquad \,\,\,
+    & \quad M^{(4)*} \succeq 0 \\
+    & \quad M^{(4)*} =  \begin{bmatrix}
+        1 \qquad & \quad w^{\prime} \quad & \text{vec}(W^{(2)})^{\prime} L^{\prime}_{2} \\
+        w \qquad & \quad W^{(2)} \quad & \quad W^{(3)*\prime} & \\
+        L_{2}\text{vec}(W^{(2)}) &\quad W^{(3)*} \quad & \quad W^{(4)*} \\
+    \end{bmatrix} \\
+    & \quad M^{\prime}_{1}w \geq \overline{\mu}_{1} \\
+    & \quad W^{(2)} \in \mathbf{S}^{n}\\
+    & \quad W^{(4)*} \in \mathbf{S}^{n(n+1)/2} \\
+    & \quad Aw \leq b\\
+    \end{aligned}
+
+- **Maximum Risk Adjusted Return Ratio Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \min_{w, \, W^{(2)}, \, W^{(3)*}, \, W^{(4)*}} \; & \quad  \frac{M^{\prime}_{1}w - r_{f}}{\lambda_{2} \text{Tr}(\Sigma_{2} \, W^{(2)}) - \lambda_{3} \text{Tr}(M_{3} \, D_{2} \, W^{(3)*}) + \lambda_{4} \text{Tr}(S_{2} \, \Sigma_{4} \, S^{\prime}_{2} \, W^{(4)*})}\\
+    \text{s.t.} \qquad \,\,\,
+    & \quad M^{(4)*} \succeq 0 \\
+    & \quad M^{(4)*} =  \begin{bmatrix}
+        1 \qquad & \quad w^{\prime} \quad & \text{vec}(W^{(2)})^{\prime} L^{\prime}_{2} \\
+        w \qquad & \quad W^{(2)} \quad & \quad W^{(3)*\prime} & \\
+        L_{2}\text{vec}(W^{(2)}) &\quad W^{(3)*} \quad & \quad W^{(4)*} \\
+    \end{bmatrix} \\
+    & \quad W^{(2)} \in \mathbf{S}^{n}\\
+    & \quad W^{(4)*} \in \mathbf{S}^{n(n+1)/2} \\
+    & \quad Aw \leq b\\
+    \end{aligned}
+
+- **Maximum Utility Portfolio:**
+
+.. math::
+    \begin{aligned}
+    \max_{w, \, W^{(2)}, \, W^{(3)*}, \, W^{(4)*}} \; & \quad M^{\prime}_{1}w - \lambda_{2} \text{Tr}(\Sigma_{2} \, W^{(2)}) + \lambda_{3} \text{Tr}(M_{3} \, D_{2} \, W^{(3)*}) 
+    \\ & \quad -  \lambda_{4} \text{Tr}(S_{2} \, \Sigma_{4} \, S^{\prime}_{2} \, W^{(4)*})\\
+    \text{s.t.} \qquad \,\,\,
+    & \quad M^{(4)*} \succeq 0 \\
+    & \quad M^{(4)*} =  \begin{bmatrix}
+        1 \qquad & \quad w^{\prime} \quad & \text{vec}(W^{(2)})^{\prime} L^{\prime}_{2} \\
+        w \qquad & \quad W^{(2)} \quad & \quad W^{(3)*\prime} & \\
+        L_{2}\text{vec}(W^{(2)}) &\quad W^{(3)*} \quad & \quad W^{(4)*} \\
+    \end{bmatrix} \\
+    & \quad W^{(2)} \in \mathbf{S}^{n}\\
+    & \quad W^{(4)*} \in \mathbf{S}^{n(n+1)/2} \\
+    & \quad Aw \leq b\\
+    \end{aligned}
+
+Where:
+
+:math:`w` are the weights of the portfolio.
+
+:math:`W^{(2)}` is a variable representing :math:`ww^{\prime}`.
+
+:math:`W^{(3)*}` is a variable representing :math:`L_{2}(w \otimes w)w^{\prime}`.
+
+:math:`W^{(4)*}` is a variable representing :math:`L_{2}(w \otimes w)(w \otimes w)^{\prime}L^{\prime}_{2}`.
+
+:math:`L_{2}`: is the duplication elimination matrix defined in :cite:`a-Magnus1980`.
+
+:math:`D_{2}`: is the duplication matrix defined in :cite:`a-Magnus1980`.
+
+:math:`S_{2}`: is the duplication summation matrix defined in :cite:`a-Cajas4`.
+
+:math:`M_{1}`: is the vector of expected returns.
+
+:math:`\Sigma_{2}`: is the covariance matrix of asset returns.
+
+:math:`M_{3}`: is the coskewness tensor of asset returns.
+
+:math:`\Sigma_{4}`: is the cokurtosis matrix of asset returns.
+
+:math:`\lambda_{i}`: is the risk aversion parameter for the :math:`i`-th moment.
+
+
+Module Methods
+==============
+
+.. automodule:: Portfolio
+   :members:
+   :private-members:
+
+
+.. raw:: html
+
+   <h2>Bibliography</h2>
+
+.. bibliography:: biblio.bib
+   :style: unsrt
+   :labelprefix: A
+   :keyprefix: a-

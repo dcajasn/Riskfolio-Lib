@@ -69,7 +69,7 @@ templates_path = ['_templates']
 #
 #source_suffix = ['.rst', '.bib']
 source_suffix = '.rst'
-bibtex_bibfiles = ['biblio.bib']
+bibtex_bibfiles = ['riskfoliolib/biblio.bib']
 
 
 # List of patterns, relative to source directory, that match files and
@@ -93,7 +93,7 @@ html_static_path = ['_static']
 
 html_search_language = 'en'
 html_theme_options = {
-    "palette": {"scheme": "default"},
+    "palette": {"accent": "green"},
     "icon": {"repo": "fontawesome/brands/github"},
     "site_url": "https://riskfolio-lib.readthedocs.io/en/latest",
     "repo_url": "https://github.com/dcajasn/Riskfolio-Lib",
@@ -101,6 +101,31 @@ html_theme_options = {
     "globaltoc_collapse": True,
     "toc_title": "Contents",
     "toc_title_is_page_title": True,
+    "features": [
+        "header.autohide",
+        # "toc.integrate",  # enable/disable right sidebar
+        "toc.follow",
+        # "toc.sticky",
+        "navigation.path",  # breadcrumbs, not yet available.
+        # "navigation.sections",  # top-level sections are rendered as groups in the sidebar for viewports above 1220px; not compatible with tabs below.
+        "navigation.instant",
+        # clicks on all internal links will be intercepted and dispatched via XHR without fully reloading the page
+        "navigation.top",
+        # back-to-top button can be shown when the user, after scrolling down, starts to scroll up again. It's rendered centered and just below the header; not yet available.
+        "navigation.tabs",
+        # top-level sections are rendered in a menu layer below the header for viewports above 1220px, but remain as-is on mobile
+        "navigation.tabs.sticky",
+        # navigation tabs will lock below the header and always remain visible when scrolling down
+        "navigation.tracking",  # the URL in the address bar is automatically updated with the active anchor
+        "navigation.expand",
+        # the left sidebar will expand all collapsible subsections by default, so the user doesn't have to open subsections manually
+        "search.highlight",
+        # a user clicks on a search result, Material for MkDocs will highlight all occurrences after following the link
+        "search.share",
+        # a  share button is rendered next to the reset button, which allows to deep link to the current search query and result
+        "content.tabs.link",
+        "content.code.copy",
+    ],
     "social": [
         {
             "icon": "fontawesome/brands/github",
@@ -111,7 +136,12 @@ html_theme_options = {
             "icon": "fontawesome/brands/python",
             "link": "https://pypi.org/project/Riskfolio-Lib/",
         },
-    ],}
+        {
+            "icon": "fontawesome/brands/square-x-twitter",
+            "link": "https://x.com/RiskfolioLib",
+        },
+    ],
+}
 html_static_path = ["_static"]
 html_css_files = ["custom.css"]
 html_favicon = "_static/Riskfolio.ico"

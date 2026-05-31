@@ -183,10 +183,10 @@ def jupyter_report(
                                others=0.05,
                                nrow=25)
 
-    .. image:: images/Report_1.png
-    .. image:: images/Report_2.png
-    .. image:: images/Report_3.png
-    .. image:: images/Report_4.png
+    .. image:: ../images/Report_1.png
+    .. image:: ../images/Report_2.png
+    .. image:: ../images/Report_3.png
+    .. image:: ../images/Report_4.png
 
     """
 
@@ -353,7 +353,7 @@ def excel_report(
                         days_per_year=252,
                         name="report")
 
-    .. image:: images/Excel.png
+    .. image:: ../images/Excel.png
 
     """
     n1 = w.shape[0]

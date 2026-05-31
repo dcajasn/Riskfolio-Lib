@@ -48,10 +48,12 @@ __all__ = [
 rm_names = [
     "Standard Deviation",
     "Square Root Kurtosis",
+    "Root of Even Moment",
     "Mean Absolute Deviation",
     "Gini Mean Difference",
     "Semi Standard Deviation",
     "Square Root Semi Kurtosis",
+    "Root of Even Semi Moment",
     "First Lower Partial Moment",
     "Second Lower Partial Moment",
     "Value at Risk",
@@ -77,10 +79,12 @@ rm_names = [
 rmeasures = [
     "MV",
     "KT",
+    "EM",
     "MAD",
     "GMD",
     "MSV",
     "SKT",
+    "ESM",
     "FLPM",
     "SLPM",
     "VaR",
@@ -150,7 +154,7 @@ def plot_series(returns, w, cmap="tab20", n_colors=20, height=6, width=10, ax=No
                             width=10,
                             ax=None)
 
-    .. image:: images/Port_Series.png
+    .. image:: ../images/Port_Series.png
 
     """
 
@@ -234,6 +238,8 @@ def plot_frontier(
     b_sim=None,
     kappa=0.30,
     kappa_g=None,
+    p_em=2,
+    p_esm=2,
     solver="CLARABEL",
     cmap="viridis",
     w=None,
@@ -267,9 +273,12 @@ def plot_frontier(
 
         - 'MV': Standard Deviation.
         - 'KT': Square Root Kurtosis.
+        - 'EM': p_em Root of Even Moment or order 2 * p_em.
         - 'MAD': Mean Absolute Deviation.
+        - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'SKT': Square Root Semi Kurtosis.
+        - 'ESM': p_esm Root of Even Semi Moment or order 2 * p_esm.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'CVaR': Conditional Value at Risk.
@@ -284,7 +293,6 @@ def plot_frontier(
         - 'RG': Range of returns.
         - 'MDD': Maximum Drawdown of uncompounded returns (Calmar Ratio).
         - 'ADD': Average Drawdown of uncompounded cumulative returns.
-        - 'DaR': Drawdown at Risk of uncompounded cumulative returns.
         - 'CDaR': Conditional Drawdown at Risk of uncompounded cumulative returns.
         - 'EDaR': Entropic Drawdown at Risk of uncompounded cumulative returns.
         - 'RLDaR': Relativistic Drawdown at Risk of uncompounded cumulative returns.
@@ -312,6 +320,10 @@ def plot_frontier(
     kappa_g : float, optional
         Deformation parameter of RLVaR for gains, must be between 0 and 1.
         The default is None.
+    p_em : int, optional
+        Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
+    p_esm : int, optional
+        Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is 'CLARABEL'.
@@ -384,7 +396,7 @@ def plot_frontier(
                               t_factor=252,
                               ax=None)
 
-    .. image:: images/MSV_Frontier.png
+    .. image:: ../images/MSV_Frontier.png
 
 
     """
@@ -511,6 +523,12 @@ def plot_frontier(
         x_label += ", $\\kappa = $" + "{0:.2}".format(kappa)
     if rm in ["RLVaR", "RLDaR", "RVRG"]:
         x_label += ", $\\kappa_g = $" + "{0:.2}".format(kappa_g)
+    if rm in ["EM"]:
+        x_label += " of Order {}".format(int(2 * p_em))
+        x_label = "{}-th ".format(int(p_em)) + x_label
+    if rm in ["ESM"]:
+        x_label += " of Order {}".format(int(2 * p_esm))
+        x_label = "{}-th ".format(int(p_esm)) + x_label
 
     ax0.set_xlabel("Expected Risk - " + x_label)
 
@@ -535,6 +553,9 @@ def plot_frontier(
                 beta=beta,
                 b_sim=b_sim,
                 kappa=kappa,
+                kappa_g=kappa_g,
+                p_em=p_em,
+                p_esm=p_esm,
                 solver=solver,
             )
 
@@ -605,6 +626,9 @@ def plot_frontier(
                 beta=beta,
                 b_sim=b_sim,
                 kappa=kappa,
+                kappa_g=kappa_g,
+                p_em=p_em,
+                p_esm=p_esm,
                 solver=solver,
             )
             if kelly == False:
@@ -714,7 +738,7 @@ def plot_pie(
                          cmap="tab20",
                          ax=None)
 
-    .. image:: images/Pie_Chart.png
+    .. image:: ../images/Pie_Chart.png
 
 
     """
@@ -903,7 +927,7 @@ def plot_bar(
                          width=10,
                          ax=None)
 
-    .. image:: images/Bar_Chart.png
+    .. image:: ../images/Bar_Chart.png
 
 
     """
@@ -1132,7 +1156,7 @@ def plot_frontier_area(
                                    width=10,
                                    ax=None)
 
-    .. image:: images/Area_Frontier.png
+    .. image:: ../images/Area_Frontier.png
 
 
     """
@@ -1216,6 +1240,8 @@ def plot_risk_con(
     b_sim=None,
     kappa=0.30,
     kappa_g=None,
+    p_em=2,
+    p_esm=2,
     solver="CLARABEL",
     percentage=False,
     erc_line=True,
@@ -1255,10 +1281,12 @@ def plot_risk_con(
 
         - 'MV': Standard Deviation.
         - 'KT': Square Root Kurtosis.
+        - 'EM': p_em Root of Even Moment of Order 2 * p_em.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'SKT': Square Root Semi Kurtosis.
+        - 'ESM': p_esm Root of Even Semi Moment of Order 2 * p_esm.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'CVaR': Conditional Value at Risk.
@@ -1295,6 +1323,10 @@ def plot_risk_con(
     kappa_g : float, optional
         Deformation parameter of RLVaR for gains, must be between 0 and 1.
         The default is None.
+    p_em : int, optional
+        Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
+    p_esm : int, optional
+        Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is 'CLARABEL'.
@@ -1353,7 +1385,7 @@ def plot_risk_con(
                               t_factor=252,
                               ax=None)
 
-    .. image:: images/Risk_Con.png
+    .. image:: ../images/Risk_Con.png
 
 
     """
@@ -1447,6 +1479,12 @@ def plot_risk_con(
         title += ", $\\kappa = $" + "{0:.2}".format(kappa)
     if rm in ["RLVaR", "RLDaR", "RVRG"]:
         title += ", $\\kappa = $" + "{0:.2}".format(kappa_g)
+    if rm in ["EM"]:
+        title += " of Order {}".format(int(2 * p_em))
+        title = title[:6] + "{}-th ".format(int(p_em)) + title[6:]
+    if rm in ["ESM"]:
+        title += " of Order {}".format(int(2 * p_esm))
+        title = title[:6] + "{}-th ".format(int(p_esm)) + title[6:]
 
     title += ") Contribution per Asset"
     if percentage:
@@ -1466,6 +1504,9 @@ def plot_risk_con(
         beta=beta,
         b_sim=b_sim,
         kappa=kappa,
+        kappa_g=kappa_g,
+        p_em=p_em,
+        p_esm=p_esm,
         solver=solver,
     )
 
@@ -1507,6 +1548,9 @@ def plot_risk_con(
                 beta=beta,
                 b_sim=b_sim,
                 kappa=kappa,
+                kappa_g=kappa_g,
+                p_em=p_em,
+                p_esm=p_esm,
                 solver=solver,
             )
 
@@ -1540,6 +1584,8 @@ def plot_factor_risk_con(
     b_sim=None,
     kappa=0.30,
     kappa_g=None,
+    p_em=2,
+    p_esm=2,
     solver="CLARABEL",
     feature_selection="stepwise",
     stepwise="Forward",
@@ -1583,10 +1629,12 @@ def plot_factor_risk_con(
 
         - 'MV': Standard Deviation.
         - 'KT': Square Root Kurtosis.
+        - 'EM': p_em Root of Even Moment of Order 2 * p_em.
         - 'MAD': Mean Absolute Deviation.
         - 'GMD': Gini Mean Difference.
         - 'MSV': Semi Standard Deviation.
         - 'SKT': Square Root Semi Kurtosis.
+        - 'ESM': p_esm Root of Even Semi Moment of Order 2 * p_esm.
         - 'FLPM': First Lower Partial Moment (Omega Ratio).
         - 'SLPM': Second Lower Partial Moment (Sortino Ratio).
         - 'CVaR': Conditional Value at Risk.
@@ -1623,6 +1671,10 @@ def plot_factor_risk_con(
     kappa_g : float, optional
         Deformation parameter of RLVaR for gains, must be between 0 and 1.
         The default is None.
+    p_em : int, optional
+        Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
+    p_esm : int, optional
+        Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
     solver: str, optional
         Solver available for CVXPY that supports power cone programming. Used to calculate RLVaR and RLDaR.
         The default value is 'CLARABEL'.
@@ -1710,7 +1762,7 @@ def plot_factor_risk_con(
                                      t_factor=252,
                                      ax=None)
 
-    .. image:: images/Risk_Con_RF.png
+    .. image:: ../images/Risk_Con_RF.png
 
     ::
 
@@ -1729,7 +1781,7 @@ def plot_factor_risk_con(
                                      t_factor=252,
                                      ax=None)
 
-    .. image:: images/Risk_Con_PC.png
+    .. image:: ../images/Risk_Con_PC.png
 
     """
 
@@ -1799,6 +1851,12 @@ def plot_factor_risk_con(
         title += ", $\\kappa = $" + "{0:.2}".format(kappa)
     if rm in ["RLVaR", "RLDaR", "RVRG"]:
         title += ", $\\kappa = $" + "{0:.2}".format(kappa_g)
+    if rm in ["EM"]:
+        title += " of Order {}".format(int(p_em))
+        title = title[:6] + "{}-th ".format(int(p_em)) + title[6:]
+    if rm in ["ESM"]:
+        title += " of Order {}".format(int(p_esm))
+        title = title[:6] + "{}-th ".format(int(p_esm)) + title[6:]
 
     title += ") Contribution per "
     if feature_selection == "PCR":
@@ -1823,6 +1881,9 @@ def plot_factor_risk_con(
         beta=beta,
         b_sim=b_sim,
         kappa=kappa,
+        kappa_g=kappa_g,
+        p_em=p_em,
+        p_esm=p_esm,
         solver=solver,
         feature_selection=feature_selection,
         stepwise=stepwise,
@@ -1869,6 +1930,9 @@ def plot_factor_risk_con(
                 beta=beta,
                 b_sim=b_sim,
                 kappa=kappa,
+                kappa_g=kappa_g,
+                p_em=p_em,
+                p_esm=p_esm,
                 solver=solver,
             )
 
@@ -1949,7 +2013,7 @@ def plot_hist(
                           width=10,
                           ax=None)
 
-    .. image:: images/Histogram.png
+    .. image:: ../images/Histogram.png
 
 
     """
@@ -2157,7 +2221,7 @@ def plot_range(
                            width=10,
                            ax=None)
 
-    .. image:: images/Range.png
+    .. image:: ../images/Range.png
 
 
     """
@@ -2407,7 +2471,7 @@ def plot_drawdown(
                               width=10,
                               ax=None)
 
-    .. image:: images/Drawdown.png
+    .. image:: ../images/Drawdown.png
 
 
     """
@@ -2626,7 +2690,7 @@ def plot_table(
                            alpha=0.05,
                            ax=None)
 
-    .. image:: images/Port_Table.png
+    .. image:: ../images/Port_Table.png
 
 
     """
@@ -2957,7 +3021,7 @@ def plot_clusters(
                               dendrogram=True,
                               ax=None)
 
-    .. image:: images/Assets_Clusters.png
+    .. image:: ../images/Assets_Clusters.png
 
 
     """
@@ -3445,7 +3509,7 @@ def plot_dendrogram(
                                 leaf_order=True,
                                 ax=None)
 
-    .. image:: images/Assets_Dendrogram.png
+    .. image:: ../images/Assets_Dendrogram.png
 
 
     """
@@ -3730,7 +3794,7 @@ def plot_network(
                              kind='kamada',
                              ax=None)
 
-    .. image:: images/Assets_Network.png
+    .. image:: ../images/Assets_Network.png
 
 
     """
@@ -4021,7 +4085,7 @@ def plot_network_allocation(
                                         kind='kamada',
                                         ax=None)
 
-    .. image:: images/Assets_Network_Allocation.png
+    .. image:: ../images/Assets_Network_Allocation.png
 
 
     """
@@ -4342,7 +4406,7 @@ def plot_clusters_network(
                                       max_k=10,
                                       ax=None)
 
-    .. image:: images/Assets_Clusters_Network.png
+    .. image:: ../images/Assets_Clusters_Network.png
 
 
     """
@@ -4634,7 +4698,7 @@ def plot_clusters_network_allocation(
                                                  max_k=10,
                                                  ax=None)
 
-    .. image:: images/Assets_Clusters_Network_Allocation.png
+    .. image:: ../images/Assets_Clusters_Network_Allocation.png
 
 
     """
@@ -4928,7 +4992,7 @@ def plot_BrinsonAttribution(
             ax=None
             )
 
-    .. image:: images/BrinAttr_Plot.png
+    .. image:: ../images/BrinAttr_Plot.png
 
 
     """
