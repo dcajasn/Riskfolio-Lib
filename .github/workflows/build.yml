@@ -34,7 +34,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-22.04, macos-15, windows-2022 ]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     env:
       RUNNER_OS: ${{ matrix.os }}
@@ -78,7 +78,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-22.04, macos-15, windows-2022 ]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     env:
       RUNNER_OS: ${{ matrix.os }}
@@ -134,3 +134,37 @@ jobs:
         with:
           name: wheels-${{ runner.os }}-py${{ matrix.python-version }}
           path: ./wheelhouse
+
+  collect_wheels:
+    needs: build_wheels
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' }}
+    permissions:
+      contents: write
+      actions: read
+
+    steps:
+      - name: Download all wheel artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: wheelhouse
+          merge-multiple: true
+
+      - name: Bundle all wheels in one file
+        shell: bash
+        run: |
+          ls -lah wheelhouse
+          tar -czf Riskfolio-Lib-wheels-${{ github.run_id }}.tar.gz -C wheelhouse .
+
+      - name: Upload single combined artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-all
+          path: Riskfolio-Lib-wheels-${{ github.run_id }}.tar.gz
+
+      - name: Attach bundle to GitHub Release (only tags)
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: Riskfolio-Lib-wheels-${{ github.run_id }}.tar.gz

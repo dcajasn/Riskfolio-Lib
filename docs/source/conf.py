@@ -102,7 +102,7 @@ html_theme_options = {
     "toc_title": "Contents",
     "toc_title_is_page_title": True,
     "features": [
-        "header.autohide",
+        # "header.autohide",
         # "toc.integrate",  # enable/disable right sidebar
         "toc.follow",
         # "toc.sticky",

@@ -265,7 +265,7 @@ POW - refers to problems with 3-dimensional power cone constraints.
 
 ## Dependencies
 
-Riskfolio-Lib supports Python 3.9 or higher.
+Riskfolio-Lib supports Python 3.10 or higher.
 
 Installation requires:
 

@@ -37,7 +37,7 @@ Install
 Mac OS X, Windows, and Linux
 ============================
 
-Riskfolio-lib only supports Python 3.9+ on OS X, Windows, and Linux. I recommend
+Riskfolio-lib only supports Python 3.10 or higher on OS X, Windows, and Linux. I recommend
 using pip for installation.
 
 1. It is highly recommended that you have installed a scientific Python distribution such as `anaconda <https://www.anaconda.com/products/individual>`_ or `winpython <https://winpython.github.io>`_ (Windows only).

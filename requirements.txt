@@ -12,3 +12,4 @@ xlsxwriter>=3.2.2
 networkx>=3.4.2
 astropy>=6.1.3
 pybind11>=2.13.6
+vectorbt>=0.28.0
