@@ -18,17 +18,17 @@
 <img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/master/docs/source/images/MSV_Frontier.png" height="200">
 <img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/master/docs/source/images/Pie_Chart.png" height="200">
 </div>
-
-[![](https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86)](https://github.com/sponsors/dcajasn)
-
+<br>
+<a href="https://github.com/sponsors/dcajasn"> <img src="https://img.shields.io/static/v1?label=Sponsor&message=%E2%9D%A4&logo=GitHub&color=%23fe8e86" height="30" /></a>
+<br>
 <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
-[![GitHub stars](https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/stargazers)
-[![Downloads](https://static.pepy.tech/personalized-badge/riskfolio-lib?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=BRIGHTGREEN&left_text=downloads)](https://pepy.tech/projects/riskfolio-lib)
-[![Downloads per Month](https://static.pepy.tech/personalized-badge/riskfolio-lib?period=monthly&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=ORANGE&left_text=downloads%2Fmonth)](https://pepy.tech/projects/riskfolio-lib)
-[![Documentation Status](https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest)](https://riskfolio-lib.readthedocs.io/en/latest/?badge=latest)
-[![GitHub License](https://img.shields.io/github/license/dcajasn/Riskfolio-Lib)](https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD)
+<a href="https://github.com/dcajasn/Riskfolio-Lib/stargazers"> <img src="https://img.shields.io/github/stars/dcajasn/Riskfolio-Lib" height="28" /></a>
+<a href="https://pepy.tech/projects/riskfolio-lib"> <img src="https://static.pepy.tech/personalized-badge/riskfolio-lib?period=total&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=BRIGHTGREEN&left_text=downloads" height="28" /></a>
+<a href="https://pepy.tech/projects/riskfolio-lib"> <img src="https://static.pepy.tech/personalized-badge/riskfolio-lib?period=monthly&units=INTERNATIONAL_SYSTEM&left_color=GREY&right_color=ORANGE&left_text=downloads%2Fmonth" height="28" /></a>
+<a href="https://riskfolio-lib.readthedocs.io/en/latest/?badge=latest"> <img src="https://readthedocs.org/projects/riskfolio-lib/badge/?version=latest" height="28" /></a>
+<a href="https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt"> <img src="https://img.shields.io/github/license/dcajasn/Riskfolio-Lib" height="28" /></a>
+<a href="https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD"> <img src="https://mybinder.org/badge_logo.svg" height="28" /></a>
 
 [![Star History Chart](https://api.star-history.com/svg?repos=dcajasn/Riskfolio-Lib&type=timeline&legend=top-left)](https://www.star-history.com/#dcajasn/Riskfolio-Lib&type=timeline&legend=top-left)
 

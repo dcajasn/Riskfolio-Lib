@@ -49,7 +49,8 @@ extensions = [
      'sphinx.ext.mathjax',
 #     'sphinx.ext.ifconfig',
      'sphinx.ext.viewcode',
-# #    'sphinx.ext.githubpages',
+    # Generates .nojekyll so GitHub Pages serves _static assets (e.g. MathJax).
+    'sphinx.ext.githubpages',
      'sphinx.ext.napoleon',
      'sphinxcontrib.bibtex',
      'sphinxemoji.sphinxemoji',
@@ -108,7 +109,9 @@ html_theme_options = {
         # "toc.sticky",
         "navigation.path",  # breadcrumbs, not yet available.
         # "navigation.sections",  # top-level sections are rendered as groups in the sidebar for viewports above 1220px; not compatible with tabs below.
-        "navigation.instant",
+        # Disable SPA-style navigation to guarantee MathJax re-renders on each page load.
+        # This avoids intermittent equation rendering issues on static hosts.
+        # "navigation.instant",
         # clicks on all internal links will be intercepted and dispatched via XHR without fully reloading the page
         "navigation.top",
         # back-to-top button can be shown when the user, after scrolling down, starts to scroll up again. It's rendered centered and just below the header; not yet available.
