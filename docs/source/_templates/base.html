@@ -3,7 +3,7 @@
 {% block extrahead %}
   {{ super() }}
   {% set page_url = docs_baseurl if pagename == "index" else docs_baseurl ~ pagename ~ ".html" %}
-  {% set social_image_url = docs_baseurl ~ "_static/Riskfolio.png" %}
+  {% set social_image_url = docs_baseurl ~ "_static/Riskfolio-social-1200x627.png" %}
   <link rel="canonical" href="{{ page_url }}" />
   <meta property="og:site_name" content="Riskfolio-Lib" />
   <meta property="og:title" content="{{ title|striptags }} | Riskfolio-Lib" />
@@ -13,6 +13,9 @@
   <meta property="og:url" content="{{ page_url }}" />
   <meta property="og:image" content="{{ social_image_url }}" />
   <meta property="og:image:secure_url" content="{{ social_image_url }}" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="627" />
   <meta property="og:image:alt" content="Riskfolio-Lib" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="{{ title|striptags }} | Riskfolio-Lib" />
