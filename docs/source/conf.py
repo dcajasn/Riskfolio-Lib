@@ -86,7 +86,29 @@ exclude_patterns = []
 #
 html_title = f"{project} {release} | Portfolio Optimization in Python"
 html_theme = 'sphinx_immaterial'
-html_baseurl = "https://riskfolio-lib.readthedocs.io/en/latest/"
+
+# Select docs base URL depending on CI host.
+is_rtd = os.environ.get("READTHEDOCS") == "True"
+is_github_pages = (
+    os.environ.get("GITHUB_ACTIONS", "").lower() == "true"
+    or os.environ.get("GITHUB_PAGES", "").lower() == "true"
+)
+
+docs_baseurl_override = os.environ.get("DOCS_BASEURL", "").strip()
+if docs_baseurl_override:
+    docs_baseurl = docs_baseurl_override
+elif is_github_pages and not is_rtd:
+    docs_baseurl = "https://dcajasn.github.io/Riskfolio-Lib/"
+else:
+    docs_baseurl = "https://riskfolio-lib.readthedocs.io/en/latest/"
+
+if not docs_baseurl.endswith("/"):
+    docs_baseurl = f"{docs_baseurl}/"
+
+html_baseurl = docs_baseurl
+html_context = {
+    "docs_baseurl": docs_baseurl,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -97,7 +119,7 @@ html_search_language = 'en'
 html_theme_options = {
     "palette": {"accent": "green"},
     "icon": {"repo": "fontawesome/brands/github"},
-    "site_url": "https://riskfolio-lib.readthedocs.io/en/latest/",
+    "site_url": docs_baseurl,
     "repo_url": "https://github.com/dcajasn/Riskfolio-Lib",
     "repo_name": "Riskfolio-Lib",
     "globaltoc_collapse": True,

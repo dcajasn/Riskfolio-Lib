@@ -2,21 +2,24 @@
 
 {% block extrahead %}
   {{ super() }}
-  {% if pagename == "index" %}
-    <link rel="canonical" href="https://riskfolio-lib.readthedocs.io/en/latest/" />
-  {% else %}
-    <link rel="canonical" href="https://riskfolio-lib.readthedocs.io/en/latest/{{ pagename }}.html" />
-  {% endif %}
+  {% set page_url = docs_baseurl if pagename == "index" else docs_baseurl ~ pagename ~ ".html" %}
+  {% set social_image_url = docs_baseurl ~ "_static/Riskfolio.png" %}
+  <link rel="canonical" href="{{ page_url }}" />
   <meta property="og:site_name" content="Riskfolio-Lib" />
   <meta property="og:title" content="{{ title|striptags }} | Riskfolio-Lib" />
   <meta property="og:description" content="Portfolio optimization in Python with Riskfolio-Lib." />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="en_US" />
-  <meta property="og:url" content="https://riskfolio-lib.readthedocs.io/en/latest/{% if pagename != 'index' %}{{ pagename }}.html{% endif %}" />
+  <meta property="og:url" content="{{ page_url }}" />
+  <meta property="og:image" content="{{ social_image_url }}" />
+  <meta property="og:image:secure_url" content="{{ social_image_url }}" />
+  <meta property="og:image:alt" content="Riskfolio-Lib" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="{{ title|striptags }} | Riskfolio-Lib" />
   <meta name="twitter:description" content="Portfolio optimization in Python with Riskfolio-Lib." />
-  <meta name="twitter:url" content="https://riskfolio-lib.readthedocs.io/en/latest/{% if pagename != 'index' %}{{ pagename }}.html{% endif %}" />
+  <meta name="twitter:url" content="{{ page_url }}" />
+  <meta name="twitter:image" content="{{ social_image_url }}" />
+  <meta name="twitter:image:alt" content="Riskfolio-Lib" />
 {% endblock %}
 
 {% block announce %}
