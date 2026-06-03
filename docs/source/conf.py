@@ -37,24 +37,24 @@ release = '.'.join(rp.__version__.split('.')[:2])
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-# #    'numpydoc',
+#     'numpydoc',
 #     'sphinx_rtd_theme',
-     'sphinx.ext.autodoc',
-#     'sphinx.ext.doctest',
-     'sphinx.ext.autosummary',
-#     'sphinx_autopackagesummary',
-     'sphinx.ext.intersphinx',
-     'sphinx.ext.todo',
-#     'sphinx.ext.coverage',
-     'sphinx.ext.mathjax',
-#     'sphinx.ext.ifconfig',
-     'sphinx.ext.viewcode',
-    # Generates .nojekyll so GitHub Pages serves _static assets (e.g. MathJax).
+    'sphinx.ext.autodoc',
+#    'sphinx.ext.doctest',
+    'sphinx.ext.autosummary',
+#    'sphinx_autopackagesummary',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.todo',
+#    'sphinx.ext.coverage',
+    'sphinx.ext.mathjax',
+#    'sphinx.ext.ifconfig',
+    'sphinx.ext.viewcode',
+#     Generates .nojekyll so GitHub Pages serves _static assets (e.g. MathJax).
     'sphinx.ext.githubpages',
-     'sphinx.ext.napoleon',
-     'sphinxcontrib.bibtex',
-     'sphinxemoji.sphinxemoji',
-     'sphinx_immaterial',
+    'sphinx.ext.napoleon',
+    'sphinxcontrib.bibtex',
+    'sphinxemoji.sphinxemoji',
+    'sphinx_immaterial',
 ]
 
 autodoc_mock_imports = ["riskfolio.external.functions"]
@@ -84,8 +84,9 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_title = f"{project} {release}"
+html_title = f"{project} {release} | Portfolio Optimization in Python"
 html_theme = 'sphinx_immaterial'
+html_baseurl = "https://riskfolio-lib.readthedocs.io/en/latest/"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -96,7 +97,7 @@ html_search_language = 'en'
 html_theme_options = {
     "palette": {"accent": "green"},
     "icon": {"repo": "fontawesome/brands/github"},
-    "site_url": "https://riskfolio-lib.readthedocs.io/en/latest",
+    "site_url": "https://riskfolio-lib.readthedocs.io/en/latest/",
     "repo_url": "https://github.com/dcajasn/Riskfolio-Lib",
     "repo_name": "Riskfolio-Lib",
     "globaltoc_collapse": True,
