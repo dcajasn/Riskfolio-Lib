@@ -135,7 +135,7 @@ if __name__ == "__main__":
         install_requires=INSTALL_REQUIRES,
         packages=PACKAGES,
         classifiers=CLASSIFIERS,
-        project_urls={"Documentation": "https://riskfolio-lib.readthedocs.io/en/latest/",
+        project_urls={"Documentation": "https://portfoliooptimization.org",
                       "Issues": "https://github.com/dcajasn/Riskfolio-Lib/issues",
                       "Personal website": "http://financioneroncios.wordpress.com",
                       },

@@ -2,6 +2,13 @@
 
 {% block extrahead %}
   {{ super() }}
+  <!-- Google Tag Manager -->
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-NKGZ6C22');</script>
+  <!-- End Google Tag Manager -->
   {% set page_url = docs_baseurl if pagename == "index" else docs_baseurl ~ pagename ~ ".html" %}
   {% set social_image_url = docs_baseurl ~ "_static/Riskfolio-social-1200x627.png" %}
   <link rel="canonical" href="{{ page_url }}" />
@@ -23,6 +30,14 @@
   <meta name="twitter:url" content="{{ page_url }}" />
   <meta name="twitter:image" content="{{ social_image_url }}" />
   <meta name="twitter:image:alt" content="Riskfolio-Lib" />
+{% endblock %}
+
+{% block body_tag %}
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NKGZ6C22"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
 {% endblock %}
 
 {% block announce %}

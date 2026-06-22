@@ -293,6 +293,8 @@ Course Content
       #. *Augmented Black Litterman Model (Views on Assets and Risk Factors)*
       #. *Black Litterman Bayesian (Views on Risk Factors)*
 
+   #. Entropy Pooling 
+
 #. **Backtesting of Portfolio Optimization Strategies**
 
    #. The Walk Forward Method (Rolling and Expanding Window)
