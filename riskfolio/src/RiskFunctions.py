@@ -446,7 +446,17 @@ def MVaR_Hist(X, alpha=0.05):
 
     a = a.flatten()
     mu = np.mean(a)
+
+    # Edge cases where the Cornish-Fisher moments are undefined: a single
+    # observation (no sample standard deviation) or a constant series (zero
+    # variance, so skewness/kurtosis are 0/0 -> NaN). Fall back to -mean,
+    # consistent with VaR_Hist, so the function always returns a finite value.
+    if a.shape[0] < 2:
+        return float(-mu)
     sigma = np.std(a, ddof=1)
+    if sigma <= 1e-15:
+        return float(-mu)
+
     S = skew(a, bias=False)
     K = kurtosis(a, fisher=True, bias=False)
 

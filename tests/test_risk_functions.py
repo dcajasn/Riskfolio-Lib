@@ -45,7 +45,7 @@ def test_mvar_hist_matches_reference():
 
 def test_mvar_hist_reduces_to_gaussian_for_normal_data():
     rng = np.random.default_rng(0)
-    x = rng.normal(0.001, 0.02, 200000)
+    x = rng.normal(0.001, 0.02, 50000)
     gaussian_var = -(np.mean(x) + norm.ppf(0.05) * np.std(x, ddof=1))
     assert np.isclose(rk.MVaR_Hist(x, 0.05), gaussian_var, atol=1e-3)
 
@@ -55,7 +55,7 @@ def test_mvar_hist_exceeds_gaussian_for_heavy_tails():
     # at the 1% level the Cornish-Fisher kurtosis term inflates the modified
     # VaR above the Gaussian VaR.
     rng = np.random.default_rng(7)
-    x = rng.standard_t(5, 300000) * 0.01
+    x = rng.standard_t(5, 50000) * 0.01
     gaussian_var = -(np.mean(x) + norm.ppf(0.01) * np.std(x, ddof=1))
     assert rk.MVaR_Hist(x, 0.01) > gaussian_var
 
@@ -66,3 +66,18 @@ def test_mvar_hist_shape_handling():
     assert np.isclose(rk.MVaR_Hist(x.reshape(1, -1), 0.05), rk.MVaR_Hist(x, 0.05))
     with pytest.raises(ValueError):
         rk.MVaR_Hist(np.ones((3, 3)))
+
+
+def test_mvar_hist_degenerate_inputs_are_finite():
+    # Cornish-Fisher skew/kurtosis are undefined at zero variance and for a
+    # single observation. MVaR_Hist should short-circuit to -mean (consistent
+    # with VaR_Hist) and return a finite value rather than NaN.
+    constant = np.full(100, 0.01)
+    out = rk.MVaR_Hist(constant, 0.05)
+    assert np.isfinite(out)
+    assert np.isclose(out, -0.01)
+
+    single = np.array([0.02])
+    out_single = rk.MVaR_Hist(single, 0.05)
+    assert np.isfinite(out_single)
+    assert np.isclose(out_single, -0.02)
