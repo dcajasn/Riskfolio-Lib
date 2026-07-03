@@ -14,6 +14,7 @@ import riskfolio.src.OwaWeights as owa
 import riskfolio.src.ParamsEstimation as pe
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
+from scipy.stats import norm, skew, kurtosis
 from scipy.linalg import null_space
 from numpy.linalg import pinv
 from sklearn.decomposition import PCA
@@ -29,6 +30,7 @@ __all__ = [
     "EvenSemiMoment",
     "VaR_Hist",
     "CVaR_Hist",
+    "MVaR_Hist",
     "WR",
     "LPM",
     "Entropic_RM",
@@ -393,6 +395,70 @@ def CVaR_Hist(X, alpha=0.05):
         sum_var = sum_var + sorted_a[i] - sorted_a[index]
 
     value = -sorted_a[index] - sum_var / (alpha * len(sorted_a))
+    value = np.array(value).item()
+
+    return value
+
+
+def MVaR_Hist(X, alpha=0.05):
+    r"""
+    Calculate the Modified Value at Risk (MVaR) of a returns series using the
+    Cornish-Fisher expansion, which adjusts the Gaussian Value at Risk for the
+    skewness and excess kurtosis of the returns.
+
+    .. math::
+        \text{MVaR}_{\alpha}(X) = -\left ( \mu_{X} + z_{cf} \, \sigma_{X} \right )
+
+    Where :math:`\mu_{X}` and :math:`\sigma_{X}` are the mean and standard
+    deviation of :math:`X`, and :math:`z_{cf}` is the Cornish-Fisher adjusted
+    quantile:
+
+    .. math::
+        z_{cf} = z + \frac{z^{2}-1}{6}S + \frac{z^{3}-3z}{24}K
+        - \frac{2z^{3}-5z}{36}S^{2}
+
+    with :math:`z = \Phi^{-1}(\alpha)`, :math:`S` the sample skewness and
+    :math:`K` the sample excess kurtosis of :math:`X`.
+
+    Parameters
+    ----------
+    X : np.array
+        Returns series, must have Tx1 size.
+    alpha : float, optional
+        Significance level of Modified VaR. The default is 0.05.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+
+    Returns
+    -------
+    value : float
+        Modified VaR of a returns series.
+    """
+
+    a = np.array(X, ndmin=2)
+    if a.shape[0] == 1 and a.shape[1] > 1:
+        a = a.T
+    if a.shape[0] > 1 and a.shape[1] > 1:
+        raise ValueError("returns must have Tx1 size")
+
+    a = a.flatten()
+    mu = np.mean(a)
+    sigma = np.std(a, ddof=1)
+    S = skew(a, bias=False)
+    K = kurtosis(a, fisher=True, bias=False)
+
+    z = norm.ppf(alpha)
+    z_cf = (
+        z
+        + (z**2 - 1) / 6 * S
+        + (z**3 - 3 * z) / 24 * K
+        - (2 * z**3 - 5 * z) / 36 * S**2
+    )
+
+    value = -(mu + z_cf * sigma)
     value = np.array(value).item()
 
     return value
