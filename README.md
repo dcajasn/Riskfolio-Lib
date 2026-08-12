@@ -30,7 +30,7 @@
 <a href="https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt"> <img src="https://img.shields.io/github/license/dcajasn/Riskfolio-Lib" height="28" /></a>
 <a href="https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD"> <img src="https://mybinder.org/badge_logo.svg" height="28" /></a>
 
-[![Star History Chart](https://api.star-history.com/svg?repos=dcajasn/Riskfolio-Lib&type=timeline&legend=top-left)](https://www.star-history.com/#dcajasn/Riskfolio-Lib&type=timeline&legend=top-left)
+[![Star History Chart](https://star-history.dera.page/svg?repos=dcajasn/Riskfolio-Lib&type=timeline&legend=top-left)](https://star-history.dera.page/#dcajasn/Riskfolio-Lib&type=timeline&legend=top-left)
 
 ## Description
 
