@@ -1,28 +1,27 @@
 """"""  #
 
-"""
-Copyright (c) 2020-2026, Dany Cajas
-All rights reserved.
-This work is licensed under BSD 3-Clause "New" or "Revised" License.
-License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
-"""
+# Copyright (c) 2020-2026, Dany Cajas
+# All rights reserved.
+# This work is licensed under BSD 3-Clause "New" or "Revised" License.
+# License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.lines as mlines
+import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+import networkx as nx
+import numpy as np
+import pandas as pd
+import scipy.cluster.hierarchy as hr
+import scipy.stats as st
 from matplotlib import cm, colors
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
-import scipy.stats as st
-import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
-import networkx as nx
-import riskfolio.src.RiskFunctions as rk
+
 import riskfolio.src.AuxFunctions as af
-import riskfolio.src.DBHT as db
 import riskfolio.src.ConstraintsFunctions as ct
+import riskfolio.src.DBHT as db
+import riskfolio.src.RiskFunctions as rk
 
 __all__ = [
     "plot_series",
@@ -851,7 +850,7 @@ def plot_pie(
             xy=(x, y),
             xytext=(1.1 * np.sign(x), 1.1 * y),
             horizontalalignment=horizontalalignment,
-            **kw
+            **kw,
         )
 
     try:

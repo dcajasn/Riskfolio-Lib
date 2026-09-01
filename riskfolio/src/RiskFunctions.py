@@ -1,24 +1,23 @@
 """"""  #
 
-"""
-Copyright (c) 2020-2026, Dany Cajas
-All rights reserved.
-This work is licensed under BSD 3-Clause "New" or "Revised" License.
-License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
-"""
+# Copyright (c) 2020-2026, Dany Cajas
+# All rights reserved.
+# This work is licensed under BSD 3-Clause "New" or "Revised" License.
+# License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
+import warnings
+
+import cvxpy as cp
 import numpy as np
 import pandas as pd
-import cvxpy as cp
-import riskfolio.src.OwaWeights as owa
-import riskfolio.src.ParamsEstimation as pe
-from scipy.optimize import minimize
-from scipy.optimize import Bounds
-from scipy.linalg import null_space
 from numpy.linalg import pinv
+from scipy.linalg import null_space
+from scipy.optimize import Bounds, minimize
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-import warnings
+
+import riskfolio.src.OwaWeights as owa
+import riskfolio.src.ParamsEstimation as pe
 
 __all__ = [
     "MAD",
@@ -3297,7 +3296,6 @@ def BrinsonAttribution(
     wp_ = wp_.to_numpy().reshape(-1, 1)
     wb_ = wb_.to_numpy().reshape(-1, 1)
 
-    Rp = (p3.T @ wp_).item()
     Rb = (p3.T @ wb_).item()
 
     classes = asset_classes[col].tolist()

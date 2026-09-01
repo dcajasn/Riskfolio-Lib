@@ -1,31 +1,26 @@
 """"""  #
 
-"""
-Copyright (c) 2020-2026, Dany Cajas
-All rights reserved.
-This work is licensed under BSD 3-Clause "New" or "Revised" License.
-License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
-"""
+# Copyright (c) 2020-2026, Dany Cajas
+# All rights reserved.
+# This work is licensed under BSD 3-Clause "New" or "Revised" License.
+# License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
-import numpy as np
-import pandas as pd
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import scipy.stats as st
+import numpy as np
+import pandas as pd
 import scipy.cluster.hierarchy as hr
+import scipy.stats as st
+from astropy.stats import freedman_bin_width, knuth_bin_width, scott_bin_width
 from scipy import linalg as LA
-from statsmodels.stats.correlation_tools import cov_nearest
-from scipy.sparse import csr_matrix
-from scipy.spatial.distance import pdist, squareform
 from scipy.optimize import minimize
-from sklearn.metrics import mutual_info_score
+from scipy.spatial.distance import squareform
+from sklearn.metrics import mutual_info_score, silhouette_samples
 from sklearn.neighbors import KernelDensity
-from sklearn.metrics import silhouette_samples
-from astropy.stats import knuth_bin_width, freedman_bin_width, scott_bin_width
-from itertools import product
+from statsmodels.stats.correlation_tools import cov_nearest
+
 import riskfolio.external.cppfunctions as cf
 import riskfolio.src.GerberStatistic as gs
-import re
 
 __all__ = [
     "is_pos_def",
@@ -327,7 +322,6 @@ def dcorr(X, Y):
 
     X = np.atleast_2d(X)
     Y = np.atleast_2d(Y)
-    n = X.shape[0]
 
     if Y.shape[0] != X.shape[0]:
         raise ValueError("Number of samples must match")

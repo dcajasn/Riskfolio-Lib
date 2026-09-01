@@ -1,22 +1,21 @@
 """"""  #
 
-"""
-Copyright (c) 2020-2026, Dany Cajas
-All rights reserved.
-This work is licensed under BSD 3-Clause "New" or "Revised" License.
-License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
-"""
+# Copyright (c) 2020-2026, Dany Cajas
+# All rights reserved.
+# This work is licensed under BSD 3-Clause "New" or "Revised" License.
+# License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
 import numpy as np
 import pandas as pd
 import scipy.cluster.hierarchy as hr
 from scipy.spatial.distance import squareform
+
 import riskfolio as rp
-import riskfolio.src.RiskFunctions as rk
 import riskfolio.src.AuxFunctions as af
-import riskfolio.src.ParamsEstimation as pe
 import riskfolio.src.DBHT as db
 import riskfolio.src.GerberStatistic as gs
+import riskfolio.src.ParamsEstimation as pe
+import riskfolio.src.RiskFunctions as rk
 
 __all__ = [
     "HCPortfolio",
