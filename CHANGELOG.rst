@@ -35,6 +35,30 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Unreleased
+==========
+
+- CI now runs the test suite. The ``Test`` step in ``build.yml`` was commented
+  out and the script it referenced did not exist, so ``tests/test_portfolio.py``
+  had never run in CI and had drifted out of step with the library.
+- ``continuous_integration/install_dependencies.sh`` now installs the runtime
+  requirements and the package itself. It previously installed neither, so the
+  test step could not have imported riskfolio even if it had been enabled.
+- Added ``continuous_integration/test_script.sh``, and pinned one matrix cell
+  as the coverage cell so the ``Upload coverage file`` step has a real artifact
+  to upload. Nothing set ``single_action_config`` before, so that step was dead.
+- Updated the tests for two API changes they had never seen: ``assets_stats``
+  takes estimator arguments through ``dict_mu`` and ``dict_cov``, and
+  ``HCPortfolio.optimization`` renamed ``covariance`` to ``method_cov``.
+- Fixed ``HCPortfolio.optimization`` for the 'HERC' and 'HERC2' models, which
+  raised a TypeError because the recursive bisection helper was called with
+  arguments it does not accept.
+- Re-recorded the reference weight files, which dated from version 3 and no
+  longer matched any current model, and added
+  ``tests/regenerate_goldens.py`` so they cannot drift again. The comparison
+  tolerance is now derived from measured solver noise instead of ``decimal=6``,
+  and the tests also assert budget, sign and finiteness invariants.
+
 Version 7.3.0
 =============
 

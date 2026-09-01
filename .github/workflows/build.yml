@@ -35,6 +35,11 @@ jobs:
       matrix:
         os: [ ubuntu-22.04, macos-15, windows-2022 ]
         python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        include:
+          # The one cell that collects and uploads coverage.
+          - os: ubuntu-22.04
+            python-version: "3.12"
+            single_action_config: 'True'
 
     env:
       RUNNER_OS: ${{ matrix.os }}
@@ -60,9 +65,11 @@ jobs:
       - name: Install
         run: |
           source continuous_integration/install_dependencies.sh
-#      - name: Test
-#        run: |
-#          source continuous_integration/test_script.sh
+
+      - name: Test
+        run: |
+          source continuous_integration/test_script.sh
+
       - name: Upload coverage file
         uses: actions/upload-artifact@v4
         if: ${{env.SINGLE_ACTION_CONFIG == 'True'}}
