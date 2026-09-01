@@ -277,6 +277,32 @@ class Portfolio(object):
         Order of the Even Moment of order 2 * p_em. It must be an integer higher equal than 2. The default value is 2.
     p_esm : int, optional
         Order of the Even Semi Moment of order 2 * p_esm. It must be an integer higher equal than 2. The default value is 2.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> port = rp.Portfolio(returns=returns)
+    >>> port.assets_stats(method_mu='hist', method_cov='hist')
+    >>> port.mu.shape
+    (1, 4)
+    >>> port.cov.shape
+    (4, 4)
+    >>> w = port.optimization(model='Classic', rm='MV', obj='MinRisk', hist=True)
+    >>> np.round(w.to_numpy().ravel(), 3).tolist()
+    [0.098, 0.737, 0.032, 0.133]
     """
 
     def __init__(
@@ -1140,14 +1166,16 @@ class Portfolio(object):
     @kappa_g.setter
     def kappa_g(self, value):
         a = value
-        if a >= 1:
+        if a is None:
+            self._kappa_g = None
+        elif a >= 1:
             print(
-                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99."
+                "kappa_g must be between 0 and 1, values higher or equal to 1 are setting to 0.99."
             )
             self._kappa_g = 0.99
         elif a <= 0:
             print(
-                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01."
+                "kappa_g must be between 0 and 1, values lower or equal to 0 are setting to 0.01."
             )
             self._kappa_g = 0.01
         else:
@@ -1220,6 +1248,30 @@ class Portfolio(object):
         riskfolio.src.ParamsEstimation.covar_matrix
         riskfolio.src.ParamsEstimation.cokurt_matrix
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> np.round(port.mu.to_numpy().ravel(), 6).tolist()
+        [0.00195, 0.000975, 0.00395, 0.001925]
+        >>> port.cov.shape
+        (4, 4)
+        >>> bool(rp.is_pos_def(port.cov))
+        True
         """
 
         self.mu = pe.mean_vector(self.returns, method=method_mu, **dict_mu)
@@ -1367,6 +1419,36 @@ class Portfolio(object):
         --------
         riskfolio.src.ParamsEstimation.black_litterman
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+        ...                  columns=["weights"])
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> P = np.array([[1.0, -1.0, 0.0, 0.0]])
+        >>> Q = np.array([[0.002]])
+        >>> port.blacklitterman_stats(P, Q, rf=0, w=w, delta=1, eq=True)
+        >>> port.mu_bl.shape
+        (1, 4)
+        >>> port.cov_bl.shape
+        (4, 4)
+        >>> w = port.optimization(model='BL', rm='MV', obj='MinRisk', hist=False)
+        >>> round(float(w.sum().item()), 6)
+        1.0
         """
         X = self.returns
         if w is None:
@@ -1491,6 +1573,33 @@ class Portfolio(object):
         riskfolio.src.ParamsEstimation.loadings_matrix
         riskfolio.src.ParamsEstimation.risk_factors
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> factors = pd.DataFrame(
+        ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+        ... )
+        >>> port = rp.Portfolio(returns=returns, factors=factors)
+        >>> port.factors_stats(method_mu='hist', method_cov='hist')
+        >>> port.mu_fm.shape
+        (1, 4)
+        >>> port.cov_fm.shape
+        (4, 4)
+        >>> list(port.B.columns)
+        ['const', 'F1', 'F2']
         """
         X = self.factors
         Y = self.returns
@@ -1677,6 +1786,38 @@ class Portfolio(object):
         riskfolio.src.ParamsEstimation.augmented_black_litterman
         riskfolio.src.ParamsEstimation.black_litterman_bayesian
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> factors = pd.DataFrame(
+        ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+        ... )
+        >>> port = rp.Portfolio(returns=returns, factors=factors)
+        >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+        ...                  columns=["weights"])
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> port.factors_stats(method_mu='hist', method_cov='hist')
+        >>> P_f = np.array([[1.0, 0.0]])
+        >>> Q_f = np.array([[0.003]])
+        >>> port.blfactors_stats(flavor='BLB', P_f=P_f, Q_f=Q_f, rf=0, w=w,
+        ...                      delta=1, eq=True, const=True)
+        >>> port.mu_bl_fm.shape
+        (1, 4)
+        >>> port.cov_bl_fm.shape
+        (4, 4)
         """
         X = self.returns
         F = self.factors
@@ -1791,6 +1932,31 @@ class Portfolio(object):
         --------
         riskfolio.src.ParamsEstimation.entropy_pooling
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> P_eq = returns['A'].to_numpy().reshape(1, -1)
+        >>> Q_eq = np.array([[0.004]])
+        >>> port.entropy_pooling_stats(P_eq=P_eq, Q_eq=Q_eq)
+        >>> port.mu.shape
+        (1, 4)
+        >>> round(float(port.mu.to_numpy().ravel()[0]), 6)
+        0.00195
         """
 
         mu_ep, cov_ep, skew_ep, kurt_ep, _ = pe.entropy_pooling(
@@ -1890,6 +2056,33 @@ class Portfolio(object):
         --------
         riskfolio.src.ParamsEstimation.bootstrapping
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> port.wc_stats(box='s', ellip='s', q=0.05, n_sim=100, window=3, seed=0)
+        >>> port.cov_l.shape
+        (4, 4)
+        >>> bool((port.cov_l.to_numpy() <= port.cov_u.to_numpy()).all())
+        True
+        >>> port.d_mu.shape
+        (1, 4)
+        >>> bool(port.k_mu > 0)
+        True
         """
 
         if box not in list("scmdn"):
@@ -2082,6 +2275,35 @@ class Portfolio(object):
         optimal : DataFrame
             The weights of optimal portfolio.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> w = port.optimization(model='Classic', rm='MV', obj='MinRisk', hist=True)
+        >>> w.shape
+        (4, 1)
+        >>> np.round(w.to_numpy().ravel(), 3).tolist()
+        [0.098, 0.737, 0.032, 0.133]
+        >>> round(float(w.sum().item()), 6)
+        1.0
+        >>> w = port.optimization(model='Classic', rm='CVaR', obj='Sharpe', rf=0,
+        ...                       hist=True)
+        >>> np.round(w.to_numpy().ravel(), 3).tolist()
+        [0.275, 0.453, 0.21, 0.063]
         """
 
         # General model Variables
@@ -3620,6 +3842,30 @@ class Portfolio(object):
         rp_optimal : DataFrame
             The weights of optimal portfolio.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> w = port.rp_optimization(model='Classic', rm='MV', rf=0, b=None, hist=True)
+        >>> np.round(w.to_numpy().ravel(), 3).tolist()
+        [0.165, 0.529, 0.16, 0.146]
+        >>> rc = rp.Risk_Contribution(w, returns, cov=port.cov, rm='MV')
+        >>> bool(np.allclose(rc, rc.mean(), atol=1e-4))
+        True
         """
 
         # General model Variables
@@ -4536,6 +4782,31 @@ class Portfolio(object):
         rrp_optimal : DataFrame
             The weights of optimal portfolio.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> w = port.rrp_optimization(model='Classic', version='A', l=1, hist=True)
+        >>> w.shape
+        (4, 1)
+        >>> round(float(w.sum().item()), 6)
+        1.0
+        >>> bool((w.to_numpy() >= -1e-6).all())
+        True
         """
 
         # General model Variables
@@ -4722,6 +4993,30 @@ class Portfolio(object):
         wc_optimal : DataFrame
             The weights of optimal portfolio.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> port.wc_stats(box='s', ellip='s', q=0.05, n_sim=100, window=3, seed=0)
+        >>> w = port.wc_optimization(obj='MinRisk', rf=0, Umu='box', Ucov='box')
+        >>> np.round(w.to_numpy().ravel(), 3).tolist()
+        [0.096, 0.856, 0.0, 0.048]
+        >>> round(float(w.sum().item()), 6)
+        1.0
         """
 
         # General model Variables
@@ -5154,6 +5449,33 @@ class Portfolio(object):
         frc_optimal : DataFrame
             The weights of optimal portfolio.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> factors = pd.DataFrame(
+        ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+        ... )
+        >>> port = rp.Portfolio(returns=returns, factors=factors)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> port.factors_stats(method_mu='hist', method_cov='hist')
+        >>> w = port.frc_optimization(model='Classic', obj='MinRisk', hist=True)
+        >>> np.round(w.to_numpy().ravel(), 3).tolist()
+        [0.168, 0.236, 0.472, 0.124]
+        >>> round(float(w.sum().item()), 6)
+        1.0
         """
 
         # General model Variables
@@ -5489,6 +5811,32 @@ class Portfolio(object):
         owa_optimal : DataFrame
             The weights of optimal portfolio.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> owa_w = rp.owa_gmd(returns.shape[0]) / 2
+        >>> w = port.owa_optimization(obj='MinRisk', owa_w=owa_w, rf=0)
+        >>> w.shape
+        (4, 1)
+        >>> round(float(w.sum().item()), 6)
+        1.0
+        >>> bool((w.to_numpy() >= -1e-6).all())
+        True
         """
 
         # General model Variables
@@ -5911,6 +6259,31 @@ class Portfolio(object):
         mvsk_optimal : DataFrame
             The weights of optimal MVSK portfolio.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist', method_kurt='hist')
+        You must convert self.kurt to a positive definite matrix
+        You must convert self.skurt to a positive definite matrix
+        >>> w = port.mvsk_optimization(model='Classic', obj='MinRisk', l=[2, 3, 4])
+        >>> np.round(w.to_numpy().ravel(), 3).tolist()
+        [0.096, 0.746, 0.026, 0.131]
+        >>> round(float(w.sum().item()), 6)
+        1.0
         """
 
         # General model Variables
@@ -6241,6 +6614,29 @@ class Portfolio(object):
         This method is preferable (faster) to use instead of efficient_frontier
         method to know the range of expected return and expected risk.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> limits = port.frontier_limits(model='Classic', rm='MV', rf=0, hist=True)
+        >>> list(limits.columns)
+        ['w_min', 'w_max']
+        >>> np.round(limits.sum(axis=0).to_numpy(), 6).tolist()
+        [1.0, 1.0]
         """
 
         w_min = self.optimization(
@@ -6351,6 +6747,31 @@ class Portfolio(object):
         assets (more than 100) and you are using a scenario based risk measure
         (all except standard deviation). It's preferable to use frontier_limits
         method (faster) to know the range of expected return and expected risk.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> frontier = port.efficient_frontier(model='Classic', rm='MV', points=5,
+        ...                                    rf=0, hist=True)
+        >>> frontier.shape
+        (4, 5)
+        >>> np.round(frontier.sum(axis=0).to_numpy(), 6).tolist()
+        [1.0, 1.0, 1.0, 1.0, 1.0]
         """
 
         mu = None
@@ -6650,16 +7071,16 @@ class Portfolio(object):
 
         self.ainequality = None
         self.binequality = None
-        self.arcinequality = (None,)
-        self.brcinequality = (None,)
-        self.afrcinequality = (None,)
-        self.bfrcinequality = (None,)
-        self.aintinequality = (None,)
-        self.bintinequality = (None,)
-        self.cintinequality = (None,)
-        self.dintinequality = (None,)
-        self.eintinequality = (None,)
-        self.fintinequality = (None,)
+        self.arcinequality = None
+        self.brcinequality = None
+        self.afrcinequality = None
+        self.bfrcinequality = None
+        self.aintinequality = None
+        self.bintinequality = None
+        self.cintinequality = None
+        self.dintinequality = None
+        self.eintinequality = None
+        self.fintinequality = None
         self.b = None
         self.network_sdp = None
         self.graph_penalty = 0.05
@@ -6671,6 +7092,29 @@ class Portfolio(object):
         r"""
         Reset all inputs parameters of optimization models.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> port.mu is None
+        False
+        >>> port.reset_inputs()
+        >>> port.mu is None
+        True
         """
 
         cons = [
@@ -6711,6 +7155,29 @@ class Portfolio(object):
         r"""
         Reset portfolio object to defatult values.
 
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.Portfolio(returns=returns)
+        >>> port.assets_stats(method_mu='hist', method_cov='hist')
+        >>> port.mu is None
+        False
+        >>> port.reset_all()
+        >>> port.mu is None
+        True
         """
 
         self.sht = False

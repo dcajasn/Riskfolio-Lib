@@ -79,6 +79,14 @@ def is_pos_def(cov, threshold=1e-8):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> rp.is_pos_def(np.array([[2.0, 0.5], [0.5, 1.0]]))
+    np.True_
+    >>> rp.is_pos_def(np.array([[1.0, 2.0], [2.0, 1.0]]))
+    np.False_
     """
     cov_ = np.array(cov, ndmin=2)
     w = LA.eigh(cov_, lower=True, check_finite=True, eigvals_only=True)
@@ -105,6 +113,28 @@ def cov2corr(cov):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = returns.cov()
+    >>> corr = rp.cov2corr(cov)
+    >>> np.round(np.diag(corr), 6).tolist()
+    [1.0, 1.0, 1.0, 1.0]
+    >>> corr.shape
+    (4, 4)
     """
 
     flag = False
@@ -145,6 +175,27 @@ def corr2cov(corr, std):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = returns.cov()
+    >>> corr = rp.cov2corr(cov)
+    >>> std = np.sqrt(np.diag(cov))
+    >>> bool(np.allclose(rp.corr2cov(corr, std), cov))
+    True
     """
 
     flag = False
@@ -182,6 +233,15 @@ def cov_fix(cov, method="clipped", threshold=1e-8):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> cov = np.array([[1.0, 2.0], [2.0, 1.0]])
+    >>> rp.is_pos_def(cov)
+    np.False_
+    >>> rp.is_pos_def(rp.cov_fix(cov, method='clipped'))
+    np.False_
     """
     flag = False
     if isinstance(cov, pd.DataFrame):
@@ -216,6 +276,28 @@ def cov_returns(cov, seed=0):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = returns.cov()
+    >>> sim = rp.cov_returns(cov.to_numpy(), seed=0)
+    >>> sim.shape
+    (14, 4)
+    >>> bool(np.allclose(np.cov(sim, rowvar=False), cov, atol=1e-6))
+    True
     """
 
     rs = np.random.RandomState(seed)
@@ -259,6 +341,13 @@ def block_vec_pq(A, p, q):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> A_ = np.arange(16).reshape(4, 4)
+    >>> rp.block_vec_pq(A_, 2, 2).shape
+    (4, 4)
     """
     if isinstance(A, pd.DataFrame):
         A_ = A.to_numpy()
@@ -315,6 +404,26 @@ def dcorr(X, Y):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> round(float(rp.dcorr(returns['A'], returns['A'])), 6)
+    1.0
+    >>> round(float(rp.dcorr(returns['A'], returns['B'])), 6)
+    0.407182
     """
 
     X = np.atleast_1d(X)
@@ -356,6 +465,27 @@ def dcorr_matrix(X):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> D = rp.dcorr_matrix(returns)
+    >>> D.shape
+    (4, 4)
+    >>> np.round(np.diag(D), 6).tolist()
+    [1.0, 1.0, 1.0, 1.0]
     """
     flag = False
     if isinstance(X, pd.DataFrame):
@@ -397,6 +527,13 @@ def numBins(n_samples, corr=None):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> rp.numBins(100)
+    np.int32(7)
+    >>> rp.numBins(100, corr=0.5)
+    np.int32(5)
     """
     # univariate case
     if corr is None:
@@ -444,6 +581,27 @@ def mutual_info_matrix(X, bins_info="KN", normalize=True):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> M = rp.mutual_info_matrix(returns, bins_info='KN')
+    >>> M.shape
+    (4, 4)
+    >>> bool(np.allclose(M, M.T))
+    True
     """
     flag = False
     if isinstance(X, pd.DataFrame):
@@ -540,6 +698,27 @@ def var_info_matrix(X, bins_info="KN", normalize=True):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> V = rp.var_info_matrix(returns, bins_info='KN')
+    >>> V.shape
+    (4, 4)
+    >>> np.round(np.diag(V), 6).tolist()
+    [0.0, 0.0, 0.0, 0.0]
     """
     flag = False
     if isinstance(X, pd.DataFrame):
@@ -628,6 +807,27 @@ def ltdi_matrix(X, alpha=0.05):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> L = rp.ltdi_matrix(returns, alpha=0.2)
+    >>> L.shape
+    (4, 4)
+    >>> bool(np.allclose(L, L.T))
+    True
     """
 
     flag = False
@@ -699,6 +899,27 @@ def two_diff_gap_stat(dist, clustering, max_k=10):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> import scipy.cluster.hierarchy as hr
+    >>> codep, dist = rp.codep_dist(returns, codependence='pearson')
+    >>> link = hr.linkage(dist.to_numpy()[np.triu_indices(4, 1)], 'ward')
+    >>> rp.two_diff_gap_stat(dist, link, max_k=3)
+    (2, [0, 1, 0, 0])
     """
     flag = False
     # Check if linkage matrix is monotonic
@@ -787,6 +1008,27 @@ def std_silhouette_score(dist, clustering, max_k=10):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> import scipy.cluster.hierarchy as hr
+    >>> codep, dist = rp.codep_dist(returns, codependence='pearson')
+    >>> link = hr.linkage(dist.to_numpy()[np.triu_indices(4, 1)], 'ward')
+    >>> rp.std_silhouette_score(dist, link, max_k=3)
+    (2, [0, 1, 0, 0])
     """
     flag = False
     # Check if linkage matrix is monotonic
@@ -901,6 +1143,27 @@ def codep_dist(
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> codep, dist = rp.codep_dist(returns, codependence='pearson')
+    >>> codep.shape
+    (4, 4)
+    >>> np.round(np.diag(dist.to_numpy()), 6).tolist()
+    [0.0, 0.0, 0.0, 0.0]
     """
     if codependence in {"pearson", "spearman", "kendall"}:
         codep = returns.corr(method=codependence)
@@ -972,6 +1235,16 @@ def fitKDE(obs, bWidth=0.01, kernel="gaussian", x=None):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> obs = np.linspace(-2, 2, 50)
+    >>> pdf = rp.fitKDE(obs, bWidth=0.25)
+    >>> pdf.shape
+    (50,)
+    >>> bool((pdf.to_numpy() >= 0).all())
+    True
     """
 
     if len(obs.shape) == 1:
@@ -1014,6 +1287,14 @@ def mpPDF(var, q, pts):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> pdf = rp.mpPDF(var=1.0, q=10, pts=50)
+    >>> pdf.shape
+    (50,)
+    >>> bool((pdf.to_numpy() >= 0).all())
+    True
     """
 
     if isinstance(var, np.ndarray):
@@ -1054,6 +1335,14 @@ def errPDFs(var, eVal, q, bWidth=0.01, pts=1000):
     Raises
     ------
         ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> eVal = np.array([2.0, 1.0, 0.5, 0.25])
+    >>> bool(rp.errPDFs(1.0, eVal, q=5, pts=50) >= 0)
+    True
     """
 
     # Fit error
@@ -1088,6 +1377,28 @@ def findMaxEval(eVal, q, bWidth=0.01):
     Raises
     ------
         ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = returns.cov()
+    >>> eVal, eVec = rp.getPCA(rp.cov2corr(cov.to_numpy()))
+    >>> eMax, var = rp.findMaxEval(np.diag(eVal), q=5, bWidth=0.25)
+    >>> bool(eMax > 0)
+    True
     """
 
     out = minimize(
@@ -1123,6 +1434,29 @@ def getPCA(matrix):
     Raises
     ------
         ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = returns.cov()
+    >>> eVal, eVec = rp.getPCA(cov.to_numpy())
+    >>> eVal.shape
+    (4, 4)
+    >>> bool((np.diff(np.diag(eVal)) <= 1e-12).all())
+    True
     """
 
     # Get eVal,eVec from a Hermitian matrix
@@ -1161,6 +1495,29 @@ def denoisedCorr(eVal, eVec, nFacts, kind="fixed"):
     Raises
     ------
         ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = returns.cov()
+    >>> corr = rp.cov2corr(cov.to_numpy())
+    >>> eVal, eVec = rp.getPCA(corr)
+    >>> corr_ = rp.denoisedCorr(eVal, eVec, nFacts=2, kind='fixed')
+    >>> np.round(np.diag(corr_), 6).tolist()
+    [1.0, 1.0, 1.0, 1.0]
     """
 
     eVal_ = np.diag(eVal).copy()
@@ -1201,6 +1558,29 @@ def shrinkCorr(eVal, eVec, nFacts, alpha=0):
     Raises
     ------
         ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = returns.cov()
+    >>> corr = rp.cov2corr(cov.to_numpy())
+    >>> eVal, eVec = rp.getPCA(corr)
+    >>> corr_ = rp.shrinkCorr(eVal, eVec, nFacts=2, alpha=0.5)
+    >>> corr_.shape
+    (4, 4)
     """
 
     eVal_L = eVal[:nFacts, :nFacts]
@@ -1250,6 +1630,29 @@ def denoiseCov(cov, q, kind="fixed", bWidth=0.01, detone=False, mkt_comp=1, alph
     Raises
     ------
         ValueError when the value cannot be calculated.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = returns.cov()
+    >>> cov_ = rp.denoiseCov(cov.to_numpy(), q=5, kind='fixed', bWidth=0.25)
+    >>> cov_.shape
+    (4, 4)
+    >>> bool(rp.is_pos_def(cov_))
+    True
     """
 
     flag = False
@@ -1311,6 +1714,15 @@ def round_values(data, decimals=4, wider=False):
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> data = np.array([0.1234, 0.5678, 0.3088])
+    >>> np.round(rp.round_values(data, decimals=2), 6).tolist()
+    [0.12, 0.56, 0.3]
+    >>> np.round(rp.round_values(data, decimals=2, wider=True), 6).tolist()
+    [0.13, 0.57, 0.31]
     """
 
     if wider == True:
@@ -1368,6 +1780,17 @@ def weights_discretizetion(
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> weights = pd.DataFrame([0.5, 0.3, 0.2], index=['A', 'B', 'C'],
+    ...                        columns=['weights'])
+    >>> prices = pd.DataFrame([[100.0, 50.0, 25.0]], columns=['A', 'B', 'C'])
+    >>> shares = rp.weights_discretizetion(weights, prices, capital=10000)
+    >>> shares.to_numpy().ravel().tolist()
+    [50.0, 60.0, 80.0]
     """
 
     if isinstance(weights, pd.Series):
@@ -1459,6 +1882,15 @@ def color_list(k):
     -------
     colors : list
         A list of colors.
+
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> colors = rp.color_list(3)
+    >>> len(colors)
+    10
+    >>> isinstance(colors[0], str)
+    True
     """
 
     colors = []

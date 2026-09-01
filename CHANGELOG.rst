@@ -35,6 +35,27 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Unreleased
+==========
+
+- Add runnable doctest examples to the public API of every module, and a
+  ``tests/test_doctests.py`` suite plus a CI job that runs them, so the
+  docstrings are checked against the code on every push.
+- Fixed ``HCPortfolio.optimization`` for the 'HERC' and 'HERC2' models, which
+  raised a TypeError because the recursive bisection helper was called with
+  arguments it does not accept.
+- Fixed ``Portfolio.reset_all`` and ``Portfolio.reset_linear_constraints``,
+  which raised on the ``kappa_g`` setter and assigned ``(None,)`` tuples to ten
+  linear constraint attributes.
+- Fixed the plotting functions for matplotlib >= 3.9: ``matplotlib.cm.get_cmap``
+  and ``Axes.plot_date`` were removed upstream, which broke ``plot_series``,
+  ``plot_pie``, ``plot_frontier_area``, ``plot_bar`` and ``plot_drawdown``.
+- Fixed ``DBHT.BuildHierarchy`` for NumPy >= 1.25, which broke DBHT linkage.
+- Fixed the ``nargout=5`` branch of ``DBHT.PMFG_T2s``.
+- Corrected the documented return values of ``entropy_pooling``,
+  ``risk_factors``, ``PMFG_T2s`` and the documented fields of
+  ``entropy_pooling_views``.
+
 Version 7.3.0
 =============
 

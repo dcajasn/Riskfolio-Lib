@@ -43,6 +43,18 @@ def owa_l_moment(T, k=2):
     -------
     value : 1d-array
         An OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_l_moment(10, k=2)
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    0.0
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-0.1, -0.077778, -0.055556]
     """
     w = []
     T_ = int(T)
@@ -71,6 +83,18 @@ def owa_gmd(T):
     -------
     value : 1d-array
         An OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_gmd(10)
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    0.0
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-0.2, -0.155556, -0.111111]
     """
 
     w_ = []
@@ -99,6 +123,18 @@ def owa_cvar(T, alpha=0.05):
     -------
     value : 1d-array
         An OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_cvar(10, alpha=0.2)
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    -1.0
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-0.5, -0.5, 0.0]
     """
 
     T_ = int(T)
@@ -128,6 +164,18 @@ def owa_wcvar(T, alphas, weights):
     -------
     value : 1d-array
         An OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_wcvar(10, alphas=[0.1, 0.2], weights=[0.5, 0.5])
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    -1.0
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-0.75, -0.25, 0.0]
     """
 
     w_ = 0
@@ -156,6 +204,18 @@ def owa_tg(T, alpha=0.05, a_sim=100):
     -------
     value : 1d-array
         A OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_tg(10, alpha=0.2, a_sim=50)
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    -1.0
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-0.749896, -0.250104, 0.0]
     """
     T_ = int(T)
     a_sim_ = int(a_sim)
@@ -183,6 +243,18 @@ def owa_wr(T):
     -------
     value : 1d-array
         A OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_wr(10)
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    -1.0
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-1.0, 0.0, 0.0]
     """
 
     T_ = int(T)
@@ -206,6 +278,18 @@ def owa_rg(T):
     -------
     value : 1d-array
         A OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_rg(10)
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    0.0
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-1.0, 0.0, 0.0]
     """
 
     T_ = int(T)
@@ -235,6 +319,18 @@ def owa_cvrg(T, alpha=0.05, beta=None):
     -------
     value : 1d-array
         A OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_cvrg(10, alpha=0.2, beta=0.2)
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    0.0
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-0.5, -0.5, 0.0]
     """
 
     T_ = int(T)
@@ -270,6 +366,19 @@ def owa_wcvrg(T, alphas, weights_a, betas=None, weights_b=None):
     -------
     value : 1d-array
         A OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_wcvrg(10, alphas=[0.1, 0.2], weights_a=[0.5, 0.5],
+    ...              betas=[0.1, 0.2], weights_b=[0.5, 0.5])
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    0.0
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-0.75, -0.25, 0.0]
     """
 
     T_ = int(T)
@@ -306,6 +415,18 @@ def owa_tgrg(T, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     -------
     value : 1d-array
         A OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_tgrg(10, alpha=0.2, a_sim=50, beta=0.2, b_sim=50)
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    0.0
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-0.749896, -0.250104, 0.0]
     """
 
     if beta is None:
@@ -355,6 +476,18 @@ def owa_l_moment_crm(T, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"
     -------
     value : 1d-array
         A OWA weights vector of size Tx1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> w = rp.owa_l_moment_crm(10, k=4, method='CRRA', g=0.5)
+    >>> w.shape
+    (10, 1)
+    >>> round(float(w.sum()), 6)
+    0.000137
+    >>> np.round(w.ravel()[:3], 6).tolist()
+    [-0.1, -0.04636, -0.011686]
     """
 
     if k < 2 or (not isinstance(k, int)):

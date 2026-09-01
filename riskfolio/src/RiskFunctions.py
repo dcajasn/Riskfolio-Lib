@@ -86,6 +86,15 @@ def MAD(X):
     value : float
         MAD of a returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.MAD(X)), 6)
+    0.013055
     """
 
     a = np.array(X, ndmin=2)
@@ -126,6 +135,16 @@ def SemiDeviation(X):
     -------
     value : float
         Semi Deviation of a returns series.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.SemiDeviation(X)), 6)
+    0.011107
     """
 
     a = np.array(X, ndmin=2)
@@ -166,6 +185,16 @@ def Kurtosis(X):
     -------
     value : float
         Square Root Kurtosis of a returns series.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.Kurtosis(X)), 6)
+    0.000317
     """
 
     a = np.array(X, ndmin=2)
@@ -206,6 +235,16 @@ def SemiKurtosis(X):
     -------
     value : float
         Semi Square Root Kurtosis of a returns series.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.SemiKurtosis(X)), 6)
+    0.00023
     """
 
     a = np.array(X, ndmin=2)
@@ -249,6 +288,18 @@ def EvenMoment(X, p: int = 2):
     -------
     value : float
         p-th Root Even Moment of order 2 * p of a returns series.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.EvenMoment(X, p=2)), 6)
+    0.000317
+    >>> round(float(rp.EvenMoment(X, p=4)), 6)
+    0.000444
     """
 
     a = np.array(X, ndmin=2)
@@ -294,6 +345,18 @@ def EvenSemiMoment(X, p: int = 2):
     -------
     value : float
         p-th Root Semi Even Moment of order 2 * p of a returns series.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.EvenSemiMoment(X, p=2)), 6)
+    0.00023
+    >>> round(float(rp.EvenSemiMoment(X, p=4)), 6)
+    0.000368
     """
 
     a = np.array(X, ndmin=2)
@@ -337,6 +400,16 @@ def VaR_Hist(X, alpha=0.05):
     -------
     value : float
         VaR of a returns series.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.VaR_Hist(X, alpha=0.1)), 6)
+    0.02
     """
 
     a = np.array(X, ndmin=2)
@@ -378,6 +451,18 @@ def CVaR_Hist(X, alpha=0.05):
     -------
     value : float
         CVaR of a returns series.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.VaR_Hist(X, alpha=0.1)), 6)
+    0.02
+    >>> round(float(rp.CVaR_Hist(X, alpha=0.1)), 6)
+    0.0225
     """
 
     a = np.array(X, ndmin=2)
@@ -420,6 +505,15 @@ def WR(X):
     value : float
         WR of a returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.WR(X)), 6)
+    0.025
     """
 
     a = np.array(X, ndmin=2)
@@ -470,6 +564,17 @@ def LPM(X, MAR=0, p=1):
     value : float
         p-th Lower Partial Moment of a returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.LPM(X, MAR=0, p=1)), 6)
+    0.00565
+    >>> round(float(rp.LPM(X, MAR=0, p=2)), 6)
+    0.009918
     """
 
     a = np.array(X, ndmin=2)
@@ -523,6 +628,15 @@ def Entropic_RM(X, z=1, alpha=0.05):
     value : float
         ERM of a returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.Entropic_RM(X, z=0.01, alpha=0.1)), 6)
+    0.030933
     """
 
     a = np.array(X, ndmin=2)
@@ -585,6 +699,16 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
     (value, z) : tuple
         EVaR of a returns series and value of z that minimize EVaR.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> value, z = rp.EVaR_Hist(X, alpha=0.1)
+    >>> round(float(value), 6)
+    0.023766
     """
 
     solvers = ["CLARABEL", "MOSEK", "COPT", "SCS", "ECOS"]
@@ -689,6 +813,15 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     value : tuple
         RLVaR of a returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.RLVaR_Hist(X, alpha=0.1, kappa=0.3)), 4)
+    0.024
     """
 
     solvers = ["CLARABEL", "MOSEK", "SCS"]
@@ -808,6 +941,15 @@ def MDD_Abs(X):
     value : float
         MDD of an uncompounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.MDD_Abs(X)), 6)
+    0.025
     """
 
     a = np.array(X, ndmin=2)
@@ -856,6 +998,15 @@ def ADD_Abs(X):
     value : float
         ADD of an uncompounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.ADD_Abs(X)), 6)
+    0.00765
     """
 
     a = np.array(X, ndmin=2)
@@ -915,6 +1066,15 @@ def DaR_Abs(X, alpha=0.05):
     value : float
         DaR of an uncompounded cumulative returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.DaR_Abs(X, alpha=0.1)), 6)
+    0.02
     """
 
     a = np.array(X, ndmin=2)
@@ -973,6 +1133,15 @@ def CDaR_Abs(X, alpha=0.05):
     value : float
         CDaR of an uncompounded cumulative returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.CDaR_Abs(X, alpha=0.1)), 6)
+    0.0225
     """
 
     a = np.array(X, ndmin=2)
@@ -1030,6 +1199,16 @@ def EDaR_Abs(X, alpha=0.05, solver="CLARABEL"):
         EDaR of an uncompounded cumulative returns series
         and value of z that minimize EDaR.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> value, z = rp.EDaR_Abs(X, alpha=0.1)
+    >>> round(float(value), 6)
+    0.023834
     """
 
     a = np.array(X, ndmin=2)
@@ -1085,6 +1264,15 @@ def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     value : tuple
         RLDaR of an uncompounded cumulative returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.RLDaR_Abs(X, alpha=0.1, kappa=0.3)), 4)
+    0.0241
     """
 
     a = np.array(X, ndmin=2)
@@ -1133,6 +1321,15 @@ def UCI_Abs(X):
     value : float
         Ulcer Index of an uncompounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.UCI_Abs(X)), 6)
+    0.010893
     """
 
     a = np.array(X, ndmin=2)
@@ -1188,6 +1385,15 @@ def MDD_Rel(X):
     value : float
         MDD of a cumpounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.MDD_Rel(X)), 6)
+    0.025
     """
 
     a = np.array(X, ndmin=2)
@@ -1237,6 +1443,15 @@ def ADD_Rel(X):
     value : float
         ADD of a cumpounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.ADD_Rel(X)), 6)
+    0.007734
     """
 
     a = np.array(X, ndmin=2)
@@ -1296,6 +1511,15 @@ def DaR_Rel(X, alpha=0.05):
     value : float
         DaR of a cumpounded cumulative returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.DaR_Rel(X, alpha=0.1)), 6)
+    0.02
     """
 
     a = np.array(X, ndmin=2)
@@ -1354,6 +1578,15 @@ def CDaR_Rel(X, alpha=0.05):
     value : float
         CDaR of a cumpounded cumulative returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.CDaR_Rel(X, alpha=0.1)), 6)
+    0.0225
     """
 
     a = np.array(X, ndmin=2)
@@ -1411,6 +1644,16 @@ def EDaR_Rel(X, alpha=0.05, solver="CLARABEL"):
         EDaR of a cumpounded cumulative returns series
         and value of z that minimize EDaR.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> value, z = rp.EDaR_Rel(X, alpha=0.1)
+    >>> round(float(value), 6)
+    0.023838
     """
 
     a = np.array(X, ndmin=2)
@@ -1466,6 +1709,15 @@ def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     value : tuple
         RLDaR of a compounded cumulative returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.RLDaR_Rel(X, alpha=0.1, kappa=0.3)), 4)
+    0.0241
     """
 
     a = np.array(X, ndmin=2)
@@ -1514,6 +1766,15 @@ def UCI_Rel(X):
     value : float
         Ulcer Index of a cumpounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.UCI_Rel(X)), 6)
+    0.010958
     """
 
     a = np.array(X, ndmin=2)
@@ -1563,6 +1824,15 @@ def GMD(X):
     value : float
         Gini Mean Difference of a returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.GMD(X)), 6)
+    0.017995
     """
 
     a = np.array(X, ndmin=2)
@@ -1601,6 +1871,15 @@ def TG(X, alpha=0.05, a_sim=100):
     value : float
         Ulcer Index of a cumpounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.TG(X, alpha=0.1, a_sim=100)), 6)
+    0.02375
     """
 
     a = np.array(X, ndmin=2)
@@ -1635,6 +1914,15 @@ def RG(X):
     value : float
         Ulcer Index of a cumpounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.RG(X)), 6)
+    0.055
     """
 
     a = np.array(X, ndmin=2)
@@ -1674,6 +1962,15 @@ def VRG(X, alpha=0.05, beta=None):
     value : float
         Ulcer Index of a cumpounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.VRG(X, alpha=0.1, beta=0.1)), 6)
+    0.041
     """
 
     a = np.array(X, ndmin=2)
@@ -1717,6 +2014,15 @@ def CVRG(X, alpha=0.05, beta=None):
     value : float
         Ulcer Index of a cumpounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.CVRG(X, alpha=0.1, beta=0.1)), 6)
+    0.048
     """
 
     a = np.array(X, ndmin=2)
@@ -1761,6 +2067,15 @@ def TGRG(X, alpha=0.05, a_sim=100, beta=None, b_sim=None):
     value : float
         Ulcer Index of a cumpounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.TGRG(X, alpha=0.1, a_sim=100, beta=0.1, b_sim=100)), 6)
+    0.0515
     """
 
     a = np.array(X, ndmin=2)
@@ -1803,6 +2118,15 @@ def EVRG(X, alpha=0.05, beta=None, solver="CLARABEL"):
     value : float
         Ulcer Index of a cumpounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.EVRG(X, alpha=0.1, beta=0.1)), 4)
+    0.0519
     """
 
     a = np.array(X, ndmin=2)
@@ -1855,6 +2179,15 @@ def RVRG(X, alpha=0.05, beta=None, kappa=0.3, kappa_g=None, solver="CLARABEL"):
     value : float
         Ulcer Index of a cumpounded cumulative returns.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.RVRG(X, alpha=0.1, beta=0.1, kappa=0.3, kappa_g=0.3)), 4)
+    0.0526
     """
 
     a = np.array(X, ndmin=2)
@@ -1904,6 +2237,17 @@ def L_Moment(X, k=2):
     value : float
         Kth l-moment of a returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.L_Moment(X, k=2)), 6)
+    0.008997
+    >>> round(float(rp.L_Moment(X, k=3)), 6)
+    -0.000318
     """
 
     a = np.array(X, ndmin=2)
@@ -1958,6 +2302,15 @@ def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"):
     value : float
         Custom convex risk measure that is a weighted average of first k-th l-moments of a returns series.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> round(float(rp.L_Moment_CRM(X, k=4, method='CRRA', g=0.5)), 4)
+    0.0051
     """
     if k < 2 or (not isinstance(k, int)):
         raise ValueError("k must be an integer higher equal than 2")
@@ -2004,6 +2357,15 @@ def NEA(w):
     -------
     value : float
         The NEA of the portfolio.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import riskfolio as rp
+    >>> round(float(rp.NEA(np.array([0.25, 0.25, 0.25, 0.25]))), 6)
+    4.0
+    >>> round(float(rp.NEA(np.array([0.7, 0.1, 0.1, 0.1]))), 6)
+    1.923077
     """
 
     a = np.array(w, ndmin=2)
@@ -2129,6 +2491,28 @@ def Sharpe_Risk(
     value : float
         Risk measure of the portfolio.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> round(float(rp.Sharpe_Risk(returns, w=w, cov=returns.cov(), rm='MV')), 6)
+    0.008715
+    >>> round(float(rp.Sharpe_Risk(returns, w=w, rm='CVaR', alpha=0.1)), 6)
+    0.011625
     """
 
     if isinstance(returns, pd.Series):
@@ -2361,6 +2745,27 @@ def Sharpe(
     value : float
         Risk adjusted return ratio of :math:`X`.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> round(float(rp.Sharpe(returns, w=w, mu=returns.mean(), cov=returns.cov(),
+    ...                       rm='MV', rf=0)), 6)
+    0.235807
     """
 
     if isinstance(returns, pd.Series):
@@ -2528,6 +2933,30 @@ def Risk_Contribution(
     value : float
         Risk measure of the portfolio.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> rc = rp.Risk_Contribution(w, returns, cov=returns.cov(), rm='MV')
+    >>> np.round(rc, 6).tolist()
+    [0.005414, 0.000192, 0.001935, 0.001174]
+    >>> risk = rp.Sharpe_Risk(returns, w=w, cov=returns.cov(), rm='MV')
+    >>> bool(np.isclose(rc.sum(), risk))
+    True
     """
 
     w_ = np.array(w, ndmin=2)
@@ -2793,6 +3222,27 @@ def Risk_Margin(
     value : float
         Risk margin of the portfolio.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> rm = rp.Risk_Margin(w, returns, cov=returns.cov(), rm='MV')
+    >>> np.round(rm, 6).tolist()
+    [0.013535, 0.00064, 0.009677, 0.011736]
     """
 
     w_ = np.array(w, ndmin=2)
@@ -3096,6 +3546,34 @@ def Factors_Risk_Contribution(
     value : float
         Risk measure of the portfolio.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> rc = rp.Factors_Risk_Contribution(w, returns, factors,
+    ...                                   cov=returns.cov(), rm='MV')
+    >>> rc.shape
+    (3,)
+    >>> risk = rp.Sharpe_Risk(returns, w=w, cov=returns.cov(), rm='MV')
+    >>> bool(np.isclose(rc.sum(), risk))
+    True
     """
     w_ = np.array(w, ndmin=2)
     if w_.shape[0] == 1 and w_.shape[1] > 1:
@@ -3238,6 +3716,41 @@ def BrinsonAttribution(
     .. image:: ../images/BrinAttr.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> prices = (1 + returns).cumprod()
+    >>> prices.index = pd.date_range('2020-01-01', periods=len(prices), freq='D')
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=['weights'])
+    >>> wb = pd.DataFrame([0.25] * 4, index=returns.columns, columns=['weights'])
+    >>> asset_classes = pd.DataFrame(
+    ...     {'Assets': list(returns.columns),
+    ...      'Class': ['Equity', 'Equity', 'Bond', 'Bond']}
+    ... )
+    >>> attr, (start, end) = rp.BrinsonAttribution(
+    ...     prices, w, wb, start='2020-01-02', end='2020-01-20',
+    ...     asset_classes=asset_classes, classes_col='Class'
+    ... )
+    >>> (start, end)
+    ('2020-01-02', '2020-01-20')
+    >>> list(attr.columns)
+    ['Bond', 'Equity', 'Total']
+    >>> list(attr.index)
+    ['Asset Allocation', 'Security Selection', 'Interaction', 'Total Excess Return']
     """
 
     if not isinstance(prices, pd.DataFrame):

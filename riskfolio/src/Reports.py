@@ -188,6 +188,35 @@ def jupyter_report(
     .. image:: ../images/Report_3.png
     .. image:: ../images/Report_4.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.jupyter_report(returns=returns, w=w, rm='MV', alpha=0.1,
+    ...                        bins=10)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    8
     """
 
     cov = returns.cov()
@@ -355,6 +384,30 @@ def excel_report(
 
     .. image:: ../images/Excel.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> import os, tempfile
+    >>> name = os.path.join(tempfile.mkdtemp(), 'report')
+    >>> rp.excel_report(returns=returns, w=w, rf=0, alpha=0.1, name=name)
+    >>> os.path.exists(name + '.xlsx')
+    True
     """
     n1 = w.shape[0]
     n2 = returns.shape[0]
