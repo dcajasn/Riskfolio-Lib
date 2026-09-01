@@ -20,9 +20,18 @@ jobs:
   linters:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-      - run: pip install -r requirements.txt
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install ruff
+        # Pinned: an unpinned ruff turns this gate red on any release that adds
+        # a rule or changes the formatter.
+        run: pip install ruff==0.16.5
+      - name: ruff check
+        run: ruff check --output-format=github
+      - name: ruff format
+        run: ruff format --check --diff
 
 
   build:

@@ -35,6 +35,25 @@ Changelog
 
     <a href='https://ko-fi.com/B0B833SXD' target='_blank'><img height='36'style='border:0px;height:36px;' src='https://cdn.ko-fi.com/cdn/kofi1.png?v=2' border='0' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
+Unreleased
+==========
+
+- The ``linters`` CI job now actually runs ``ruff check`` and
+  ``ruff format --check`` against the committed ``[tool.ruff]`` config, on a
+  pinned ruff, and fails the workflow on violations. It previously only
+  installed dependencies and always reported green.
+- ``[tool.ruff]`` now excludes the vendored ``lib/`` sources, ``examples/`` and
+  ``docs/``, and ``target-version`` is ``py310`` to match ``PYTHON_REQUIRES``
+  and the classifiers.
+- Moved the license banner in every module from a no-op string literal to a
+  comment, so imports are no longer flagged as not being at the top of the file.
+- Sorted imports, dropped unused imports and removed dead local assignments,
+  including the unused return-parameterised sweep in
+  ``Portfolio.efficient_frontier``.
+- Fixed the Python version guard in ``setup.py``: it parsed
+  ``PYTHON_REQUIRES[-1]``, which is ``"0"`` for ``">=3.10"``, so it compared
+  against ``(3, 0)`` and never fired.
+
 Version 7.3.0
 =============
 
