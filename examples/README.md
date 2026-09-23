@@ -60,3 +60,4 @@
 - Mean Even Semi Moment of Order 2p Optimization [Tutorial 56](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2056%20-%20Mean%20Even%20Semi%20Moment%20of%20Order%202p%20Optimization.ipynb)
 - Mean Risk Optimization using Entropy Pooling [Tutorial 57](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2057%20-%20Mean%20Risk%20Optimization%20using%20Entropy%20Pooling.ipynb)
 - Mean Variance Skewness Kurtosis Optimization [Tutorial 58](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2058%20-%20Mean%20Variance%20Skewness%20Kurtosis%20Optimization.ipynb)
+- FX Portfolio Optimization with FXMacroData [Tutorial 59](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2059%20-%20FX%20Portfolio%20Optimization%20with%20FXMacroData.ipynb)
