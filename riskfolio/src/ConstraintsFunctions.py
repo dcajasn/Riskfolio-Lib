@@ -185,8 +185,8 @@ def assets_constraints(constraints, asset_classes):
                 A1 = np.identity(item)
                 if data[i][6] == "Assets":
                     item2 = assetslist.index(data[i][8])
-                    A2 = np.zeros((item, item - 1))
-                    A2 = np.insert(A2, item2 - 1, 1, axis=1)
+                    A2 = np.zeros((item, item))
+                    A2[:, item2] = 1
                 elif data[i][6] == "Classes":
                     A1 = np.identity(item)
                     A2 = np.where(asset_classes[data[i][7]].values == data[i][8], 1, 0)
