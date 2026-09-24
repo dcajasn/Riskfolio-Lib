@@ -43,7 +43,7 @@ jobs:
 
       - name: Build Sphinx docs
         env:
-          DOCS_BASEURL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          DOCS_BASEURL: ${{ vars.DOCS_BASEURL }}
           GOOGLE_SITE_VERIFICATION: ${{ secrets.GOOGLE_SITE_VERIFICATION }}
         run: |
           sphinx-build -b html docs/source docs/build/html
