@@ -1096,10 +1096,7 @@ class HCPortfolio(object):
                 self.clustering,
                 rm=rm,
                 rf=rf,
-                linkage=linkage,
                 model=model,
-                upper_bound=upper_bound,
-                lower_bound=lower_bound,
             )
         elif model == "NCO":
             # Step-3.1: Determine intra-cluster weights
