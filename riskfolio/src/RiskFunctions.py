@@ -622,7 +622,7 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
             prob.solve(solver=solver_i)
             if risk.value is not None:
                 break
-    except:
+    except cp.error.SolverError:
         pass
 
     if risk.value is None:
@@ -730,7 +730,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
             prob.solve(solver=solver_i)
             if risk.value is not None:
                 break
-    except:
+    except cp.error.SolverError:
         pass
 
     if risk.value is None:
@@ -773,7 +773,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
                 prob.solve(solver=solver_i)
                 if risk.value is not None:
                     break
-        except:
+        except cp.error.SolverError:
             pass
 
         if risk.value is None:
