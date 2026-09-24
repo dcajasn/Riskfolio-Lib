@@ -364,7 +364,10 @@ class Portfolio(object):
     ):
         # Optimization Models Options
 
-        self._returns = returns
+        if returns is None:
+            self._returns = None
+        else:
+            self.returns = returns
         self.sht = sht
         self.uppersht = uppersht
         self.upperlng = upperlng
@@ -516,6 +519,13 @@ class Portfolio(object):
     @returns.setter
     def returns(self, value):
         if value is not None and isinstance(value, pd.DataFrame):
+            finite_mask = np.isfinite(value.to_numpy(dtype=float))
+            if not finite_mask.all():
+                bad_cols = value.columns[~finite_mask.all(axis=0)].tolist()
+                raise ValueError(
+                    "returns contains NaN or infinite value(s) in column(s) "
+                    f"{bad_cols}; clean or impute these before creating a Portfolio."
+                )
             self._returns = value
         else:
             raise NameError("returns must be a DataFrame")
