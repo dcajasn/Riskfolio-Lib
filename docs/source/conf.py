@@ -106,8 +106,10 @@ if not docs_baseurl.endswith("/"):
     docs_baseurl = f"{docs_baseurl}/"
 
 html_baseurl = docs_baseurl
+google_site_verification = os.environ.get("GOOGLE_SITE_VERIFICATION", "").strip()
 html_context = {
     "docs_baseurl": docs_baseurl,
+    "google_site_verification": google_site_verification,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
