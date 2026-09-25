@@ -65,6 +65,32 @@ class HCPortfolio(object):
         Upper bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
     w_min : pd.Series or float, optional
         Lower bound constraint for hierarchical risk parity weights :cite:`c-Pfitzinger`.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> port = rp.HCPortfolio(returns=returns)
+    >>> w = port.optimization(model='HRP', codependence='pearson', rm='MV',
+    ...                       linkage='single')
+    >>> w.shape
+    (4, 1)
+    >>> np.round(w.to_numpy().ravel(), 3).tolist()
+    [0.128, 0.652, 0.163, 0.057]
+    >>> round(float(w.sum().item()), 6)
+    1.0
     """
 
     def __init__(
@@ -152,14 +178,16 @@ class HCPortfolio(object):
     @kappa_g.setter
     def kappa_g(self, value):
         a = value
-        if a >= 1:
+        if a is None:
+            self._kappa_g = None
+        elif a >= 1:
             print(
-                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99"
+                "kappa_g must be between 0 and 1, values higher or equal to 1 are setting to 0.99"
             )
             self._kappa_g = 0.99
         elif a <= 0:
             print(
-                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01"
+                "kappa_g must be between 0 and 1, values lower or equal to 0 are setting to 0.01"
             )
             self._kappa_g = 0.01
         else:
@@ -964,6 +992,34 @@ class HCPortfolio(object):
         --------
         riskfolio.src.ParamsEstimation.mean_vector
         riskfolio.src.ParamsEstimation.covar_matrix
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> import pandas as pd
+        >>> import riskfolio as rp
+        >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+        ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+        ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+        >>> returns = pd.DataFrame(
+        ...     {
+        ...         "A": X,
+        ...         "B": np.roll(X, 3) * 0.5,
+        ...         "C": np.roll(X, 7) + 0.002,
+        ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+        ...     }
+        ... )
+        >>> port = rp.HCPortfolio(returns=returns)
+        >>> w = port.optimization(model='HRP', codependence='pearson', rm='MV',
+        ...                       linkage='single')
+        >>> np.round(w.to_numpy().ravel(), 3).tolist()
+        [0.128, 0.652, 0.163, 0.057]
+        >>> w = port.optimization(model='HERC', codependence='pearson', rm='MV',
+        ...                       linkage='ward', max_k=3)
+        >>> np.round(w.to_numpy().ravel(), 3).tolist()
+        [0.115, 0.718, 0.115, 0.051]
+        >>> round(float(w.sum().item()), 6)
+        1.0
         """
 
         # Covariance matrix
@@ -1096,10 +1152,7 @@ class HCPortfolio(object):
                 self.clustering,
                 rm=rm,
                 rf=rf,
-                linkage=linkage,
                 model=model,
-                upper_bound=upper_bound,
-                lower_bound=lower_bound,
             )
         elif model == "NCO":
             # Step-3.1: Determine intra-cluster weights

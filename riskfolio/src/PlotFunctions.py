@@ -156,6 +156,34 @@ def plot_series(returns, w, cmap="tab20", n_colors=20, height=6, width=10, ax=No
 
     .. image:: ../images/Port_Series.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_series(returns=returns, w=w)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
 
     if not isinstance(returns, pd.DataFrame):
@@ -399,6 +427,38 @@ def plot_frontier(
     .. image:: ../images/MSV_Frontier.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> port = rp.Portfolio(returns=returns)
+    >>> port.assets_stats(method_mu='hist', method_cov='hist')
+    >>> frontier = port.efficient_frontier(model='Classic', rm='MV', points=5)
+    >>> ax = rp.plot_frontier(w_frontier=frontier, returns=returns,
+    ...                       cov=port.cov, mu=port.mu, rm='MV', rf=0, w=w)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    3
     """
 
     if not isinstance(w_frontier, pd.DataFrame):
@@ -741,6 +801,34 @@ def plot_pie(
     .. image:: ../images/Pie_Chart.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_pie(w=w, title='Portfolio')
+    >>> type(ax).__name__
+    'Axes'
+    >>> ax.get_title()
+    'Portfolio'
     """
 
     if not isinstance(w, pd.DataFrame):
@@ -930,6 +1018,34 @@ def plot_bar(
     .. image:: ../images/Bar_Chart.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_bar(w=w, title='Portfolio', kind='v')
+    >>> type(ax).__name__
+    'Axes'
+    >>> ax.get_title()
+    'Portfolio'
     """
 
     if not isinstance(w, pd.DataFrame):
@@ -1159,6 +1275,37 @@ def plot_frontier_area(
     .. image:: ../images/Area_Frontier.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> port = rp.Portfolio(returns=returns)
+    >>> port.assets_stats(method_mu='hist', method_cov='hist')
+    >>> frontier = port.efficient_frontier(model='Classic', rm='MV', points=5)
+    >>> ax = rp.plot_frontier_area(w_frontier=frontier)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
 
     if not isinstance(w_frontier, pd.DataFrame):
@@ -1388,6 +1535,34 @@ def plot_risk_con(
     .. image:: ../images/Risk_Con.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_risk_con(w=w, returns=returns, cov=returns.cov(), rm='MV')
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
 
     if not isinstance(returns, pd.DataFrame):
@@ -1783,6 +1958,39 @@ def plot_factor_risk_con(
 
     .. image:: ../images/Risk_Con_PC.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> factors.index = returns.index
+    >>> ax = rp.plot_factor_risk_con(w=w, returns=returns, factors=factors,
+    ...                              cov=returns.cov(), rm='MV')
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
 
     if not isinstance(w, pd.DataFrame):
@@ -2016,6 +2224,34 @@ def plot_hist(
     .. image:: ../images/Histogram.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_hist(returns=returns, w=w, alpha=0.1, bins=10)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
 
     if not isinstance(returns, pd.DataFrame):
@@ -2224,6 +2460,34 @@ def plot_range(
     .. image:: ../images/Range.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_range(returns=returns, w=w, alpha=0.1, bins=10)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
 
     if not isinstance(returns, pd.DataFrame):
@@ -2474,6 +2738,34 @@ def plot_drawdown(
     .. image:: ../images/Drawdown.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_drawdown(returns=returns, w=w, alpha=0.1)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    3
     """
 
     if not isinstance(returns, pd.DataFrame):
@@ -2693,6 +2985,34 @@ def plot_table(
     .. image:: ../images/Port_Table.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_table(returns=returns, w=w, alpha=0.1, t_factor=252)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
@@ -3024,6 +3344,35 @@ def plot_clusters(
     .. image:: ../images/Assets_Clusters.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_clusters(returns=returns, codependence='pearson',
+    ...                  linkage='ward', k=2)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    7
     """
 
     if not isinstance(returns, pd.DataFrame):
@@ -3512,6 +3861,35 @@ def plot_dendrogram(
     .. image:: ../images/Assets_Dendrogram.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_dendrogram(returns=returns, codependence='pearson',
+    ...                    linkage='ward', k=2)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
@@ -3797,6 +4175,34 @@ def plot_network(
     .. image:: ../images/Assets_Network.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_network(returns=returns, codependence='pearson', k=2)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
@@ -4088,6 +4494,35 @@ def plot_network_allocation(
     .. image:: ../images/Assets_Network_Allocation.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_network_allocation(returns=returns, w=w,
+    ...                            codependence='pearson')
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
@@ -4409,6 +4844,34 @@ def plot_clusters_network(
     .. image:: ../images/Assets_Clusters_Network.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_clusters_network(returns=returns, codependence='pearson', k=2)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
@@ -4701,6 +5164,35 @@ def plot_clusters_network_allocation(
     .. image:: ../images/Assets_Clusters_Network_Allocation.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> ax = rp.plot_clusters_network_allocation(returns=returns, w=w,
+    ...                                     codependence='pearson', k=2)
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
     if not isinstance(returns, pd.DataFrame):
         raise ValueError("returns must be a DataFrame")
@@ -4995,6 +5487,44 @@ def plot_BrinsonAttribution(
     .. image:: ../images/BrinAttr_Plot.png
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import matplotlib
+    >>> matplotlib.use('Agg')
+    >>> import matplotlib.pyplot as plt
+    >>> plt.close('all')
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> returns.index = pd.date_range("2020-01-01", periods=len(returns), freq="D")
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> prices = (1 + returns).cumprod()
+    >>> prices.index = pd.date_range('2020-01-01', periods=len(prices), freq='D')
+    >>> wb = pd.DataFrame([0.25] * 4, index=returns.columns, columns=['weights'])
+    >>> asset_classes = pd.DataFrame(
+    ...     {"Assets": list(returns.columns),
+    ...      "Class": ["Equity", "Equity", "Bond", "Bond"]}
+    ... )
+    >>> ax = rp.plot_BrinsonAttribution(
+    ...     prices, w, wb, start='2020-01-02', end='2020-01-20',
+    ...     asset_classes=asset_classes, classes_col='Class'
+    ... )
+    >>> type(ax).__name__
+    'Axes'
+    >>> len(ax.get_figure().axes)
+    1
     """
 
     if ax is None:

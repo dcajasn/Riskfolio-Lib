@@ -72,6 +72,28 @@ def DBHTs(D, S, leaf_order=True):
         is a vertex of bubble bi.
     Z : nd-array
         Linkage matrix using DBHT hierarchy.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {f"A{i}": np.roll(X, i) * (1 + i / 20) - i / 5000 for i in range(9)}
+    ... )
+    >>> corr = returns.corr().to_numpy()
+    >>> dist = np.sqrt(np.clip((1 - corr) / 2, 0, 1))
+    >>> S = 2 - dist ** 2 / 2
+    >>> T8, Rpm, Adjv, Dpm, Mv, Z = rp.DBHTs(dist, S)
+    >>> T8.shape
+    (9,)
+    >>> sorted(np.unique(T8).tolist())
+    [1.0]
+    >>> Z.shape
+    (8, 4)
     """
 
     Rpm, _, _, _, _ = PMFG_T2s(S)
@@ -120,6 +142,27 @@ def j_LoGo(S, separators, cliques):
     -----
     separators and cliques can be the outputs of TMFG function
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {f"A{i}": np.roll(X, i) * (1 + i / 20) - i / 5000 for i in range(9)}
+    ... )
+    >>> corr = returns.corr().to_numpy()
+    >>> dist = np.sqrt(np.clip((1 - corr) / 2, 0, 1))
+    >>> S = 2 - dist ** 2 / 2
+    >>> A, tri, separators, cliques, _ = rp.PMFG_T2s(S, nargout=4)
+    >>> cov = returns.cov().to_numpy()
+    >>> JLogo = rp.j_LoGo(cov, separators, cliques)
+    >>> JLogo.shape
+    (9, 9)
+    >>> bool(np.allclose(JLogo, JLogo.T))
+    True
     """
     N = S.shape[0]
     if isinstance(separators, dict) == False:
@@ -167,11 +210,40 @@ def PMFG_T2s(W, nargout=3):
     separators : nd-array
         Matrix of 3-cliques that are not triangular faces (all 3-cliques are
         given by: [tri;separators]).
-    clique4 : nd-array, optional
-        List of all 4-cliques.
-    cliqueTree : nd-array, optional
-        4-cliques tree structure (adjacency matrix).
+    cliques : nd-array
+        List of all 4-cliques. It is None when nargout is lower than 4.
+    cliqueTree : nd-array
+        4-cliques tree structure (adjacency matrix). It is None when nargout is
+        lower than 5.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {f"A{i}": np.roll(X, i) * (1 + i / 20) - i / 5000 for i in range(9)}
+    ... )
+    >>> corr = returns.corr().to_numpy()
+    >>> dist = np.sqrt(np.clip((1 - corr) / 2, 0, 1))
+    >>> S = 2 - dist ** 2 / 2
+    >>> A, tri, separators, cliques, cliqueTree = rp.PMFG_T2s(S)
+    >>> A.shape
+    (9, 9)
+    >>> tri.shape
+    (14, 3)
+    >>> bool(np.allclose(A, A.T))
+    True
+    >>> (cliques, cliqueTree)
+    (None, None)
+    >>> _, _, _, cliques, cliqueTree = rp.PMFG_T2s(S, nargout=5)
+    >>> cliques.shape
+    (6, 4)
+    >>> cliqueTree.shape
+    (6, 6)
     """
     N = W.shape[0]
     if N < 9:
@@ -257,7 +329,7 @@ def PMFG_T2s(W, nargout=3):
     if nargout > 4:
         cliqueTree = np.zeros((cliques.shape[0], cliques.shape[0]))
         for i in range(0, cliques.shape[0]):
-            ss = np.zeros(cliques.shape[0], 1)
+            ss = np.zeros(cliques.shape[0])
             for k in range(0, 3):
                 ss = ss + np.sum((cliques[i, k] == cliques), axis=1)
 
@@ -313,6 +385,27 @@ def distance_wei(L):
     2012: added number of edges in shortest path as additional output (RB/AA)
     2013: variable names changed for consistency with other functions (MR)
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {f"A{i}": np.roll(X, i) * (1 + i / 20) - i / 5000 for i in range(9)}
+    ... )
+    >>> corr = returns.corr().to_numpy()
+    >>> dist = np.sqrt(np.clip((1 - corr) / 2, 0, 1))
+    >>> S = 2 - dist ** 2 / 2
+    >>> A, tri, separators, cliques, cliqueTree = rp.PMFG_T2s(S)
+    >>> L = np.divide(1, A, out=np.zeros_like(A), where=A > 0)
+    >>> Dist, B = rp.distance_wei(L)
+    >>> Dist.shape
+    (9, 9)
+    >>> np.round(np.diag(Dist), 6).tolist()
+    [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     """
 
     n = len(L)
@@ -392,6 +485,27 @@ def CliqHierarchyTree2s(Apm, method1):
         3-clique in the maximal planar graph.
     Sb : nd-array
         Nc x 1 vector. Sb(n)=1 indicates nth 3-clique is separating.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {f"A{i}": np.roll(X, i) * (1 + i / 20) - i / 5000 for i in range(9)}
+    ... )
+    >>> corr = returns.corr().to_numpy()
+    >>> dist = np.sqrt(np.clip((1 - corr) / 2, 0, 1))
+    >>> S = 2 - dist ** 2 / 2
+    >>> A, tri, separators, cliques, cliqueTree = rp.PMFG_T2s(S)
+    >>> H1, H2, Mb, CliqList, Sb = rp.CliqHierarchyTree2s(A, 'uniqueroot')
+    >>> CliqList.shape[1]
+    3
+    >>> Sb.shape
+    (19,)
     """
     N = Apm.shape[0]
     # IndxTotal=1:N;
@@ -488,7 +602,7 @@ def BuildHierarchy(M):
             ParentSum = np.sum(M[:, Parents], axis=0)
             a = np.argwhere(ParentSum == np.min(ParentSum))
             if len(a) == 1:
-                Pred[n] = Parents[a]
+                Pred[n] = Parents[a].item()
             else:
                 Pred = np.empty(0)
                 break
@@ -610,6 +724,27 @@ def clique3(A):
     clique : nd-array
         Nc x 3 matrix. Each row vector contains the list of vertices for
         a 3-clique.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {f"A{i}": np.roll(X, i) * (1 + i / 20) - i / 5000 for i in range(9)}
+    ... )
+    >>> corr = returns.corr().to_numpy()
+    >>> dist = np.sqrt(np.clip((1 - corr) / 2, 0, 1))
+    >>> S = 2 - dist ** 2 / 2
+    >>> A, tri, separators, cliques, cliqueTree = rp.PMFG_T2s(S)
+    >>> K3, E, clique = rp.clique3(A)
+    >>> clique.shape[1]
+    3
+    >>> bool((np.diff(np.sort(clique, axis=1), axis=1) > 0).all())
+    True
     """
 
     A = A - np.diag(np.diag(A))
@@ -684,6 +819,27 @@ def breadth(CIJ, source):
     'source'.
 
     Olaf Sporns, Indiana University, 2002/2007/2008
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {f"A{i}": np.roll(X, i) * (1 + i / 20) - i / 5000 for i in range(9)}
+    ... )
+    >>> corr = returns.corr().to_numpy()
+    >>> dist = np.sqrt(np.clip((1 - corr) / 2, 0, 1))
+    >>> S = 2 - dist ** 2 / 2
+    >>> A, tri, separators, cliques, cliqueTree = rp.PMFG_T2s(S)
+    >>> distance, branch = rp.breadth(np.where(A > 0, 1, 0), 0)
+    >>> distance.tolist()
+    [2.0, 2.0, 1.0, 2.0, 1.0, 2.0, 1.0, 3.0, 2.0]
+    >>> int(branch[0])
+    -1
     """
 
     N = CIJ.shape[0]

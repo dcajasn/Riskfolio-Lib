@@ -43,6 +43,27 @@ def gerber_cov_stat0(X, threshold=0.5):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = rp.gerber_cov_stat0(returns, threshold=0.5)
+    >>> cov.shape
+    (4, 4)
+    >>> bool(np.allclose(cov, cov.T))
+    True
     """
     # Threshold shall between 0 and 1
     assert 1 > threshold > 0
@@ -119,6 +140,27 @@ def gerber_cov_stat1(X, threshold=0.5):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = rp.gerber_cov_stat1(returns, threshold=0.5)
+    >>> cov.shape
+    (4, 4)
+    >>> bool(rp.is_pos_def(cov))
+    True
     """
     # Threshold shall between 0 and 1
     assert 1 > threshold > 0
@@ -198,6 +240,27 @@ def gerber_cov_stat2(X, threshold=0.5):
     ------
         ValueError when the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = rp.gerber_cov_stat2(returns, threshold=0.5)
+    >>> cov.shape
+    (4, 4)
+    >>> bool(rp.is_pos_def(cov))
+    True
     """
     # Threshold shall between 0 and 1
     assert 1 > threshold > 0

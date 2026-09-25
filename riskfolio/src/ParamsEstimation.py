@@ -85,6 +85,27 @@ def mean_vector(X, method="hist", d=0.94, target="b1"):
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> mu = rp.mean_vector(returns, method='hist')
+    >>> mu.shape
+    (1, 4)
+    >>> np.round(mu.to_numpy().ravel(), 6).tolist()
+    [0.00195, 0.000975, 0.00395, 0.001925]
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -206,6 +227,29 @@ def covar_matrix(
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> cov = rp.covar_matrix(returns, method='hist')
+    >>> cov.shape
+    (4, 4)
+    >>> bool(np.allclose(cov, returns.cov()))
+    True
+    >>> bool(rp.is_pos_def(rp.covar_matrix(returns, method='ledoit')))
+    True
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -319,6 +363,25 @@ def cokurt_matrix(
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> kurt = rp.cokurt_matrix(returns, method='hist')
+    >>> kurt.shape
+    (16, 16)
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -391,6 +454,28 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> rp.forward_regression(factors, returns['A'], criterion='pvalue',
+    ...                       threshold=0.05)
+    ['F1']
     """
     if not isinstance(X, pd.DataFrame):
         raise ValueError("X must be a DataFrame")
@@ -573,6 +658,28 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> rp.backward_regression(factors, returns['A'], criterion='pvalue',
+    ...                        threshold=0.05)
+    ['F1']
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -735,6 +842,28 @@ def PCR(X, y, n_components=0.95):
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> beta = rp.PCR(factors, returns['A'], n_components=0.95)
+    >>> beta.shape
+    (1, 3)
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -837,6 +966,30 @@ def loadings_matrix(
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> B = rp.loadings_matrix(factors, returns, feature_selection='stepwise')
+    >>> B.shape
+    (4, 3)
+    >>> list(B.columns)
+    ['const', 'F1', 'F2']
     """
     if not isinstance(X, pd.DataFrame):
         raise ValueError("X must be a DataFrame")
@@ -1031,20 +1184,50 @@ def risk_factors(
         The mean vector of risk factors model.
     cov : DataFrame
         The covariance matrix of risk factors model.
-    skew : DataFrame
-        The coskewness tensor of risk factors model.
-    kurt : DataFrame
-        The cokurtosis square matrix of risk factors model.
     returns : DataFrame
         The returns based on a risk factor model.
     B : DataFrame
         Loadings matrix.
+    skew : DataFrame
+        The coskewness square matrix of risk factors model. It is None when
+        higher_comoments is False.
+    kurt : DataFrame
+        The cokurtosis square matrix of risk factors model. It is None when
+        higher_comoments is False.
 
     Raises
     ------
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> mu, cov, returns_, B, skew, kurt = rp.risk_factors(factors, returns)
+    >>> mu.shape
+    (1, 4)
+    >>> cov.shape
+    (4, 4)
+    >>> list(B.columns)
+    ['const', 'F1', 'F2']
+    >>> bool(rp.is_pos_def(cov))
+    True
     """
     if not isinstance(X, pd.DataFrame) and not isinstance(Y, pd.DataFrame):
         raise ValueError("X and Y must be DataFrames")
@@ -1224,6 +1407,31 @@ def black_litterman(
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> P = np.array([[1.0, -1.0, 0.0, 0.0]])
+    >>> Q = np.array([[0.002]])
+    >>> mu, cov, w_ = rp.black_litterman(returns, w, P, Q, delta=1, rf=0, eq=True)
+    >>> mu.shape
+    (1, 4)
+    >>> np.round(mu.to_numpy().ravel(), 6).tolist()
+    [0.00084, -0.000216, 0.000239, 0.00076]
     """
     if not isinstance(X, pd.DataFrame) and not isinstance(w, pd.DataFrame):
         raise ValueError("X and w must be DataFrames")
@@ -1422,6 +1630,36 @@ def augmented_black_litterman(
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> B = rp.loadings_matrix(factors, returns)
+    >>> P = np.array([[1.0, -1.0, 0.0, 0.0]])
+    >>> Q = np.array([[0.002]])
+    >>> mu, cov, w_ = rp.augmented_black_litterman(returns, w, factors, B,
+    ...                                            P=P, Q=Q)
+    >>> mu.shape
+    (1, 4)
+    >>> bool(rp.is_pos_def(cov))
+    True
     """
     if not isinstance(X, pd.DataFrame) and not isinstance(w, pd.DataFrame):
         raise ValueError("X and w must be DataFrames")
@@ -1649,6 +1887,33 @@ def black_litterman_bayesian(
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> B = rp.loadings_matrix(factors, returns)
+    >>> P_f = np.array([[1.0, 0.0]])
+    >>> Q_f = np.array([[0.003]])
+    >>> mu, cov, w_ = rp.black_litterman_bayesian(returns, factors, B, P_f, Q_f)
+    >>> mu.shape
+    (1, 4)
+    >>> bool(rp.is_pos_def(cov))
+    True
     """
     if not isinstance(X, pd.DataFrame):
         raise ValueError("X must be DataFrames")
@@ -1751,10 +2016,44 @@ def entropy_pooling(
 
     Returns
     -------
-
+    mu : np.array
+        The mean vector implied by the optimal scenario weights.
+    cov : np.array
+        The covariance matrix implied by the optimal scenario weights.
+    skew : np.array
+        The coskewness square matrix implied by the optimal scenario weights.
+        It is None when higher_comoments is False.
+    kurt : np.array
+        The cokurtosis square matrix implied by the optimal scenario weights.
+        It is None when higher_comoments is False.
     Z : np.array
         Optimal scenario weights based on the Entropy Pooling model.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> P_eq = returns['A'].to_numpy().reshape(1, -1)
+    >>> Q_eq = np.array([[0.004]])
+    >>> mu, cov, skew, kurt, Z = rp.entropy_pooling(returns, P_eq=P_eq, Q_eq=Q_eq)
+    >>> Z.shape
+    (20, 1)
+    >>> round(float(Z.sum()), 6)
+    1.0
+    >>> round(float(np.asarray(mu).ravel()[0]), 6)
+    0.004
     """
 
     X_ = np.array(X, ndmin=2)
@@ -1881,6 +2180,31 @@ def bootstrapping(
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> out = rp.bootstrapping(returns, kind='stationary', q=0.05, n_sim=100,
+    ...                        window=3, seed=0)
+    >>> mu_l, mu_u, cov_l, cov_u, cov_mu, cov_sigma, k_mu, k_sigma = out
+    >>> mu_l.shape
+    (1, 4)
+    >>> cov_l.shape
+    (4, 4)
+    >>> bool((mu_l.to_numpy() <= mu_u.to_numpy()).all())
+    True
     """
 
     if not isinstance(X, pd.DataFrame):
@@ -2021,6 +2345,28 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
     ValueError
         When the value cannot be calculated.
 
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> out = rp.normal_simulation(returns, q=0.05, n_sim=100, seed=0)
+    >>> mu_l, mu_u, cov_l, cov_u, cov_mu, cov_sigma, k_mu, k_sigma = out
+    >>> mu_l.shape
+    (1, 4)
+    >>> bool((mu_l.to_numpy() <= mu_u.to_numpy()).all())
+    True
     """
 
     if not isinstance(X, pd.DataFrame):

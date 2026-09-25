@@ -125,6 +125,35 @@ def assets_constraints(constraints, asset_classes):
 
     .. image:: ../images/AxB.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> asset_classes = pd.DataFrame(
+    ...     {
+    ...         "Assets": ["A", "B", "C", "D"],
+    ...         "Class": ["Equity", "Equity", "Bond", "Bond"],
+    ...     }
+    ... )
+    >>> constraints = pd.DataFrame(
+    ...     {
+    ...         'Disabled': [False],
+    ...         'Type': ['Classes'],
+    ...         'Set': ['Class'],
+    ...         'Position': ['Equity'],
+    ...         'Sign': ['<='],
+    ...         'Weight': [0.6],
+    ...         'Type Relative': [''],
+    ...         'Relative Set': [''],
+    ...         'Relative': [''],
+    ...         'Factor': [''],
+    ...     }
+    ... )
+    >>> A_, B_ = rp.assets_constraints(constraints, asset_classes)
+    >>> A_.tolist()
+    [[1.0, 1.0, -0.0, -0.0]]
+    >>> B_.tolist()
+    [[0.6]]
     """
 
     if not isinstance(constraints, pd.DataFrame) and not isinstance(
@@ -358,6 +387,40 @@ def factors_constraints(constraints, loadings):
 
     .. image:: ../images/CxD.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> loadings = rp.loadings_matrix(factors, returns)
+    >>> constraints = pd.DataFrame(
+    ...     {
+    ...         'Disabled': [False],
+    ...         'Factor': ['F1'],
+    ...         'Sign': ['<='],
+    ...         'Value': [0.5],
+    ...         'Relative Factor': [''],
+    ...     }
+    ... )
+    >>> A_, B_ = rp.factors_constraints(constraints, loadings)
+    >>> A_.shape
+    (1, 4)
+    >>> B_.tolist()
+    [[0.5]]
     """
 
     if not isinstance(constraints, pd.DataFrame) and not isinstance(
@@ -500,6 +563,37 @@ def integer_constraints(constraints, asset_classes):
 
     .. image:: ../images/ExF_int.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> asset_classes = pd.DataFrame(
+    ...     {
+    ...         "Assets": ["A", "B", "C", "D"],
+    ...         "Class": ["Equity", "Equity", "Bond", "Bond"],
+    ...     }
+    ... )
+    >>> constraints = pd.DataFrame(
+    ...     {
+    ...         'Disabled': [False],
+    ...         'Type': ['Classes'],
+    ...         'Set': ['Class'],
+    ...         'Position': ['Equity'],
+    ...         'Kind': ['CardUp'],
+    ...         'Value': [1],
+    ...         'Type Relative': [''],
+    ...         'Relative Set': [''],
+    ...         'Relative': [''],
+    ...     }
+    ... )
+    >>> A_, B_, C_, D_, E_, F_ = rp.integer_constraints(constraints,
+    ...                                                 asset_classes)
+    >>> sorted(A_.keys())
+    [0]
+    >>> A_[0].tolist()
+    [[1.0, 1.0, 0.0, 0.0]]
+    >>> B_[0].tolist()
+    [[1.0]]
     """
 
     if not isinstance(constraints, pd.DataFrame) and not isinstance(
@@ -797,6 +891,34 @@ def assets_views(views, asset_classes):
 
     .. image:: ../images/PxQ.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> asset_classes = pd.DataFrame(
+    ...     {
+    ...         "Assets": ["A", "B", "C", "D"],
+    ...         "Class": ["Equity", "Equity", "Bond", "Bond"],
+    ...     }
+    ... )
+    >>> views = pd.DataFrame(
+    ...     {
+    ...         'Disabled': [False],
+    ...         'Type': ['Assets'],
+    ...         'Set': [''],
+    ...         'Position': ['A'],
+    ...         'Sign': ['>='],
+    ...         'Return': [0.003],
+    ...         'Type Relative': [''],
+    ...         'Relative Set': [''],
+    ...         'Relative': [''],
+    ...     }
+    ... )
+    >>> P, Q = rp.assets_views(views, asset_classes)
+    >>> P.tolist()
+    [[1.0, 0.0, 0.0, 0.0]]
+    >>> Q.tolist()
+    [[0.003]]
     """
 
     if not isinstance(views, pd.DataFrame) and not isinstance(
@@ -953,6 +1075,40 @@ def factors_views(views, loadings, const=True):
 
     .. image:: ../images/P_fxQ_f.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> factors = pd.DataFrame(
+    ...     {"F1": np.roll(X, 1) + 0.001, "F2": np.roll(X, 5) - 0.002}
+    ... )
+    >>> loadings = rp.loadings_matrix(factors, returns)
+    >>> views = pd.DataFrame(
+    ...     {
+    ...         'Disabled': [False],
+    ...         'Factor': ['F1'],
+    ...         'Sign': ['>='],
+    ...         'Value': [0.003],
+    ...         'Relative Factor': [''],
+    ...     }
+    ... )
+    >>> P_f, Q_f = rp.factors_views(views, loadings, const=True)
+    >>> P_f.shape
+    (1, 2)
+    >>> Q_f.tolist()
+    [[0.003]]
     """
 
     if not isinstance(views, pd.DataFrame) and not isinstance(loadings, pd.DataFrame):
@@ -1015,10 +1171,11 @@ def entropy_pooling_views(
         - Set: (str) if Type is 'Classes' specified the name of the set of asset classes.
         - Position: (str) the name of the asset or asset class of the view.
         - Sign: (str) can be '>=', '==' or '<='. Sign '<=' is only available for kind 'Mean'.
-        - Return: (scalar) is the return of the view.
+        - Weight: (scalar) is the value of the view.
         - Type Relative: (str) can be: 'Assets' or 'Classes'. Type 'Classes' is only available for kind 'Mean'.
         - Relative Set: (str) if Type Relative is 'Classes' specified the name of the set of asset classes.
         - Relative: (str) the name of the asset or asset class of the relative view.
+        - Factor: (scalar) is the factor of the relative view.
 
     asset_classes : pd.DataFrame of shape (n_assets, n_cols)
         Asset's classes matrix, where n_assets is the number of assets and
@@ -1085,13 +1242,56 @@ def entropy_pooling_views(
 
     ::
 
-        P_eq, Q_eq, P_in, Q_in = rp.assets_views(views, asset_classes)
+        P_eq, Q_eq, P_in, Q_in = rp.entropy_pooling_views(views, asset_classes, Y)
 
 
     The matrices P_eq and Q_eq, and P_in and Q_in look like the following image:
 
     .. image:: ../images/P_eqxQ_eq.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> asset_classes = pd.DataFrame(
+    ...     {
+    ...         "Assets": ["A", "B", "C", "D"],
+    ...         "Class": ["Equity", "Equity", "Bond", "Bond"],
+    ...     }
+    ... )
+    >>> views = pd.DataFrame(
+    ...     {
+    ...         'Disabled': [False],
+    ...         'Kind': ['Mean'],
+    ...         'Type': ['Assets'],
+    ...         'Set': [''],
+    ...         'Position': ['A'],
+    ...         'Sign': ['=='],
+    ...         'Weight': [0.004],
+    ...         'Type Relative': [''],
+    ...         'Relative Set': [''],
+    ...         'Relative': [''],
+    ...         'Factor': [''],
+    ...     }
+    ... )
+    >>> P_eq, Q_eq, P_in, Q_in = rp.entropy_pooling_views(views, asset_classes,
+    ...                                                   returns)
+    >>> P_eq.shape
+    (1, 20)
+    >>> Q_eq.ravel().tolist()
+    [0.004]
     """
 
     if not isinstance(views, pd.DataFrame) and not isinstance(
@@ -1538,6 +1738,28 @@ def assets_clusters(
 
     .. image:: ../images/clusters_df.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> clusters = rp.assets_clusters(returns, codependence='pearson',
+    ...                               linkage='ward', k=2)
+    >>> list(clusters.columns)
+    ['Assets', 'Clusters']
+    >>> sorted(clusters['Clusters'].unique().tolist())
+    ['Cluster 1', 'Cluster 2']
     """
 
     if not isinstance(returns, pd.DataFrame):
@@ -1672,6 +1894,31 @@ def hrp_constraints(constraints, asset_classes):
 
     .. image:: ../images/HRP_Bounds.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> asset_classes = pd.DataFrame(
+    ...     {
+    ...         "Assets": ["A", "B", "C", "D"],
+    ...         "Class": ["Equity", "Equity", "Bond", "Bond"],
+    ...     }
+    ... )
+    >>> constraints = pd.DataFrame(
+    ...     {
+    ...         'Disabled': [False],
+    ...         'Type': ['All Assets'],
+    ...         'Set': [''],
+    ...         'Position': [''],
+    ...         'Sign': ['<='],
+    ...         'Weight': [0.5],
+    ...     }
+    ... )
+    >>> w_max, w_min = rp.hrp_constraints(constraints, asset_classes)
+    >>> w_max.tolist()
+    [0.5, 0.5, 0.5, 0.5]
+    >>> w_min.tolist()
+    [0.0, 0.0, 0.0, 0.0]
     """
 
     if not isinstance(constraints, pd.DataFrame) and not isinstance(
@@ -1796,6 +2043,26 @@ def risk_constraint(asset_classes, kind="vanilla", classes_col=None):
                                 classes_col='Class 1')
 
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> asset_classes = pd.DataFrame(
+    ...     {
+    ...         "Assets": ["A", "B", "C", "D"],
+    ...         "Class": ["Equity", "Equity", "Bond", "Bond"],
+    ...     }
+    ... )
+    >>> rb = rp.risk_constraint(asset_classes, kind='vanilla')
+    >>> rb.shape
+    (4, 1)
+    >>> np.round(rb.ravel(), 6).tolist()
+    [0.25, 0.25, 0.25, 0.25]
+    >>> rb = rp.risk_constraint(asset_classes, kind='classes',
+    ...                         classes_col='Class')
+    >>> np.round(rb.ravel(), 6).tolist()
+    [0.25, 0.25, 0.25, 0.25]
     """
     if not isinstance(asset_classes, pd.DataFrame):
         raise ValueError("asset_classes must be a DataFrame")
@@ -1926,6 +2193,27 @@ def connection_matrix(
 
     .. image:: ../images/Connection_df.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> A_ = rp.connection_matrix(returns, codependence='pearson', graph='MST')
+    >>> A_.shape
+    (4, 4)
+    >>> bool(np.allclose(A_, A_.T))
+    True
     """
 
     if not isinstance(returns, pd.DataFrame):
@@ -2071,6 +2359,26 @@ def centrality_vector(
 
     .. image:: ../images/Centrality_df.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> C_ = rp.centrality_vector(returns, measure='Degree',
+    ...                           codependence='pearson', graph='MST')
+    >>> C_.shape
+    (1, 4)
     """
 
     Adj = connection_matrix(
@@ -2220,6 +2528,28 @@ def clusters_matrix(
 
     .. image:: ../images/Clusters_matrix_df.png
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> A_ = rp.clusters_matrix(returns, codependence='pearson',
+    ...                         linkage='ward', k=2)
+    >>> A_.shape
+    (4, 4)
+    >>> np.round(np.diag(A_), 6).tolist()
+    [0.0, 0.0, 0.0, 0.0]
     """
 
     assets = returns.columns.tolist()
@@ -2347,6 +2677,27 @@ def average_centrality(
                                    codependence="pearson",
                                    graph="MST")
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> round(float(rp.average_centrality(returns, w, measure='Degree',
+    ...                                   codependence='pearson', graph='MST')), 6)
+    1.6
     """
 
     w_ = np.array(w, ndmin=2)
@@ -2463,6 +2814,27 @@ def connected_assets(
                                  graph="MST",
                                  walk_size=1)
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> round(float(rp.connected_assets(returns, w, codependence='pearson',
+    ...                                 graph='MST')), 6)
+    0.36
     """
 
     w_ = np.array(w, ndmin=2)
@@ -2606,6 +2978,27 @@ def related_assets(
                                k=None,
                                max_k=10)
 
+    The same calls on a minimal runnable example:
+
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> import riskfolio as rp
+    >>> X = np.array([0.010, -0.020, 0.030, -0.015, 0.005, 0.020, -0.010,
+    ...               0.012, -0.004, 0.008, -0.025, 0.017, 0.006, -0.011,
+    ...               0.014, -0.003, 0.021, -0.018, 0.009, -0.007])
+    >>> returns = pd.DataFrame(
+    ...     {
+    ...         "A": X,
+    ...         "B": np.roll(X, 3) * 0.5,
+    ...         "C": np.roll(X, 7) + 0.002,
+    ...         "D": np.roll(X, 11) * 1.5 - 0.001,
+    ...     }
+    ... )
+    >>> w = pd.DataFrame([0.4, 0.3, 0.2, 0.1], index=returns.columns,
+    ...                  columns=["weights"])
+    >>> round(float(rp.related_assets(returns, w, codependence='pearson',
+    ...                               linkage='ward', k=2)), 6)
+    0.28
     """
 
     w_ = np.array(w, ndmin=2)
