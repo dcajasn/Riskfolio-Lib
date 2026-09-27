@@ -2232,6 +2232,8 @@ def Sharpe_Risk(
         risk = EvenMoment(a, p=p_em)
     elif rm == "ESM":
         risk = EvenSemiMoment(a, p=p_esm)
+    else:
+        raise ValueError("rm must be a valid risk measure, got " + str(rm))
 
     value = risk
 
@@ -2550,7 +2552,18 @@ def Risk_Contribution(
         cov_ = np.array(cov, ndmin=2)
 
     RC = []
-    if rm in ["EVaR", "EDaR", "RLVaR", "RLDaR", "EVRG", "RVRG"]:
+    # Measures computed by a convex solver are only accurate to the solver
+    # tolerance, so their finite differences need a wider step.
+    if rm in [
+        "EVaR",
+        "EDaR",
+        "RLVaR",
+        "RLDaR",
+        "EVRG",
+        "RVRG",
+        "EDaR_Rel",
+        "RLDaR_Rel",
+    ]:
         d_i = 0.0001
     else:
         d_i = 0.0000001
@@ -2676,6 +2689,8 @@ def Risk_Contribution(
         elif rm == "ESM":
             risk_1 = EvenSemiMoment(a_1, p=p_esm) * 0.5
             risk_2 = EvenSemiMoment(a_2, p=p_esm) * 0.5
+        else:
+            raise ValueError("rm must be a valid risk measure, got " + str(rm))
 
         RC_i = (risk_1 - risk_2) / (2 * d_i) * w_[i, 0]
         RC.append(RC_i)
