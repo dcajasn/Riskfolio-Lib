@@ -4,7 +4,6 @@
 - Portfolio Optimization using Risk Factors and Stepwise Regression [Tutorial 2](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%202%20-%20Portfolio%20Optimization%20using%20Risk%20Factors%20and%20Stepwise%20Regression.ipynb)
 - Mean Risk Optimization using Black Litterman[Tutorial 3](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%203%20-%20Mean%20Risk%20Optimization%20using%20Black%20Litterman.ipynb) 
 - Bond Optimization and Immunization [Tutorial 4](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%204%20-%20Bond%20Portfolio%20Optimization%20and%20Immunization.ipynb)
-- Multi Assets Algorithmic Trading Backtesting with Backtrader [Tutorial 5](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%205%20-%20Multi%20Assets%20Algorithmic%20Trading%20Backtesting%20with%20Backtrader.ipynb)
 - Portfolio Optimization with Custom Parameters [Tutorial 6](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%206%20-%20Portfolio%20Optimization%20with%20Custom%20Parameters.ipynb)
 - Index Tracking / Replicating Portfolios [Tutorial 7](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%207%20-%20Index%20Tracking-Replicating%20Portfolios.ipynb)
 - Short and Leveraged Portfolios [Tutorial 8](https://github.com/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%208%20-%20Short%20and%20Leveraged%20Portfolios.ipynb)

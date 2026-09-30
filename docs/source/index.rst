@@ -32,7 +32,7 @@ Portfolio Optimization in Python, Easy for Everyone
 
 .. raw:: html
     
-    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+    <a href="https://portfoliooptimization.org/course/course.html" target="_blank">
         <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
             Enroll in the Portfolio Optimization with Python Course
         </button>
@@ -559,8 +559,8 @@ Financial Support
 If you would like to support the long-term sustainability of Riskfolio-Lib, you can 
 contribute financially in any of the following ways:
 
+* Enroll in my course `Portfolio Optimization with Python <https://portfoliooptimization.org/riskfoliolib/constraints.html>`_.
 * Purchase my book `Advanced Portfolio Optimization: a Cutting-Edge Quantitative Approach <https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037>`_.
-* Enroll in my course `Portfolio Optimization with Python <https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN>`_.
 * Become a sponsor through `GitHub Sponsors <https://github.com/sponsors/dcajasn>`_.
 * Make a donation via `Ko-fi <https://ko-fi.com/B0B833SXD>`_.
 * Hire me for consulting services through my |linkedin| `LinkedIn <https://www.linkedin.com/in/dany-cajas/>`_ or contact me by email |email| `Email <mailto:dcajasn@gmail.com>`_.

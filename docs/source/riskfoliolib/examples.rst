@@ -14,7 +14,7 @@ Examples
 
 .. raw:: html
     
-    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+    <a href="https://portfoliooptimization.org/course/course.html" target="_blank">
         <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
             Enroll in the Portfolio Optimization with Python Course
         </button>
@@ -118,7 +118,6 @@ Graph Theory Constraints
 
 Backtesting
 -----------
-* `Multi Assets Algorithmic Trading Backtesting using Backtrader <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%205%20-%20Multi%20Assets%20Algorithmic%20Trading%20Backtesting%20with%20Backtrader.ipynb>`_ (matplotlib=3.2.2 for compatibility with backtrader=1.9.76.123. We don't recommend to try to reproduce this example due the compatibility problems of Backtrader).
 * `Multi Assets Algorithmic Trading Backtesting using Vectorbt <https://colab.research.google.com/github/dcajasn/Riskfolio-Lib/blob/master/examples/Tutorial%2018%20-%20Multi%20Assets%20Algorithmic%20Trading%20Backtesting%20with%20Vectorbt.ipynb>`_ (vectorbt=0.26.1).
 
 

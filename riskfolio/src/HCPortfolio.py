@@ -83,15 +83,15 @@ class HCPortfolio(object):
         w_max=None,
         w_min=None,
     ):
-        self._returns = returns
+        self.returns = returns
         self.alpha = alpha
         self.a_sim = a_sim
         self.beta = beta
         self.b_sim = b_sim
-        self._kappa = kappa
-        self._kappa_g = kappa_g
-        self._p_em = p_em
-        self._p_esm = p_esm
+        self.kappa = kappa
+        self.kappa_g = kappa_g
+        self.p_em = p_em
+        self.p_esm = p_esm
 
         self.solver_rl = solver_rl
         self.solvers = solvers
@@ -108,22 +108,20 @@ class HCPortfolio(object):
 
     @property
     def returns(self):
-        if self._returns is not None and isinstance(self._returns, pd.DataFrame):
-            return self._returns
-        else:
-            raise NameError("returns must be a DataFrame")
+        return self._returns
 
     @returns.setter
     def returns(self, value):
-        if value is not None and isinstance(value, pd.DataFrame):
-            self._returns = value
-        else:
-            raise NameError("returns must be a DataFrame")
+        if value is not None and not isinstance(value, pd.DataFrame):
+            raise TypeError("returns must be None or a DataFrame")
+        self._returns = value
 
     @property
     def assetslist(self):
-        if self._returns is not None and isinstance(self._returns, pd.DataFrame):
-            return self._returns.columns.tolist()
+        if isinstance(self.returns, pd.DataFrame):
+            return self.returns.columns.tolist()
+        elif self.returns is None:
+            return None
 
     @property
     def kappa(self):
@@ -131,19 +129,17 @@ class HCPortfolio(object):
 
     @kappa.setter
     def kappa(self, value):
-        a = value
-        if a >= 1:
-            print(
-                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99"
-            )
-            self._kappa = 0.99
-        elif a <= 0:
-            print(
-                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01"
-            )
-            self._kappa = 0.01
+        if value is not None and not isinstance(value, float):
+            raise TypeError("kappa_g must be None or a float.")
+        elif isinstance(value, float):
+            if value > 0.9999 or value < 0.0001:
+                raise ValueError("kappa_g must be between 0.0001 and 0.9999.")
+            else:
+                self._kappa = value
+        elif value is None:
+            self._kappa = None
         else:
-            self._kappa = a
+            raise ValueError("kappa must be a float between 0.0001 and 0.9999")
 
     @property
     def kappa_g(self):
@@ -151,19 +147,17 @@ class HCPortfolio(object):
 
     @kappa_g.setter
     def kappa_g(self, value):
-        a = value
-        if a >= 1:
-            print(
-                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99"
-            )
-            self._kappa_g = 0.99
-        elif a <= 0:
-            print(
-                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01"
-            )
-            self._kappa_g = 0.01
+        if value is not None and not isinstance(value, float):
+            raise TypeError("kappa_g must be None or a float.")
+        elif isinstance(value, float):
+            if value > 0.9999 or value < 0.0001:
+                raise ValueError("kappa_g must be between 0.0001 and 0.9999.")
+            else:
+                self._kappa_g = value
+        elif value is None:
+            self._kappa_g = None
         else:
-            self._kappa_g = a
+            raise ValueError("kappa_g must be a float between 0.0001 and 0.9999")
 
     @property
     def p_em(self):
@@ -171,14 +165,14 @@ class HCPortfolio(object):
 
     @p_em.setter
     def p_em(self, value):
-        a = value
-        if isinstance(a, int) and a >= 2:
-            self._p_em = a
+        if isinstance(value, int) and value >= 2:
+            self._p_em = value
+        elif value is None:
+            self._p_em = 2
         else:
-            print(
+            raise ValueError(
                 "p_em must be an integer higher equal than 2, values lower to 2 are setting to 2"
             )
-            self._p_em = 2
 
     @property
     def p_esm(self):
@@ -186,14 +180,14 @@ class HCPortfolio(object):
 
     @p_esm.setter
     def p_esm(self, value):
-        a = value
-        if isinstance(a, int) and a >= 2:
-            self._p_esm = a
+        if isinstance(value, int) and value >= 2:
+            self._p_esm = value
+        elif value is None:
+            self._p_esm = 2
         else:
-            print(
+            raise ValueError(
                 "p_esm must be an integer higher equal than 2, values lower to 2 are setting to 2"
             )
-            self._p_esm = 2
 
     # get naive-risk weights
     def _naive_risk(self, returns, cov, rm="MV", rf=0):
@@ -416,8 +410,6 @@ class HCPortfolio(object):
         sort_order,
         rm="MV",
         rf=0,
-        upper_bound=None,
-        lower_bound=None,
     ):
         weights = pd.Series(1.0, index=self.assetslist)  # set initial weights to 1
         items = [sort_order]
@@ -1087,8 +1079,6 @@ class HCPortfolio(object):
                 self.sort_order,
                 rm=rm,
                 rf=rf,
-                upper_bound=upper_bound,
-                lower_bound=lower_bound,
             )
         elif model in ["HERC", "HERC2"]:
             # Cluster-based Recursive bisection
@@ -1096,10 +1086,7 @@ class HCPortfolio(object):
                 self.clustering,
                 rm=rm,
                 rf=rf,
-                linkage=linkage,
                 model=model,
-                upper_bound=upper_bound,
-                lower_bound=lower_bound,
             )
         elif model == "NCO":
             # Step-3.1: Determine intra-cluster weights

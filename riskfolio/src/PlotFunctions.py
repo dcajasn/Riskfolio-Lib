@@ -339,7 +339,7 @@ def plot_frontier(
         Marker of w. The default is "*".
     s : float, optional
         Size of marker. The default is 16.
-    c : str, optional
+    c : str or list, optional
         Color of marker. The default is 'r'.
     height : float, optional
         Height of the image in inches. The default is 6.
@@ -2350,7 +2350,7 @@ def plot_range(
         "Range :" + "{0:.2%}".format(risk[5]),
     ]
 
-    colors = [
+    colors_list = [
         "darkorange",
         "limegreen",
         "mediumvioletred",
@@ -2365,12 +2365,12 @@ def plot_range(
     for i in df.index:
         x1 = df.loc[i, "lower"]
         x2 = df.loc[i, "upper"]
-        y1 = (len(colors) + 1 - j) * y_max / 9
+        y1 = (len(colors_list) + 1 - j) * y_max / 9
         ax.vlines(
             x=x1,
             ymin=0,
             ymax=y1,
-            color=colors[j - 1],
+            color=colors_list[j - 1],
             alpha=1,
             linewidth=1,
             linestyles="dashed",
@@ -2379,14 +2379,14 @@ def plot_range(
             x=x2,
             ymin=0,
             ymax=y1,
-            color=colors[j - 1],
+            color=colors_list[j - 1],
             alpha=1,
             linewidth=1,
             linestyles="dashed",
         )
-        ax.scatter(y=y1, x=x1, s=50, color=colors[j - 1], alpha=1, label=label[j - 1])
-        ax.scatter(y=y1, x=x2, s=50, color=colors[j - 1], alpha=1)
-        newline([x1, y1], [x2, y1], color=colors[j - 1])
+        ax.scatter(y=y1, x=x1, s=50, color=colors_list[j - 1], alpha=1, label=label[j - 1])
+        ax.scatter(y=y1, x=x2, s=50, color=colors_list[j - 1], alpha=1)
+        newline([x1, y1], [x2, y1], color=colors_list[j - 1])
         j += 1
 
     ax.set(ylim=(0, y_max))
@@ -3274,8 +3274,8 @@ def plot_clusters(
             nodes.sort()
             leaders_threshold = nodes[np.max(L) + 1]
             color_threshold = np.max(leaders_threshold)
-            colors = af.color_list(k)
-            hr.set_link_color_palette(colors)
+            colors_list = af.color_list(k)
+            hr.set_link_color_palette(colors_list)
 
         hr.dendrogram(
             clustering,
@@ -3303,7 +3303,7 @@ def plot_clusters(
                     (xmin - 4, 0),
                     xmax - xmin + 8,
                     ymax * 1.005,
-                    facecolor=colors[i],  # coll.get_color()[0],
+                    facecolor=colors_list[i],  # coll.get_color()[0],
                     alpha=0.2,
                     edgecolor="none",
                 )
@@ -3320,7 +3320,7 @@ def plot_clusters(
         # ax2 = fig.add_axes([0.0, 0.15, 0.2, 0.55])
         ax2 = axes[3]
         if show_clusters is True:
-            hr.set_link_color_palette(colors)
+            hr.set_link_color_palette(colors_list)
 
         hr.dendrogram(
             clustering,
@@ -3350,7 +3350,7 @@ def plot_clusters(
                     (0, ymin - 4),
                     xmax * 1.05,
                     ymax - ymin + 8,
-                    facecolor=colors[i],  # coll.get_color()[0],
+                    facecolor=colors_list[i],  # coll.get_color()[0],
                     alpha=0.2,
                     edgecolor="none",
                 )
@@ -3590,8 +3590,8 @@ def plot_dendrogram(
         nodes.sort()
         leaders_threshold = nodes[np.max(L) + 1]
         color_threshold = np.max(leaders_threshold)
-        colors = af.color_list(k)  # color list
-        hr.set_link_color_palette(colors)
+        colors_list = af.color_list(k)  # color list
+        hr.set_link_color_palette(colors_list)
 
     hr.dendrogram(
         clustering, color_threshold=color_threshold, above_threshold_color="grey", ax=ax
@@ -3614,7 +3614,7 @@ def plot_dendrogram(
                 (xmin - 4, 0),
                 xmax - xmin + 8,
                 ymax * 1.005,
-                facecolor=colors[i],  # coll.get_color()[0],
+                facecolor=colors_list[i],  # coll.get_color()[0],
                 alpha=0.2,
                 edgecolor="none",
             )
@@ -3895,9 +3895,9 @@ def plot_network(
     if node_labels == True:
         nx.draw_networkx_labels(G, pos=pos, ax=ax, bbox=label_options, **font_options)
 
-    colors = af.color_list(k)
+    colors_list = af.color_list(k)
 
-    for i, color in zip(clusters.keys(), colors):
+    for i, color in zip(clusters.keys(), colors_list):
         nx.draw_networkx_nodes(
             G, pos=pos, nodelist=clusters[i], node_color=color, ax=ax, **node_options
         )
@@ -4509,7 +4509,7 @@ def plot_clusters_network(
             )
         )
 
-    colors = af.color_list(k)
+    colors_list = af.color_list(k)
 
     label_options = {"ec": "k", "fc": "white", "alpha": 0.7}
 
@@ -4522,7 +4522,7 @@ def plot_clusters_network(
         "font_color": "k",
     }
     # Nodes colored by cluster
-    for key, clr in zip(clusters.keys(), colors):
+    for key, clr in zip(clusters.keys(), colors_list):
         nx.draw_networkx_nodes(
             G, pos=pos, nodelist=clusters[key], node_color=clr, **node_options
         )

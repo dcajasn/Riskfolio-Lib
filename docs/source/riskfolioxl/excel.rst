@@ -14,7 +14,7 @@ Install
 
 .. raw:: html
     
-    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+    <a href="https://portfoliooptimization.org/course/course.html" target="_blank">
         <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
             Enroll in the Portfolio Optimization with Python Course
         </button>

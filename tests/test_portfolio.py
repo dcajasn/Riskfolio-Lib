@@ -1,6 +1,6 @@
 """"""  #
 """
-Copyright (c) 2020-2022, Dany Cajas
+Copyright (c) 2020-2026, Dany Cajas
 All rights reserved.
 This work is licensed under BSD 3-Clause "New" or "Revised" License.
 License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
@@ -34,7 +34,7 @@ def test_classic_minrisk_optimization():
     method_mu = "hist"
     method_cov = "hist"
 
-    port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
+    port.assets_stats(method_mu=method_mu, method_cov=method_cov)
     port.alpha = 0.05
     port.solvers = ['CLARABEL', 'SCS', 'ECOS']
 
@@ -91,7 +91,7 @@ def test_classic_sharpe_optimization():
     method_mu = "hist"
     method_cov = "hist"
 
-    port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
+    port.assets_stats(method_mu=method_mu, method_cov=method_cov)
     port.alpha = 0.05
     port.solvers = ['CLARABEL', 'SCS', 'ECOS']
 
@@ -148,7 +148,7 @@ def test_classic_riskparity_optimization():
     method_mu = "hist"
     method_cov = "hist"
 
-    port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
+    port.assets_stats(method_mu=method_mu, method_cov=method_cov)
     port.alpha = 0.05
     port.solvers = ['CLARABEL', 'ECOS', 'SCS']
 
@@ -200,7 +200,7 @@ def test_worst_case_optimization():
     method_mu = "hist"
     method_cov = "hist"
 
-    port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
+    port.assets_stats(method_mu=method_mu, method_cov=method_cov)
     port.solvers = ['CLARABEL', 'ECOS', 'SCS']
 
     box = 's'

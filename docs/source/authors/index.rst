@@ -2,6 +2,26 @@
 Dany Cajas
 ##########
 
+.. raw:: html
+
+    <a href="https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #FFA500; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
+            Buy Advanced Portfolio Optimization Book on Springer
+        </button>
+    </a>
+    <br>
+    <br>
+
+.. raw:: html
+    
+    <a href="https://portfoliooptimization.org/course/course.html" target="_blank">
+        <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
+            Enroll in the Portfolio Optimization with Python Course
+        </button>
+    </a>
+    <br>
+    <br>
+
 .. |linkedin| raw:: html
 
     <a href="https://www.linkedin.com/in/dany-cajas/" target="_blank">
@@ -20,7 +40,7 @@ from Universidad Nacional de Ingeniería and an MA in Finance from Universidad d
 both in Peru 🇵🇪.
 
 I have worked in Peruvian financial institutions in the areas of risk management and financial 
-planning. In addition, I have served as a professor of quantitative finance, data science and 
+planning. In addition, I have worked as a professor of quantitative finance, data science and 
 econometrics at Universidad Nacional de Ingeniería.
 
 Currently, I work as an independent researcher and consultant in quantitative finance. My research 
@@ -29,14 +49,15 @@ passionate about developing open-source tools that enable students, academics, a
 to apply advanced mathematical optimization models to strategic asset allocation and portfolio 
 construction.
 
-For more about my work, you can visit:
+For more about my research and work, you can visit:
 
 - My book `Advanced Portfolio Optimization: A Cutting-edge Quantitative Approach <https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037>`_.
 - My `SSRN Author Page <https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=2931756>`_.
 - My blog `Financioneroncios <https://financioneroncios.wordpress.com/>`_.
+- My presentation at the `2026 CVXPY Community Workshop <https://www.youtube.com/watch?v=qwaBfhaoSZ8>`_.
+- An interview at `Mehul Mehta's YouTube Channel <https://www.youtube.com/watch?v=cX8ARPP4VdQ>`_.
 
 For those that are interested in hiring my consulting services, please contact me at:
 
 - |linkedin| `LinkedIn <https://www.linkedin.com/in/dany-cajas/>`_.
 - |email| `Email <mailto:dcajasn@gmail.com>`_.
-

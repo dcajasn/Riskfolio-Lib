@@ -7,7 +7,7 @@
 <img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/refs/heads/master/docs/source/_static/Button.png" height="40" />
 </div>
 </a>
-<a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+<a href="https://portfoliooptimization.org/course/course.html" target="_blank">
 <div>
 <img src="https://raw.githubusercontent.com/dcajasn/Riskfolio-Lib/refs/heads/master/docs/source/_static/Button2.png" height="40" />
 </div>

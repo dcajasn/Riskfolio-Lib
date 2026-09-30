@@ -17,7 +17,7 @@ Portfolio Optimization with Python Course
 
 .. raw:: html
     
-    <a href="https://www.paypal.com/ncp/payment/GN55W4UQ7VAMN" target="_blank">
+    <a href="https://portfoliooptimization.org/course/course.html" target="_blank">
         <button style="padding:10px 20px; font-size:16px; background-color: #32CD32; color:white; border:none; border-radius:5px; cursor:pointer; font-weight: bold;">
             Enroll in the Portfolio Optimization with Python Course
         </button>
@@ -294,6 +294,10 @@ Course Content
       #. *Black Litterman Bayesian (Views on Risk Factors)*
 
    #. Entropy Pooling 
+      #. *Views that can be expressed as Linear Constraints*
+      #. *Views that can be expressed as Integer Constraints*
+      #. *Views that can be expressed using Dual Formulations*
+      #. *Weighted Comoments Tensors*
 
 #. **Backtesting of Portfolio Optimization Strategies**
 

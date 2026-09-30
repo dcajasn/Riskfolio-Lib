@@ -364,7 +364,7 @@ class Portfolio(object):
     ):
         # Optimization Models Options
 
-        self._returns = returns
+        self.returns = returns
         self.sht = sht
         self.uppersht = uppersht
         self.upperlng = upperlng
@@ -373,37 +373,37 @@ class Portfolio(object):
         self.budgetsht = budgetsht
         self.nea = nea
         self.card = card
-        self._factors = factors
+        self.factors = factors
         self.alpha = alpha
         self.a_sim = a_sim
         self.beta = beta
         self.b_sim = b_sim
-        self._kappa = kappa
-        self._kappa_g = kappa_g
+        self.kappa = kappa
+        self.kappa_g = kappa_g
         self.n_max_kurt = n_max_kurt
         self.kindbench = kindbench
         self.benchindex = benchindex
-        self._benchweights = benchweights
-        self._ainequality = ainequality
-        self._binequality = binequality
-        self._arcinequality = arcinequality
-        self._brcinequality = brcinequality
-        self._afrcinequality = afrcinequality
-        self._bfrcinequality = bfrcinequality
-        self._aintinequality = aintinequality
-        self._bintinequality = bintinequality
-        self._cintinequality = cintinequality
-        self._dintinequality = dintinequality
-        self._eintinequality = eintinequality
-        self._fintinequality = fintinequality
-        self._b = b
-        self._network_sdp = network_sdp
-        self._cluster_sdp = cluster_sdp
-        self._network_ip = network_ip
-        self._cluster_ip = cluster_ip
+        self.benchweights = benchweights
+        self.ainequality = ainequality
+        self.binequality = binequality
+        self.arcinequality = arcinequality
+        self.brcinequality = brcinequality
+        self.afrcinequality = afrcinequality
+        self.bfrcinequality = bfrcinequality
+        self.aintinequality = aintinequality
+        self.bintinequality = bintinequality
+        self.cintinequality = cintinequality
+        self.dintinequality = dintinequality
+        self.eintinequality = eintinequality
+        self.fintinequality = fintinequality
+        self.b = b
+        self.network_sdp = network_sdp
+        self.cluster_sdp = cluster_sdp
+        self.network_ip = network_ip
+        self.cluster_ip = cluster_ip
         self.graph_penalty = graph_penalty
-        self._acentrality = acentrality
-        self._bcentrality = bcentrality
+        self.acentrality = acentrality
+        self.bcentrality = bcentrality
         self.lowerret = lowerret
         self.upperdev = upperdev
         self.lowerskew = lowerskew
@@ -508,29 +508,30 @@ class Portfolio(object):
 
     @property
     def returns(self):
-        if self._returns is not None and isinstance(self._returns, pd.DataFrame):
-            return self._returns
-        else:
-            raise NameError("returns must be a DataFrame")
+        return self._returns
 
     @returns.setter
     def returns(self, value):
-        if value is not None and isinstance(value, pd.DataFrame):
-            self._returns = value
-        else:
-            raise NameError("returns must be a DataFrame")
+        if value is not None and not isinstance(value, pd.DataFrame):
+            raise TypeError("returns must be None or a DataFrame")
+        self._returns = value
+
 
     @property
     def assetslist(self):
-        if self._returns is not None and isinstance(self._returns, pd.DataFrame):
-            return self._returns.columns.tolist()
-        elif self._returns is None:
+        if isinstance(self.returns, pd.DataFrame):
+            return self.returns.columns.tolist()
+        elif self.returns is None:
             return None
+
 
     @property
     def numassets(self):
-        if self._returns is not None and isinstance(self._returns, pd.DataFrame):
-            return self._returns.shape[1]
+        if isinstance(self.returns, pd.DataFrame):
+            return self.returns.shape[1]
+        elif self.returns is None:
+            return None
+
 
     @property
     def factors(self):
@@ -538,18 +539,22 @@ class Portfolio(object):
 
     @factors.setter
     def factors(self, value):
-        a = value
-        if a is not None and isinstance(a, pd.DataFrame):
-            if self.returns.index.equals(a.index):
-                self._factors = a
+        if value is not None and not isinstance(value, pd.DataFrame):
+            raise TypeError("factors must be None or a DataFrame")
+        elif isinstance(value, pd.DataFrame):
+            if self.returns.index.equals(value.index):
+                self._factors = value
+            else:
+                raise ValueError("factors and returns must have same date index")
         else:
-            raise NameError("factors must be a DataFrame.")
+            self._factors = None
+
 
     @property
     def factorslist(self):
-        if self._factors is not None and isinstance(self._factors, pd.DataFrame):
-            return self._factors.columns.tolist()
-        elif self._factors is None:
+        if self.factors is not None and isinstance(self.factors, pd.DataFrame):
+            return self.factors.columns.tolist()
+        elif self.factors is None:
             return None
 
     @property
@@ -558,560 +563,394 @@ class Portfolio(object):
 
     @B.setter
     def B(self, value):
-        a = value
-        if a is not None and isinstance(a, pd.DataFrame):
-            self._B = a
-        elif a is None:
-            self._B = a
+        if value is not None and isinstance(value, pd.DataFrame):
+            self._B = value
+        elif value is None:
+            self._B = value
         else:
-            raise NameError("Loadings matrix must be a DataFrame.")
+            raise TypeError("Loadings matrix must be a DataFrame.")
+
+
+    @property
+    def benchindex(self):
+        return self._benchindex
+
+    @benchindex.setter
+    def benchindex(self, value):
+        if value is not None and self.returns is not None:
+            if value.shape[0] == self.returns.shape[0] and value.shape[1] == 1:
+                self._benchindex = value
+            else:
+                raise ValueError("benchindex must have a size of shape (n_observations,1).")
+        else:
+            self._benchindex = None
+
 
     @property
     def benchweights(self):
-        n = self.numassets
-        if self._benchweights is not None:
-            if self._benchweights.shape[0] == n and self._benchweights.shape[1] == 1:
-                a = self._benchweights
-            else:
-                raise NameError("Weights must have a size of shape (n_assets, 1).")
-        else:
-            a = np.array(np.ones((n, 1)) / n)
-        return a
+        return self._benchweights
 
     @benchweights.setter
     def benchweights(self, value):
-        a = value
         n = self.numassets
-        if a is not None:
-            if a.shape[0] == n and a.shape[1] == 1:
-                a = a
+        if value is not None and self.returns is not None:
+            if value.shape[0] == n and value.shape[1] == 1:
+                self._benchweights = value
             else:
-                raise NameError("Weights must have a size of shape (n_assets,1).")
+                raise ValueError("benchweights must have a size of shape (n_assets,1)")
+        elif value is None and self.returns is not None:
+            self._benchweights = np.ones((n, 1)) / n
         else:
-            a = np.array(np.ones((n, 1)) / n)
-        self._benchweights = a
+            self._benchweights = None
+
 
     @property
     def ainequality(self):
-        a = self._ainequality
-        if a is not None:
-            if a.shape[1] == self.numassets:
-                a = a
-            else:
-                raise NameError(
-                    "The matrix ainequality must have the same number of columns than assets' number."
-                )
-        return a
+        return self._ainequality
 
     @ainequality.setter
     def ainequality(self, value):
-        a = value
-        if a is not None:
-            if a.shape[1] == self.numassets:
-                a = a
+        if value is not None:
+            if value.shape[1] == self.numassets:
+                self._ainequality = value
             else:
-                raise NameError(
-                    "The matrix ainequality must have the same number of columns than assets' number."
+                raise ValueError(
+                    "The matrix ainequality must have the same number of columns than number of assets"
                 )
-        self._ainequality = a
+        else:
+            self._ainequality = None
+
 
     @property
     def binequality(self):
-        a = self._binequality
-        if a is not None:
-            if a.shape[1] == 1:
-                a = a
-            else:
-                raise NameError("The matrix binequality must have one column.")
-        return a
+        return self._binequality
 
     @binequality.setter
     def binequality(self, value):
-        a = value
-        if a is not None:
-            if a.shape[1] == 1:
-                a = a
+        if value is not None:
+            if value.shape[1] == 1:
+                self._binequality = value
             else:
-                raise NameError("The matrix binequality must have one column.")
-        self._binequality = a
+                raise ValueError("The matrix binequality must have one column")
+        else:
+            self._binequality = None
+
 
     @property
     def arcinequality(self):
-        a = self._arcinequality
-        if a is not None:
-            if a.shape[1] == self.numassets:
-                a = a
-            else:
-                raise NameError(
-                    "The matrix arcinequality must have the same number of columns than assets' number."
-                )
-        return a
+        return self._arcinequality
 
     @arcinequality.setter
     def arcinequality(self, value):
-        a = value
-        if a is not None:
-            if a.shape[1] == self.numassets:
-                a = a
+        if value is not None:
+            if value.shape[1] == self.numassets:
+                self._arcinequality = value
             else:
-                raise NameError(
-                    "The matrix arcinequality must have the same number of columns than assets' number."
+                raise ValueError(
+                    "The matrix arcinequality must have the same number of columns than number of assets"
                 )
-        self._arcinequality = a
+        else:
+            self._arcinequality = None
+
 
     @property
     def brcinequality(self):
-        a = self._brcinequality
-        if a is not None:
-            if a.shape[1] == 1:
-                a = a
-            else:
-                raise NameError("The matrix brcinequality must have one column.")
-        return a
+        return self._brcinequality
 
     @brcinequality.setter
     def brcinequality(self, value):
-        a = value
-        if a is not None:
-            if a.shape[1] == 1:
-                a = a
+        if value is not None:
+            if value.shape[1] == 1:
+                self._brcinequality = value
             else:
-                raise NameError("The matrix brcinequality must have one column.")
-        self._brcinequality = a
+                raise ValueError("The matrix brcinequality must have one column")
+        else:
+            self._brcinequality = None
+
 
     @property
     def afrcinequality(self):
-        a = self._afrcinequality
-        if a is not None:
-            if a.shape[1] == len(self.factorslist):
-                a = a
-            else:
-                raise NameError(
-                    "The array afrcinequality must have the same number of columns than assets' number."
-                )
-        return a
+        return self._afrcinequality
 
     @afrcinequality.setter
     def afrcinequality(self, value):
-        a = value
-        if a is not None:
-            if a.shape[1] == len(self.factorslist):
-                a = a
+        if value is not None:
+            if value.shape[1] == len(self.factorslist):
+                self._afrcinequality = value
             else:
-                raise NameError(
-                    "The matrix afrcinequality must have the same number of columns than factors' number."
+                raise ValueError(
+                    "The matrix afrcinequality must have the same number of columns than number of factors"
                 )
-        self._afrcinequality = a
+        else:
+            self._afrcinequality = None
+
 
     @property
     def bfrcinequality(self):
-        a = self._bfrcinequality
-        if a is not None:
-            if a.shape[1] == 1:
-                a = a
-            else:
-                raise NameError("The matrix bfrcinequality must have one column.")
-        return a
+        return self._bfrcinequality
 
     @bfrcinequality.setter
     def bfrcinequality(self, value):
-        a = value
-        if a is not None:
-            if a.shape[1] == 1:
-                a = a
+        if value is not None:
+            if value.shape[1] == 1:
+                self._bfrcinequality = value
             else:
-                raise NameError("The matrix bfrcinequality must have one column.")
-        self._bfrcinequality = a
+                raise ValueError("The matrix bfrcinequality must have one column")
+        else:
+            self._bfrcinequality = None
 
     ############
 
     @property
     def aintinequality(self):
-        a = self._aintinequality
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] == self.numassets:
-                            a[key] = a[key]
-                        else:
-                            raise NameError(
-                                "The non-empty components of aintinequality must have the same number of columns than assets' number."
-                            )
-            else:
-                raise NameError("aintinequality must be a dictionary.")
-        return a
+        return self._aintinequality
 
     @aintinequality.setter
     def aintinequality(self, value):
-        a = value
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] == self.numassets:
-                            a[key] = a[key]
-                        else:
-                            raise NameError(
-                                "The non-empty components of aintinequality must have the same number of columns than assets' number."
+        if value is not None:
+            if isinstance(value, dict):
+                for key in value.keys():
+                    if min(value[key].shape) > 0:
+                        if value[key].shape[1] != self.numassets:
+                            raise ValueError(
+                                "The non-empty components of aintinequality must have the same number of columns than number of assets"
                             )
+                self._aintinequality = value
             else:
-                raise NameError("aintinequality must be a dictionary.")
-        self._aintinequality = a
+                raise ValueError("aintinequality must be a dictionary")
+        else:
+            self._aintinequality = None
 
     @property
     def bintinequality(self):
-        a = self._bintinequality
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] == 1:
-                            a[key] = a[key]
-                        else:
-                            raise NameError(
-                                "The non-empty components of bintinequality must have one column."
-                            )
-            else:
-                raise NameError("bintinequality must be a dictionary.")
-        return a
+        return self._bintinequality
 
     @bintinequality.setter
     def bintinequality(self, value):
-        a = value
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] == 1:
-                            a[key] = a[key]
-                        else:
-                            raise NameError(
-                                "The non-empty components of bintinequality must have one column."
+        if value is not None:
+            if isinstance(value, dict):
+                for key in value.keys():
+                    if min(value[key].shape) > 0:
+                        if value[key].shape[1] != 1:
+                            raise ValueError(
+                                "The non-empty components of bintinequality must have one column"
                             )
+                self._bintinequality = value
             else:
-                raise NameError("bintinequality must be a dictionary.")
-        self._bintinequality = a
+                raise ValueError("bintinequality must be a dictionary")
+        else:
+            self._bintinequality = None
 
     @property
     def cintinequality(self):
-        a = self._cintinequality
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] == self.numassets:
-                            a[key] = a[key]
-                        else:
-                            raise NameError(
-                                "The matrix cintinequality must have the same number of columns than assets' number."
-                            )
-            else:
-                raise NameError("cintinequality must be a dictionary.")
-        return a
+        return self._cintinequality
 
     @cintinequality.setter
     def cintinequality(self, value):
-        a = value
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] == self.numassets:
-                            a[key] = a[key]
-                        else:
-                            raise NameError(
-                                "The non-empty components of cintinequality must have the same number of columns than assets' number."
+        if value is not None:
+            if isinstance(value, dict):
+                for key in value.keys():
+                    if min(value[key].shape) > 0:
+                        if value[key].shape[1] != self.numassets:
+                            raise ValueError(
+                                "The non-empty components of cintinequality must have the same number of columns than number of assets"
                             )
+                self._cintinequality = value
             else:
-                raise NameError("cintinequality must be a dictionary.")
-        self._cintinequality = a
+                raise ValueError("cintinequality must be a dictionary")
+        else:
+            self._cintinequality = None
 
     @property
     def dintinequality(self):
-        a = self._dintinequality
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] == 1:
-                            a[key] = a[key]
-                        else:
-                            raise NameError(
-                                "The non-empty components of dintinequality must have one column."
-                            )
-            else:
-                raise NameError("dintinequality must be a dictionary.")
-        return a
+        return self._dintinequality
 
     @dintinequality.setter
     def dintinequality(self, value):
-        a = value
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] == 1:
-                            a[key] = a[key]
-                        else:
+        if value is not None:
+            if isinstance(value, dict):
+                for key in value.keys():
+                    if min(value[key].shape) > 0:
+                        if value[key].shape[1] != 1:
                             raise NameError(
-                                "The non-empty components of dintinequality must have one column."
+                                "The non-empty components of dintinequality must have one column"
                             )
+                self._dintinequality = value
             else:
-                raise NameError("dintinequality must be a dictionary.")
-        self._dintinequality = a
+                raise NameError("dintinequality must be a dictionary")
+        else:
+            self._dintinequality = None
 
     @property
     def eintinequality(self):
-        a = self._eintinequality
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] >= 2:
-                            a[key] = a[key]
-                        else:
-                            raise NameError(
-                                "The non-empty components of eintinequality must have at least two columns."
-                            )
-            else:
-                raise NameError("eintinequality must be a dictionary.")
-        return a
+        return self._eintinequality
 
     @eintinequality.setter
     def eintinequality(self, value):
-        a = value
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] >= 2:
-                            a[key] = a[key]
+        if value is not None:
+            if isinstance(value, dict):
+                for key in value.keys():
+                    if min(value[key].shape) > 0:
+                        if value[key].shape[1] >= 2:
+                            pass
                         else:
                             raise NameError(
-                                "The non-empty components of eintinequality must have at least two columns."
+                                "The non-empty components of eintinequality must have at least two columns"
                             )
+                self._eintinequality = value
             else:
-                raise NameError("eintinequality must be a dictionary.")
-        self._eintinequality = a
+                raise NameError("eintinequality must be a dictionary")
+        else:
+            self._eintinequality = None
 
     @property
     def fintinequality(self):
-        a = self._fintinequality
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] == 1:
-                            a[key] = a[key]
-                        else:
-                            raise NameError(
-                                "The non-empty components of fintinequality must have one column."
-                            )
-            else:
-                raise NameError("fintinequality must be a dictionary.")
-        return a
+        return self._fintinequality
 
     @fintinequality.setter
     def fintinequality(self, value):
-        a = value
-        if a is not None:
-            if isinstance(a, dict):
-                for key in a.keys():
-                    if min(a[key].shape) > 0:
-                        if a[key].shape[1] == 1:
-                            a[key] = a[key]
-                        else:
+        if value is not None:
+            if isinstance(value, dict):
+                for key in value.keys():
+                    if min(value[key].shape) > 0:
+                        if value[key].shape[1] != 1:
                             raise NameError(
-                                "The non-empty components of fintinequality must have one column."
+                                "The non-empty components of fintinequality must have one column"
                             )
+                self._fintinequality = value
             else:
-                raise NameError("fintinequality must be a dictionary.")
-        self._fintinequality = a
+                raise NameError("fintinequality must be a dictionary")
+        else:
+            self._fintinequality = None
 
     ############
 
     @property
     def b(self):
-        a = self._b
-        if a is not None:
-            if a.shape[0] == self.numassets and a.shape[1] == 1:
-                pass
-            elif a.shape[0] == 1 and a.shape[1] == self.numassets:
-                a = a.T
-            else:
-                raise NameError(
-                    "The vector of risk contribution constraints must have a size equal than the assets' number."
-                )
-        return a
+        return self._b
 
     @b.setter
     def b(self, value):
-        a = value
-        if a is not None:
-            if a.shape[0] == self.numassets and a.shape[1] == 1:
-                pass
-            elif a.shape[0] == 1 and a.shape[1] == self.numassets:
-                a = a.T
+        if value is not None:
+            if value.shape[0] == self.numassets and value.shape[1] == 1:
+                self._b = value
+            elif value.shape[0] == 1 and value.shape[1] == self.numassets:
+                self._b = value.T
+            elif len(value.shape) == 1 and value.shape[0] == self.numassets:
+                self._b = np.reshape(np.array(value), (-1,1), order='F')
             else:
-                raise NameError(
-                    "The vector of risk contribution constraints must have a size equal than the assets' number."
+                raise ValueError(
+                    "The vector of risk contribution constraints must have a size equal than the number of assets"
                 )
-        self._b = a
+        else:
+            self._b = None
 
     @property
     def network_sdp(self):
-        a = self._network_sdp
-        n = self.numassets
-        if self._network_sdp is not None:
-            if self._network_sdp.shape[0] == n and self._network_sdp.shape[1] == n:
-                a = self._network_sdp
-            else:
-                raise NameError(
-                    "Connection matrix network_sdp must have a size of shape (n_assets, n_assets)."
-                )
-        return a
+        return self._network_sdp
 
     @network_sdp.setter
     def network_sdp(self, value):
-        a = value
         n = self.numassets
-        if a is not None:
-            if a.shape[0] == n and a.shape[1] == n:
-                a = a
+        if value is not None:
+            if value.shape[0] == n and value.shape[1] == n:
+                self._network_sdp = value
+                self.network_ip = None
+                self.card = None
             else:
-                raise NameError(
-                    "Connection matrix network_sdp must have a size of shape (n_assets, n_assets)."
+                raise ValueError(
+                    "Connection matrix network_sdp must have a size of shape (n_assets, n_assets)"
                 )
-        self._network_sdp = a
-        self._network_ip = None
-        self.card = None
+        else:
+            self._network_sdp = None
 
     @property
     def cluster_sdp(self):
-        a = self._cluster_sdp
-        n = self.numassets
-        if self._cluster_sdp is not None:
-            if self._cluster_sdp.shape[0] == n and self._cluster_sdp.shape[1] == n:
-                a = self._cluster_sdp
-            else:
-                raise NameError(
-                    "Connection matrix cluster_sdp must have a size of shape (n_assets, n_assets)."
-                )
-        return a
+        return self._cluster_sdp
 
     @cluster_sdp.setter
     def cluster_sdp(self, value):
-        a = value
         n = self.numassets
-        if a is not None:
-            if a.shape[0] == n and a.shape[1] == n:
-                a = a
+        if value is not None:
+            if value.shape[0] == n and value.shape[1] == n:
+                self._cluster_sdp = value
+                self.cluster_ip = None
+                self.card = None
             else:
-                raise NameError(
-                    "Connection matrix cluster_sdp must have a size of shape (n_assets, n_assets)."
+                raise ValueError(
+                    "Connection matrix cluster_sdp must have a size of shape (n_assets, n_assets)"
                 )
-        self._cluster_sdp = a
-        self._cluster_ip = None
-        self.card = None
+        else:
+            self._cluster_sdp = None
 
     @property
     def network_ip(self):
-        a = self._network_ip
-        n = self.numassets
-        if a is not None:
-            if a.shape[1] == n:
-                a = a
-            else:
-                raise NameError(
-                    "Connection matrix network_ip must have a n_assets columns."
-                )
-        return a
+        return self._network_ip
 
     @network_ip.setter
     def network_ip(self, value):
-        a = value
         n = self.numassets
-        if a is not None:
-            if a.shape[1] == n:
-                a = a
+        if value is not None:
+            if value.shape[1] == n:
+                self._network_ip = value
+                self.network_sdp = None
             else:
-                raise NameError(
-                    "Connection matrix network_ip must have a n_assets columns."
+                raise ValueError(
+                    "Connection matrix network_ip must have a n_assets columns"
                 )
-        self._network_ip = a
-        self._network_sdp = None
+        else:
+            self._network_ip = None
+
 
     @property
     def cluster_ip(self):
-        a = self._cluster_ip
-        n = self.numassets
-        if a is not None:
-            if a.shape[1] == n:
-                a = a
-            else:
-                raise NameError(
-                    "Connection matrix cluster_ip must have a n_assets columns."
-                )
-        return a
+        return self._cluster_ip
 
     @cluster_ip.setter
     def cluster_ip(self, value):
-        a = value
         n = self.numassets
-        if a is not None:
-            if a.shape[1] == n:
-                a = a
+        if value is not None:
+            if value.shape[1] == n:
+                self._cluster_ip = value
+                self.cluster_sdp = None
             else:
-                raise NameError(
-                    "Connection matrix cluster_ip must have a n_assets columns."
+                raise ValueError(
+                    "Connection matrix cluster_ip must have a n_assets columns"
                 )
-        self._cluster_ip = a
-        self._cluster_sdp = None
+        else:
+            self._cluster_ip = None
+
 
     @property
     def acentrality(self):
-        a = self._acentrality
-        if a is not None:
-            if a.shape[1] == self.numassets:
-                a = a
-            else:
-                raise NameError(
-                    "The array ainequality must have the same number of columns than assets' number."
-                )
-        return a
+        return self._acentrality
 
     @acentrality.setter
     def acentrality(self, value):
-        a = value
-        if a is not None:
-            if a.shape[1] == self.numassets:
-                a = a
+        if value is not None:
+            if value.shape[1] == self.numassets:
+                self._acentrality = value
             else:
-                raise NameError(
-                    "The matrix ainequality must have the same number of columns than assets' number."
+                raise ValueError(
+                    "The matrix ainequality must have the same number of columns than number of assets"
                 )
-        self._acentrality = a
+        else:
+            self._acentrality = None
 
     @property
     def bcentrality(self):
-        a = self._bcentrality
-        if a is not None:
-            if a.shape[1] == 1:
-                a = a
-            else:
-                raise NameError("The matrix binequality must have one column.")
-        return a
+        return self._bcentrality
 
     @bcentrality.setter
     def bcentrality(self, value):
-        a = value
-        if a is not None:
-            if a.shape[1] == 1:
-                a = a
+        if value is not None:
+            if value.shape[1] == 1:
+                self._bcentrality = value
             else:
                 raise NameError("The matrix binequality must have one column.")
-        self._bcentrality = a
+        else:
+            self._bcentrality = None
+
 
     @property
     def kappa(self):
@@ -1119,19 +958,18 @@ class Portfolio(object):
 
     @kappa.setter
     def kappa(self, value):
-        a = value
-        if a >= 1:
-            print(
-                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99."
-            )
-            self._kappa = 0.99
-        elif a <= 0:
-            print(
-                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01."
-            )
-            self._kappa = 0.01
+        if value is not None and not isinstance(value, float):
+            raise TypeError("kappa_g must be None or a float.")
+        elif isinstance(value, float):
+            if value > 0.9999 or value < 0.0001:
+                raise ValueError("kappa_g must be a float between 0.0001 and 0.9999.")
+            else:
+                self._kappa = value
+        elif value is None:
+            self._kappa = None
         else:
-            self._kappa = a
+            raise ValueError("kappa must be a float between 0.0001 and 0.9999")
+
 
     @property
     def kappa_g(self):
@@ -1139,19 +977,49 @@ class Portfolio(object):
 
     @kappa_g.setter
     def kappa_g(self, value):
-        a = value
-        if a >= 1:
-            print(
-                "kappa must be between 0 and 1, values higher or equal to 1 are setting to 0.99."
-            )
-            self._kappa_g = 0.99
-        elif a <= 0:
-            print(
-                "kappa must be between 0 and 1, values lower or equal to 0 are setting to 0.01."
-            )
-            self._kappa_g = 0.01
+        if value is not None and not isinstance(value, float):
+            raise TypeError("kappa_g must be None or a float")
+        elif isinstance(value, float):
+            if value > 0.9999 or value < 0.0001:
+                raise ValueError("kappa_g must be a float between 0.0001 and 0.9999")
+            else:
+                self._kappa_g = value
+        elif value is None:
+            self._kappa_g = None
         else:
-            self._kappa_g = a
+            raise ValueError("kappa_g must be a float between 0.0001 and 0.9999")
+
+
+    @property
+    def p_em(self):
+        return self._p_em
+
+    @p_em.setter
+    def p_em(self, value):
+        if isinstance(value, int) and value >= 2:
+            self._p_em = value
+        elif value is None:
+            self._p_em = 2
+        else:
+            raise ValueError(
+                "p_em must be an integer higher equal than 2, values lower to 2 are setting to 2"
+            )
+
+    @property
+    def p_esm(self):
+        return self._p_esm
+
+    @p_esm.setter
+    def p_esm(self, value):
+        if isinstance(value, int) and value >= 2:
+            self._p_esm = value
+        elif value is None:
+            self._p_esm = 2
+        else:
+            raise ValueError(
+                "p_esm must be an integer higher equal than 2, values lower to 2 are setting to 2"
+            )
+
 
     def assets_stats(
         self,
@@ -2305,7 +2173,7 @@ class Portfolio(object):
 
         # Ulcer Index Model Variables
 
-        risk11 = cp.norm(U[1:] * 1000, "fro") / np.sqrt(T)
+        risk11 = cp.pnorm(U[1:] * 1000, p=2) / np.sqrt(T)
 
         # Entropic Value at Risk Model Variables
 
@@ -3761,7 +3629,7 @@ class Portfolio(object):
 
         # Ulcer Index Model Variables
 
-        risk11 = cp.norm(U[1:], "fro") / np.sqrt(T)
+        risk11 = cp.pnorm(U[1:] * 1000, p=2) / np.sqrt(T)
 
         # Entropic Value at Risk Model Variables
 
@@ -6650,16 +6518,16 @@ class Portfolio(object):
 
         self.ainequality = None
         self.binequality = None
-        self.arcinequality = (None,)
-        self.brcinequality = (None,)
-        self.afrcinequality = (None,)
-        self.bfrcinequality = (None,)
-        self.aintinequality = (None,)
-        self.bintinequality = (None,)
-        self.cintinequality = (None,)
-        self.dintinequality = (None,)
-        self.eintinequality = (None,)
-        self.fintinequality = (None,)
+        self.arcinequality = None
+        self.brcinequality = None
+        self.afrcinequality = None
+        self.bfrcinequality = None
+        self.aintinequality = None
+        self.bintinequality = None
+        self.cintinequality = None
+        self.dintinequality = None
+        self.eintinequality = None
+        self.fintinequality = None
         self.b = None
         self.network_sdp = None
         self.graph_penalty = 0.05
