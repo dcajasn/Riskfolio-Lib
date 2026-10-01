@@ -1,6 +1,13 @@
 [tool.ruff]
-# The minimum Python version that should be supported
-target-version = "py39"
+# The minimum Python version that should be supported. Keep in sync with
+# PYTHON_REQUIRES in setup.py and with the classifiers.
+target-version = "py310"
+
+exclude = [
+    "lib",       # vendored Eigen and Spectra: upstream sources, some Python 2
+    "examples",  # tutorial notebooks
+    "docs",
+]
 
 [tool.ruff.lint]
 select = [
@@ -12,8 +19,38 @@ select = [
 ]
 
 ignore = [
-    "E721" # Do not compare types, use 'isinstance()'
+    "E721",  # Do not compare types, use 'isinstance()'
+    # Line length is owned by `ruff format`, which the linters job also checks.
+    # Of the lines the formatter leaves long, ~80% are numpydoc prose and URLs
+    # that cannot be split mechanically without hurting the rendered docs.
+    "E501",
+    # `l` is the risk aversion factor throughout the public API
+    # (for example `Portfolio.optimization(..., l=2)`). Renaming it would be a
+    # breaking change for every caller.
+    "E741",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+# The package re-exports its public API through `from .<module> import *`, and
+# the compiled extension cannot be introspected statically.
+"riskfolio/__init__.py" = ["F403"]
+"riskfolio/src/__init__.py" = ["F403"]
+"riskfolio/external/__init__.py" = ["F403"]
+"riskfolio/external/cppfunctions.py" = ["F403", "F405"]
+
+# Pre-existing debt, scoped per file so that new files and new modules are
+# still gated on these rules. E712 is `== True` / `== False`, a few of which
+# are pandas masks that cannot become `not x`; E722 is a bare `except:`.
+# Burn these down a file at a time and delete the entry.
+"riskfolio/src/AuxFunctions.py" = ["E712"]              # 5
+"riskfolio/src/ConstraintsFunctions.py" = ["E712"]      # 13
+"riskfolio/src/DBHT.py" = ["E712"]                      # 3
+"riskfolio/src/GerberStatistic.py" = ["E712"]           # 1
+"riskfolio/src/HCPortfolio.py" = ["E712"]               # 4
+"riskfolio/src/ParamsEstimation.py" = ["E712"]          # 25
+"riskfolio/src/PlotFunctions.py" = ["E712", "E722"]     # 19, 19
+"riskfolio/src/Portfolio.py" = ["E712", "E722"]         # 104, 30
+"riskfolio/src/RiskFunctions.py" = ["E712", "E722"]     # 3, 3
 
 [build-system]
 requires = [

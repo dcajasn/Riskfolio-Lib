@@ -1,16 +1,16 @@
 """"""  #
 
-"""
-Copyright (c) 2020-2026, Dany Cajas
-All rights reserved.
-This work is licensed under BSD 3-Clause "New" or "Revised" License.
-License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
-"""
+# Copyright (c) 2020-2026, Dany Cajas
+# All rights reserved.
+# This work is licensed under BSD 3-Clause "New" or "Revised" License.
+# License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+
+from itertools import product
 
 import numpy as np
 import pandas as pd
+
 from riskfolio.external.functions import *
-from itertools import product
 
 __all__ = [
     "duplication_matrix",

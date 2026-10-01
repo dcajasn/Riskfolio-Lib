@@ -1,25 +1,23 @@
 """"""  #
 
-"""
-Copyright (c) 2020-2025, Dany Cajas
-All rights reserved.
-This work is licensed under BSD 3-Clause "New" or "Revised" License.
-License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
-"""
+# Copyright (c) 2020-2025, Dany Cajas
+# All rights reserved.
+# This work is licensed under BSD 3-Clause "New" or "Revised" License.
+# License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
+import cvxpy as cp
 import numpy as np
 import pandas as pd
-import cvxpy as cp
-import scipy.stats as st
 from numpy.linalg import pinv
-from scipy.linalg import sqrtm, norm, null_space
+from scipy.linalg import norm, sqrtm
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
-import riskfolio.src.RiskFunctions as rk
-import riskfolio.src.ParamsEstimation as pe
+
+import riskfolio.external.cppfunctions as cf
 import riskfolio.src.AuxFunctions as af
 import riskfolio.src.OwaWeights as owa
-import riskfolio.external.cppfunctions as cf
+import riskfolio.src.ParamsEstimation as pe
+import riskfolio.src.RiskFunctions as rk
 
 __all__ = [
     "Portfolio",
@@ -2953,7 +2951,6 @@ class Portfolio(object):
         # Problem network constraints
 
         if flag_int:
-
             # Cardinality Constraint
 
             if self.card is not None:
@@ -3005,7 +3002,6 @@ class Portfolio(object):
                     np.unique(self.cluster_ip + np.identity(N), axis=0) @ e <= 1
                 ]
         else:
-
             # Network SDP Constraint
 
             if self.network_sdp is not None:
@@ -4903,7 +4899,6 @@ class Portfolio(object):
                     ]
 
         if flag_int:
-
             # Cardinality Constraint
 
             if self.card is not None:
@@ -4952,7 +4947,6 @@ class Portfolio(object):
                     np.unique(self.cluster_ip + np.identity(N), axis=0) @ e <= 1
                 ]
         else:
-
             # Network SDP Constraint
 
             if self.network_sdp is not None:
@@ -5651,7 +5645,6 @@ class Portfolio(object):
                     ]
 
         if flag_int:
-
             # Cardinality Constraint
 
             if self.card is not None:
@@ -5700,7 +5693,6 @@ class Portfolio(object):
                     np.unique(self.cluster_ip + np.identity(N), axis=0) @ e <= 1
                 ]
         else:
-
             # Network SDP Constraint
 
             if self.network_sdp is not None:
@@ -6353,15 +6345,12 @@ class Portfolio(object):
         method (faster) to know the range of expected return and expected risk.
         """
 
-        mu = None
         sigma = None
         returns = None
         if model == "Classic":
-            mu = np.array(self.mu, ndmin=2)
             sigma = np.array(self.cov, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
         elif model == "FM":
-            mu = np.array(self.mu_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
@@ -6369,14 +6358,12 @@ class Portfolio(object):
                 sigma = np.array(self.cov, ndmin=2)
                 returns = np.array(self.returns, ndmin=2)
         elif model == "BL":
-            mu = np.array(self.mu_bl, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_bl, ndmin=2)
             elif hist == True:
                 sigma = np.array(self.cov, ndmin=2)
             returns = np.array(self.returns, ndmin=2)
         elif model == "BL_FM":
-            mu = np.array(self.mu_bl_fm, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_bl_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
@@ -6387,7 +6374,6 @@ class Portfolio(object):
                 sigma = np.array(self.cov_fm, ndmin=2)
                 returns = np.array(self.returns_fm, ndmin=2)
         elif model == "EP":
-            mu = np.array(self.mu_ep, ndmin=2)
             if hist == False:
                 sigma = np.array(self.cov_ep, ndmin=2)
             elif hist == True:
@@ -6421,9 +6407,6 @@ class Portfolio(object):
 
         w_min = np.array(limits.iloc[:, 0], ndmin=2).T
         w_max = np.array(limits.iloc[:, 1], ndmin=2).T
-
-        ret_min = (mu @ w_min).item()
-        ret_max = (mu @ w_max).item()
 
         if rm == "MV":
             risk_min = np.sqrt(w_min.T @ sigma @ w_min).item()
@@ -6503,8 +6486,6 @@ class Portfolio(object):
         elif rm == "ESM":
             risk_min = rk.EvenSemiMoment(returns @ w_min, p_esm)
             risk_max = rk.EvenSemiMoment(returns @ w_max, p_esm)
-
-        mus = np.linspace(ret_min, ret_max, int(points))
 
         risks = np.linspace(risk_min, risk_max, int(points))
 

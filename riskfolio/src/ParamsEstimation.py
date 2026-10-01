@@ -1,29 +1,27 @@
 """"""  #
 
-"""
-Copyright (c) 2020-2026, Dany Cajas
-All rights reserved.
-This work is licensed under BSD 3-Clause "New" or "Revised" License.
-License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
-"""
+# Copyright (c) 2020-2026, Dany Cajas
+# All rights reserved.
+# This work is licensed under BSD 3-Clause "New" or "Revised" License.
+# License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
-import numpy as np
-import pandas as pd
-import cvxpy as cp
-import statsmodels.api as sm
-import scipy.stats as st
-import sklearn.covariance as skcov
-import arch.bootstrap as bs
-
-from sklearn.preprocessing import StandardScaler
-from sklearn.decomposition import PCA
-from numpy.linalg import inv
 from itertools import product
 
+import arch.bootstrap as bs
+import cvxpy as cp
+import numpy as np
+import pandas as pd
+import scipy.stats as st
+import sklearn.covariance as skcov
+import statsmodels.api as sm
+from numpy.linalg import inv
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+import riskfolio.external.cppfunctions as cf
 import riskfolio.src.AuxFunctions as af
 import riskfolio.src.DBHT as db
 import riskfolio.src.GerberStatistic as gs
-import riskfolio.external.cppfunctions as cf
 
 __all__ = [
     "mean_vector",

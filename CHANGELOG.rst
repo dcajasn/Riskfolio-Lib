@@ -38,6 +38,21 @@ Changelog
 Unreleased
 ==========
 
+- The ``linters`` CI job now actually runs ``ruff check`` and
+  ``ruff format --check`` against the committed ``[tool.ruff]`` config, on a
+  pinned ruff, and fails the workflow on violations. It previously only
+  installed dependencies and always reported green.
+- ``[tool.ruff]`` now excludes the vendored ``lib/`` sources, ``examples/`` and
+  ``docs/``, and ``target-version`` is ``py310`` to match ``PYTHON_REQUIRES``
+  and the classifiers.
+- Moved the license banner in every module from a no-op string literal to a
+  comment, so imports are no longer flagged as not being at the top of the file.
+- Sorted imports, dropped unused imports and removed dead local assignments,
+  including the unused return-parameterised sweep in
+  ``Portfolio.efficient_frontier``.
+- Fixed the Python version guard in ``setup.py``: it parsed
+  ``PYTHON_REQUIRES[-1]``, which is ``"0"`` for ``">=3.10"``, so it compared
+  against ``(3, 0)`` and never fired.
 - Removed the vendored ``lib/spectra-1.0.1`` dependency. It backed a single
   function, ``cpp_k_eigh``, which is now ``rp.k_eigh`` implemented with
   ``scipy.sparse.linalg.eigsh``. On the cokurtosis block that the kurtosis and

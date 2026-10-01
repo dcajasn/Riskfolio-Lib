@@ -1,14 +1,14 @@
 """"""  #
-"""
-Copyright (c) 2020-2022, Dany Cajas
-All rights reserved.
-This work is licensed under BSD 3-Clause "New" or "Revised" License.
-License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
-"""
+# Copyright (c) 2020-2022, Dany Cajas
+# All rights reserved.
+# This work is licensed under BSD 3-Clause "New" or "Revised" License.
+# License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
 import os
+
 import numpy as np
 import pandas as pd
+
 import riskfolio as rp
 
 assets = ["JCI", "TGT", "CMCSA", "CPB", "MO", "AMZN", "APA", "MMC", "JPM", "ZION"]
@@ -36,7 +36,7 @@ def test_classic_minrisk_optimization():
 
     port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
     port.alpha = 0.05
-    port.solvers = ['CLARABEL', 'SCS', 'ECOS']
+    port.solvers = ["CLARABEL", "SCS", "ECOS"]
 
     model = "Classic"
     obj = "MinRisk"
@@ -93,7 +93,7 @@ def test_classic_sharpe_optimization():
 
     port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
     port.alpha = 0.05
-    port.solvers = ['CLARABEL', 'SCS', 'ECOS']
+    port.solvers = ["CLARABEL", "SCS", "ECOS"]
 
     model = "Classic"
     obj = "Sharpe"
@@ -150,7 +150,7 @@ def test_classic_riskparity_optimization():
 
     port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
     port.alpha = 0.05
-    port.solvers = ['CLARABEL', 'ECOS', 'SCS']
+    port.solvers = ["CLARABEL", "ECOS", "SCS"]
 
     model = "Classic"
     hist = True
@@ -201,10 +201,10 @@ def test_worst_case_optimization():
     method_cov = "hist"
 
     port.assets_stats(method_mu=method_mu, method_cov=method_cov, d=0.94)
-    port.solvers = ['CLARABEL', 'ECOS', 'SCS']
+    port.solvers = ["CLARABEL", "ECOS", "SCS"]
 
-    box = 's'
-    ellip = 's'
+    box = "s"
+    ellip = "s"
     q = 0.05
     n_sim = 3000
     window = 3
@@ -212,11 +212,20 @@ def test_worst_case_optimization():
     dcov = 0.1
     seed = 0
 
-    port.wc_stats(box=box, ellip=ellip, q=q, n_sim=n_sim, window=window, dmu=dmu, dcov=dcov, seed=seed)
+    port.wc_stats(
+        box=box,
+        ellip=ellip,
+        q=q,
+        n_sim=n_sim,
+        window=window,
+        dmu=dmu,
+        dcov=dcov,
+        seed=seed,
+    )
 
-    Umus = ['box', 'ellip']
-    Ucovs = ['box', 'ellip']
-    objs = ['MinRisk', 'Sharpe']
+    Umus = ["box", "ellip"]
+    Ucovs = ["box", "ellip"]
+    objs = ["MinRisk", "Sharpe"]
     rf = 0
     l = 0
 
@@ -227,7 +236,7 @@ def test_worst_case_optimization():
             for Ucov in Ucovs:
                 w = port.wc_optimization(obj=obj, rf=rf, l=l, Umu=Umu, Ucov=Ucov)
                 w_1 = pd.concat([w_1, w], axis=1)
-                headers += [obj + '-' + Umu + '-' + Ucov]
+                headers += [obj + "-" + Umu + "-" + Ucov]
 
     w_1.columns = headers
     # w_1.to_csv("Classic_WC.csv")
@@ -433,7 +442,7 @@ def test_hc_nco_optimization():
         print("There are no errors in test_hc_nco_optimization")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_classic_minrisk_optimization()
     test_classic_sharpe_optimization()
     test_classic_riskparity_optimization()
