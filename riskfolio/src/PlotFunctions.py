@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import matplotlib.lines as mlines
 import matplotlib.ticker as mticker
-from matplotlib import cm, colors
+from matplotlib import colors
 from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
 import scipy.stats as st
 import scipy.cluster.hierarchy as hr
@@ -190,7 +190,7 @@ def plot_series(returns, w, cmap="tab20", n_colors=20, height=6, width=10, ax=No
     labels = w_.columns.tolist()
     index = returns.index.tolist()
 
-    colormap = cm.get_cmap(cmap)
+    colormap = plt.get_cmap(cmap)
     colormap = colormap(np.linspace(0, 1, int(n_colors)))
 
     if cmap == "gist_rainbow":
@@ -206,7 +206,7 @@ def plot_series(returns, w, cmap="tab20", n_colors=20, height=6, width=10, ax=No
         prices = np.ravel(prices).tolist()
         del prices[0]
 
-        ax.plot_date(index, prices, "-", label=labels[i])
+        ax.plot(index, prices, "-", label=labels[i])
 
     ax.xaxis.set_major_locator(mdates.AutoDateLocator(tz=None, minticks=5, maxticks=10))
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
@@ -603,7 +603,7 @@ def plot_frontier(
             colormap = np.array(colormap)
 
         if len(label) != colormap.shape[0]:
-            colormap = cm.get_cmap("tab20")
+            colormap = plt.get_cmap("tab20")
             colormap = colormap(np.linspace(0, 1, 20))
             colormap = np.vstack(
                 [colormap[6:8], colormap[2:6], colormap[8:], colormap[0:2]]
@@ -797,7 +797,7 @@ def plot_pie(
 
     ax.set_title(title)
 
-    colormap = cm.get_cmap(cmap)
+    colormap = plt.get_cmap(cmap)
     colormap = colormap(np.linspace(0, 1, n_colors))
 
     if cmap == "gist_rainbow":
@@ -1195,7 +1195,7 @@ def plot_frontier_area(
 
     ax.set_title("Efficient Frontier's Assets Structure")
 
-    colormap = cm.get_cmap(cmap)
+    colormap = plt.get_cmap(cmap)
     colormap = colormap(np.linspace(0, 1, int(n_colors)))
 
     if cmap == "gist_rainbow":
@@ -2581,7 +2581,7 @@ def plot_drawdown(
     formatter = mdates.DateFormatter("%Y-%m")
     for i in axes:
         i.clear()
-        i.plot_date(index, data[j], "-", color=color1[j])
+        i.plot(index, data[j], "-", color=color1[j])
         if j == 1:
             i.fill_between(index, 0, data[j], facecolor=color1[j], alpha=0.3)
             for k in range(0, len(risk)):

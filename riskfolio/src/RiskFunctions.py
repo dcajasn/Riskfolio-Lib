@@ -93,6 +93,8 @@ def MAD(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T, N = a.shape
     mu = np.mean(a, axis=0).reshape(1, -1)
@@ -133,6 +135,8 @@ def SemiDeviation(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T, N = a.shape
     mu = np.mean(a, axis=0).reshape(1, -1)
@@ -173,6 +177,8 @@ def Kurtosis(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T, N = a.shape
     mu = np.mean(a, axis=0).reshape(1, -1)
@@ -213,6 +219,8 @@ def SemiKurtosis(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T, N = a.shape
     mu = np.mean(a, axis=0).reshape(1, -1)
@@ -256,6 +264,8 @@ def EvenMoment(X, p: int = 2):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
     if isinstance(p, int) == False or p < 2:
         raise ValueError("p must be an integer higher equal than 2")
 
@@ -301,6 +311,8 @@ def EvenSemiMoment(X, p: int = 2):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
     if isinstance(p, int) == False or p < 2:
         raise ValueError("p must be an integer higher equal than 2")
 
@@ -344,6 +356,8 @@ def VaR_Hist(X, alpha=0.05):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     sorted_a = np.sort(a, axis=0)
     index = int(np.ceil(alpha * len(sorted_a)) - 1)
@@ -385,6 +399,8 @@ def CVaR_Hist(X, alpha=0.05):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     sorted_a = np.sort(a, axis=0)
     index = int(np.ceil(alpha * len(sorted_a)) - 1)
@@ -427,6 +443,8 @@ def WR(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     sorted_a = np.sort(a, axis=0)
     value = -sorted_a[0]
@@ -477,6 +495,8 @@ def LPM(X, MAR=0, p=1):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
     if p not in [1, 2]:
         raise ValueError("p can only be 1 or 2")
 
@@ -530,6 +550,8 @@ def Entropic_RM(X, z=1, alpha=0.05):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     value = np.mean(np.exp(-1 / z * a), axis=0)
     value = z * (np.log(value) + np.log(1 / alpha))
@@ -544,6 +566,8 @@ def _Entropic_RM(z, X, alpha=0.05):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     a = a.flatten()
     value = np.mean(np.exp(-1 / z * a), axis=0)
@@ -599,6 +623,8 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T, N = a.shape
 
@@ -703,6 +729,8 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T, N = a.shape
 
@@ -815,6 +843,8 @@ def MDD_Abs(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = np.insert(np.array(a), 0, 1, axis=0)
     NAV = np.cumsum(np.array(prices), axis=0)
@@ -863,6 +893,8 @@ def ADD_Abs(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = np.insert(np.array(a), 0, 1, axis=0)
     NAV = np.cumsum(np.array(prices), axis=0)
@@ -922,6 +954,8 @@ def DaR_Abs(X, alpha=0.05):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = np.insert(np.array(a), 0, 1, axis=0)
     NAV = np.cumsum(np.array(prices), axis=0)
@@ -980,6 +1014,8 @@ def CDaR_Abs(X, alpha=0.05):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = np.insert(np.array(a), 0, 1, axis=0)
     NAV = np.cumsum(np.array(prices), axis=0)
@@ -1037,6 +1073,8 @@ def EDaR_Abs(X, alpha=0.05, solver="CLARABEL"):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = np.insert(np.array(a), 0, 1, axis=0)
     NAV = np.cumsum(np.array(prices), axis=0)
@@ -1092,6 +1130,8 @@ def RLDaR_Abs(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = np.insert(np.array(a), 0, 1, axis=0)
     NAV = np.cumsum(np.array(prices), axis=0)
@@ -1140,6 +1180,8 @@ def UCI_Abs(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = np.insert(np.array(a), 0, 1, axis=0)
     NAV = np.cumsum(np.array(prices), axis=0)
@@ -1195,6 +1237,8 @@ def MDD_Rel(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = 1 + np.insert(np.array(a), 0, 0, axis=0)
     NAV = np.cumprod(prices, axis=0)
@@ -1244,6 +1288,8 @@ def ADD_Rel(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = 1 + np.insert(np.array(a), 0, 0, axis=0)
     NAV = np.cumprod(prices, axis=0)
@@ -1303,6 +1349,8 @@ def DaR_Rel(X, alpha=0.05):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("X must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = 1 + np.insert(np.array(a), 0, 0, axis=0)
     NAV = np.cumprod(prices, axis=0)
@@ -1361,6 +1409,8 @@ def CDaR_Rel(X, alpha=0.05):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("X must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = 1 + np.insert(np.array(a), 0, 0, axis=0)
     NAV = np.cumprod(prices, axis=0)
@@ -1418,6 +1468,8 @@ def EDaR_Rel(X, alpha=0.05, solver="CLARABEL"):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("X must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = 1 + np.insert(np.array(a), 0, 0, axis=0)
     NAV = np.cumprod(prices, axis=0)
@@ -1473,6 +1525,8 @@ def RLDaR_Rel(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("X must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = 1 + np.insert(np.array(a), 0, 0, axis=0)
     NAV = np.cumprod(prices, axis=0)
@@ -1521,6 +1575,8 @@ def UCI_Rel(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     prices = 1 + np.insert(np.array(a), 0, 0, axis=0)
     NAV = np.cumprod(prices, axis=0)
@@ -1570,6 +1626,8 @@ def GMD(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T = a.shape[0]
     w_ = owa.owa_gmd(T)
@@ -1608,6 +1666,8 @@ def TG(X, alpha=0.05, a_sim=100):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T = a.shape[0]
     w_ = owa.owa_tg(T, alpha, a_sim)
@@ -1642,6 +1702,8 @@ def RG(X):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T = a.shape[0]
     w_ = owa.owa_rg(T)
@@ -1681,6 +1743,8 @@ def VRG(X, alpha=0.05, beta=None):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     if beta is None:
         beta = alpha
@@ -1724,6 +1788,8 @@ def CVRG(X, alpha=0.05, beta=None):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T = a.shape[0]
     w_ = owa.owa_cvrg(T, alpha=alpha, beta=beta)
@@ -1768,6 +1834,8 @@ def TGRG(X, alpha=0.05, a_sim=100, beta=None, b_sim=None):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T = a.shape[0]
     w_ = owa.owa_tgrg(T, alpha=alpha, a_sim=a_sim, beta=beta, b_sim=b_sim)
@@ -1810,6 +1878,8 @@ def EVRG(X, alpha=0.05, beta=None, solver="CLARABEL"):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     if beta is None:
         beta = alpha
@@ -1862,6 +1932,8 @@ def RVRG(X, alpha=0.05, beta=None, kappa=0.3, kappa_g=None, solver="CLARABEL"):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     if beta is None:
         beta = alpha
@@ -1911,6 +1983,8 @@ def L_Moment(X, k=2):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T = a.shape[0]
     w_ = owa.owa_l_moment(T, k=k)
@@ -1975,6 +2049,8 @@ def L_Moment_CRM(X, k=4, method="MSD", g=0.5, max_phi=0.5, solver="CLARABEL"):
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
         raise ValueError("returns must have Tx1 size")
+    if not np.all(np.isfinite(a)):
+        raise ValueError("returns must not contain NaN or infinite values")
 
     T = a.shape[0]
     w_ = owa.owa_l_moment_crm(
