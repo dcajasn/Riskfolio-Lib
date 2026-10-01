@@ -16,6 +16,7 @@ import scipy.cluster.hierarchy as hr
 from scipy import linalg as LA
 from statsmodels.stats.correlation_tools import cov_nearest
 from scipy.sparse import csr_matrix
+from scipy.sparse.linalg import eigsh
 from scipy.spatial.distance import pdist, squareform
 from scipy.optimize import minimize
 from sklearn.metrics import mutual_info_score
@@ -54,6 +55,7 @@ __all__ = [
     "round_values",
     "weights_discretizetion",
     "color_list",
+    "k_eigh",
 ]
 
 ###############################################################################
@@ -1132,6 +1134,44 @@ def getPCA(matrix):
     eVal = np.diagflat(eVal)
 
     return eVal, eVec
+
+
+def k_eigh(matrix, k):
+    r"""
+    Gets the k largest eigenvalues and their eigenvectors of a symmetric
+    matrix, using the implicitly restarted Lanczos method.
+
+    This is intended for the case where the matrix is large and only a few of
+    its leading eigenpairs are needed, such as the eigendecomposition of the
+    cokurtosis square matrix, which is :math:`n^2 \times n^2`.
+
+    Parameters
+    ----------
+    matrix : ndarray or pd.DataFrame
+        A symmetric square matrix.
+    k : int
+        Number of largest eigenvalues to calculate. Must satisfy
+        :math:`0 < k < n` where n is the number of rows of the matrix.
+
+    Returns
+    -------
+    eVal : ndarray
+        The k largest eigenvalues, in descending order.
+    eVec : ndarray
+        The corresponding eigenvectors, one per column.
+
+    Raises
+    ------
+    ValueError
+        When the value cannot be calculated.
+    """
+
+    matrix = np.array(matrix, ndmin=2)
+    # `eigsh` returns the selected eigenvalues in ascending order.
+    eVal, eVec = eigsh(matrix, k=k, which="LA")
+    indices = eVal.argsort()[::-1]
+
+    return eVal[indices], eVec[:, indices]
 
 
 def denoisedCorr(eVal, eVec, nFacts, kind="fixed"):

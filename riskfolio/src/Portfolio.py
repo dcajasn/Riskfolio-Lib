@@ -2644,7 +2644,7 @@ class Portfolio(object):
                 g2 = cp.Variable((K, 1))
                 risk19 = cp.pnorm(g2, p=2)
                 A = af.block_vec_pq(kurt, N, N)
-                s_A, V_A = cf.k_eigh(A, K)
+                s_A, V_A = af.k_eigh(A, K)
                 s_A = np.clip(s_A, 0, np.inf)
 
                 Bi = []
@@ -2675,7 +2675,7 @@ class Portfolio(object):
                 sg2 = cp.Variable((K, 1))
                 risk20 = cp.pnorm(sg2, p=2)
                 SA = af.block_vec_pq(self.skurt, N, N)
-                s_SA, V_SA = cf.k_eigh(SA, K)
+                s_SA, V_SA = af.k_eigh(SA, K)
                 s_SA = np.clip(s_SA, 0, np.inf)
 
                 SBi = []
