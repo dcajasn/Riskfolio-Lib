@@ -23,7 +23,6 @@ __all__ = [
     "semi_coskewness_matrix",
     "cokurtosis_matrix",
     "semi_cokurtosis_matrix",
-    "k_eigh",
     "d_corr",
     "d_corr_matrix",
     "residuals_coskewness_fm",
@@ -368,30 +367,6 @@ def semi_cokurtosis_matrix(
         s_S4 = pd.DataFrame(s_S4, index=cols, columns=cols)
 
     return s_S4
-
-
-def k_eigh(Y: np.ndarray, k: int):
-    r"""
-    Calculates lower semi cokurtosis square matrix as shown in :cite:`d-Cajas4`.
-
-    Parameters
-    ----------
-    Y : ndarray or dataframe
-        Returns series of shape n_sample x n_features.
-
-    Returns
-    -------
-    s_S4 : ndarray
-        The lower semi cokurtosis square matrix.
-
-    Raises
-    ------
-        ValueError when the value cannot be calculated.
-    """
-    Y_ = np.array(Y, ndmin=2)
-    eigvalues, eigvectors = cpp_k_eigh(Y_, k)
-
-    return eigvalues, eigvectors
 
 
 def d_corr(X: np.ndarray, Y: np.ndarray):

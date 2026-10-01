@@ -53,6 +53,13 @@ Unreleased
 - Fixed the Python version guard in ``setup.py``: it parsed
   ``PYTHON_REQUIRES[-1]``, which is ``"0"`` for ``">=3.10"``, so it compared
   against ``(3, 0)`` and never fired.
+- Removed the vendored ``lib/spectra-1.0.1`` dependency. It backed a single
+  function, ``cpp_k_eigh``, which is now ``rp.k_eigh`` implemented with
+  ``scipy.sparse.linalg.eigsh``. On the cokurtosis block that the kurtosis and
+  semi kurtosis models actually feed it (60 assets, a 3600 x 3600 matrix,
+  k = 120), scipy is about 2.6x faster and returns the same eigenvalues.
+  ``rp.k_eigh`` keeps its name, signature and descending eigenvalue order, so
+  the public API is unchanged.
 
 Version 7.3.0
 =============
