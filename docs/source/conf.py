@@ -106,8 +106,10 @@ if not docs_baseurl.endswith("/"):
     docs_baseurl = f"{docs_baseurl}/"
 
 html_baseurl = docs_baseurl
+google_site_verification = os.environ.get("GOOGLE_SITE_VERIFICATION", "").strip()
 html_context = {
     "docs_baseurl": docs_baseurl,
+    "google_site_verification": google_site_verification,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -204,3 +206,18 @@ intersphinx_mapping = {
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+
+def _write_robots_txt(app, exception):
+    if exception is None:
+        robots_path = os.path.join(app.outdir, 'robots.txt')
+        with open(robots_path, 'w', encoding='utf-8') as robots_file:
+            robots_file.write(
+                'User-agent: *\n'
+                'Disallow: /cgi-bin\n'
+                f'Sitemap: {docs_baseurl}sitemap.xml\n'
+            )
+
+
+def setup(app):
+    app.connect('build-finished', _write_robots_txt)

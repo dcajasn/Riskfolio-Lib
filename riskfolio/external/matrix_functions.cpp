@@ -13,12 +13,10 @@
 #include <Eigen>
 #include <Eigen/Core>
 #include <Eigen/KroneckerProduct>
-#include <Spectra/SymEigsSolver.h>
 
 namespace py = pybind11;
 using namespace std;
 using namespace Eigen;
-using namespace Spectra;
 
 std::vector<int> cumsum(const std::vector<int>& vec) {
     std::vector<int> result(vec.size());
@@ -504,26 +502,6 @@ Eigen::MatrixXd cpp_cokurtosis_matrix_prob(Eigen::MatrixXd Y, Eigen::VectorXd P,
 }
 
 /**
- * Calculates first k eigenvalues and eigenvectors of a symmetric matrix.
- * 
- * @M symmetric matrix.
- * @k number of largest eigenvalues.
- */
-std::tuple<Eigen::VectorXd, Eigen::MatrixXd>  cpp_k_eigh(Eigen::MatrixXd M, const int &k) {
-    DenseSymMatProd<double> op(M);
-    SymEigsSolver<DenseSymMatProd<double>> eigs(op, k, 2 * k);
-    eigs.init();
-    eigs.compute(SortRule::LargestAlge);
-    Eigen::VectorXd eigen_values;
-    Eigen::MatrixXd eigen_vectors;
-    if(eigs.info() == CompInfo::Successful){
-        eigen_values = eigs.eigenvalues();
-        eigen_vectors = eigs.eigenvectors();
-    }
-    return std::make_tuple(eigen_values, eigen_vectors);
-}
-
-/**
  * Calculates the euclidean distance matrix of matrix X.
  * 
  * @X A matrix.
@@ -955,29 +933,6 @@ void bind_cokurtosis_matrix_prob(py::module &m) {
 }
 
 
-void bind_k_eigh(py::module &m) {
-    m.def(
-        "cpp_k_eigh",
-        &cpp_k_eigh,
-        R"pbdoc(
-            Calculate the first largest "k" eigenvalues and eigenvectors.
-
-            Parameters
-            ----------
-            M : ndarray or dataframe
-                A symmetric square matrix.
-            k : int
-                number of eigenvalues and eigenvectors calculated.
-
-            Returns
-            -------
-            value: tuple
-                Tuple which first element is the eigenvalues vector of M and second element is the eigenvectors matrix of M.
-        )pbdoc",
-        py::arg("M"),
-        py::arg("k")
-    );
-}
 
 void bind_dcorr(py::module &m) {
     m.def(
