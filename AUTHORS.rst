@@ -69,6 +69,8 @@ For more about my research and work, you can visit:
 - My book `Advanced Portfolio Optimization: A Cutting-edge Quantitative Approach <https://www.kqzyfj.com/click-101359873-15150084?url=https%3A%2F%2Flink.springer.com%2Fbook%2F9783031843037>`_.
 - My `SSRN Author Page <https://papers.ssrn.com/sol3/cf_dev/AbsByAuth.cfm?per_id=2931756>`_.
 - My blog `Financioneroncios <https://financioneroncios.wordpress.com/>`_.
+- My presentation at the `2026 CVXPY Community Workshop <https://www.youtube.com/watch?v=qwaBfhaoSZ8>`_.
+- An interview at `Mehul Mehta's YouTube Channel <https://www.youtube.com/watch?v=cX8ARPP4VdQ>`_.
 
 For those that are interested in hiring my consulting services, please contact me at:
 

@@ -7,8 +7,8 @@ from pybind11.setup_helpers import Pybind11Extension, build_ext
 from setuptools import setup
 
 MAJOR = 7
-MINOR = 3
-MICRO = 1
+MINOR = 4
+MICRO = 0
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 def write_version_py(filename='riskfolio/version.py'):
@@ -45,14 +45,14 @@ INSTALL_REQUIRES = [
     'matplotlib>=3.9.2',
     'clarabel>=0.11.1',
     'SCS>=3.2.7',
-    'cvxpy>=1.6.6',
-    'scikit-learn>=1.3.0',
+    'cvxpy>=1.7.2',
+    'scikit-learn>=1.7.0',
     'statsmodels>=0.14.5',
     'arch>=7.2',
     'xlsxwriter>=3.2.2',
     'networkx>=3.4.2',
     'astropy>=6.1.3',
-    'pybind11>=2.13.6',
+    'pybind11>=3.1.0',
     'vectorbt>=0.28.0',
 ]
 
@@ -79,13 +79,13 @@ CLASSIFIERS = [
     'Operating System :: MacOS'
 ]
 
-
 if __name__ == "__main__":
 
     from setuptools import Extension, setup, find_packages
     import sys
 
-    if sys.version_info[:2] < (3, int(PYTHON_REQUIRES[-1])):
+    _min_version = PYTHON_REQUIRES.lstrip(">=").split(".")
+    if sys.version_info[:2] < (int(_min_version[0][2:]), int(_min_version[1])):
         raise RuntimeError("Riskfolio-Lib requires python " + PYTHON_REQUIRES)
 
     # Obtain the numpy include directory.  This logic works across numpy versions.

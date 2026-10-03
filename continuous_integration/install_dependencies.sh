@@ -15,7 +15,7 @@ fi
 #  sudo apt install openblas
 #fi
 
-uv pip install pytest pytest-cov hypothesis "setuptools>65.5.1"
+uv pip install pytest pytest-cov hypothesis "setuptools>=84.0.0"
 
 uv pip install scs clarabel osqp
 

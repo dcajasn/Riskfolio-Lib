@@ -337,10 +337,10 @@ project a better tool for the quantitative finance community.
 
 If you use Riskfolio-Lib for published work, please use the following BibTeX entry:
 
-```
+```bibtex
 @misc{riskfolio,
       author = {Dany Cajas},
-      title = {Riskfolio-Lib (7.3)},
+      title = {Riskfolio-Lib (7.4)},
       year  = {2026},
       url   = {https://github.com/dcajasn/Riskfolio-Lib},
       }

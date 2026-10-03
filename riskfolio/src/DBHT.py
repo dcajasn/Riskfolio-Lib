@@ -90,7 +90,7 @@ def DBHTs(D, S, leaf_order=True):
     Adjv, T8 = BubbleCluster8s(Rpm, Dpm, Hb, Mb, Mv, CliqList)
     Z = HierarchyConstruct4s(Rpm, Dpm, T8, Adjv, Mv)
 
-    if leaf_order == True:
+    if leaf_order is True:
         Z = optimal_leaf_ordering(Z, squareform(D))
 
     return (T8, Rpm, Adjv, Dpm, Mv, Z)
@@ -122,12 +122,12 @@ def j_LoGo(S, separators, cliques):
 
     """
     N = S.shape[0]
-    if isinstance(separators, dict) == False:
+    if isinstance(separators, dict) is False:
         separators_temp = {}
         for i in range(len(separators)):
             separators_temp[i] = separators[i, :]
 
-    if isinstance(cliques, dict) == False:
+    if isinstance(cliques, dict) is False:
         cliques_temp = {}
         for i in range(len(cliques)):
             cliques_temp[i] = cliques[i, :]
@@ -167,7 +167,7 @@ def PMFG_T2s(W, nargout=3):
     separators : nd-array
         Matrix of 3-cliques that are not triangular faces (all 3-cliques are
         given by: [tri;separators]).
-    clique4 : nd-array, optional
+    cliques : nd-array, optional
         List of all 4-cliques.
     cliqueTree : nd-array, optional
         4-cliques tree structure (adjacency matrix).
@@ -257,7 +257,7 @@ def PMFG_T2s(W, nargout=3):
     if nargout > 4:
         cliqueTree = np.zeros((cliques.shape[0], cliques.shape[0]))
         for i in range(0, cliques.shape[0]):
-            ss = np.zeros(cliques.shape[0], 1)
+            ss = np.zeros(cliques.shape[0])
             for k in range(0, 3):
                 ss = ss + np.sum((cliques[i, k] == cliques), axis=1)
 
@@ -488,7 +488,7 @@ def BuildHierarchy(M):
             ParentSum = np.sum(M[:, Parents], axis=0)
             a = np.argwhere(ParentSum == np.min(ParentSum))
             if len(a) == 1:
-                Pred[n] = Parents[a]
+                Pred[n] = Parents[a].item()
             else:
                 Pred = np.empty(0)
                 break

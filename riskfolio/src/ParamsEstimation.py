@@ -17,7 +17,7 @@ import arch.bootstrap as bs
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from numpy.linalg import inv
+from scipy.linalg import inv
 from itertools import product
 
 import riskfolio.src.AuxFunctions as af
@@ -88,7 +88,7 @@ def mean_vector(X, method="hist", d=0.94, target="b1"):
     """
 
     if not isinstance(X, pd.DataFrame):
-        raise ValueError("X must be a DataFrame")
+        raise TypeError("X must be a DataFrame")
 
     assets = X.columns.tolist()
 
@@ -209,7 +209,7 @@ def covar_matrix(
     """
 
     if not isinstance(X, pd.DataFrame):
-        raise ValueError("X must be a DataFrame")
+        raise TypeError("X must be a DataFrame")
 
     assets = X.columns.tolist()
 
@@ -322,7 +322,7 @@ def cokurt_matrix(
     """
 
     if not isinstance(X, pd.DataFrame):
-        raise ValueError("X must be a DataFrame")
+        raise TypeError("X must be a DataFrame")
 
     assets = X.columns.tolist()
     cols = list(product(assets, assets))
@@ -393,14 +393,14 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
 
     """
     if not isinstance(X, pd.DataFrame):
-        raise ValueError("X must be a DataFrame")
+        raise TypeError("X must be a DataFrame")
 
-    if not isinstance(y, pd.DataFrame) and not isinstance(y, pd.Series):
-        raise ValueError("y must be a column DataFrame")
+    if not isinstance(y, (pd.Series, pd.DataFrame)):
+        raise TypeError("y must be a Series or a column DataFrame")
 
     if isinstance(y, pd.DataFrame):
         if y.shape[0] > 1 and y.shape[1] > 1:
-            raise ValueError("y must be a column DataFrame")
+            raise TypeError("y must be a column DataFrame")
 
     included = []
     aic = 1e10
@@ -576,14 +576,14 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
     """
 
     if not isinstance(X, pd.DataFrame):
-        raise ValueError("X must be a DataFrame")
+        raise TypeError("X must be a DataFrame")
 
-    if not isinstance(y, pd.DataFrame) and not isinstance(y, pd.Series):
-        raise ValueError("y must be a column DataFrame")
+    if not isinstance(y, (pd.Series, pd.DataFrame)):
+        raise TypeError("y must be a Series or a column DataFrame")
 
     if isinstance(y, pd.DataFrame):
         if y.shape[0] > 1 and y.shape[1] > 1:
-            raise ValueError("y must be a column DataFrame")
+            raise TypeError("y must be a column DataFrame")
 
     X1 = sm.add_constant(X)
     results = sm.OLS(y, X1).fit()
@@ -738,14 +738,14 @@ def PCR(X, y, n_components=0.95):
     """
 
     if not isinstance(X, pd.DataFrame):
-        raise ValueError("X must be a DataFrame")
+        raise TypeError("X must be a DataFrame")
 
-    if not isinstance(y, pd.DataFrame) and not isinstance(y, pd.Series):
-        raise ValueError("y must be a column DataFrame")
+    if not isinstance(y, (pd.Series, pd.DataFrame)):
+        raise TypeError("y must be a Series or a column DataFrame")
 
     if isinstance(y, pd.DataFrame):
         if y.shape[0] > 1 and y.shape[1] > 1:
-            raise ValueError("y must be a column DataFrame")
+            raise TypeError("y must be a column DataFrame")
 
     scaler = StandardScaler()
     scaler.fit(X)
@@ -839,10 +839,10 @@ def loadings_matrix(
 
     """
     if not isinstance(X, pd.DataFrame):
-        raise ValueError("X must be a DataFrame")
+        raise TypeError("X must be a DataFrame")
 
     if not isinstance(Y, pd.DataFrame):
-        raise ValueError("Y must be a DataFrame")
+        raise TypeError("Y must be a DataFrame")
 
     rows = Y.columns.tolist()
     cols = X.columns.tolist()
@@ -1031,14 +1031,15 @@ def risk_factors(
         The mean vector of risk factors model.
     cov : DataFrame
         The covariance matrix of risk factors model.
-    skew : DataFrame
-        The coskewness tensor of risk factors model.
-    kurt : DataFrame
-        The cokurtosis square matrix of risk factors model.
     returns : DataFrame
         The returns based on a risk factor model.
     B : DataFrame
         Loadings matrix.
+    skew : DataFrame
+        The coskewness tensor of risk factors model.
+    kurt : DataFrame
+        The cokurtosis square matrix of risk factors model.
+
 
     Raises
     ------
@@ -1046,8 +1047,8 @@ def risk_factors(
         When the value cannot be calculated.
 
     """
-    if not isinstance(X, pd.DataFrame) and not isinstance(Y, pd.DataFrame):
-        raise ValueError("X and Y must be DataFrames")
+    if not isinstance(X, pd.DataFrame) or not isinstance(Y, pd.DataFrame):
+        raise TypeError("X and Y must be DataFrames")
 
     if B is None:
         B = loadings_matrix(
@@ -1061,13 +1062,13 @@ def risk_factors(
             verbose=False,
         )
     elif not isinstance(B, pd.DataFrame):
-        raise ValueError("B must be a DataFrame")
+        raise TypeError("B must be a DataFrame")
 
     assets = Y.columns.tolist()
     dates = X.index.tolist()
 
     X1 = X.copy()
-    if const == True or ("const" in B.columns.tolist()):
+    if const is True or ("const" in B.columns.tolist()):
         mu_f = np.hstack(
             [
                 np.ones((1, 1)),
@@ -1225,11 +1226,11 @@ def black_litterman(
         When the value cannot be calculated.
 
     """
-    if not isinstance(X, pd.DataFrame) and not isinstance(w, pd.DataFrame):
-        raise ValueError("X and w must be DataFrames")
+    if not isinstance(X, pd.DataFrame) or not isinstance(w, pd.DataFrame):
+        raise TypeError("X and w must be DataFrames")
 
     if w.shape[0] > 1 and w.shape[1] > 1:
-        raise ValueError("w must be a column DataFrame")
+        raise TypeError("w must be a column DataFrame")
 
     assets = X.columns.tolist()
 
@@ -1244,9 +1245,9 @@ def black_litterman(
     tau = 1 / X.shape[0]
     Omega = np.array(np.diag(np.diag(P @ (tau * S) @ P.T)), ndmin=2)
 
-    if eq == True:
+    if eq is True:
         PI = delta * (S @ w)
-    elif eq == False:
+    elif eq is False:
         PI = mu.T - rf
 
     PI_ = inv(inv(tau * S) + P.T @ inv(Omega) @ P) @ (
@@ -1423,14 +1424,14 @@ def augmented_black_litterman(
         When the value cannot be calculated.
 
     """
-    if not isinstance(X, pd.DataFrame) and not isinstance(w, pd.DataFrame):
-        raise ValueError("X and w must be DataFrames")
+    if not isinstance(X, pd.DataFrame) or not isinstance(w, (pd.Series, pd.DataFrame)):
+        raise TypeError("X and w must be DataFrames")
 
-    if not isinstance(F, pd.DataFrame) and not isinstance(B, pd.DataFrame):
-        raise ValueError("F and B must be DataFrames")
+    if not isinstance(F, pd.DataFrame) or not isinstance(B, pd.DataFrame):
+        raise TypeError("F must be a Series or a DataFrame and B must be a DataFrame")
 
     if w.shape[0] > 1 and w.shape[1] > 1:
-        raise ValueError("w must be a column DataFrame")
+        raise TypeError("w must be a column DataFrame")
 
     assets = X.columns.tolist()
     N = len(assets)
@@ -1441,7 +1442,7 @@ def augmented_black_litterman(
 
     if B is not None:
         B_ = np.array(B, ndmin=2)
-        if const == True:
+        if const is True:
             alpha = B_[:, :1]
             B_ = B_[:, 1:]
 
@@ -1463,9 +1464,9 @@ def augmented_black_litterman(
         Q_a = np.array(Q, ndmin=2)
         Omega_a = np.array(np.diag(np.diag(P_a @ (tau * S_a) @ P_a.T)), ndmin=2)
 
-        if eq == True:
+        if eq is True:
             PI_a_ = delta * S_vstack @ w_
-        elif eq == False:
+        elif eq is False:
             PI_a_ = mu.T - rf
 
     elif P is None and Q is None and P_f is not None and Q_f is not None:
@@ -1474,11 +1475,9 @@ def augmented_black_litterman(
         Q_a = np.array(Q_f, ndmin=2)
         Omega_a = np.array(np.diag(np.diag(P_a @ (tau * S_a) @ P_a.T)), ndmin=2)
 
-        if eq == True:
-            print(S_a.shape)
-            print(B_.T.shape)
+        if eq is True:
             PI_a_ = delta * S_vstack @ w_
-        elif eq == False:
+        elif eq is False:
             PI_a_ = mu_f.T - rf
 
     elif P is not None and Q is not None and P_f is not None and Q_f is not None:
@@ -1496,9 +1495,9 @@ def augmented_black_litterman(
         zeros_3 = np.zeros((Omega.shape[0], Omega_f.shape[0]))
         Omega_a = np.bmat([[Omega, zeros_3], [zeros_3.T, Omega_f]])
 
-        if eq == True:
+        if eq is True:
             PI_a_ = delta * S_vstack @ w_
-        elif eq == False:
+        elif eq is False:
             PI_a_ = mu_vstack - rf
 
     PI_a = inv(inv(tau * S_a) + P_a.T @ inv(Omega_a) @ P_a) @ (
@@ -1513,7 +1512,7 @@ def augmented_black_litterman(
     cov_a = S_a + M_a
     w_a = inv(delta * cov_a) @ PI_a
 
-    if const == True:
+    if const is True:
         mu_a = mu_a[:, :N] + alpha.T
 
     mu_a = pd.DataFrame(mu_a[:, :N], columns=assets)
@@ -1651,16 +1650,16 @@ def black_litterman_bayesian(
 
     """
     if not isinstance(X, pd.DataFrame):
-        raise ValueError("X must be DataFrames")
+        raise TypeError("X must be a DataFrame")
 
-    if not isinstance(F, pd.DataFrame) and not isinstance(B, pd.DataFrame):
-        raise ValueError("F and B must be DataFrames")
+    if not isinstance(F, (pd.Series, pd.DataFrame)) or not isinstance(B, pd.DataFrame):
+        raise TypeError("F must be a Series or a DataFrame and B must be a DataFrame")
 
     assets = X.columns.tolist()
 
     if B is not None:
         B = np.array(B, ndmin=2)
-        if const == True:
+        if const is True:
             alpha = B[:, :1]
             B = B[:, 1:]
 
@@ -1690,7 +1689,7 @@ def black_litterman_bayesian(
 
     mu = Pi_blb + rf
 
-    if const == True:
+    if const is True:
         mu = mu + alpha
     mu = mu.T
     cov = S_blb
@@ -1751,9 +1750,16 @@ def entropy_pooling(
 
     Returns
     -------
-
+    mu: np.array
+        Weighted mean vector based on optimal scenario weights obtained with the Entropy Pooling model.
+    cov: np.array
+        Weighted covariance matrix based on optimal scenario weights obtained with the Entropy Pooling model.
+    skew: np.array
+        Weighted coskewness tensor based on optimal scenario weights obtained with the Entropy Pooling model.
+    kurt: np.array
+        Weighted cokurtosis tensor based on optimal scenario weights obtained with the Entropy Pooling model.
     Z : np.array
-        Optimal scenario weights based on the Entropy Pooling model.
+        Optimal scenario weights obtained with the Entropy Pooling model.
 
     """
 
@@ -1884,7 +1890,7 @@ def bootstrapping(
     """
 
     if not isinstance(X, pd.DataFrame):
-        raise ValueError("X must be a DataFrame")
+        raise TypeError("X must be a DataFrame")
 
     if window >= X.shape[0] - window + 1:
         raise ValueError("block must be lower than  n_samples - window + 1")
@@ -1933,15 +1939,15 @@ def bootstrapping(
 
     # Check and fix if upper and lower bound for Covariance are positive
     # semidefinite and fix when they are not
-    if af.is_pos_def(cov_l) == False:
+    if af.is_pos_def(cov_l) is False:
         cov_l = af.cov_fix(cov_l, method="clipped", threshold=threshold)
-    if af.is_pos_def(cov_u) == False:
+    if af.is_pos_def(cov_u) is False:
         cov_u = af.cov_fix(cov_u, method="clipped", threshold=threshold)
 
     # Elliptical Constraint for Mean
     A_mu = mus.reshape(n_sim, n) - np.repeat(mu, n_sim, axis=0)
     cov_mu = np.cov(A_mu, rowvar=False)
-    if diag == True:
+    if diag is True:
         cov_mu = np.diag(np.diag(cov_mu))
     k_mus = np.diag(A_mu @ inv(cov_mu) @ A_mu.T)
     k_mu = np.percentile(k_mus, q=(1 - q) * 100) ** 0.5
@@ -1952,9 +1958,9 @@ def bootstrapping(
     A_Sigma = A_Sigma - np.repeat(vec_Sigma, n_sim, axis=0)
     cov_sigma = np.cov(A_Sigma, rowvar=False)
     cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)
-    if diag == True:
+    if diag is True:
         cov_sigma = np.diag(np.diag(cov_sigma))
-    if af.is_pos_def(cov_sigma) == False:
+    if af.is_pos_def(cov_sigma) is False:
         cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)
     k_sigmas = np.diag(A_Sigma @ inv(cov_sigma) @ A_Sigma.T)
     k_sigma = np.percentile(k_sigmas, q=(1 - q) * 100) ** 0.5
@@ -2024,7 +2030,7 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
     """
 
     if not isinstance(X, pd.DataFrame):
-        raise ValueError("X must be a DataFrame")
+        raise TypeError("X must be a DataFrame")
 
     cols = X.columns.tolist()
     cols_2 = [i + "-" + j for i in cols for j in cols]
@@ -2038,9 +2044,9 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
     K = cf.commutation_matrix(T=n, n=n)
     I = np.identity(n**2)
     cov_sigma = T * (I + K) @ np.kron(cov_mu, cov_mu)
-    if diag == True:
+    if diag is True:
         cov_sigma = np.diag(np.diag(cov_sigma))
-    if af.is_pos_def(cov_sigma) == False:
+    if af.is_pos_def(cov_sigma) is False:
         cov_sigma = af.cov_fix(cov_sigma, method="clipped", threshold=threshold)
     cov_sigma = pd.DataFrame(cov_sigma, index=cols_2, columns=cols_2)
 
@@ -2061,15 +2067,15 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
 
     # Check and fix if upper and lower bound for Covariance are positive
     # semidefinite and fix when they are not
-    if af.is_pos_def(cov_l) == False:
+    if af.is_pos_def(cov_l) is False:
         cov_l = af.cov_fix(cov_l, method="clipped", threshold=threshold)
-    if af.is_pos_def(cov_u) == False:
+    if af.is_pos_def(cov_u) is False:
         cov_u = af.cov_fix(cov_u, method="clipped", threshold=threshold)
 
     # Elliptical Constraint for Mean
     A_mu = rs.multivariate_normal(mu.ravel(), cov_mu, size=n_sim)
     # cov_mu =  np.cov(A_mu - np.repeat(mu, n_sim, axis=0), rowvar=False)
-    if diag == True:
+    if diag is True:
         cov_mu = np.diag(np.diag(cov_mu))
     k_mus = np.diag(A_mu @ inv(cov_mu) @ A_mu.T)
     k_mu = np.percentile(k_mus, q=1 - q) ** 0.5
@@ -2080,9 +2086,9 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
     A_Sigma = covs.reshape((n_sim, n**2), order="F")
     A_Sigma = A_Sigma - np.repeat(vec_Sigma, n_sim, axis=0)
     A_cov_sigma = np.cov(A_Sigma, rowvar=False)
-    if diag == True:
+    if diag is True:
         A_cov_sigma = np.diag(np.diag(A_cov_sigma))
-    if af.is_pos_def(A_cov_sigma) == False:
+    if af.is_pos_def(A_cov_sigma) is False:
         A_cov_sigma = af.cov_fix(A_cov_sigma, method="clipped", threshold=threshold)
     k_sigmas = np.diag(A_Sigma @ inv(A_cov_sigma) @ A_Sigma.T)
     k_sigma = np.percentile(k_sigmas, q=1 - q) ** 0.5

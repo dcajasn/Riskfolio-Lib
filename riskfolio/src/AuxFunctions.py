@@ -15,18 +15,14 @@ import scipy.stats as st
 import scipy.cluster.hierarchy as hr
 from scipy import linalg as LA
 from statsmodels.stats.correlation_tools import cov_nearest
-from scipy.sparse import csr_matrix
-from scipy.sparse.linalg import eigsh
-from scipy.spatial.distance import pdist, squareform
+from scipy.spatial.distance import squareform
 from scipy.optimize import minimize
 from sklearn.metrics import mutual_info_score
 from sklearn.neighbors import KernelDensity
 from sklearn.metrics import silhouette_samples
 from astropy.stats import knuth_bin_width, freedman_bin_width, scott_bin_width
-from itertools import product
 import riskfolio.external.cppfunctions as cf
 import riskfolio.src.GerberStatistic as gs
-import re
 
 __all__ = [
     "is_pos_def",
@@ -69,7 +65,7 @@ def is_pos_def(cov, threshold=1e-8):
 
     Parameters
     ----------
-    cov : DataFrame of shape (n_assets, n_assets)
+    cov : DataFrame or ndarray of shape (n_assets, n_assets)
         Covariance matrix, where n_assets is the number of assets.
 
     Returns
@@ -82,6 +78,12 @@ def is_pos_def(cov, threshold=1e-8):
         ValueError when the value cannot be calculated.
 
     """
+
+    if not np.all(np.isfinite(cov)):
+        raise ValueError("cov must not contain NaN or infinite values")
+    if np.allclose(cov, cov.T) is False:
+        raise ValueError("cov must be symmetric")
+
     cov_ = np.array(cov, ndmin=2)
     w = LA.eigh(cov_, lower=True, check_finite=True, eigvals_only=True)
     value = np.all(w >= threshold)
@@ -95,12 +97,12 @@ def cov2corr(cov):
 
     Parameters
     ----------
-    cov : DataFrame of shape (n_assets, n_assets)
+    cov : DataFrame or ndarray of shape (n_assets, n_assets)
         Covariance matrix, where n_assets is the number of assets.
 
     Returns
     -------
-    corr : ndarray
+    corr : DataFrame or ndarray
         A correlation matrix.
 
     Raises
@@ -108,6 +110,11 @@ def cov2corr(cov):
         ValueError when the value cannot be calculated.
 
     """
+
+    if not np.all(np.isfinite(cov)):
+        raise ValueError("cov must not contain NaN or infinite values")
+    if np.allclose(cov, cov.T) is False:
+        raise ValueError("cov must be symmetric")
 
     flag = False
     if isinstance(cov, pd.DataFrame):
@@ -131,7 +138,7 @@ def corr2cov(corr, std):
 
     Parameters
     ----------
-    corr : DataFrame of shape (n_assets, n_assets)
+    corr : DataFrame or ndarray of shape (n_assets, n_assets)
         Covariance matrix, where n_assets is the number of assets.
     std : 1darray
         Assets standard deviation vector of size n_features, where
@@ -140,7 +147,7 @@ def corr2cov(corr, std):
 
     Returns
     -------
-    cov : ndarray
+    cov : DataFrame or ndarray
         A covariance matrix.
 
     Raises
@@ -148,6 +155,11 @@ def corr2cov(corr, std):
         ValueError when the value cannot be calculated.
 
     """
+
+    if not np.all(np.isfinite(corr)):
+        raise ValueError("corr must not contain NaN or infinite values")
+    if np.allclose(corr, corr.T) is False:
+        raise ValueError("corr must be symmetric")
 
     flag = False
     if isinstance(corr, pd.DataFrame):
@@ -168,7 +180,7 @@ def cov_fix(cov, method="clipped", threshold=1e-8):
 
     Parameters
     ----------
-    cov : DataFrame of shape (n_assets, n_assets)
+    cov : DataFrame or ndarray of shape (n_assets, n_assets)
         Covariance matrix, where n_assets is the number of assets.
     method : str
         The default value is 'clipped', see more in `cov_nearest <https://www.statsmodels.org/stable/generated/statsmodels.stats.correlation_tools.cov_nearest.html>`_.
@@ -177,7 +189,7 @@ def cov_fix(cov, method="clipped", threshold=1e-8):
 
     Returns
     -------
-    cov_ : bool
+    cov_ : DataFrame or ndarray
         A positive definite covariance matrix.
 
     Raises
@@ -185,6 +197,12 @@ def cov_fix(cov, method="clipped", threshold=1e-8):
         ValueError when the value cannot be calculated.
 
     """
+
+    if not np.all(np.isfinite(cov)):
+        raise ValueError("cov must not contain NaN or infinite values")
+    if np.allclose(cov, cov.T) is False:
+        raise ValueError("cov must be symmetric")
+
     flag = False
     if isinstance(cov, pd.DataFrame):
         cols = cov.columns.tolist()
@@ -206,12 +224,12 @@ def cov_returns(cov, seed=0):
 
     Parameters
     ----------
-    cov : DataFrame of shape (n_assets, n_assets)
+    cov : DataFrame or ndarray of shape (n_assets, n_assets)
         Covariance matrix, where n_assets is the number of assets.
 
     Returns
     -------
-    a : ndarray
+    a : DataFrame or ndarray
         A matrix of returns that have a covariance matrix cov.
 
     Raises
@@ -219,6 +237,16 @@ def cov_returns(cov, seed=0):
         ValueError when the value cannot be calculated.
 
     """
+
+    if not np.all(np.isfinite(cov)):
+        raise ValueError("cov must not contain NaN or infinite values")
+    if np.allclose(cov, cov.T) is False:
+        raise ValueError("cov must be symmetric")
+
+    flag = False
+    if isinstance(cov, pd.DataFrame):
+        cols = cov.columns.tolist()
+        flag = True
 
     rs = np.random.RandomState(seed)
     n = len(cov)
@@ -234,6 +262,9 @@ def cov_returns(cov, seed=0):
 
     L1 = np.array(np.linalg.cholesky(cov), ndmin=2)
     a = a @ L1.T
+
+    if flag:
+        cov_ = pd.DataFrame(a, columns=cols)
 
     return a
 
@@ -262,6 +293,9 @@ def block_vec_pq(A, p, q):
         ValueError when the value cannot be calculated.
 
     """
+    if not np.all(np.isfinite(A)):
+        raise ValueError("A must not contain NaN or infinite values")
+
     if isinstance(A, pd.DataFrame):
         A_ = A.to_numpy()
     elif isinstance(A, np.ndarray):
@@ -329,7 +363,6 @@ def dcorr(X, Y):
 
     X = np.atleast_2d(X)
     Y = np.atleast_2d(Y)
-    n = X.shape[0]
 
     if Y.shape[0] != X.shape[0]:
         raise ValueError("Number of samples must match")
@@ -494,7 +527,7 @@ def mutual_info_matrix(X, bins_info="KN", normalize=True):
         hX = st.entropy(np.histogram(X1[:, i], bins)[0])  # marginal
         hY = st.entropy(np.histogram(X1[:, j], bins)[0])  # marginal
         iXY = mutual_info_score(None, None, contingency=cXY)  # mutual information
-        if normalize == True:
+        if normalize is True:
             iXY = iXY / np.min([hX, hY])  # normalized mutual information
             # hXY = hX + hY - iXY # joint
             # hX_Y = hXY - hY # conditional
@@ -591,7 +624,7 @@ def var_info_matrix(X, bins_info="KN", normalize=True):
         hY = st.entropy(np.histogram(X1[:, j], bins)[0])  # marginal
         iXY = mutual_info_score(None, None, contingency=cXY)  # mutual information
         vXY = hX + hY - 2 * iXY  # variation of information
-        if normalize == True:
+        if normalize is True:
             hXY = hX + hY - iXY  # joint
             vXY = vXY / hXY  # normalized variation of information
 
@@ -1168,7 +1201,7 @@ def k_eigh(matrix, k):
 
     matrix = np.array(matrix, ndmin=2)
     # `eigsh` returns the selected eigenvalues in ascending order.
-    eVal, eVec = eigsh(matrix, k=k, which="LA")
+    eVal, eVec = LA.eigsh(matrix, k=k, which="LA")
     indices = eVal.argsort()[::-1]
 
     return eVal[indices], eVec[:, indices]
@@ -1308,7 +1341,7 @@ def denoiseCov(cov, q, kind="fixed", bWidth=0.01, detone=False, mkt_comp=1, alph
     elif kind == "shrink":
         corr = shrinkCorr(eVal, eVec, nFacts, alpha=alpha)
 
-    if detone == True:
+    if detone is True:
         eVal_ = eVal[:mkt_comp, :mkt_comp]
         eVec_ = eVec[:, :mkt_comp]
         corr_ = np.dot(eVec_, eVal_).dot(eVec_.T)
@@ -1353,13 +1386,13 @@ def round_values(data, decimals=4, wider=False):
 
     """
 
-    if wider == True:
+    if wider is True:
         value = np.where(
             data >= 0,
             np.ceil(data * 10**decimals) / 10**decimals,
             np.floor(data * 10**decimals) / 10**decimals,
         )
-    elif wider == False:
+    elif wider is False:
         value = np.where(
             data >= 0,
             np.floor(data * 10**decimals) / 10**decimals,

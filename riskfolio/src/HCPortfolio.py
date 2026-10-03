@@ -137,7 +137,7 @@ class HCPortfolio(object):
             else:
                 self._kappa = value
         elif value is None:
-            self._kappa = None
+            self._kappa = 0.3
         else:
             raise ValueError("kappa must be a float between 0.0001 and 0.9999")
 
@@ -535,7 +535,7 @@ class HCPortfolio(object):
 
         # Loop through k clusters
         for i in nodes[: self.k - 1]:
-            if i.is_leaf() == False:  # skip leaf-nodes
+            if i.is_leaf() is False:  # skip leaf-nodes
                 left = i.get_left().pre_order()  # lambda i: i.id) # get left cluster
                 right = i.get_right().pre_order()  # lambda i: i.id) # get right cluster
                 left_set = set(left)
@@ -960,7 +960,7 @@ class HCPortfolio(object):
 
         # Covariance matrix
         if method_cov == "custom_cov":
-            if isinstance(custom_cov, pd.DataFrame) == True:
+            if isinstance(custom_cov, pd.DataFrame) is True:
                 if custom_cov.shape[0] != custom_cov.shape[1]:
                     raise NameError("custom_cov must be a square DataFrame")
                 else:
@@ -970,9 +970,9 @@ class HCPortfolio(object):
 
         # Mean vector
         if method_mu == "custom_mu":
-            if isinstance(custom_mu, pd.Series) == True:
+            if isinstance(custom_mu, pd.Series) is True:
                 self.mu = custom_mu.to_frame().T
-            elif isinstance(custom_mu, pd.DataFrame) == True:
+            elif isinstance(custom_mu, pd.DataFrame) is True:
                 if custom_mu.shape[0] > 1 and custom_mu.shape[1] == 1:
                     self.mu = custom_mu.copy()
                 elif custom_mu.shape[0] == 1 and custom_mu.shape[1] > 1:

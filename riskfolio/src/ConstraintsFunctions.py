@@ -130,7 +130,7 @@ def assets_constraints(constraints, asset_classes):
     if not isinstance(constraints, pd.DataFrame) and not isinstance(
         asset_classes, pd.DataFrame
     ):
-        raise ValueError("constraints and asset_classes must be DataFrames")
+        raise TypeError("constraints and asset_classes must be DataFrames")
 
     if constraints.shape[1] != 10:
         raise ValueError("constraints must have ten columns")
@@ -363,7 +363,7 @@ def factors_constraints(constraints, loadings):
     if not isinstance(constraints, pd.DataFrame) and not isinstance(
         loadings, pd.DataFrame
     ):
-        raise ValueError("constraints and loadings must be DataFrames")
+        raise TypeError("constraints and loadings must be DataFrames")
 
     if constraints.shape[1] != 5:
         raise ValueError("constraints must have five columns")
@@ -505,7 +505,7 @@ def integer_constraints(constraints, asset_classes):
     if not isinstance(constraints, pd.DataFrame) and not isinstance(
         asset_classes, pd.DataFrame
     ):
-        raise ValueError("constraints and asset_classes must be DataFrames")
+        raise TypeError("constraints and asset_classes must be DataFrames")
 
     if constraints.shape[1] != 9:
         raise ValueError("constraints must have nine columns")
@@ -652,7 +652,7 @@ def integer_constraints(constraints, asset_classes):
                         E[key].append(E1)
                     if F1 != []:
                         F[key].append(F1)
-                    if I[key] == False:
+                    if I[key] is False:
                         if C1 != []:
                             for row1 in C1:
                                 C[key].append(row1)
@@ -802,7 +802,7 @@ def assets_views(views, asset_classes):
     if not isinstance(views, pd.DataFrame) and not isinstance(
         asset_classes, pd.DataFrame
     ):
-        raise ValueError("constraints and asset_classes must be DataFrames")
+        raise TypeError("constraints and asset_classes must be DataFrames")
 
     if views.shape[1] != 9:
         raise ValueError("constraints must have nine columns")
@@ -839,7 +839,7 @@ def assets_views(views, asset_classes):
                 elif data[i][6] == "" and data[i][7] == "" and data[i][8] == "":
                     P2 = [0] * m
                     valid = True
-                if valid == True:
+                if valid is True:
                     P1 = ((np.array(P1) - np.array(P2)) * d).tolist()
                     P.append(P1)
                     Q.append([data[i][5] * d])
@@ -863,7 +863,7 @@ def assets_views(views, asset_classes):
                 elif data[i][6] == "" and data[i][7] == "" and data[i][8] == "":
                     P2 = [0] * m
                     valid = True
-                if valid == True:
+                if valid is True:
                     P1 = ((np.array(P1) - np.array(P2)) * d).tolist()
                     P.append(P1)
                     Q.append([data[i][5] * d])
@@ -956,7 +956,7 @@ def factors_views(views, loadings, const=True):
     """
 
     if not isinstance(views, pd.DataFrame) and not isinstance(loadings, pd.DataFrame):
-        raise ValueError("constraints and loadings must be DataFrames")
+        raise TypeError("constraints and loadings must be DataFrames")
 
     if views.shape[1] != 5:
         raise ValueError("constraints must have five columns")
@@ -965,7 +965,7 @@ def factors_views(views, loadings, const=True):
     views0 = views0[views0["Disabled"] == False]
     data = views0.values.tolist()
     factorslist = loadings.columns.tolist()
-    if const == True:
+    if const is True:
         factorslist = factorslist[1:]
     n = len(views0)
     m = len(factorslist)
@@ -973,7 +973,7 @@ def factors_views(views, loadings, const=True):
     P = []
     Q = []
     for i in range(0, n):
-        if data[i][0] == False:
+        if data[i][0] is False:
             item = factorslist.index(data[i][1])
             if data[i][2] == ">=":
                 d = 1
@@ -1019,6 +1019,7 @@ def entropy_pooling_views(
         - Type Relative: (str) can be: 'Assets' or 'Classes'. Type 'Classes' is only available for kind 'Mean'.
         - Relative Set: (str) if Type Relative is 'Classes' specified the name of the set of asset classes.
         - Relative: (str) the name of the asset or asset class of the relative view.
+        - Factor: (scalar) is the factor of the relative constraint.
 
     asset_classes : pd.DataFrame of shape (n_assets, n_cols)
         Asset's classes matrix, where n_assets is the number of assets and
@@ -1097,7 +1098,7 @@ def entropy_pooling_views(
     if not isinstance(views, pd.DataFrame) and not isinstance(
         asset_classes, pd.DataFrame
     ):
-        raise ValueError("views and asset_classes must be DataFrames")
+        raise TypeError("views and asset_classes must be DataFrames")
 
     if views.shape[1] != 11:
         raise ValueError("views must have eleven columns")
@@ -1207,7 +1208,7 @@ def entropy_pooling_views(
                         P2 = [0] * m
                         valid = True
 
-                    if valid == True:
+                    if valid is True:
                         if isinstance(data[i][10], float):
                             P1 = (
                                 (
@@ -1541,7 +1542,7 @@ def assets_clusters(
     """
 
     if not isinstance(returns, pd.DataFrame):
-        raise ValueError("returns must be a DataFrame")
+        raise TypeError("returns must be a DataFrame")
 
     # Calculating codependence matrix and distance metric
     codep, dist = af.codep_dist(
@@ -1677,7 +1678,7 @@ def hrp_constraints(constraints, asset_classes):
     if not isinstance(constraints, pd.DataFrame) and not isinstance(
         asset_classes, pd.DataFrame
     ):
-        raise ValueError("constraints and asset_classes must be DataFrames")
+        raise TypeError("constraints and asset_classes must be DataFrames")
 
     if constraints.shape[1] != 6:
         raise ValueError("constraints must have six columns")
@@ -1690,7 +1691,7 @@ def hrp_constraints(constraints, asset_classes):
     w_min = pd.Series(0.0, index=assetslist)
 
     for i in range(0, n):
-        if data.loc[i, "Disabled"] == False:
+        if data.loc[i, "Disabled"] is False:
             if data.loc[i, "Type"] == "Assets":
                 assets = data.loc[i, "Position"]
                 if data.loc[i, "Sign"] == ">=":
@@ -1798,7 +1799,7 @@ def risk_constraint(asset_classes, kind="vanilla", classes_col=None):
 
     """
     if not isinstance(asset_classes, pd.DataFrame):
-        raise ValueError("asset_classes must be a DataFrame")
+        raise TypeError("asset_classes must be a DataFrame")
 
     if kind == "vanilla":
         if asset_classes.shape[1] < 1:
@@ -1929,7 +1930,7 @@ def connection_matrix(
     """
 
     if not isinstance(returns, pd.DataFrame):
-        raise ValueError("returns must be a DataFrame")
+        raise TypeError("returns must be a DataFrame")
 
     assets = returns.columns.tolist()
 

@@ -14,8 +14,7 @@ import riskfolio.src.OwaWeights as owa
 import riskfolio.src.ParamsEstimation as pe
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
-from scipy.linalg import null_space
-from numpy.linalg import pinv
+from scipy.linalg import null_space, pinv
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import warnings
@@ -266,7 +265,7 @@ def EvenMoment(X, p: int = 2):
         raise ValueError("returns must have Tx1 size")
     if not np.all(np.isfinite(a)):
         raise ValueError("returns must not contain NaN or infinite values")
-    if isinstance(p, int) == False or p < 2:
+    if isinstance(p, int) is False or p < 2:
         raise ValueError("p must be an integer higher equal than 2")
 
     T, N = a.shape
@@ -313,7 +312,7 @@ def EvenSemiMoment(X, p: int = 2):
         raise ValueError("returns must have Tx1 size")
     if not np.all(np.isfinite(a)):
         raise ValueError("returns must not contain NaN or infinite values")
-    if isinstance(p, int) == False or p < 2:
+    if isinstance(p, int) is False or p < 2:
         raise ValueError("p must be an integer higher equal than 2")
 
     T, N = a.shape
@@ -570,7 +569,7 @@ def _Entropic_RM(z, X, alpha=0.05):
         raise ValueError("returns must not contain NaN or infinite values")
 
     a = a.flatten()
-    value = np.mean(np.exp(-1 / z * a), axis=0)
+    value = np.mean(np.exp(-np.multiply(1 / z, a)), axis=0)
     value = z * (np.log(value) + np.log(1 / alpha))
     value = np.array(value).item()
 
@@ -628,46 +627,55 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
 
     T, N = a.shape
 
-    # Primal Formulation
-    t = cp.Variable((1, 1))
-    z = cp.Variable((1, 1), nonneg=True)
-    ui = cp.Variable((T, 1))
-    ones = np.ones((T, 1))
+    warnings.filterwarnings("ignore")
 
-    constraints = [
-        cp.sum(ui) <= z,
-        cp.ExpCone(-a - t, ones @ z, ui),
-    ]
+    # Primal Formulation with Scipy
+    bnd = Bounds([1e-24], [np.inf])
+    result = minimize(
+        _Entropic_RM, [1], args=(a, alpha), method="SLSQP", bounds=bnd, tol=1e-12
+    )
 
-    risk = t + z * np.log(1 / (alpha * T))
-    objective = cp.Minimize(risk * 1000)
-    prob = cp.Problem(objective, constraints)
-
-    try:
-        for solver_i in solvers:
-            prob.solve(solver=solver_i)
-            if risk.value is not None:
-                break
-    except:
-        pass
-
-    if risk.value is None:
-        value = None
-    else:
-        value = risk.value.item()
-        t = z.value.item()
-
-    if value is None:
-        warnings.filterwarnings("ignore")
-
-        # Primal Formulation with Scipy
-        bnd = Bounds([1e-24], [np.inf])
-        result = minimize(
-            _Entropic_RM, [1], args=(X, alpha), method="SLSQP", bounds=bnd, tol=1e-12
-        )
+    if result.success is True:
         t = result.x
         t = t.item()
-        value = _Entropic_RM(t, X, alpha)
+        value = _Entropic_RM(t, a, alpha)
+    elif result.success is False:
+        t = None
+        value = None
+
+    if value is None:
+        # Primal Formulation with cvxpy
+        t = cp.Variable((1, 1))
+        z = cp.Variable((1, 1), nonneg=True)
+        ui = cp.Variable((T, 1))
+        ones = np.ones((T, 1))
+
+        constraints = [
+            cp.sum(ui) <= z,
+            cp.ExpCone(-a - t, ones @ z, ui),
+        ]
+
+        risk = t + z * np.log(1 / (alpha * T))
+        objective = cp.Minimize(risk * 1000)
+        prob = cp.Problem(objective, constraints)
+
+        for solver_i in solvers:
+            try:
+                prob.solve(solver=solver_i)
+                if risk.value is not None and np.isfinite(risk.value):
+                    break
+            except cp.SolverError:
+                continue
+
+        if risk.value is None:
+            t = None
+            value = None
+        else:
+            t = z.value.item()
+            value = risk.value.item()
+
+    if value is None:
+        raise ValueError("EVaR cannot be calculated")
 
     return (value, t)
 
@@ -724,7 +732,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
         solvers.remove(solver)
         solvers.insert(0, solver)
 
-    a = np.array(X * 100, ndmin=2)
+    a = np.array(X, ndmin=2)
     if a.shape[0] == 1 and a.shape[1] > 1:
         a = a.T
     if a.shape[0] > 1 and a.shape[1] > 1:
@@ -734,7 +742,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
 
     T, N = a.shape
 
-    # Dual Formulation
+    # Dual Formulation with cvxpy
     Z = cp.Variable((T, 1))
     nu = cp.Variable((T, 1))
     tau = cp.Variable((T, 1))
@@ -744,6 +752,8 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
 
     constraints = [
         cp.sum(Z) == 1,
+        Z >= 0,
+        Z <= 1,
         cp.sum(nu - tau) / (2 * kappa) <= c,
         cp.PowCone3D(nu, ones, Z, 1 / (1 + kappa)),
         cp.PowCone3D(Z, ones, tau, 1 - kappa),
@@ -753,13 +763,13 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
     objective = cp.Maximize(risk)
     prob = cp.Problem(objective, constraints)
 
-    try:
-        for solver_i in solvers:
+    for solver_i in solvers:
+        try:
             prob.solve(solver=solver_i)
-            if risk.value is not None:
+            if risk.value is not None and np.isfinite(risk.value):
                 break
-    except:
-        pass
+        except cp.SolverError:
+            continue
 
     if risk.value is None:
         value = None
@@ -767,7 +777,7 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
         value = risk.value.item()
 
     if value is None:
-        # Primal Formulation
+        # Primal Formulation with cvxpy
         t = cp.Variable((1, 1))
         z = cp.Variable((1, 1))
         omega = cp.Variable((T, 1))
@@ -796,20 +806,23 @@ def RLVaR_Hist(X, alpha=0.05, kappa=0.3, solver="CLARABEL"):
         objective = cp.Minimize(risk * 1000)
         prob = cp.Problem(objective, constraints)
 
-        try:
-            for solver_i in solvers:
+        for solver_i in solvers:
+            try:
                 prob.solve(solver=solver_i)
-                if risk.value is not None:
+                if risk.value is not None and np.isfinite(risk.value):
                     break
-        except:
-            pass
+            except cp.SolverError:
+                continue
 
         if risk.value is None:
-            value = 0
+            value = None
         else:
             value = risk.value.item()
 
-    return value / 100
+    if value is None:
+        raise ValueError("EVaR cannot be calculated")
+
+    return value
 
 
 def MDD_Abs(X):
@@ -2308,6 +2321,8 @@ def Sharpe_Risk(
         risk = EvenMoment(a, p=p_em)
     elif rm == "ESM":
         risk = EvenSemiMoment(a, p=p_esm)
+    else:
+        raise ValueError("rm must be a valid risk measure, got " + str(rm))
 
     value = risk
 
@@ -2614,7 +2629,7 @@ def Risk_Contribution(
 
     if isinstance(returns, pd.Series):
         returns_ = returns.to_frame()
-        returns_ = returns.to_numpy()
+        returns_ = returns_.to_numpy()
     elif isinstance(returns, pd.DataFrame):
         returns_ = returns.to_numpy()
     else:
@@ -2626,7 +2641,16 @@ def Risk_Contribution(
         cov_ = np.array(cov, ndmin=2)
 
     RC = []
-    if rm in ["EVaR", "EDaR", "RLVaR", "RLDaR", "EVRG", "RVRG"]:
+    if rm in [
+        "EVaR",
+        "EDaR",
+        "RLVaR",
+        "RLDaR",
+        "EVRG",
+        "RVRG",
+        "EDaR_Rel",
+        "RLDaR_Rel",
+    ]:
         d_i = 0.0001
     else:
         d_i = 0.0000001
@@ -2752,6 +2776,8 @@ def Risk_Contribution(
         elif rm == "ESM":
             risk_1 = EvenSemiMoment(a_1, p=p_esm) * 0.5
             risk_2 = EvenSemiMoment(a_2, p=p_esm) * 0.5
+        else:
+            raise ValueError("rm must be a valid risk measure, got " + str(rm))
 
         RC_i = (risk_1 - risk_2) / (2 * d_i) * w_[i, 0]
         RC.append(RC_i)
@@ -2890,7 +2916,16 @@ def Risk_Margin(
         cov_ = np.array(cov, ndmin=2)
 
     RM = []
-    if rm in ["RLVaR", "RLDaR"]:
+    if rm in [
+        "EVaR",
+        "EDaR",
+        "RLVaR",
+        "RLDaR",
+        "EVRG",
+        "RVRG",
+        "EDaR_Rel",
+        "RLDaR_Rel",
+    ]:
         d_i = 0.0001
     else:
         d_i = 0.0000001
@@ -3016,6 +3051,8 @@ def Risk_Margin(
         elif rm == "ESM":
             risk_1 = EvenSemiMoment(a_1, p=p_esm) * 0.5
             risk_2 = EvenSemiMoment(a_2, p=p_esm) * 0.5
+        else:
+            raise ValueError("rm must be a valid risk measure, got " + str(rm))
 
         RM_i = (risk_1 - risk_2) / (2 * d_i)
         RM.append(RM_i)
@@ -3211,9 +3248,9 @@ def Factors_Risk_Contribution(
         )
         const = True
     elif not isinstance(B, pd.DataFrame):
-        raise ValueError("B must be a DataFrame")
+        raise TypeError("B must be a DataFrame")
 
-    if const == True or factors.shape[1] + 1 == B.shape[1]:
+    if const is True or factors.shape[1] + 1 == B.shape[1]:
         B = B.iloc[:, 1:].to_numpy()
 
     if feature_selection == "PCR":
@@ -3323,30 +3360,30 @@ def BrinsonAttribution(
         if isinstance(w, pd.Series):
             wp_ = w.to_frame()
         else:
-            raise ValueError("w must be a one column DataFrame or Series")
+            raise TypeError("w must be a column DataFrame or Series")
     else:
         if w.shape[0] == 1:
             wp_ = w.T.copy()
         elif w.shape[1] == 1:
             wp_ = w.copy()
         else:
-            raise ValueError("w must be a one column DataFrame or Series")
+            raise TypeError("w must be a column DataFrame or Series")
 
     if not isinstance(wb, pd.DataFrame):
         if isinstance(wb, pd.Series):
             wb_ = wb.to_frame()
         else:
-            raise ValueError("w must be a one column DataFrame or Series")
+            raise TypeError("w must be a column DataFrame or Series")
     else:
         if wb.shape[0] == 1:
             wb_ = wb.T.copy()
         elif wb.shape[1] == 1:
             wb_ = wb.copy()
         else:
-            raise ValueError("w must be a one column DataFrame or Series")
+            raise TypeError("w must be a column DataFrame or Series")
 
     if not isinstance(asset_classes, pd.DataFrame):
-        raise ValueError("asset_classes must be a DataFrame")
+        raise TypeError("asset_classes must be a DataFrame")
     else:
         if asset_classes.shape[1] < 2:
             raise ValueError("asset_classes must have at least two columns")
