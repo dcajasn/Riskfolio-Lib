@@ -1,6 +1,6 @@
 [tool.ruff]
 # The minimum Python version that should be supported
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [
