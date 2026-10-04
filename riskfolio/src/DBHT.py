@@ -1,14 +1,11 @@
-""""""  #
+# Copyright (c) 2020-2026, Dany Cajas
+# All rights reserved.
+# This work is licensed under BSD 3-Clause "New" or "Revised" License.
+# License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
 
-"""
-Copyright (c) 2020-2026, Dany Cajas
-All rights reserved.
-This work is licensed under BSD 3-Clause "New" or "Revised" License.
-License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+# This work is based on the code of Tomaso Aste available at
+# https://www.mathworks.com/matlabcentral/fileexchange/46750-dbht
 
-This work is based on the code of Tomaso Aste available at
-https://www.mathworks.com/matlabcentral/fileexchange/46750-dbht
-"""
 
 import numpy as np
 import scipy.sparse as sp

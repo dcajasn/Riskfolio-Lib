@@ -1,4 +1,8 @@
-# Copyright (C) 2020-2026 Dany Cajas
+# Copyright (c) 2020-2026 Dany Cajas
+# All rights reserved.
+# This work is licensed under BSD 3-Clause "New" or "Revised" License.
+# License available at https://github.com/dcajasn/Riskfolio-Lib/blob/master/LICENSE.txt
+
 
 import os
 import numpy as np
@@ -32,10 +36,10 @@ with open("README.md", encoding='UTF-8') as fh:
 DISTNAME = 'riskfolio-lib'
 MAINTAINER = 'Dany Cajas'
 MAINTAINER_EMAIL = 'dany.cajas.n@uni.pe'
-URL = 'https://github.com/dcajasn/Riskfolio-Lib'
+URL = 'https://portfoliooptimization.org'
 LICENSE = 'BSD (3-clause)'
 KEYWORDS = 'finance, portfolio, optimization, quant, asset allocation, investing'
-DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib.git'
+DOWNLOAD_URL = 'https://github.com/dcajasn/Riskfolio-Lib'
 PYTHON_REQUIRES = ">=3.10"
 
 INSTALL_REQUIRES = [
@@ -70,7 +74,6 @@ CLASSIFIERS = [
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
     'Programming Language :: Python :: 3.14',
-    'License :: OSI Approved :: BSD License',
     'Topic :: Office/Business :: Financial :: Investment',
     'Topic :: Office/Business :: Financial',
     'Topic :: Scientific/Engineering :: Mathematics',
