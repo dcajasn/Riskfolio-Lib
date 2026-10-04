@@ -104,8 +104,8 @@ if __name__ == "__main__":
     if WIN:
         external_module = Pybind11Extension('riskfolio.external.functions',
             sources=sources,
-            include_dirs = [numpy_include, eigen_path, eigen_core_path, eigen_unsupported_path,external_path,external_path],
-            extra_compile_args = ['-O2', '-Ofast', '-msse2'],
+            include_dirs = [numpy_include, eigen_path, eigen_core_path, eigen_unsupported_path, external_path, external_path],
+            extra_compile_args = ['/O2', '/fp:fast'],
             define_macros = [('VERSION_INFO', VERSION)],
             )
     else:
