@@ -20,8 +20,8 @@ jobs:
   linters:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
       - run: pip install -r requirements.txt
 
 
@@ -44,7 +44,7 @@ jobs:
       MOSEK_CI_BASE64: ${{ secrets.MOSEK_CI_BASE64 }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - name: Set Additional Envs
         run: |
           echo "PYTHON_SUBVERSION=$(echo $PYTHON_VERSION | cut -c 3-)" >> $GITHUB_ENV
@@ -64,7 +64,7 @@ jobs:
 #        run: |
 #          source continuous_integration/test_script.sh
       - name: Upload coverage file
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{env.SINGLE_ACTION_CONFIG == 'True'}}
         with:
           name: coverage
