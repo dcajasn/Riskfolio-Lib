@@ -78,6 +78,17 @@ Portfolio Optimization in Python, Easy for Everyone
    :target: https://mybinder.org/v2/gh/dcajasn/Riskfolio-Lib/HEAD
    :height: 1.6em
 
+.. raw:: html
+    
+    <a href="https://www.star-history.com/?repos=dcajasn%2Friskfolio-lib&type=date&legend=top-left">
+    <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=dcajasn/riskfolio-lib&type=date&theme=dark&legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=dcajasn/riskfolio-lib&type=date&legend=top-left" />
+    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=dcajasn/riskfolio-lib&type=date&legend=top-left" />
+    </picture>
+    </a>
+    
+
 .. |linkedin| raw:: html
 
     <a href="https://www.linkedin.com/in/dany-cajas/" target="_blank">
