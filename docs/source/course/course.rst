@@ -293,7 +293,8 @@ Course Content
       #. *Augmented Black Litterman Model (Views on Assets and Risk Factors)*
       #. *Black Litterman Bayesian (Views on Risk Factors)*
 
-   #. Entropy Pooling 
+   #. Entropy Pooling
+
       #. *Views that can be expressed as Linear Constraints*
       #. *Views that can be expressed as Integer Constraints*
       #. *Views that can be expressed using Dual Formulations*
