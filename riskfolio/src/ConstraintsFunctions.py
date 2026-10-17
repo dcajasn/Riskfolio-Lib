@@ -1688,7 +1688,8 @@ def hrp_constraints(constraints, asset_classes):
     w_min = pd.Series(0.0, index=assetslist)
 
     for i in range(0, n):
-        if data.loc[i, "Disabled"] is False:
+        # `.loc` returns a numpy bool, which is never identical to `False`
+        if data.loc[i, "Disabled"] == False:  # noqa: E712
             if data.loc[i, "Type"] == "Assets":
                 assets = data.loc[i, "Position"]
                 if data.loc[i, "Sign"] == ">=":
