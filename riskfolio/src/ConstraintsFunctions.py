@@ -1689,7 +1689,7 @@ def hrp_constraints(constraints, asset_classes):
 
     for i in range(0, n):
         # `.loc` returns a numpy bool, which is never identical to `False`
-        if data.loc[i, "Disabled"] == False:  # noqa: E712
+        if data.loc[i, "Disabled"].tolist() is False:  # noqa: E712
             if data.loc[i, "Type"] == "Assets":
                 assets = data.loc[i, "Position"]
                 if data.loc[i, "Sign"] == ">=":
