@@ -1690,7 +1690,7 @@ def black_litterman_bayesian(
         mu = mu + alpha
     mu = mu.T
     cov = S_blb
-    w = inv(delta * cov) @ (mu.T - rf)
+    w = inv(delta * cov) @ Pi_blb
 
     mu = pd.DataFrame(mu, columns=assets)
     cov = pd.DataFrame(cov, index=assets, columns=assets)
