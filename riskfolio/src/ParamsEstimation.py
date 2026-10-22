@@ -132,7 +132,7 @@ def mean_vector(X, method="hist", d=0.94, target="b1"):
             alpha_1 /= (mu.T @ Sigma_inv @ mu) * (b.T @ Sigma_inv @ b) - (
                 mu.T @ Sigma_inv @ b
             ) ** 2
-            beta_1 = (1 - alpha_1) * (mu.T @ Sigma_inv @ b) / (mu.T @ Sigma_inv @ mu)
+            beta_1 = (1 - alpha_1) * (mu.T @ Sigma_inv @ b) / (b.T @ Sigma_inv @ b)
             mu = alpha_1 * mu + beta_1 * b
         mu = mu.T
 
