@@ -1464,7 +1464,7 @@ def augmented_black_litterman(
         if eq is True:
             PI_a_ = delta * S_vstack @ w_
         elif eq is False:
-            PI_a_ = mu.T - rf
+            PI_a_ = mu_vstack - rf
 
     elif P is None and Q is None and P_f is not None and Q_f is not None:
         zeros_1 = np.zeros((P_f.shape[0], S.shape[1]))
@@ -1475,7 +1475,7 @@ def augmented_black_litterman(
         if eq is True:
             PI_a_ = delta * S_vstack @ w_
         elif eq is False:
-            PI_a_ = mu_f.T - rf
+            PI_a_ = mu_vstack - rf
 
     elif P is not None and Q is not None and P_f is not None and Q_f is not None:
         P = np.array(P, ndmin=2)
