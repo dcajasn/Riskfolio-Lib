@@ -34,3 +34,42 @@ def test_bayesian_weights_satisfy_excess_return_first_order_condition(rf, const)
         rtol=1e-10,
         atol=1e-12,
     )
+
+
+@pytest.mark.parametrize("rf", [0.0, 0.004])
+@pytest.mark.parametrize("alpha", [0.0, 0.002, -0.001])
+def test_bayesian_one_asset_matches_scalar_posterior(rf, alpha):
+    # Scalar Gaussian conditioning gives an independent reference without
+    # repeating the implementation's nested matrix inversions.
+    factors = pd.DataFrame({"F": [-0.02, 0.01, 0.04, 0.03, -0.01]})
+    residuals = np.array([0.003, -0.002, 0.001, -0.004, 0.002])
+    loading, delta, view = 1.2, 2.0, 0.01
+    assets = pd.DataFrame(
+        {"A": alpha + loading * factors["F"].to_numpy() + residuals}
+    )
+    factor_variance = factors["F"].var(ddof=1)
+    tau = 1 / len(factors)
+    posterior_factor_mean = (tau * (factors["F"].mean() - rf) + view) / (1 + tau)
+    posterior_factor_variance = tau * factor_variance / (1 + tau)
+    expected_variance = (
+        loading**2 * (factor_variance + posterior_factor_variance)
+        + residuals.var(ddof=1)
+    )
+    expected_excess_return = alpha + loading * posterior_factor_mean
+
+    mu, cov, weights = black_litterman_bayesian(
+        assets,
+        factors,
+        pd.DataFrame([[alpha, loading]]),
+        np.array([[1.0]]),
+        np.array([[view]]),
+        delta=delta,
+        rf=rf,
+        const=True,
+    )
+    np.testing.assert_allclose(mu.iloc[0, 0], expected_excess_return + rf)
+    np.testing.assert_allclose(cov.iloc[0, 0], expected_variance)
+    # Maximizer of w * excess_return - delta/2 * variance * w**2.
+    np.testing.assert_allclose(
+        weights.iloc[0, 0], expected_excess_return / (delta * expected_variance)
+    )

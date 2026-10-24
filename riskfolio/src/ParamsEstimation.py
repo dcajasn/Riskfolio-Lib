@@ -1640,6 +1640,10 @@ def black_litterman_bayesian(
     w : DataFrame
         The equilibrium weights of Black Litterman model, without constraints.
 
+        For the Bayesian model, these maximize mean-variance utility using the
+        returned ``mu`` and ``cov``: ``delta * cov @ w = mu.T - rf``. The alpha
+        from the first column of ``B`` is included when ``const=True``.
+
     Raises
     ------
     ValueError
@@ -1690,7 +1694,8 @@ def black_litterman_bayesian(
         mu = mu + alpha
     mu = mu.T
     cov = S_blb
-    w = inv(delta * cov) @ Pi_blb
+    # Keep the same alpha contribution as the returned posterior mean.
+    w = inv(delta * cov) @ (mu.T - rf)
 
     mu = pd.DataFrame(mu, columns=assets)
     cov = pd.DataFrame(cov, index=assets, columns=assets)
