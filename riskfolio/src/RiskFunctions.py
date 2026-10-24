@@ -12,6 +12,7 @@ import riskfolio.src.ParamsEstimation as pe
 from scipy.optimize import minimize
 from scipy.optimize import Bounds
 from scipy.linalg import null_space, pinv
+from scipy.special import logsumexp
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import warnings
@@ -549,8 +550,7 @@ def Entropic_RM(X, z=1, alpha=0.05):
     if not np.all(np.isfinite(a)):
         raise ValueError("returns must not contain NaN or infinite values")
 
-    value = np.mean(np.exp(-1 / z * a), axis=0)
-    value = z * (np.log(value) + np.log(1 / alpha))
+    value = z * (logsumexp(-a / z, axis=0) - np.log(len(a)) - np.log(alpha))
     value = np.array(value).item()
 
     return value
@@ -566,8 +566,7 @@ def _Entropic_RM(z, X, alpha=0.05):
         raise ValueError("returns must not contain NaN or infinite values")
 
     a = a.flatten()
-    value = np.mean(np.exp(-np.multiply(1 / z, a)), axis=0)
-    value = z * (np.log(value) + np.log(1 / alpha))
+    value = z * (logsumexp(-a / z, axis=0) - np.log(len(a)) - np.log(alpha))
     value = np.array(value).item()
 
     return value
