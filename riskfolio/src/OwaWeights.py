@@ -208,7 +208,7 @@ def owa_rg(T):
     T_ = int(T)
     w_ = np.zeros((T_, 1))
     w_[0, :] = -1
-    w_[-1, :] = 1
+    w_[-1, :] += 1
 
     return w_
 
