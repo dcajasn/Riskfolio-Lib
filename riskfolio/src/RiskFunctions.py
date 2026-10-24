@@ -82,6 +82,13 @@ def MAD(X):
     value : float
         MAD of a returns series.
 
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> X = [0.02, -0.01, 0.03, -0.04, 0.05]
+    >>> round(rp.MAD(X), 6)
+    0.028
+
     """
 
     a = np.array(X, ndmin=2)
@@ -124,6 +131,14 @@ def SemiDeviation(X):
     -------
     value : float
         Semi Deviation of a returns series.
+
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> X = [0.02, -0.01, 0.03, -0.04, 0.05]
+    >>> round(rp.SemiDeviation(X), 6)
+    0.026926
+
     """
 
     a = np.array(X, ndmin=2)
@@ -345,6 +360,14 @@ def VaR_Hist(X, alpha=0.05):
     -------
     value : float
         VaR of a returns series.
+
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> X = [0.01, -0.02, 0.03, -0.05, 0.02, 0.04, -0.01, 0.00, 0.01, -0.03]
+    >>> round(rp.VaR_Hist(X, alpha=0.2), 6)
+    0.03
+
     """
 
     a = np.array(X, ndmin=2)
@@ -388,6 +411,14 @@ def CVaR_Hist(X, alpha=0.05):
     -------
     value : float
         CVaR of a returns series.
+
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> X = [0.01, -0.02, 0.03, -0.05, 0.02, 0.04, -0.01, 0.00, 0.01, -0.03]
+    >>> round(rp.CVaR_Hist(X, alpha=0.2), 6)
+    0.04
+
     """
 
     a = np.array(X, ndmin=2)
@@ -431,6 +462,13 @@ def WR(X):
     -------
     value : float
         WR of a returns series.
+
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> X = [0.02, -0.01, 0.03, -0.04, 0.05]
+    >>> round(rp.WR(X), 6)
+    0.04
 
     """
 
@@ -483,6 +521,15 @@ def LPM(X, MAR=0, p=1):
     -------
     value : float
         p-th Lower Partial Moment of a returns series.
+
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> X = [0.02, -0.01, 0.03, -0.04, 0.05]
+    >>> round(rp.LPM(X, MAR=0, p=1), 6)
+    0.01
+    >>> round(rp.LPM(X, MAR=0, p=2), 6)
+    0.020616
 
     """
 
@@ -846,6 +893,13 @@ def MDD_Abs(X):
     value : float
         MDD of an uncompounded cumulative returns.
 
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> X = [0.02, -0.01, 0.03, -0.04, 0.05]
+    >>> round(rp.MDD_Abs(X), 6)
+    0.04
+
     """
 
     a = np.array(X, ndmin=2)
@@ -895,6 +949,13 @@ def ADD_Abs(X):
     -------
     value : float
         ADD of an uncompounded cumulative returns.
+
+    Examples
+    --------
+    >>> import riskfolio as rp
+    >>> X = [0.02, -0.01, 0.03, -0.04, 0.05]
+    >>> round(rp.ADD_Abs(X), 6)
+    0.01
 
     """
 
