@@ -73,3 +73,59 @@ def test_bayesian_one_asset_matches_scalar_posterior(rf, alpha):
     np.testing.assert_allclose(
         weights.iloc[0, 0], expected_excess_return / (delta * expected_variance)
     )
+
+
+@pytest.mark.parametrize("rf", [0.0, 0.004])
+@pytest.mark.parametrize("order", [[0, 1, 2], [2, 0, 1]])
+def test_bayesian_mixed_alpha_preserves_asset_order(rf, order):
+    # Condition the single factor analytically, then map its posterior to
+    # three assets. This avoids the implementation's nested inversions.
+    factors = pd.DataFrame({"F": [-0.02, 0.01, 0.04, 0.03, -0.01]})
+    names = np.array(["Z", "A", "M"])
+    alpha = np.array([0.001, -0.002, 0.003])
+    loading = np.array([0.8, 1.2, -0.4])
+    residuals = np.array(
+        [
+            [0.003, -0.001, 0.002],
+            [-0.002, 0.004, -0.003],
+            [0.001, -0.002, 0.005],
+            [-0.004, 0.003, -0.001],
+            [0.002, -0.004, -0.003],
+        ]
+    )
+    assets = pd.DataFrame(
+        factors.to_numpy() * loading + alpha + residuals, columns=names
+    )
+    tau, delta, view = 1 / len(factors), 2.0, 0.01
+    factor_var = factors["F"].var(ddof=1)
+    posterior_mean = (tau * (factors["F"].mean() - rf) + view) / (1 + tau)
+    posterior_var = tau * factor_var / (1 + tau)
+    expected_mu = alpha + loading * posterior_mean + rf
+    expected_cov = (
+        np.outer(loading, loading) * (factor_var + posterior_var)
+        + np.diag(residuals.var(axis=0, ddof=1))
+    )
+    expected_weights = np.linalg.solve(delta * expected_cov, expected_mu - rf)
+
+    mu, cov, weights = black_litterman_bayesian(
+        assets.iloc[:, order],
+        factors,
+        pd.DataFrame(np.column_stack((alpha, loading))[order]),
+        np.array([[1.0]]),
+        np.array([[view]]),
+        delta=delta,
+        rf=rf,
+        const=True,
+    )
+    assert list(mu.columns) == list(names[order])
+    assert list(cov.index) == list(cov.columns) == list(weights.index) == list(names[order])
+    np.testing.assert_allclose(mu.to_numpy()[0], expected_mu[order], atol=1e-12)
+    np.testing.assert_allclose(
+        cov.to_numpy(), expected_cov[np.ix_(order, order)], atol=1e-12
+    )
+    np.testing.assert_allclose(weights.to_numpy()[:, 0], expected_weights[order])
+    np.testing.assert_allclose(
+        delta * cov.to_numpy() @ weights.to_numpy(),
+        mu.to_numpy().T - rf,
+        atol=1e-12,
+    )
