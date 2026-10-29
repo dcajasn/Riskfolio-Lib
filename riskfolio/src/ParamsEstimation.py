@@ -103,7 +103,9 @@ def mean_vector(X, method="hist", d=0.94, target="b1"):
         mu = np.array(X.mean(), ndmin=2).reshape(-1, 1)
         Sigma = np.cov(X, rowvar=False)
         Sigma_inv = np.linalg.inv(Sigma)
-        eigvals = np.linalg.eigvals(Sigma)
+        # Sigma is symmetric: eigvalsh returns real eigenvalues, while eigvals
+        # can return complex128 (always on recent numpy), making mu complex.
+        eigvals = np.linalg.eigvalsh(Sigma)
 
         # Calculate target vector
         if target == "b1":
