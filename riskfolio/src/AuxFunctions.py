@@ -262,7 +262,7 @@ def cov_returns(cov, seed=0):
     a = a @ L1.T
 
     if flag:
-        cov_ = pd.DataFrame(a, columns=cols)
+        a = pd.DataFrame(a, columns=cols)
 
     return a
 
