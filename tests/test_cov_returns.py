@@ -19,3 +19,19 @@ def test_cov_returns_ndarray_input_returns_ndarray():
     returns = rp.cov_returns(cov)
     assert isinstance(returns, np.ndarray)
     np.testing.assert_allclose(np.cov(returns.T), cov)
+
+
+def test_cov_returns_follows_cov_column_order_with_seed():
+    # Unsorted, non-integer labels with distinct variances, so the test fails
+    # if the columns are relabelled, sorted or taken in a different order.
+    cov = pd.DataFrame(
+        [[0.09, 0.02], [0.02, 0.01]], index=["y", "x"], columns=["y", "x"]
+    )
+    returns = rp.cov_returns(cov, seed=7)
+    assert isinstance(returns, pd.DataFrame)
+    assert returns.columns.tolist() == ["y", "x"]
+    np.testing.assert_allclose(
+        returns.to_numpy(), rp.cov_returns(cov.to_numpy(), seed=7)
+    )
+    np.testing.assert_allclose(returns.var(ddof=1), cov.to_numpy().diagonal())
+    np.testing.assert_allclose(returns.cov(), cov)
