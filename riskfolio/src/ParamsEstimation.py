@@ -12,7 +12,6 @@ import scipy.stats as st
 import sklearn.covariance as skcov
 import arch.bootstrap as bs
 
-from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 from scipy.linalg import inv
 from itertools import product
@@ -746,10 +745,11 @@ def PCR(X, y, n_components=0.95):
         if y.shape[0] > 1 and y.shape[1] > 1:
             raise TypeError("y must be a column DataFrame")
 
-    scaler = StandardScaler()
-    scaler.fit(X)
-    X_std = scaler.transform(X)
-
+    mean = np.array(np.mean(X, axis=0), ndmin=2)
+    std = np.array(np.std(X, axis=0, ddof=1), ndmin=2)
+    
+    X_std = (np.array(X) - mean)/std
+    
     if n_components > 0 and n_components < 1:
         pca = PCA(n_components=n_components)
     elif n_components >= 1:
@@ -763,8 +763,6 @@ def PCR(X, y, n_components=0.95):
     beta_pc = results.params[1:]
     beta_pc = np.array(beta_pc, ndmin=2)
 
-    std = np.array(np.std(X, axis=0, ddof=1), ndmin=2)
-    mean = np.array(np.mean(X, axis=0), ndmin=2)
     beta = V_p @ beta_pc.T / std.T
 
     beta_0 = np.array(y.mean(), ndmin=2) - np.sum(beta * mean.T)
