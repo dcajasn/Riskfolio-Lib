@@ -102,8 +102,6 @@ def mean_vector(X, method="hist", d=0.94, target="b1"):
         mu = np.array(X.mean(), ndmin=2).reshape(-1, 1)
         Sigma = np.cov(X, rowvar=False)
         Sigma_inv = np.linalg.inv(Sigma)
-        # Sigma is symmetric: eigvalsh returns real eigenvalues, while eigvals
-        # can return complex128 (always on recent numpy), making mu complex.
         eigvals = np.linalg.eigvalsh(Sigma)
 
         # Calculate target vector
@@ -747,9 +745,9 @@ def PCR(X, y, n_components=0.95):
 
     mean = np.array(np.mean(X, axis=0), ndmin=2)
     std = np.array(np.std(X, axis=0, ddof=1), ndmin=2)
-    
+
     X_std = (np.array(X) - mean)/std
-    
+
     if n_components > 0 and n_components < 1:
         pca = PCA(n_components=n_components)
     elif n_components >= 1:
