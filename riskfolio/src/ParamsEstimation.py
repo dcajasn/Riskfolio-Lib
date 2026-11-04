@@ -59,7 +59,7 @@ def mean_vector(X, method="hist", d=0.94, target="b1"):
         - 'BS': Bayes-Stein estimator. For more information see :cite:`b-Jorion1986`.
         - 'BOP': BOP estimator. For more information see :cite:`b-Bodnar2019`.
 
-    d : scalar
+    d : float, optional
         The smoothing factor of ewma methods.
         The default is 0.94.
 
@@ -177,11 +177,11 @@ def covar_matrix(
         - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
         - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
 
-    d : scalar
+    d : float, optional
         The smoothing factor of ewma methods. The default is 0.94.
-    alpha : scalar
-        The shrfactor of shrunk and shrink method. The default is 0.1.
-    bWidth : float
+    alpha : float, optional
+        The shrinkage factor of shrunk and shrink method. The default is 0.1.
+    bWidth : float, optional
         The bandwidth of the kernel for 'fixed', 'spectral' and 'shrink' methods.
     detone : bool, optional
         If remove the first mkt_comp of correlation matrix for 'fixed', 'spectral'
@@ -189,7 +189,7 @@ def covar_matrix(
         cannot be inverted.
     mkt_comp : int, optional
         Number of first components that will be removed using the detone method.
-    threshold : float
+    threshold : float, optional
         Threshold for 'gerber1' and 'gerber2' methods is between 0 and 1.
 
     Returns
@@ -296,7 +296,9 @@ def cokurt_matrix(
         - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
-    bWidth : float
+    alpha : float, optional
+        The shrinkage factor of shrink method. The default is 0.1.
+    bWidth : float, optional
         The bandwidth of the kernel for 'fixed', 'spectral' and 'shrink' methods.
     detone : bool, optional
         If remove the first mkt_comp of correlation matrix for 'fixed', 'spectral'
@@ -358,9 +360,8 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
     X : DataFrame of shape (n_samples, n_factors)
         Risk factors returns matrix, where n_samples is the number of samples
         and n_factors is the number of risk factors.
-    y : Series of shape (n_samples, 1)
-        Asset returns column DataFrame or Series, where n_samples is the number
-        of samples.
+    y : Series or single-column DataFrame of shape (n_samples,)
+        Asset returns, where n_samples is the number of samples.
     criterion : str, optional
         The default is 'pvalue'. Possible values of the criterion used to select
         the best features are:
@@ -371,7 +372,7 @@ def forward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False):
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
 
-    threshold : scalar, optional
+    threshold : float, optional
         Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.
     verbose : bool, optional
@@ -541,9 +542,8 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
     X : DataFrame of shape (n_samples, n_factors)
         Risk factors returns matrix, where n_samples is the number of samples
         and n_factors is the number of risk factors.
-    y : Series of shape (n_samples, 1)
-        Asset returns column DataFrame or Series, where n_samples is the number
-        of samples.
+    y : Series or single-column DataFrame of shape (n_samples,)
+        Asset returns, where n_samples is the number of samples.
     criterion : str, optional
         The default is 'pvalue'. Possible values of the criterion used to select
         the best features are:
@@ -553,7 +553,7 @@ def backward_regression(X, y, criterion="pvalue", threshold=0.05, verbose=False)
         - 'SIC': select the features based on lowest Schwarz Information Criterion.
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
-    threshold : scalar, optional
+    threshold : float, optional
         Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.
     verbose : bool, optional
@@ -711,13 +711,12 @@ def PCR(X, y, n_components=0.95):
     X : DataFrame of shape (n_samples, n_factors)
         Risk factors returns matrix, where n_samples is the number of samples
         and n_factors is the number of risk factors.
-    y : DataFrame or Series of shape (n_samples, 1)
-        Asset returns column DataFrame or Series, where n_samples is the number
-        of samples.
-    n_components : int, float, None or str, optional
-        if 1 < n_components (int), it represents the number of components that
-        will be keep. if 0 < n_components < 1 (float), it represents the
-        percentage of variance that the is explained by the components kept.
+    y : Series or single-column DataFrame of shape (n_samples,)
+        Asset returns, where n_samples is the number of samples.
+    n_components : int or float, optional
+        If between 0 and 1, specifies the fraction of variance to retain. If
+        greater than or equal to 1, it is converted to an integer number of
+        components. Values greater than 0 are required.
         See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
         for more details. The default is 0.95.
 
@@ -792,13 +791,13 @@ def loadings_matrix(
     Y : DataFrame of shape (n_samples, n_assets)
         Assets returns DataFrame, where n_samples is the number of
         observations and n_assets is the number of assets.
-    feature_selection: str, 'stepwise' or 'PCR', optional
+    feature_selection : str, optional
         Indicate the method used to estimate the loadings matrix.
         The default is 'stepwise'.  Possible values are:
 
         - 'stepwise': use stepwise regression to select the best factors and estimate coefficients.
         - 'PCR': use principal components regression to estimate coefficients.
-    stepwise: str 'Forward' or 'Backward', optional
+    stepwise : str, optional
         Indicate the method used for stepwise regression.
         The default is 'Forward'.
     criterion : str, optional
@@ -810,13 +809,13 @@ def loadings_matrix(
         - 'SIC': select the features based on lowest Schwarz Information Criterion.
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
-    threshold : scalar, optional
+    threshold : float, optional
         Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.
-    n_components : int, float, None or str, optional
-        if 1 < n_components (int), it represents the number of components that
-        will be keep. if 0 < n_components < 1 (float), it represents the
-        percentage of variance that the is explained by the components kept.
+    n_components : int or float, optional
+        If between 0 and 1, specifies the fraction of variance to retain. If
+        greater than or equal to 1, it is converted to an integer number of
+        components. Values greater than 0 are required.
         See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
         for more details. The default is 0.95.
     verbose : bool, optional
@@ -945,11 +944,11 @@ def risk_factors(
         observations and n_assets is the number of assets.
     B : DataFrame of shape (n_assets, n_factors), optional
         Loadings matrix, where n_assets is the number assets and n_factors is
-        the number of risk factors. If is not specified, is estimated using
+        the number of risk factors. If not specified, it is estimated using
         stepwise regression. The default is None.
     const : bool, optional
         Indicate if the loadings matrix has a constant.
-        The default is False.
+        The default is True.
     method_mu : str, optional
         The method used to estimate the expected returns of factors.
         The default value is 'hist'. Possible values are:
@@ -986,13 +985,13 @@ def risk_factors(
         - 'fixed': denoise using fixed method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'spectral': denoise using spectral method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
-    feature_selection: str, 'stepwise' or 'PCR', optional
+    feature_selection : str, optional
         Indicate the method used to estimate the loadings matrix.
         The default is 'stepwise'.  Possible values are:
 
         - 'stepwise': use stepwise regression to select the best factors and estimate coefficients.
         - 'PCR': use principal components regression to estimate coefficients.
-    stepwise: str, 'Forward' or 'Backward'
+    stepwise : str, optional
         Indicate the method used for stepwise regression.
         The default is 'Forward'.
     criterion : str, optional
@@ -1004,20 +1003,20 @@ def risk_factors(
         - 'SIC': select the features based on lowest Schwarz Information Criterion.
         - 'R2': select the features based on highest R Squared.
         - 'R2_A': select the features based on highest Adjusted R Squared.
-    threshold : scalar, optional
+    threshold : float, optional
         Is the maximum p-value for each variable that will be
         accepted in the model. The default is 0.05.
-    n_components : int, float, None or str, optional
-        if 1 < n_components (int), it represents the number of components that
-        will be keep. if 0 < n_components < 1 (float), it represents the
-        percentage of variance that the is explained by the components kept.
+    n_components : int or float, optional
+        If between 0 and 1, specifies the fraction of variance to retain. If
+        greater than or equal to 1, it is converted to an integer number of
+        components. Values greater than 0 are required.
         See `PCA <https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html>`_
         for more details. The default is 0.95.
-    dict_mu : dict
+    dict_mu : dict, optional
         Other variables related to the expected returns.
-    dict_cov : dict
+    dict_cov : dict, optional
         Other variables related to the covariance estimation.
-    dict_kurt : dict
+    dict_kurt : dict, optional
         Other variables related to the cokurtosis estimation.
 
     Returns
@@ -1161,15 +1160,19 @@ def black_litterman(
     X : DataFrame of shape (n_samples, n_assets)
         Assets returns DataFrame, where n_samples is the number of
         observations and n_assets is the number of assets.
-    w : DataFrame or Series of shape (n_assets, 1)
-        Portfolio weights, where n_assets is the number of assets.
-    P : DataFrame of shape (n_views, n_assets)
-        Analyst's views matrix, can be relative or absolute.
-    Q : DataFrame of shape (n_views, 1)
-        Expected returns of analyst's views.
+    w : array_like of shape (n_assets, 1) or (1, n_assets)
+        Portfolio weights. DataFrames, Series, NumPy arrays, lists and tuples
+        are converted to a NumPy array.
+    P : array_like of shape (n_views, n_assets)
+        Analyst's views matrix, can be relative or absolute. NumPy arrays,
+        pandas Series or DataFrames, lists, and tuples are converted to a
+        NumPy array.
+    Q : array_like of shape (n_views, 1)
+        Expected returns of analyst's views. NumPy arrays, pandas Series or
+        DataFrames, lists, and tuples are converted to a NumPy array.
     delta : float, optional
         Risk aversion factor. The default value is 1.
-    rf : scalar, optional
+    rf : float, optional
         Risk free rate. The default is 0.
     eq : bool, optional
         Indicate if use equilibrium or historical excess returns.
@@ -1221,17 +1224,16 @@ def black_litterman(
         When the value cannot be calculated.
 
     """
-    if not isinstance(X, pd.DataFrame) or not isinstance(w, pd.DataFrame):
-        raise TypeError("X and w must be DataFrames")
-
-    if w.shape[0] > 1 and w.shape[1] > 1:
-        raise TypeError("w must be a column DataFrame")
+    if not isinstance(X, pd.DataFrame):
+        raise TypeError("X must be a DataFrame")
 
     assets = X.columns.tolist()
 
     w = np.array(w, ndmin=2)
     if w.shape[0] == 1:
         w = w.T
+    if w.ndim != 2 or w.shape[1] != 1 or w.shape[0] != len(assets):
+        raise ValueError("w must contain one weight per asset")
 
     mu = np.array(mean_vector(X, method=method_mu, **dict_mu), ndmin=2)
     S = np.array(covar_matrix(X, method=method_cov, **dict_cov), ndmin=2)
@@ -1346,25 +1348,29 @@ def augmented_black_litterman(
     X : DataFrame of shape (n_samples, n_assets)
         Assets returns DataFrame, where n_samples is the number of
         observations and n_assets is the number of assets.
-    w : DataFrame or Series of shape (n_assets, 1)
-        Portfolio weights, where n_assets is the number of assets.
+    w : array_like of shape (n_assets, 1) or (1, n_assets)
+        Portfolio weights. DataFrames, Series, NumPy arrays, lists and tuples
+        are converted to a NumPy array.
     F : DataFrame of shape (n_samples, n_factors)
         Risk factors returns DataFrame, where n_samples is the number of samples
         and n_factors is the number of risk factors.
-    B : DataFrame of shape (n_assets, n_factors), optional
+    B : DataFrame of shape (n_assets, n_factors)
         Loadings matrix, where n_assets is the number assets and n_factors is
-        the number of risk factors.
-    P : DataFrame of shape (n_views, n_assets)
-        Analyst's views matrix, can be relative or absolute.
-    Q : DataFrame of shape (n_views, 1)
-        Expected returns of analyst's views.
-    P_f : DataFrame of shape (n_views, n_factors)
-        Analyst's factors views matrix, can be relative or absolute.
-    Q_f : DataFrame of shape (n_views, 1)
-        Expected returns of analyst's factors views.
+        the number of risk factors. This parameter must be a pandas DataFrame.
+    P : array_like of shape (n_views, n_assets), optional
+        Analyst's views matrix, can be relative or absolute. Supply together
+        with Q.
+    Q : array_like of shape (n_views, 1), optional
+        Expected returns of analyst's views. Supply together with P.
+    P_f : array_like of shape (n_views, n_factors), optional
+        Analyst's factors views matrix, can be relative or absolute. Supply
+        together with Q_f.
+    Q_f : array_like of shape (n_views, 1), optional
+        Expected returns of analyst's factors views. Supply together with
+        P_f. P, Q, P_f and Q_f are converted to NumPy arrays.
     delta : float, optional
         Risk aversion factor. The default value is 1.
-    rf : scalar, optional
+    rf : float, optional
         Risk free rate. The default is 0.
     eq : bool, optional
         Indicate if use equilibrium or historical excess returns.
@@ -1399,9 +1405,9 @@ def augmented_black_litterman(
         - 'shrink': denoise using shrink method. For more information see chapter 2 of :cite:`b-MLforAM`.
         - 'gerber1': use the Gerber statistic 1. For more information see: :cite:`b-Gerber2021`.
         - 'gerber2': use the Gerber statistic 2. For more information see: :cite:`b-Gerber2021`.
-    dict_mu : dict
+    dict_mu : dict, optional
         Other variables related to the mean vector estimation method.
-    dict_cov : dict
+    dict_cov : dict, optional
         Other variables related to the covariance estimation method.
 
     Returns
@@ -1419,21 +1425,20 @@ def augmented_black_litterman(
         When the value cannot be calculated.
 
     """
-    if not isinstance(X, pd.DataFrame) or not isinstance(w, (pd.Series, pd.DataFrame)):
-        raise TypeError("X and w must be DataFrames")
+    if not isinstance(X, pd.DataFrame):
+        raise TypeError("X must be a DataFrame")
 
     if not isinstance(F, pd.DataFrame) or not isinstance(B, pd.DataFrame):
-        raise TypeError("F must be a Series or a DataFrame and B must be a DataFrame")
-
-    if w.shape[0] > 1 and w.shape[1] > 1:
-        raise TypeError("w must be a column DataFrame")
-
-    assets = X.columns.tolist()
-    N = len(assets)
+        raise TypeError("F and B must be DataFrames")
 
     w_ = np.array(w, ndmin=2)
     if w_.shape[0] == 1:
         w_ = w_.T
+    if w_.ndim != 2 or w_.shape[1] != 1:
+        raise ValueError("w must contain one weight per asset")
+
+    assets = X.columns.tolist()
+    N = len(assets)
 
     if B is not None:
         B_ = np.array(B, ndmin=2)
@@ -1453,10 +1458,19 @@ def augmented_black_litterman(
     mu_vstack = np.vstack((mu.T, mu_f.T))
     S_vstack = np.vstack((S, S_f @ B_.T))
 
+    if P is not None:
+        P_ = np.array(P, ndmin=2)
+    if Q is not None:
+        Q_ = np.array(Q, ndmin=2)
+    if P_f is not None:
+        P_f_ = np.array(P_f, ndmin=2)
+    if Q_f is not None:
+        Q_f_ = np.array(Q_f, ndmin=2)
+
     if P is not None and Q is not None and P_f is None and Q_f is None:
         zeros_2 = np.zeros((P.shape[0], S_f.shape[1]))
-        P_a = np.bmat([np.array(P, ndmin=2), zeros_2])
-        Q_a = np.array(Q, ndmin=2)
+        P_a = np.bmat([P_, zeros_2])
+        Q_a = Q_
         Omega_a = np.array(np.diag(np.diag(P_a @ (tau * S_a) @ P_a.T)), ndmin=2)
 
         if eq is True:
@@ -1466,8 +1480,8 @@ def augmented_black_litterman(
 
     elif P is None and Q is None and P_f is not None and Q_f is not None:
         zeros_1 = np.zeros((P_f.shape[0], S.shape[1]))
-        P_a = np.bmat([zeros_1, np.array(P_f, ndmin=2)])
-        Q_a = np.array(Q_f, ndmin=2)
+        P_a = np.bmat([zeros_1, P_f_])
+        Q_a = Q_f_
         Omega_a = np.array(np.diag(np.diag(P_a @ (tau * S_a) @ P_a.T)), ndmin=2)
 
         if eq is True:
@@ -1476,17 +1490,13 @@ def augmented_black_litterman(
             PI_a_ = mu_vstack - rf
 
     elif P is not None and Q is not None and P_f is not None and Q_f is not None:
-        P = np.array(P, ndmin=2)
-        Q = np.array(Q, ndmin=2)
-        P_f = np.array(P_f, ndmin=2)
-        Q_f = np.array(Q_f, ndmin=2)
-        zeros_1 = np.zeros((P_f.shape[0], S.shape[1]))
-        zeros_2 = np.zeros((P.shape[0], S_f.shape[1]))
-        P_a = np.bmat([[P, zeros_2], [zeros_1, P_f]])
-        Q_a = np.vstack((Q, Q_f))
+        zeros_1 = np.zeros((P_f_.shape[0], S.shape[1]))
+        zeros_2 = np.zeros((P_.shape[0], S_f.shape[1]))
+        P_a = np.bmat([[P_, zeros_2], [zeros_1, P_f_]])
+        Q_a = np.vstack((Q_, Q_f_))
 
-        Omega = np.array(np.diag(np.diag(P @ (tau * S) @ P.T)), ndmin=2)
-        Omega_f = np.array(np.diag(np.diag(P_f @ (tau * S_f) @ P_f.T)), ndmin=2)
+        Omega = np.array(np.diag(np.diag(P_ @ (tau * S) @ P_.T)), ndmin=2)
+        Omega_f = np.array(np.diag(np.diag(P_f_ @ (tau * S_f) @ P_f_.T)), ndmin=2)
         zeros_3 = np.zeros((Omega.shape[0], Omega_f.shape[0]))
         Omega_a = np.bmat([[Omega, zeros_3], [zeros_3.T, Omega_f]])
 
@@ -1583,16 +1593,16 @@ def black_litterman_bayesian(
     F : DataFrame of shape (n_samples, n_factors)
         Risk factors returns DataFrame, where n_samples is the number of samples
         and n_factors is the number of risk factors.
-    B : DataFrame of shape (n_assets, n_factors), optional
+    B : DataFrame of shape (n_assets, n_factors)
         Loadings matrix, where n_assets is the number assets and n_factors is
-        the number of risk factors. The default is None.
-    P_f : DataFrame of shape (n_views, n_factors)
+        the number of risk factors. This parameter must be a pandas DataFrame.
+    P_f : array_like of shape (n_views, n_factors)
         Analyst's factors views matrix, can be relative or absolute.
-    Q_f : DataFrame of shape (n_views, 1)
+    Q_f : array_like of shape (n_views, 1)
         Expected returns of analyst's factors views.
     delta : float, optional
         Risk aversion factor. The default value is 1.
-    rf : scalar, optional
+    rf : float, optional
         Risk free rate. The default is 0.
     const : bool, optional
         Indicate if the loadings matrix has a constant.
@@ -1647,16 +1657,16 @@ def black_litterman_bayesian(
     if not isinstance(X, pd.DataFrame):
         raise TypeError("X must be a DataFrame")
 
-    if not isinstance(F, (pd.Series, pd.DataFrame)) or not isinstance(B, pd.DataFrame):
-        raise TypeError("F must be a Series or a DataFrame and B must be a DataFrame")
+    if not isinstance(F, pd.DataFrame) or not isinstance(B, pd.DataFrame):
+        raise TypeError("F and B must be DataFrames")
 
     assets = X.columns.tolist()
 
     if B is not None:
-        B = np.array(B, ndmin=2)
+        B_ = np.array(B, ndmin=2)
         if const is True:
-            alpha = B[:, :1]
-            B = B[:, 1:]
+            alpha = B_[:, :1]
+            B_ = B_[:, 1:]
 
     mu_f = np.array(mean_vector(F, method=method_mu, **dict_mu), ndmin=2)
     mu_f = (mu_f - rf).T
@@ -1664,11 +1674,14 @@ def black_litterman_bayesian(
     tau = 1 / X.shape[0]
 
     S_f = np.array(covar_matrix(F, method=method_cov, **dict_cov), ndmin=2)
-    S = B @ S_f @ B.T
+    S = B_ @ S_f @ B_.T
 
     D = X.to_numpy() - F @ B.T
     D = np.diag(D.var())
     S = S + D
+
+    P_f = np.array(P_f, ndmin=2)
+    Q_f = np.array(Q_f, ndmin=2)
 
     Omega_f = np.array(np.diag(np.diag(P_f @ (tau * S_f) @ P_f.T)), ndmin=2)
 
@@ -1676,10 +1689,10 @@ def black_litterman_bayesian(
 
     Pi_hat = S_hat @ (inv(S_f) @ mu_f + P_f.T @ inv(Omega_f) @ Q_f)
 
-    S_blb = inv(inv(S) - inv(S) @ B @ inv(inv(S_hat) + B.T @ inv(S) @ B) @ B.T @ inv(S))
+    S_blb = inv(inv(S) - inv(S) @ B_ @ inv(inv(S_hat) + B_.T @ inv(S) @ B_) @ B_.T @ inv(S))
 
     Pi_blb = (
-        S_blb @ inv(S) @ B @ inv(inv(S_hat) + B.T @ inv(S) @ B) @ inv(S_hat) @ Pi_hat
+        S_blb @ inv(S) @ B_ @ inv(inv(S_hat) + B_.T @ inv(S) @ B_) @ inv(S_hat) @ Pi_hat
     )
 
     mu = Pi_blb + rf
@@ -1699,10 +1712,10 @@ def black_litterman_bayesian(
 
 def entropy_pooling(
     X: np.ndarray | pd.DataFrame,
-    P_eq: np.ndarray = None,
-    Q_eq: np.ndarray = None,
-    P_in: np.ndarray = None,
-    Q_in: np.ndarray = None,
+    P_eq: np.ndarray | None = None,
+    Q_eq: np.ndarray | None = None,
+    P_in: np.ndarray | None = None,
+    Q_in: np.ndarray | None = None,
     higher_comoments: bool = False,
     solver: str = "CLARABEL",
 ):
@@ -1727,21 +1740,26 @@ def entropy_pooling(
 
     Parameters
     ----------
-    X : DataFrame of shape (n_samples, n_assets)
-        Assets returns DataFrame, where n_samples is the number of
-        observations and n_assets is the number of assets.
-    P_eq : np.array, optional
+    X : ndarray or DataFrame of shape (n_samples, n_assets)
+        Asset returns. This parameter is converted to a NumPy array for
+        determining its dimensions.
+    P_eq : ndarray, optional
         Matrix P of views that can be expressed as equality constraints.
-    Q_eq : np.array, optional
+        Provide together with Q_eq.
+    Q_eq : ndarray, optional
         Matrix Q of views that can be expressed as equality constraints.
-    P_in : np.array, optional
+        Provide together with P_eq.
+    P_in : ndarray, optional
         Matrix P of views that can be expressed as inequality constraints.
-    Q_in : np.array, optional
+        Provide together with Q_in.
+    Q_in : ndarray, optional
         Matrix Q of views that can be expressed as inequality constraints.
+        Provide together with P_in.
     higher_comoments : bool, optional
         If True calculate coskewness tensor and cokurtosis square matrix.
     solver : str, optional
-        Solver used to solve the Entropy Pooling problem. The default is value 'CLARABEL'.
+        CVXPY solver used to solve the Entropy Pooling problem. The default is
+        'CLARABEL'.
 
     Returns
     -------
@@ -1824,29 +1842,29 @@ def bootstrapping(
     X : DataFrame of shape (n_samples, n_assets)
         Assets returns DataFrame, where n_samples is the number of
         observations and n_assets is the number of assets.
-    kind : str
+    kind : str, optional
         The bootstrapping method. The default value is 'stationary'. Possible values are:
 
         - 'stationary': stationary bootstrapping method, see `StationaryBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.StationaryBootstrap.html#arch.bootstrap.StationaryBootstrap>`_ for more details.
         - 'circular': circular bootstrapping method, see `CircularBlockBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.CircularBlockBootstrap.html#arch.bootstrap.CircularBlockBootstrap>`_ for more details.
         - 'moving': moving bootstrapping method, see `MovingBlockBootstrap <https://bashtage.github.io/arch/bootstrap/generated/arch.bootstrap.MovingBlockBootstrap.html#arch.bootstrap.MovingBlockBootstrap>`_ for more details.
-    q : scalar
+    q : float, optional
         Significance level for box and elliptical constraints.
         The default is 0.05.
-    n_sim : scalar
+    n_sim : int, optional
         Number of simulations of the bootstrapping method.
         The default is 6000.
-    window: int
+    window : int, optional
         Block size of the bootstrapping method. Must be greather than 1
         and lower than the n_samples - n_factors + 1
         The default is 3.
-    diag: bool
+    diag : bool, optional
         If consider only the main diagonal of covariance matrices of estimation
         errors following :cite:`b-fabozzi2007robust`. The default is False.
-    threshold: float
+    threshold : float, optional
         Parameter used to fix covariance matrices in case they are not positive semidefinite.
         The default is 1e-15.
-    seed: int
+    seed : int, optional
         Seed used to generate random numbers for bootstrapping method.
         The default is 0.
 
@@ -1974,19 +1992,19 @@ def normal_simulation(X, q=0.05, n_sim=6000, diag=False, threshold=1e-15, seed=0
     X : DataFrame of shape (n_samples, n_assets)
         Assets returns DataFrame, where n_samples is the number of
         observations and n_assets is the number of assets.
-    q : scalar
+    q : float, optional
         Significance level for box and elliptical constraints.
         The default is 0.05.
-    n_sim : scalar
+    n_sim : int, optional
         Number of simulations of the bootstrapping method.
         The default is 6000.
-    diag: bool
+    diag : bool, optional
         If consider only the main diagonal of covariance matrices of estimation
         errors following :cite:`b-fabozzi2007robust`. The default is False.
-    threshold: float
+    threshold : float, optional
         Parameter used to fix covariance matrices in case they are not positive
-        semidefinite. The default is 1e-10.
-    seed: int
+        semidefinite. The default is 1e-15.
+    seed : int, optional
         Seed used to generate random numbers for simulation.
         The default is 0.
 
