@@ -1661,6 +1661,10 @@ def black_litterman_bayesian(
         raise TypeError("F and B must be DataFrames")
 
     assets = X.columns.tolist()
+    X_ = np.array(X, ndmin=2)
+    F_ = np.array(F, ndmin=2)
+    P_f_ = np.array(P_f, ndmin=2)
+    Q_f_ = np.array(Q_f, ndmin=2)
 
     if B is not None:
         B_ = np.array(B, ndmin=2)
@@ -1676,18 +1680,15 @@ def black_litterman_bayesian(
     S_f = np.array(covar_matrix(F, method=method_cov, **dict_cov), ndmin=2)
     S = B_ @ S_f @ B_.T
 
-    D = X.to_numpy() - F @ B.T
-    D = np.diag(D.var())
-    S = S + D
+    e = X_ - F_ @ B_.T
+    S_e = np.diag(np.var(np.array(e), ddof=1, axis=0))
+    S = S + S_e
 
-    P_f = np.array(P_f, ndmin=2)
-    Q_f = np.array(Q_f, ndmin=2)
+    Omega_f = np.array(np.diag(np.diag(P_f_ @ (tau * S_f) @ P_f_.T)), ndmin=2)
 
-    Omega_f = np.array(np.diag(np.diag(P_f @ (tau * S_f) @ P_f.T)), ndmin=2)
+    S_hat = inv(inv(S_f) + P_f_.T @ inv(Omega_f) @ P_f_)
 
-    S_hat = inv(inv(S_f) + P_f.T @ inv(Omega_f) @ P_f)
-
-    Pi_hat = S_hat @ (inv(S_f) @ mu_f + P_f.T @ inv(Omega_f) @ Q_f)
+    Pi_hat = S_hat @ (inv(S_f) @ mu_f + P_f_.T @ inv(Omega_f) @ Q_f_)
 
     S_blb = inv(inv(S) - inv(S) @ B_ @ inv(inv(S_hat) + B_.T @ inv(S) @ B_) @ B_.T @ inv(S))
 
