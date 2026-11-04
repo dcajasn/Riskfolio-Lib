@@ -12,7 +12,7 @@ from setuptools import setup
 
 MAJOR = 7
 MINOR = 4
-MICRO = 0
+MICRO = 1
 VERSION = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 def write_version_py(filename='riskfolio/version.py'):

@@ -4,7 +4,13 @@ on:
   push:
     branches:
       - master
+    paths:
+      - 'riskfolio/**'
+      - 'docs/**'
   pull_request:
+    paths:
+      - 'riskfolio/**'
+      - 'docs/**'
   workflow_dispatch:
 
 permissions:
