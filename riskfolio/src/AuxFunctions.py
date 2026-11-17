@@ -446,6 +446,14 @@ def numBins(n_samples, corr=None):
     return bins
 
 
+def _column_bin_ratio(X, column, width, cache):
+    """Reuse a column's raw width ratio within one information-matrix call."""
+    if column not in cache:
+        values = X[:, column]
+        cache[column] = (np.max(values) - np.min(values)) / width(values)
+    return cache[column]
+
+
 def mutual_info_matrix(X, bins_info="KN", normalize=True):
     r"""
     Calculate the mutual information matrix of n variables.
@@ -490,27 +498,26 @@ def mutual_info_matrix(X, bins_info="KN", normalize=True):
     n = X1.shape[1]
     mat = np.zeros((n, n))
     indices = np.triu_indices(n)
+    bin_ratios = {}
 
     for i, j in zip(indices[0], indices[1]):
         if bins_info == "KN":
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / knuth_bin_width(X1[:, i])
+            k1 = _column_bin_ratio(X1, i, knuth_bin_width, bin_ratios)
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / knuth_bin_width(X1[:, j])
+                k2 = _column_bin_ratio(X1, j, knuth_bin_width, bin_ratios)
                 bins = np.int32(np.round(np.maximum(k1, k2)))
         elif bins_info == "FD":
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / freedman_bin_width(X1[:, i])
+            k1 = _column_bin_ratio(X1, i, freedman_bin_width, bin_ratios)
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / freedman_bin_width(
-                    X1[:, j]
-                )
+                k2 = _column_bin_ratio(X1, j, freedman_bin_width, bin_ratios)
                 bins = np.int32(np.round(np.maximum(k1, k2)))
         elif bins_info == "SC":
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / scott_bin_width(X1[:, i])
+            k1 = _column_bin_ratio(X1, i, scott_bin_width, bin_ratios)
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / scott_bin_width(X1[:, j])
+                k2 = _column_bin_ratio(X1, j, scott_bin_width, bin_ratios)
                 bins = np.int32(np.round(np.maximum(k1, k2)))
         elif bins_info == "HGR":
             corr = np.corrcoef(X1[:, i], X1[:, j])[0, 1]
@@ -586,27 +593,26 @@ def var_info_matrix(X, bins_info="KN", normalize=True):
     n = X1.shape[1]
     mat = np.zeros((n, n))
     indices = np.triu_indices(n)
+    bin_ratios = {}
 
     for i, j in zip(indices[0], indices[1]):
         if bins_info == "KN":
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / knuth_bin_width(X1[:, i])
+            k1 = _column_bin_ratio(X1, i, knuth_bin_width, bin_ratios)
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / knuth_bin_width(X1[:, j])
+                k2 = _column_bin_ratio(X1, j, knuth_bin_width, bin_ratios)
                 bins = np.int32(np.round(np.maximum(k1, k2)))
         elif bins_info == "FD":
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / freedman_bin_width(X1[:, i])
+            k1 = _column_bin_ratio(X1, i, freedman_bin_width, bin_ratios)
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / freedman_bin_width(
-                    X1[:, j]
-                )
+                k2 = _column_bin_ratio(X1, j, freedman_bin_width, bin_ratios)
                 bins = np.int32(np.round(np.maximum(k1, k2)))
         elif bins_info == "SC":
-            k1 = (np.max(X1[:, i]) - np.min(X1[:, i])) / scott_bin_width(X1[:, i])
+            k1 = _column_bin_ratio(X1, i, scott_bin_width, bin_ratios)
             bins = np.int32(np.round(k1))
             if i != j:
-                k2 = (np.max(X1[:, j]) - np.min(X1[:, j])) / scott_bin_width(X1[:, j])
+                k2 = _column_bin_ratio(X1, j, scott_bin_width, bin_ratios)
                 bins = np.int32(np.round(np.maximum(k1, k2)))
         elif bins_info == "HGR":
             corr = np.corrcoef(X1[:, i], X1[:, j])[0, 1]
