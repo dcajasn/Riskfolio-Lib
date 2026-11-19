@@ -653,11 +653,11 @@ def EVaR_Hist(X, alpha=0.05, solver="CLARABEL"):
         _Entropic_RM, [1], args=(a, alpha), method="SLSQP", bounds=bnd, tol=1e-12
     )
 
-    if result.success is True:
+    if result.success:
         t = result.x
         t = t.item()
         value = _Entropic_RM(t, a, alpha)
-    elif result.success is False:
+    else:
         t = None
         value = None
 
