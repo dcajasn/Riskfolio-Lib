@@ -209,13 +209,13 @@ def gerber_cov_stat2(X, threshold=0.5):
 
     n, p = X1.shape
     sd_vec = X1.std(axis=0).reshape((p, 1))
-    U = np.copy(X1)
-    D = np.copy(X1)
+    U = np.zeros((n, p), dtype=np.int64)
+    D = np.zeros((n, p), dtype=np.int64)
 
     # Update U and D matrix
     for i in range(p):
-        U[:, i] = U[:, i] >= sd_vec[i] * threshold
-        D[:, i] = D[:, i] <= -sd_vec[i] * threshold
+        U[:, i] = X1[:, i] >= sd_vec[i] * threshold
+        D[:, i] = X1[:, i] <= -sd_vec[i] * threshold
 
     # Update concordant matrix
     N_CONC = U.transpose() @ U + D.transpose() @ D
