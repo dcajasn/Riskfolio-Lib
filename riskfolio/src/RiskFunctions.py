@@ -3447,6 +3447,8 @@ def BrinsonAttribution(
 
     start_ = prices_.index.get_indexer([pd.Timestamp(start)], method=method)
     end_ = prices_.index.get_indexer([pd.Timestamp(end)], method=method)
+    if start_.item() == -1 or end_.item() == -1:
+        raise ValueError("start or end date cannot be matched to the price index")
 
     p1 = prices_.iloc[start_].to_numpy().reshape(-1, 1)
     p2 = prices_.iloc[end_].to_numpy().reshape(-1, 1)
