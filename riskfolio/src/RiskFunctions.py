@@ -3342,10 +3342,12 @@ def BrinsonAttribution(
         observations and n_assets is the number of assets.
     w : DataFrame or Series
         Portfolio weights. A Series or a single-row or single-column DataFrame
-        with one weight per asset.
+        with one weight per asset. Asset labels are aligned to prices.columns;
+        a default RangeIndex is interpreted positionally.
     wb : DataFrame or Series
         Benchmark weights. A Series or a single-row or single-column DataFrame
-        with one weight per asset.
+        with one weight per asset. Asset labels are aligned to prices.columns;
+        a default RangeIndex is interpreted positionally.
     start : str or datetime-like
         Start date, usually in 'YYYY-MM-DD' format.
     end : str or datetime-like
@@ -3452,13 +3454,35 @@ def BrinsonAttribution(
     p2 = prices_.iloc[end_].to_numpy().reshape(-1, 1)
     p3 = p2 / p1 - 1
 
-    wp_ = wp_.to_numpy().reshape(-1, 1)
-    wb_ = wb_.to_numpy().reshape(-1, 1)
+    assets = prices_.columns
+    if not assets.is_unique:
+        raise ValueError("price asset labels must be unique")
+
+    def align_weights(weights, name):
+        index = weights.index
+        if not index.is_unique or len(index) != len(assets):
+            raise ValueError(f"{name} must contain one weight per asset")
+        if assets.isin(index).all():
+            return weights.reindex(assets)
+        # Preserve the existing positional API for explicitly unlabeled vectors.
+        if isinstance(index, pd.RangeIndex) and index.equals(pd.RangeIndex(len(assets))):
+            return weights
+        raise ValueError(f"{name} asset labels must match prices.columns")
+
+    wp_ = align_weights(wp_, "w").to_numpy().reshape(-1, 1)
+    wb_ = align_weights(wb_, "wb").to_numpy().reshape(-1, 1)
 
     Rp = (p3.T @ wp_).item()
     Rb = (p3.T @ wb_).item()
 
-    classes = asset_classes[col].tolist()
+    class_assets = pd.Index(asset_classes.iloc[:, 0])
+    if (
+        not class_assets.is_unique
+        or len(class_assets) != len(assets)
+        or not assets.isin(class_assets).all()
+    ):
+        raise ValueError("asset_classes asset labels must match prices.columns")
+    classes = asset_classes.set_axis(class_assets, axis=0).loc[assets, col].tolist()
     unique_classes = list(set(classes))
     unique_classes.sort()
 
